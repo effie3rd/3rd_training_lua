@@ -1,2 +1,42 @@
 # 3rd_training_lua
 Training mode for Street Fighter III: 3rd Strike on Fightcade
+
+No Brain Update
+
+New Features
+Prediction system rework
+subpixel position 
+velocity based movement
+Complete frame data rerecording
+Menu redesign
+counterattack move list
+Option select on counterattack
+guard jump variations, crouch tech, late tech, down forward, forward down
+Attack Bars
+Blocking Direction Display
+ambiguous cross up option
+Red Parry Miss Indicator
+
+Random Character Select
+
+Training modes
+Defense
+  Genei Jin
+Whiff Punish
+Jump In
+Unblockables
+
+Challenge
+
+
+Added memory addresses
+velocity
+acceleration
+fractional stun
+graphics mode
+
+Bug Fixes
+blocking multi hit attacks
+blocking supers
+same move performed in frame perfect succession not blocked
+jumping attacks from behind/offscreen not blocked
