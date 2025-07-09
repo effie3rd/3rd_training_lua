@@ -13,6 +13,8 @@ counterattack move list
 Option select on counterattack
 guard jump variations, crouch tech, late tech, down forward, forward down
 Attack Bars
+fractional stun values
+stun that the opponent recovers during an attack is now removed from the final stun value
 Blocking Direction Display
 ambiguous cross up option
 Red Parry Miss Indicator
