@@ -19,6 +19,11 @@ Blocking Direction Display
 ambiguous cross up option
 Red Parry Miss Indicator
 
+Load time improvements
+Frame data now loads asyncronously once game starts
+effectively, game pops up .5s faster
+reformatted json data to improve load times
+
 Random Character Select
 
 Training modes
