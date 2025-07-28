@@ -35,12 +35,17 @@ Unblockables
 
 Challenge
 
+New fields
+name, velocity, acceleration, pushback on block, advantage on block, next animation, optional animation, looping
 
 Added memory addresses
 velocity
 acceleration
 fractional stun
 graphics mode
+360 charge (P1+P2)
+denjin charge P1
+
 
 Bug Fixes
 blocking multi hit attacks
