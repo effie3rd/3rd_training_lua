@@ -1,7 +1,7 @@
 # 3rd_training_lua
 Training mode for Street Fighter III: 3rd Strike on Fightcade
 
-No Brain Update
+No Dummy Update / 脳ダミーアップデート 
 
 New Features
 Prediction system rework
