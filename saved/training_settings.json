@@ -1,0 +1,1076 @@
+{
+  "special_training_parry_forward_on":true,
+  "counter_attack_button":1,
+  "red_parry_hit_count":1,
+  "p2_distances_reference_point":2,
+  "pose":1,
+  "blocking_style":1,
+  "counter_attack_stick":1,
+  "infinite_sa_time":false,
+  "blocking_mode":2,
+  "challenge_current_mode":1,
+  "display_frame_advantage":false,
+  "music_volume":0,
+  "meter_mode":3,
+  "current_recording_slot":1,
+  "special_training_parry_air_on":true,
+  "display_p1_input_history":true,
+  "display_distances":false,
+  "stun_reset_delay":20,
+  "life_mode":2,
+  "p1_life_reset_value":80,
+  "p2_life_reset_value":80,
+  "p1_stun_reset_value":56,
+  "p2_stun_reset_value":56,
+  "p1_meter_reset_value":0,
+  "p2_meter_reset_value":0,
+
+  "stun_mode":1,
+  "replay_mode":1,
+  "recordings":{
+    "oro":[{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "yang":[{
+        "random_deviation":0,
+        "inputs":[["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],[],[],["down"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward","LK"],["down","forward","LK"],["down","forward","LK"],["down","forward","LK"],["down","forward","LK"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["forward"],[],[],[],[],[],[],[],[],[],["back"],["back","down"],["back","down"],["down"],["down"],["down","forward","LK"],["down","forward","LK"],["down","forward","LK"],["down","forward"],["down","forward"],["MP","down","forward","HP"],["MP","down","forward","HP"],["MP","forward","HP"],["MP","forward","HP"],["MP","forward","HP"],["forward"],[],[],[],[],["back"],["back"],["back","down"],["back","down"],["down"],["down","forward"],["down","forward"],["down","forward"],["MP","forward","HP"],["MP","forward","HP"],["MP","up","forward","HP"],["MP","LP","up","forward","HP"],["LP","up"],["up"],["back"],["back"],["back","down"],["down"],["down","forward","HP"],["MP","down","forward","HP"],["MP","LP","forward","HP"],["MP","LP","forward","HP"],["MP","LP","up","forward"],["MP","LP","up","forward"],["LP","up"],["back","up"],["back","up"],["back"],["back","down"],["down"],["down","forward","HP"],["MP","down","forward","HP"],["MP","LP","down","forward","HP"],["MP","LP","forward"],["MP","LP","up","forward"],["MP","LP","up","forward"],["LP","up"],["up"],["back","up"],["back"],["back","down"],["back","down"],["down"],["down","forward","HP"],["MP","down","forward","HP"],["MP","forward","HP"],["MP","LP","up","forward","HP"],["MP","LP","up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],["MP","up","forward"],["MP","up"],["MP","LP","up"],["MP","LP","up"],["MP","LP"],["LP"],["LP"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],[],[],["forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward","HK"],["down","forward","HK"],["down","forward","HK"],["down","forward","HK"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],[],[],[],[],[],[],[],[],[],[],[],[],["forward"],["forward"],["forward"],["forward"],["forward"],["forward"],["down","forward"],["down","forward"],["down","forward"],["down"],["back","down"],["back","down"],["back","down"],["back","down"],["back"],["back"],["back","LP","up","LK"],["back","LP","up","LK"],["LP","up","LK"],["LP","up","LK"],["LP","up","LK"],["LP","up"],[],[],[],[],[],[],[],[],[],[],[],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"]],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[],
+        "delay":0,
+        "weight":1
+      }],
+    "alex":[{
+        "inputs":[["MK"],["MK"],["MK"],["MK"],["MK"],[],[],[],[],["back"],["back"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],["LP","LK"],["LP","LK"],["LP","LK"],["LP","LK"],["LP","LK"],["LP"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":3,
+        "weight":0
+      },{
+        "inputs":[["HK"],["HK"],["HK"],["HK"],["HK"],["HK"],[],[],[],[],[],[],[],[],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"]],
+        "random_deviation":0,
+        "delay":4,
+        "weight":0
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "elena":[{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "twelve":[{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[["back"],["down","back"],["down","back"],["down","back"],["down","back"],["down"],["forward","down"],["forward","down"],["forward"],["forward"],[],[],["down"],["down"],["forward","down"],["forward","down"],["forward","LP","down"],["forward","LP","down"],["forward","LP"],["forward","LP"],[],[],[],[],[],[],[],[],[],[],["back"],["back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["back"],[],["up"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],["HP","HK"],["HP","HK"],["HP","HK"],["HP","HK"],[],[],[],[],["HP","HK"],["HP","HK"],["HP","HK"],["HP","HK"],["HP"],[],[],["HP"],["HP","HK"],["HP","HK"],["HP","HK"],["HP","HK"],["HP","HK"],["HP"],[],[],[],[],[],[],["down"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "ibuki":[{
+        "inputs":[["forward"],["forward"],["forward"],["forward"],["forward"],["forward"],["forward"],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":-7,
+        "weight":1
+      },{
+        "inputs":[["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],[],[],[],[],[],[],[],[],["down"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":3,
+        "weight":0
+      },{
+        "inputs":[["HK"],["HK"],["HK"],["HK"],["HK"],["HK"],[],[],[],[],[],[],[],[],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"]],
+        "random_deviation":0,
+        "delay":4,
+        "weight":0
+      },{
+        "inputs":[["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "gill":[{
+        "inputs":[["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"]],
+        "random_deviation":0,
+        "delay":-7,
+        "weight":1
+      },{
+        "inputs":[["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"]],
+        "random_deviation":0,
+        "delay":3,
+        "weight":0
+      },{
+        "inputs":[["HK"],["HK"],["HK"],["HK"],["HK"],["HK"],[],[],[],[],[],[],[],[],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"]],
+        "random_deviation":0,
+        "delay":4,
+        "weight":0
+      },{
+        "inputs":[["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "hugo":[{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "q":[{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],["down"],["back","down"],["down"],["down","forward"],["down","forward"],["down","forward"],["forward"],["forward"],["up","forward"],[],["down"],["down"],["LP","down","forward"],["MP","LP","forward"],["LP","forward"],["LP","up","forward"],["up","forward"],["up"],["up"],["up"],["up"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],["back"],["back"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["down"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "dudley":[{
+        "inputs":[["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back","LP","LK"],["back","LP","LK"],["back","LP","LK"],["back","LP","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back"],[]],
+        "random_deviation":0,
+        "delay":-9,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[["forward"],["forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],[],[],[],["back"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down","HP"],["back","down","HP"],["back","down","HP"],["back","down","HP"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "remy":[{
+        "inputs":[["down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down","MK"],["back","down","MK"],["back","down","MK"],["back","down","MK"],["back","down","MK"],["back","down","MK"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "chunli":[{
+        "random_deviation":0,
+        "inputs":[["MP"],["MP"],["MP"],["MP"],["MP"],[],[],[],[],["MP"],["MP"],["MP"],["MP"],[],[],[],[],[],[],["MP"],["MP"],["MP"],["MP"],[],[],[],["MP"],["MP"],["MP"],["MP"],[],[],[],["MP"],["MP"],["MP"],["MP"],["MP"],[],[],[],["MP"],["MP"],["MP"],["MP"],[],[],[],[],["MP"],["MP"],["MP"],["MP"],[],[],[],[],["MP"],["MP"],["MP"],["MP"],[],[],[],["MP"],["MP"],["MP"],["MP"],["MP"],[],[],[],["MP"],["MP"],["MP"],["MP"],[],[],[],["MP"],["MP"],["MP"],["MP"],["MP"],[],[],[],["MP"],["MP"],["MP"],["MP"],["MP"],[],[],["MP"],["MP"],["MP"],["MP"],["MP"],[],[],[],[],["MP"],["MP"],["MP"],["MP"],[],[],[],["MP"],["MP"],["MP"],["MP"],["MP"],[],[],[],[],["MP"],["MP"],["MP"],["MP"],[],[],[],[],["MP"],["MP"],["MP"],["MP"],[],[],[],[],["MP"],["MP"],["MP"],["MP"],[],[],[],[],["MP"],["MP"],["MP"],["MP"],[],[],[],[],["MP"],["MP"],["MP"],["MP"],["MP"],[],[],[],["MP"],["MP"],["MP"],["MP"],["MP"],["MP"],["MP"],[],[],["MP"],["MP"],["MP"],["MP"],["MP"],["MP"],["MP"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],["MP"],["MP"],["MP"],["MP"],["MP"],["MP"],["MP"],["MP"],["MP"],[],[],[],[],[],[],[],[],[],[],[],[],[],["MP"],["MP"],["MP"],["MP"],["MP"],["MP"],[],[],[],["MP"],["MP"],["MP"],["MP"],["MP"],["MP"],["MP"],["MP"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],[],[],["forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward","HK"],["down","forward","HK"],["down","forward","HK"],["down","forward","HK"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],[],[],[],[],[],[],[],[],[],[],[],[],["forward"],["forward"],["forward"],["forward"],["forward"],["forward"],["down","forward"],["down","forward"],["down","forward"],["down"],["back","down"],["back","down"],["back","down"],["back","down"],["back"],["back"],["back","LP","up","LK"],["back","LP","up","LK"],["LP","up","LK"],["LP","up","LK"],["LP","up","LK"],["LP","up"],[],[],[],[],[],[],[],[],[],[],[],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"]],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[],
+        "delay":0,
+        "weight":1
+      },{
+        "random_deviation":0,
+        "inputs":[],
+        "delay":0,
+        "weight":1
+      }],
+    "ryu":[{
+        "inputs":[["forward"],[""],["forward"],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],["back"],["down","back"],["down"],["down","forward"],["forward","LP"]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],[],[],[],[],[],[],[],[],["down"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":3,
+        "weight":0
+      },{
+        "inputs":[["HK"],["HK"],["HK"],["HK"],["HK"],["HK"],[],[],[],[],[],[],[],[],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"]],
+        "random_deviation":0,
+        "delay":4,
+        "weight":0
+      },{
+        "inputs":[["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "makoto":[{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],["down"],["back","down"],["down"],["down","forward"],["down","forward"],["down","forward"],["forward"],["forward"],["up","forward"],[],["down"],["down"],["LP","down","forward"],["MP","LP","forward"],["LP","forward"],["LP","up","forward"],["up","forward"],["up"],["up"],["up"],["up"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],["back"],["back"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["down"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "gouki":[{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":-7,
+        "weight":1
+      },{
+        "inputs":[["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],[],[],[],[],[],[],[],[],["down"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":3,
+        "weight":0
+      },{
+        "inputs":[["HK"],["HK"],["HK"],["HK"],["HK"],["HK"],[],[],[],[],[],[],[],[],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"]],
+        "random_deviation":0,
+        "delay":4,
+        "weight":0
+      },{
+        "inputs":[["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "sean":[{
+        "inputs":[["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"]],
+        "random_deviation":0,
+        "delay":-7,
+        "weight":1
+      },{
+        "inputs":[["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],[],[],[],[],[],[],[],[],["down"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":3,
+        "weight":0
+      },{
+        "inputs":[["HK"],["HK"],["HK"],["HK"],["HK"],["HK"],[],[],[],[],[],[],[],[],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"]],
+        "random_deviation":0,
+        "delay":4,
+        "weight":0
+      },{
+        "inputs":[["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "urien":[{
+        "inputs":[["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back","HP"],["down","back","HP"],["down","back","HP"],["down","back","HP"],["down","back","HP"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],[],[],["forward"],["forward","LK"],["forward","LK"],["forward"],["forward"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],["HP"],["HP"],["HP"],["HP"],["HP"],[],[],[],[],[],[],["back"],["back"],["back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down"],["down"],["forward","down"],["forward","down"],["forward","down"],["forward"],["forward"],["forward"],["up"],["up"],[],[],[],["down"],["down"],["forward","down"],["forward","down"],["forward","LP","down"],["forward","LP"],["forward","LP"],["forward","LP"],[],[],["down"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["MP","down","back"],["MP","down","back"],["MP","LP","down","back"],["MP","LP","down","back"],["MP","LP","down","back"],["LP","down","back"],["LP","down","back"],["LP","down","back"],["LP","down","back"],["LP","down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["back"],["up","back"],["up","back","HK"],["up","back","HK"],["up","back","HK"],["up","back"],["up"],["up"],["up"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],["down"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "ken":[{
+        "inputs":[["up"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],["MK"],["MK"],["MK"],["MK"],[],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "necro":[{
+        "inputs":[["forward"],[""],["forward"],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],[""],["back"],["down","back"],["down"],["down","forward"],["forward","LP"]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],["up","forward"],[],[],[],[],[],[],[],[],["down"],["down","forward"],["down","forward"],["down","forward"],["down","forward"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back","HK"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":3,
+        "weight":0
+      },{
+        "inputs":[["HK"],["HK"],["HK"],["HK"],["HK"],["HK"],[],[],[],[],[],[],[],[],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"],["back","down"]],
+        "random_deviation":0,
+        "delay":4,
+        "weight":0
+      },{
+        "inputs":[["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["LP","back","LK"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],["back"],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }],
+    "yun":[{
+        "inputs":[["down"],["forward","down"],["forward","down"],["forward","down"],["forward"],["forward"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],["up"],[],[],[],[],[],[],[],[],[],["forward"],["forward","down"],["forward","down"],["forward","down"],["forward","down"],["forward","down","HK"],["forward","down","HK"],["forward","down","HK"],["forward","down","HK"],["forward","down"],["forward","down"],["forward","down"],["forward","down"],["forward","down"],["forward","down"],["forward","down"],["forward","down"],["forward","down"],["down"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"],["down","back"]],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      },{
+        "inputs":[],
+        "random_deviation":0,
+        "delay":0,
+        "weight":1
+      }]
+  },
+  "counter_attack":{
+    "alex":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "ryu":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "yun":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "dudley":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "necro":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "hugo":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "ibuki":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "elena":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "oro":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "yang":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "ken":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "sean":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "urien":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "gouki":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "gill":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "chunli":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "makoto":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "q":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "twelve":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "remy":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "gill":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
+    "shingouki":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    }
+  },
+  "counter_attack_type_index":1,
+  "special_training_parry_down_on":true,
+  "display_p1_input_history_dynamic":false,
+  "auto_crop_recording_end":false,
+  "parry_every_n_count":1,
+  "mash_stun_mode":3,
+  "fast_wakeup_mode":1,
+  "prefer_down_parry":false,
+  "life_refill_delay":5,
+  "special_training_charge_overcharge_on":false,
+  "infinite_time":true,
+  "meter_refill_delay":20,
+  "p1_distances_reference_point":1,
+  "special_training_parry_antiair_on":true,
+  "tech_throws_mode":1,
+  "display_input":true,
+  "hits_before_counter_attack_count":0,
+  "charge_follow_character":false,
+  "special_training_current_mode":1,
+  "display_attack_data":false,
+  "display_attack_bars":3,
+  "attack_bars_show_decimal":false,
+  "infinite_projectiles":false,
+  "display_p1_input_history_dyanamic":false,
+  "universal_cancel":false,
+  "fast_forward_intro":true,
+  "cheat_parrying":1,
+  "infinite_juggle":false,
+  "mid_distance_height":70,
+  "force_stage":1,
+  "auto_crop_recording_start":false,
+  "display_input_history":1,
+  "display_p2_input_history":false,
+  "display_hitboxes":true,
+  "display_gauges":false,
+  "display_bonuses":true,
+  "display_parry":false,
+  "display_charge":false,
+  "display_air_time":false,
+  "display_air_time_player_coloring":true,
+  "display_red_parry_miss":true,
+  "display_attack_range":1,
+  "attack_range_display_max_attacks":1,
+  "attack_range_display_show_numbers":true,
+  "controller_style":2,
+  "language":2
+}
