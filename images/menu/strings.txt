@@ -1,0 +1,95 @@
+File Name
+Save
+Cancel
+
+Life refill delay
+P1 Stun reset value
+P2 Stun reset value
+Stun reset delay
+
+P1 Meter
+P2 Meter
+Meter refill delay
+Weight
+
+Counterattack delay
+Counterattack max random deviation
+
+Forward Parry Helper
+Down Parry Helper
+Air Parry Helper
+Anti-Air Parry Helper
+
+Display Overcharge
+Hits before Red Parry
+Parry every n
+
+Prefer Down Parry
+Hits before Counter-Attack
+Display P2 Input History
+Select Characters
+
+P1 distance reference point
+P2 distance reference point
+Mid Distance Height
+
+Play
+Select Character
+Current
+
+Pose
+Blocking Style
+Blocking
+
+Tech Throws
+Counterattack
+Counterattack Action
+Fast Wake Up
+
+Auto Crop First Frames
+Auto Crop Last Frames
+Replay Mode
+Slot
+Clear slot
+Clear all slots
+Save slot to file
+Load slot from file
+
+Display Controllers
+Display Gauges Numbers
+Display P1 Input History
+Dynamic P1 Input History
+
+Display Damage Info
+Display Frame Advantage
+Display Hitboxes
+Display Distances
+
+Language
+
+Infinite Time
+Life Refill Mode
+Stun Mode
+Meter Refill Mode
+Infinite Super Art Time
+Music Volume
+Speed Up Game Intro
+Universal Cancel
+Infinite Projectiles
+Infinite Juggle
+
+Follow Character
+
+Debug Move
+Show Predicted Hitboxes
+Record Frame Data
+Record Idle Frame Data
+Record Wake-Up Data
+Save Frame Data
+Debug Character
+
+
+
+
+
+
