@@ -1,7 +1,4 @@
 local gamestate = require("src/gamestate")
-local text = require("src/text")
-
-local render_text, get_text_dimensions = text.render_text, text.get_text_dimensions
 
 local character_select_savestate = savestate.create("data/"..rom_name.."/savestates/character_select.fs")
 local first_run = true
@@ -452,28 +449,7 @@ local function update_character_select(input, do_fast_forward)
   end
 end
 
-local character_select_text_display_time = 120
-local character_select_text_fade_time = 30
-local function draw_character_select()
-  if p1_character_select_state <= 2 or p2_character_select_state <= 2 then
-    local elapsed = gamestate.frame_number - character_select_start_frame
-    if elapsed <= character_select_text_display_time + character_select_text_fade_time then
-      local opacity = 1
-      if elapsed > character_select_text_display_time then
-        opacity = 1 - ((elapsed - character_select_text_display_time) / character_select_text_fade_time)
-      end
-      local w,h = get_text_dimensions("character_select_line_1")
-      local padding_x = 0
-      local padding_y = 0
-      render_text(padding_x, padding_y, "character_select_line_1", nil, nil, nil, opacity)
-      render_text(padding_x, padding_y + h, "character_select_line_2", nil, nil, nil, opacity)
-      render_text(padding_x, padding_y + h + h, "character_select_line_3", nil, nil, nil, opacity)
-    end
-  end
-end
-
-return {
-  draw_character_select = draw_character_select,
+local character_select =  {
   start_character_select_sequence = start_character_select_sequence,
   update_character_select = update_character_select,
   select_gill = select_gill,
@@ -483,3 +459,29 @@ return {
   select_random_character = select_random_character,
   force_select_character = force_select_character
 }
+
+setmetatable(character_select, {
+  __index = function(_, key)
+    if key == "p1_character_select_state" then
+      return p1_character_select_state
+    elseif key == "p2_character_select_state" then
+      return p2_character_select_state
+    elseif key == "character_select_start_frame" then
+      return character_select_start_frame
+    end
+  end,
+
+  __newindex = function(_, key, value)
+    if key == "p1_character_select_state" then
+      p1_character_select_state = value
+    elseif key == "p2_character_select_state" then
+      p2_character_select_state = value
+    elseif key == "character_select_start_frame" then
+      character_select_start_frame = value
+    else
+      rawset(character_select, key, value)
+    end
+  end
+})
+
+return character_select

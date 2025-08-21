@@ -1,5 +1,9 @@
 require "gd"
 local gamestate = require("src/gamestate")
+local text = require("src/text")
+
+local render_text, get_text_dimensions = text.render_text, text.get_text_dimensions
+local character_select = require("src/character_select")
 
 -- # Constants
 screen_width = 383
@@ -419,5 +423,25 @@ function loading_bar_display(loaded, total)
   if loaded >= total and not load_frame_data_bar_fading then
     load_frame_data_bar_fade_start = gamestate.frame_number
     load_frame_data_bar_fading = true
+  end
+end
+
+local character_select_text_display_time = 120
+local character_select_text_fade_time = 30
+function draw_character_select()
+  if character_select.p1_character_select_state <= 2 or character_select.p2_character_select_state <= 2 then
+    local elapsed = gamestate.frame_number - character_select.character_select_start_frame
+    if elapsed <= character_select_text_display_time + character_select_text_fade_time then
+      local opacity = 1
+      if elapsed > character_select_text_display_time then
+        opacity = 1 - ((elapsed - character_select_text_display_time) / character_select_text_fade_time)
+      end
+      local w,h = get_text_dimensions("character_select_line_1")
+      local padding_x = 0
+      local padding_y = 0
+      render_text(padding_x, padding_y, "character_select_line_1", nil, nil, nil, opacity)
+      render_text(padding_x, padding_y + h, "character_select_line_2", nil, nil, nil, opacity)
+      render_text(padding_x, padding_y + h + h, "character_select_line_3", nil, nil, nil, opacity)
+    end
   end
 end
