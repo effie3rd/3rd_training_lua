@@ -1,150 +1,115 @@
-function init_debug()
-  local _path = string.format("%s%s", saved_recordings_path, "Debug.json")
-  print(_path)
-  local _recording = read_object_from_json_file(_path)
-  if not _recording then
-    print(string.format("Error: Failed to load recording from \"%s\"", _path))
-  else
-    recording_slots[1].inputs = _recording
-    print(string.format("Loaded \"%s\" to slot %d", _path, 1))
+local gamestate = require("src/gamestate")
+local loading = require("src/loading")
+local text = require("src/text")
+local fd = require("src/framedata")
+local fdm = require("src/framedata_meta")
+
+local frame_data = fd.frame_data
+local frame_data_meta = fdm.frame_data_meta
+local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text, text.render_text_multiple, text.get_text_dimensions, text.get_text_dimensions_multiple
+
+
+-- debug options
+local developer_mode = true -- Unlock frame data recording options. Touch at your own risk since you may use those options to fuck up some already recorded frame data
+local assert_enabled = developer_mode or assert_enabled
+local log_enabled = developer_mode or log_enabled
+local log_categories_display =
+{
+  input =                     { history = true, print = false },
+  projectiles =               { history = true, print = false },
+  fight =                     { history = false, print = false },
+  animation =                 { history = false, print = false },
+  parry_training_FORWARD =    { history = false, print = false },
+  blocking =                  { history = true, print = false },
+  counter_attack =            { history = false, print = false },
+  block_string =              { history = true, print = false },
+  frame_advantage =           { history = false, print = false },
+} or log_categories_display
+
+gamestate.P1.debug_state_variables = false
+gamestate.P1.debug_freeze_frames = false
+gamestate.P1.debug_animation_frames = false
+gamestate.P1.debug_standing_state = false
+gamestate.P1.debug_wake_up = false
+
+gamestate.P2.debug_state_variables = false
+gamestate.P2.debug_freeze_frames = false
+gamestate.P2.debug_animation_frames = false
+gamestate.P2.debug_standing_state = false
+gamestate.P2.debug_wake_up = false
+
+
+local dump_state = {}
+local function dump_variables()
+  if gamestate.is_in_match then
+    for _, player in pairs(gamestate.player_objects) do
+      dump_state[player.id] = {
+        string.format("%d: %s: Char: %d", gamestate.frame_number, player.prefix, player.char_id),
+        string.format("Friends: %d", player.friends),
+        string.format("Flip: %d", player.flip_x),
+        string.format("x, y: %d, %d", player.pos_x, player.pos_y),
+        string.format("Freeze: %d Super Freeze: %d", player.remaining_freeze_frames, player.superfreeze_decount),
+        string.format("Input Cap: %d", player.input_capacity),
+        string.format("Action: %d Ext: %d Count: %d", player.action, player.action_ext, player.action_count),
+        string.format("Recovery Time: %d Flag %d", player.recovery_time, player.recovery_flag),
+        string.format("Movement Type: %d Type 2: %d", player.movement_type, player.movement_type2),
+        string.format("Posture: %d State: %d", player.posture, player.character_state_byte),
+        string.format("Is Attacking: %d Ext: %d", player.is_attacking_byte, player.is_attacking_ext_byte),
+        string.format("Is Blocking: %s Busy: %d", tostring(player.is_blocking), player.busy_flag),
+        string.format("Is in Action: %s Idle: %s", tostring(player.is_in_basic_action), tostring(player.is_idle)),
+        string.format("Next Hit Dmg: %d Stun: %d", player.damage_of_next_hit, player.stun_of_next_hit),
+        string.format("Throwing: %s Being Thrown: %s CD: %d", tostring(player.is_throwing), tostring(player.is_being_thrown), player.throw_countdown),
+        string.format("Anim: %s Frame %d", tostring(player.animation), player.animation_frame),
+        string.format("Frame Id: %s  %s  %s", tostring(player.animation_frame_id), tostring(player.animation_frame_id2), tostring(player.animation_frame_id3)),
+        string.format("Anim Hash: %s", player.animation_frame_hash),
+        string.format("Recv Hit #: %d Recv Conn #: %d", player.total_received_hit_count, player.received_connection_marker),
+        string.format("Hit #: %d Conn Hit #: %d", player.hit_count, player.connected_action_count),
+        string.format("Stand State: %d Stunned: %s Ended: %s", player.standing_state, tostring(player.stunned), tostring(player.stun_just_ended)),
+        string.format("Air Recovery: %s Is Flying Down: %s", tostring(player.is_in_air_recovery), tostring(player.is_flying_down_flag))}
+    end
   end
 end
 
-
+local function dump_state_display()
+  if gamestate.is_in_match then
+    if #dump_state > 0 then
+      for i = 1, #dump_state[1] do
+        render_text(2,2+8*i,dump_state[1][i],"en")
+      end
+      for i = 1, #dump_state[2] do
+        local width = get_text_dimensions(dump_state[2][i],"en")
+        render_text(screen_width-2-width,2+8*i,dump_state[2][i],"en")
+      end
+    end
+  end
+end
 
 local state = "air"
-start_debug = false
+local start_debug = false
 local first_time = true
 local first_g = true
 start_debug = false
 scan_frame = 0
 local first_scan = true
 local n_scans = 0
+local mem_scan = {}
 
 local parry_down = false
 
 local chardefaultcol = {}
 local i_chars = 1
-function run_debug()
 
---[[   if parry_down then
-          memory.writebyte(P2.parry_down_validity_time_addr, 2)
-  end ]]
-  local keys = input.get()
-  if keys.down then
-    parry_down = not parry_down
-  end
-
---[[   if has_match_just_started then
-    if i_chars <= #characters then
-      print("hi")
-      if not chardefaultcol[P1.char_str] then
-        chardefaultcol[P1.char_str] = {}
-      end
-      if not chardefaultcol[P2.char_str] then
-        chardefaultcol[P2.char_str] = {}
-      end
-      chardefaultcol[P1.char_str][1] = memory.readword(P1.base + 616)
-      chardefaultcol[P2.char_str][2] = memory.readword(P2.base + 616)
-      local _char = characters[i_chars]
-      table.insert(after_load_state_callback, {command = force_select_character, args = {P1.id, _char, 1, "LP"} })
-      table.insert(after_load_state_callback, {command = force_select_character, args = {P2.id, _char, 1, "LP"} })
-      start_character_select_sequence()
-      i_chars = i_chars + 1
-    else
-      for k,v in pairs(chardefaultcol) do
-        print(k .. " = ",  v)
-      end
-    end
-  end ]]
-
-          if frame_data_loaded and first_scan then
-            for _char, _data in pairs(frame_data) do
-              local found_stand = false
-              local found_crouch = false
-              for id, _daaa in pairs(_data) do
-                if type(_daaa) == "table" then
-                  for k,v in pairs(_daaa) do
-                    if k == "frames" then
-                      for i=1, #v do
-                        if not v[i].hash then
-                          print(_char,id,i)
-                        end
-                      end
-                    end
-                  end
-                end
-                if id == "standing_turn" then
-                  found_stand = true
-                end
-                if id == "crouching_turn" then
-                  found_crouch = true
-                end
-              end
-              if not found_stand then
-                print(_char, "no stand turn")
-              end
-              if not found_crouch then
-                print(_char, "no crouch turn")
-              end
-            end
-            first_scan = false
-          end
+to_draw={} --debug
 
 
-  if start_debug then
-    if not P2.previous_is_wakingup and P2.is_wakingup then
-      if first_time then
-        scan_frame = frame_number + 50
-        first_time = false
-      else
-        filter_memory_increased()
-        n_scans = 0
-      end
-    elseif P2.is_wakingup then
-      if first_scan and frame_number == scan_frame then
-        init_scan_memory()
-        first_scan = false
-        scan_frame = frame_number + 15
-      end
-      if frame_number == scan_frame and n_scans < 2 then
-        filter_memory_decreased()
-        scan_frame = frame_number + 15
-        n_scans = n_scans + 1
-      end
-    end
-  end
-
---[[   if start_debug then
-    if P1.animation == "a530" and P1.animation_frame >= 9 then
-      state = "jumping"
-      -- filter_memory_decreased()
-      queue_input_sequence(P1,{{"up"}})
-      print("filter ground")
-    elseif P1.animation == "b028" and P1.pos_y <= 65 and P1.pos_y - P1.previous_pos_y < 0 then
-      state = "HP"
-      if not first_time then
-        filter_memory_decreased()
-      end
-      first_time = false
-      queue_input_sequence(P1,{{"HP"}})
-      print("filter jump")
-    elseif P1.animation == "50b4" and P1.animation_frame >= 9  and state == "HP" then
-      state = "land"
-      filter_memory_increased()
-      print("filter hp")
-    end
-  end ]]
-end
-
-function memory_display()
+local function memory_display()
   local n = 1
   for k, v in pairs(mem_scan) do
     if n <= 20 then
       local cv = memory.readbyte(k)
-      local _text = string.format("%x: %08x %d", k, cv, cv)
-      render_text(5, 2 + (n - 1) * 10, _text, "en")
-      table.insert(to_draw, {P1.pos_x + n * 10, P1.pos_y + cv})
+      local text = string.format("%x: %08x %d", k, cv, cv)
+      render_text(5, 2 + (n - 1) * 10, text, "en")
+      table.insert(to_draw, {gamestate.P1.pos_x + n * 10, gamestate.P1.pos_y + cv})
     else
       break
     end
@@ -152,16 +117,16 @@ function memory_display()
   end
 end
 
-memory_view_start = 0x0202600f
-function memory_view_display()
+local memory_view_start = 0x0202600f
+local function memory_view_display()
   for i = 1, 20 do
     local addr = memory_view_start + 4 * (i - 1)
     local cv = memory.readdword(addr)
     local lw = bit.rshift(cv, 4 * 4)
     local rw = bit.rshift(bit.lshift(cv, 4 * 4), 4 * 4)
 
-    local _text = string.format("%x: %08x %d %d", addr, cv, lw, rw)
-    render_text(5, 2 + (i - 1) * 10, _text, "en")
+    local text = string.format("%x: %08x %d %d", addr, cv, lw, rw)
+    render_text(5, 2 + (i - 1) * 10, text, "en")
   end
   local keys = input.get()
   if keys.down then
@@ -173,18 +138,17 @@ function memory_view_display()
 end
 
 
-mem_scan = {}
-function init_scan_memory()
+local function init_scan_memory()
   mem_scan = {}
   for i = 0, 80000000 do
-    _v = memory.readbyte(i)
-    if _v > 1 then
-      mem_scan[i] = _v
+    v = memory.readbyte(i)
+    if v > 1 then
+      mem_scan[i] = v
     end
   end
 end
 
-function filter_memory_increased()
+local function filter_memory_increased()
   for k, v in pairs(mem_scan) do
     local new_v = memory.readbyte(k)
     if new_v > v then
@@ -195,7 +159,7 @@ function filter_memory_increased()
   end
 end
 
-function filter_memory_decreased()
+local function filter_memory_decreased()
   for k, v in pairs(mem_scan) do
     local new_v = memory.readbyte(k)
     if new_v < v then
@@ -205,3 +169,115 @@ function filter_memory_decreased()
     end
   end
 end
+
+local function run_debug()
+
+  dump_variables()
+
+--[[   if parry_down then
+          memory.writebyte(gamestate.P2.parry_down_validity_time_addr, 2)
+  end ]]
+  local keys = input.get()
+  if keys.down then
+    parry_down = not parry_down
+  end
+
+  if loading.frame_data_loaded and first_scan then
+    for char, data in pairs(frame_data) do
+      local found_stand = false
+      local found_crouch = false
+      for id, daaa in pairs(data) do
+        if type(daaa) == "table" then
+          for k,v in pairs(daaa) do
+            if k == "frames" then
+              for i=1, #v do
+                if not v[i].hash then
+                  print(char,id,i)
+                end
+              end
+            end
+          end
+        end
+        if id == "standing_turn" then
+          found_stand = true
+        end
+        if id == "crouching_turn" then
+          found_crouch = true
+        end
+      end
+      if not found_stand then
+        print(char, "no stand turn")
+      end
+      if not found_crouch then
+        print(char, "no crouch turn")
+      end
+    end
+    first_scan = false
+  end
+
+  if start_debug then
+    if not gamestate.P2.previous_is_wakingup and gamestate.P2.is_wakingup then
+      if first_time then
+        scan_frame = gamestate.frame_number + 50
+        first_time = false
+      else
+        filter_memory_increased()
+        n_scans = 0
+      end
+    elseif gamestate.P2.is_wakingup then
+      if first_scan and gamestate.frame_number == scan_frame then
+        init_scan_memory()
+        first_scan = false
+        scan_frame = gamestate.frame_number + 15
+      end
+      if gamestate.frame_number == scan_frame and n_scans < 2 then
+        filter_memory_decreased()
+        scan_frame = gamestate.frame_number + 15
+        n_scans = n_scans + 1
+      end
+    end
+  end
+end
+
+local function debug_things()
+  for k,v in pairs(gamestate.P1) do
+    print (k, type(k))
+  end
+end
+
+local debug =  {
+  dump_state_display = dump_state_display,
+  init_scan_memory = init_scan_memory,
+  filter_memory_increased = filter_memory_increased,
+  filter_memory_decreased = filter_memory_decreased,
+  memory_display = memory_display,
+  memory_view_display = memory_view_display,
+  run_debug = run_debug,
+  debug_things = debug_things
+}
+
+setmetatable(debug, {
+  __index = function(_, key)
+    if key == "memory_view_start" then
+      return memory_view_start
+    elseif key == "developer_mode" then
+      return developer_mode
+    elseif key == "start_debug" then
+      return start_debug
+    end
+  end,
+
+  __newindex = function(_, key, value)
+    if key == "memory_view_start" then
+      memory_view_start = value
+    elseif key == "developer_mode" then
+      loading.developer_mode = value
+    elseif key == "start_debug" then
+      loading.start_debug = value
+    else
+      rawset(debug, key, value)
+    end
+  end
+})
+
+return debug

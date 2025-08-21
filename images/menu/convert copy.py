@@ -24,7 +24,7 @@ for color,color_code in colors.items():
         ucode = ord(char)
         key = f"utf_{ucode}"
         size = "5"
-        filename = f"{key}_en_{size}_{color}"
+        filename = f"{key}en_{size}_{color}"
         subprocess.Popen(["bash", "./text_to_image.sh",char,filename,size,color_code,"en"], cwd=cwd)
         data["code"].setdefault(key, {})
         data["code"][key]["en"] = base_path + filename + ".png"
@@ -88,8 +88,8 @@ for loc_file in loc_files:
                     i = 0
                     parts.append({"text":"", "lang":""})
                     for c in text:
-                        _code = ord(c)
-                        if _code < 12288:
+                        code = ord(c)
+                        if code < 12288:
                             if parts[i]["lang"] == "jp":
                                 i = i + 1
                                 parts.append({"text":"", "lang":""})
@@ -109,23 +109,23 @@ for loc_file in loc_files:
                     outfile = f"{key}_{lang}_{size}_{color}"
 
                     if len(parts) == 1:
-                        _char = parts[0]["text"]
+                        char = parts[0]["text"]
                         _lang = parts[0]["lang"]
                         if _lang == "en":
                             _size = "8"
                             filename = outfile #key_jp_10_white
                             part_file_names.append(filename + ".png")
                             command.append(filename + ".png")
-                            subprocess.Popen(["bash", "./text_to_image.sh",_char,filename,_size,color_code,"jp_ext"], cwd=cwd)
+                            subprocess.Popen(["bash", "./text_to_image.sh",char,filename,_size,color_code,"jp_ext"], cwd=cwd)
                         elif _lang == "jp":
                             _size = "10"
                             filename = outfile #key_jp_10_white
                             part_file_names.append(filename + ".png")
                             command.append(filename + ".png")
-                            subprocess.Popen(["bash", "./text_to_image.sh",_char,filename,_size,color_code,"jp"], cwd=cwd)
+                            subprocess.Popen(["bash", "./text_to_image.sh",char,filename,_size,color_code,"jp"], cwd=cwd)
                     else:
                         for i, part in enumerate(parts):
-                            _char = part["text"]
+                            char = part["text"]
                             _lang = part["lang"]
                             process = None
                             if _lang == "en":
@@ -133,14 +133,14 @@ for loc_file in loc_files:
                                 filename = f"{key}_{_lang}_{_size}_{color}_{i}"
                                 part_file_names.append(filename + ".png")
                                 command.append(filename + ".png")
-                                process = subprocess.Popen(["bash", "./text_to_image.sh",_char,filename,_size,color_code,"jp_ext"], cwd=cwd)
+                                process = subprocess.Popen(["bash", "./text_to_image.sh",char,filename,_size,color_code,"jp_ext"], cwd=cwd)
 
                             elif _lang == "jp":
                                 _size = "10"
                                 filename = f"{key}_{_lang}_{_size}_{color}_{i}"
                                 part_file_names.append(filename + ".png")
                                 command.append(filename + ".png")
-                                process = subprocess.Popen(["bash", "./text_to_image.sh",_char,filename,_size,color_code,"jp"], cwd=cwd)
+                                process = subprocess.Popen(["bash", "./text_to_image.sh",char,filename,_size,color_code,"jp"], cwd=cwd)
 
                             processes.append(process)
                         command.append("+append")

@@ -54,24 +54,24 @@ local previous_velocity_x = 0 --{}
 
 local modify_projectile_queue = {}
 
-function get_player_bounds(_obj)
+function get_player_bounds(obj)
   local result = {}
-  result.left = _obj.pos_x
-  result.right = _obj.pos_x
-  result.bottom = _obj.pos_y
-  result.top = _obj.pos_y
-  for _k, _box in pairs(_obj.boxes) do
-    if _box.type == "vulnerability" then
-      local _right = _box.left + _box.width
-      local _top = _box.bottom + _box.height
-      if _box.left < result.left then
-        result.left = _box.left
+  result.left = obj.pos_x
+  result.right = obj.pos_x
+  result.bottom = obj.pos_y
+  result.top = obj.pos_y
+  for _k, box in pairs(obj.boxes) do
+    if box.type == "vulnerability" then
+      local _right = box.left + box.width
+      local _top = box.bottom + box.height
+      if box.left < result.left then
+        result.left = box.left
       end
       if _right > result.right then
         result.right = _right
       end
-      if _box.bottom < result.bottom then
-        result.bottom = _box.bottom
+      if box.bottom < result.bottom then
+        result.bottom = box.bottom
       end
       if _top > result.top then
         result.top = _top
@@ -83,69 +83,69 @@ end
 
 --Anim: 8af8 Frame Id: 22179  3  60
 
-function freeze(_obj, _t)
-  memory.writebyte(_obj.base + 0x45, _t)
+function freeze(obj, _t)
+  memory.writebyte(obj.base + 0x45, _t)
 end
 
 function unfreeze()
     memory.writebyte(player.base + 0x45, 0) --allow p2 to move during super freeze
 end
 
-function animation_cancel(_args)
-  local _player_obj = _args[1]
+function animation_cancel(args)
+  local player_obj = args[1]
 --  memory.writebyte(P1.life_addr, 0x0) --p1 life
 --   memory.writebyte(P2.life_addr, 0x0) --p2 life
-  memory.writebyte(_player_obj.base + 0x27, 0x0)
-  memory.writeword(_player_obj.base + 0x202, 0x8800) --idle
-  memory.writeword(_player_obj.base + 0x21A, 22177)
-  memory.writeword(_player_obj.base + 0x214, 1) --frameid2
-  memory.writeword(_player_obj.base + 0x205, 1) --frameid3
+  memory.writebyte(player_obj.base + 0x27, 0x0)
+  memory.writeword(player_obj.base + 0x202, 0x8800) --idle
+  memory.writeword(player_obj.base + 0x21A, 22177)
+  memory.writeword(player_obj.base + 0x214, 1) --frameid2
+  memory.writeword(player_obj.base + 0x205, 1) --frameid3
 
-  memory.writeword(_player_obj.base + 0x3D1, 0x0)
-  memory.writeword(_player_obj.base + 0xAC, 0)
-  memory.writeword(_player_obj.base + 0x12C, 0)
+  memory.writeword(player_obj.base + 0x3D1, 0x0)
+  memory.writeword(player_obj.base + 0xAC, 0)
+  memory.writeword(player_obj.base + 0x12C, 0)
 end
 
-function animation_cancel_air(_args)
-  local _player_obj = _args[1]
-  memory.writebyte(_player_obj.base + 0x27, 0x0)
-  memory.writeword(_player_obj.base + 0x202, 0xa130) --idle
-  memory.writeword(_player_obj.base + 0x21A, 22274)
-  memory.writeword(_player_obj.base + 0x214, 3) --frameid2
-  memory.writeword(_player_obj.base + 0x205, 36) --frameid3
+function animation_cancel_air(args)
+  local player_obj = args[1]
+  memory.writebyte(player_obj.base + 0x27, 0x0)
+  memory.writeword(player_obj.base + 0x202, 0xa130) --idle
+  memory.writeword(player_obj.base + 0x21A, 22274)
+  memory.writeword(player_obj.base + 0x214, 3) --frameid2
+  memory.writeword(player_obj.base + 0x205, 36) --frameid3
 
-  memory.writeword(_player_obj.base + 0x3D1, 0x0)
-  memory.writeword(_player_obj.base + 0xAC, 0)
-  memory.writeword(_player_obj.base + 0x12C, 0)
+  memory.writeword(player_obj.base + 0x3D1, 0x0)
+  memory.writeword(player_obj.base + 0xAC, 0)
+  memory.writeword(player_obj.base + 0x12C, 0)
 end
 
-function queue_input(_player_obj, _delay, _input_sequence)
+function queue_input(player_obj, delay, _input_sequence)
   for _i = 1, #_input_sequence do
-    local _frame = frame_number + _i - 1 + _delay
+    local frame = frame_number + _i - 1 + delay
 
-    if _player_obj.command_queue[_frame] and _player_obj.command_queue[_frame].input then
-      table.insert(_player_obj.command_queue[_frame].input, _input_sequence[_i])
+    if player_obj.command_queue[frame] and player_obj.command_queue[frame].input then
+      table.insert(player_obj.command_queue[frame].input, _input_sequence[_i])
     else
-      _player_obj.command_queue[_frame] = {}
-      _player_obj.command_queue[_frame].input = _input_sequence[_i]
+      player_obj.command_queue[frame] = {}
+      player_obj.command_queue[frame].input = _input_sequence[_i]
     end
   end
 --   low = 9999990
 --   high = 1
---   for _f, _val in pairs(_player_obj.command_queue) do
---     if _f <low then
---       low = _f
+--   for f, _val in pairs(player_obj.command_queue) do
+--     if f <low then
+--       low = f
 --       end
---     if _f >high then
---       high= _f
+--     if f >high then
+--       high= f
 --       end
 --   end
 --   for i=low,high do
---     if(_player_obj.command_queue[i]) then
---       if _player_obj.command_queue[i].input then
---         print(i, unpack(_player_obj.command_queue[i].input))
+--     if(player_obj.command_queue[i]) then
+--       if player_obj.command_queue[i].input then
+--         print(i, unpack(player_obj.command_queue[i].input))
 --       else
---         print(i, unpack(_player_obj.command_queue[i]))
+--         print(i, unpack(player_obj.command_queue[i]))
 --       end
 --     end
 --   end
@@ -153,49 +153,49 @@ function queue_input(_player_obj, _delay, _input_sequence)
 
 end
 
-function clear_command_queue(_player_obj)
-  _player_obj.command_queue = {}
+function clear_command_queue(player_obj)
+  player_obj.command_queue = {}
 end
 
-function queue_func(_player_obj, _delay, _com)
-  local _frame = frame_number + _delay
-  if _player_obj.command_queue[_frame] then
-    if _player_obj.command_queue[_frame].command then
-      table.insert(_player_obj.command_queue[_frame].command, _com)
+function queue_func(player_obj, delay, com)
+  local frame = frame_number + delay
+  if player_obj.command_queue[frame] then
+    if player_obj.command_queue[frame].command then
+      table.insert(player_obj.command_queue[frame].command, com)
     else
-      _player_obj.command_queue[_frame].command = {_com}
+      player_obj.command_queue[frame].command = {com}
     end
   else
-    _player_obj.command_queue[_frame] = {}
-    _player_obj.command_queue[_frame].command = {_com}
+    player_obj.command_queue[frame] = {}
+    player_obj.command_queue[frame].command = {com}
   end
 end
 
-function queue_modify_projectile(_player_obj, _delay, _com)
-  local _frame = frame_number + _delay
-  if _player_obj.command_queue[_frame] then
-    if _player_obj.command_queue[_frame].modify then
-      table.insert(_player_obj.command_queue[_frame].modify, {func=insert_modify_projectile, args=_com})
+function queue_modify_projectile(player_obj, delay, com)
+  local frame = frame_number + delay
+  if player_obj.command_queue[frame] then
+    if player_obj.command_queue[frame].modify then
+      table.insert(player_obj.command_queue[frame].modify, {func=insert_modify_projectile, args=com})
     else
-      _player_obj.command_queue[_frame].modify = {{func=insert_modify_projectile, args=_com}}
+      player_obj.command_queue[frame].modify = {{func=insert_modify_projectile, args=com}}
     end
   else
-    _player_obj.command_queue[_frame] = {}
-    _player_obj.command_queue[_frame].modify = {{func=insert_modify_projectile, args=_com}}
+    player_obj.command_queue[frame] = {}
+    player_obj.command_queue[frame].modify = {{func=insert_modify_projectile, args=com}}
   end
 end
 
-function insert_modify_projectile(_com)
-  table.insert(modify_projectile_queue, _com)
+function insert_modify_projectile(com)
+  table.insert(modify_projectile_queue, com)
 end
 
 hm_input = {}
 
-function process_command_queue(_player_obj, _input)
+function process_command_queue(player_obj, _input)
 
   hm_input = {}
 
-  if _player_obj.command_queue == nil then
+  if player_obj.command_queue == nil then
     return
   end
   if is_menu_open then
@@ -206,86 +206,86 @@ function process_command_queue(_player_obj, _input)
   end
 
   local _gauges_base = 0
-  if _player_obj.id == 1 then
+  if player_obj.id == 1 then
   _gauges_base = 0x020259D8
-  elseif _player_obj.id == 2 then
+  elseif player_obj.id == 2 then
   _gauges_base = 0x02025FF8
   end
   local _gauges_offsets = { 0x0, 0x1C, 0x38, 0x54, 0x70 }
-  if _player_obj.command_queue[frame_number] then
+  if player_obj.command_queue[frame_number] then
     -- Cancel all input
-    _input[_player_obj.prefix.." Up"] = false
-    _input[_player_obj.prefix.." Down"] = false
-    _input[_player_obj.prefix.." Left"] = false
-    _input[_player_obj.prefix.." Right"] = false
-    _input[_player_obj.prefix.." Weak Punch"] = false
-    _input[_player_obj.prefix.." Medium Punch"] = false
-    _input[_player_obj.prefix.." Strong Punch"] = false
-    _input[_player_obj.prefix.." Weak Kick"] = false
-    _input[_player_obj.prefix.." Medium Kick"] = false
-    _input[_player_obj.prefix.." Strong Kick"] = false
+    _input[player_obj.prefix.." Up"] = false
+    _input[player_obj.prefix.." Down"] = false
+    _input[player_obj.prefix.." Left"] = false
+    _input[player_obj.prefix.." Right"] = false
+    _input[player_obj.prefix.." Weak Punch"] = false
+    _input[player_obj.prefix.." Medium Punch"] = false
+    _input[player_obj.prefix.." Strong Punch"] = false
+    _input[player_obj.prefix.." Weak Kick"] = false
+    _input[player_obj.prefix.." Medium Kick"] = false
+    _input[player_obj.prefix.." Strong Kick"] = false
 
-    for _key, _command in pairs(_player_obj.command_queue[frame_number]) do
+    for _key, command in pairs(player_obj.command_queue[frame_number]) do
 
       if _key == "command" then
-        for _k, _c in pairs(_command) do
-          _c.func(unpack(_c.args))
+        for _k, c in pairs(command) do
+          c.func(unpack(c.args))
         end
       elseif _key == "modify" then
-        for _k, _c in pairs(_command) do
-          _c.func(_c.args)
+        for _k, c in pairs(command) do
+          c.func(c.args)
         end
       elseif _key == "input" then
-        local _current_frame_input = _command
-        for i = 1, #_current_frame_input do
-          local _input_name = _player_obj.prefix.." "
-          if _current_frame_input[i] == "forward" then
-            if _player_obj.flip_input then _input_name = _input_name.."Right" else _input_name = _input_name.."Left" end
-          elseif _current_frame_input[i] == "back" then
-            if _player_obj.flip_input then _input_name = _input_name.."Left" else _input_name = _input_name.."Right" end
-          elseif _current_frame_input[i] == "up" then
+        local current_frame_input = command
+        for i = 1, #current_frame_input do
+          local _input_name = player_obj.prefix.." "
+          if current_frame_input[i] == "forward" then
+            if player_obj.flip_input then _input_name = _input_name.."Right" else _input_name = _input_name.."Left" end
+          elseif current_frame_input[i] == "back" then
+            if player_obj.flip_input then _input_name = _input_name.."Left" else _input_name = _input_name.."Right" end
+          elseif current_frame_input[i] == "up" then
               _input_name = _input_name.."Up"
-          elseif _current_frame_input[i] == "down" then
+          elseif current_frame_input[i] == "down" then
               _input_name = _input_name.."Down"
-          elseif _current_frame_input[i] == "LP" then
+          elseif current_frame_input[i] == "LP" then
               _input_name = _input_name.."Weak Punch"
-          elseif _current_frame_input[i] == "MP" then
+          elseif current_frame_input[i] == "MP" then
             _input_name = _input_name.."Medium Punch"
-          elseif _current_frame_input[i] == "HP" then
+          elseif current_frame_input[i] == "HP" then
             _input_name = _input_name.."Strong Punch"
-          elseif _current_frame_input[i] == "LK" then
+          elseif current_frame_input[i] == "LK" then
             _input_name = _input_name.."Weak Kick"
-          elseif _current_frame_input[i] == "MK" then
+          elseif current_frame_input[i] == "MK" then
             _input_name = _input_name.."Medium Kick"
-          elseif _current_frame_input[i] == "HK" then
+          elseif current_frame_input[i] == "HK" then
             _input_name = _input_name.."Strong Kick"
-          elseif _current_frame_input[i] == "h_charge" then
-            if _player_obj.char_str == "urien" then
+          elseif current_frame_input[i] == "h_charge" then
+            if player_obj.char_str == "urien" then
               memory.writeword(_gauges_base + _gauges_offsets[1], 0xFFFF)
-            elseif _player_obj.char_str == "oro" then
+            elseif player_obj.char_str == "oro" then
               memory.writeword(_gauges_base + _gauges_offsets[3], 0xFFFF)
-            elseif _player_obj.char_str == "chunli" then
-            elseif _player_obj.char_str == "q" then
+            elseif player_obj.char_str == "chunli" then
+            elseif player_obj.char_str == "q" then
               memory.writeword(_gauges_base + _gauges_offsets[1], 0xFFFF)
               memory.writeword(_gauges_base + _gauges_offsets[2], 0xFFFF)
-            elseif _player_obj.char_str == "remy" then
+            elseif player_obj.char_str == "remy" then
               memory.writeword(_gauges_base + _gauges_offsets[2], 0xFFFF)
               memory.writeword(_gauges_base + _gauges_offsets[3], 0xFFFF)
-            elseif _player_obj.char_str == "alex" then
+            elseif player_obj.char_str == "alex" then
               memory.writeword(_gauges_base + _gauges_offsets[5], 0xFFFF)
             end
-            elseif _current_frame_input[i] == "v_charge" then
-              if _player_obj.char_str == "urien" then
+            elseif current_frame_input[i] == "v_charge" then
+              if player_obj.char_str == "urien" then
                 memory.writeword(_gauges_base + _gauges_offsets[2], 0xFFFF)
                 memory.writeword(_gauges_base + _gauges_offsets[4], 0xFFFF)
-              elseif _player_obj.char_str == "oro" then
+              elseif player_obj.char_str == "oro" then
                 memory.writeword(_gauges_base + _gauges_offsets[1], 0xFFFF)
-              elseif _player_obj.char_str == "chunli" then
+              elseif player_obj.char_str == "chunli" then
                 memory.writeword(_gauges_base + _gauges_offsets[1], 0xFFFF)
-              elseif _player_obj.char_str == "q" then
-              elseif _player_obj.char_str == "remy" then
+              elseif player_obj.char_str == "q" then
+              elseif player_obj.char_str == "remy" then
                 memory.writeword(_gauges_base + _gauges_offsets[1], 0xFFFF)
-              elseif _player_obj.char_str == "alex" then
+              elseif player_obj.char_str == "alex" then
                 memory.writeword(_gauges_base + _gauges_offsets[4], 0xFFFF)
               end
             end
@@ -294,21 +294,21 @@ function process_command_queue(_player_obj, _input)
       end
     end
     end
-    _player_obj.command_queue[frame_number] = nil
+    player_obj.command_queue[frame_number] = nil
     joypad.set(_input)
     hm_input = _input
 end
 
-function zero_gauge(_player_obj)
-  memory.writebyte(_player_obj.gauge_addr, 0)
-  memory.writebyte(_player_obj.meter_addr[2], 0)
---   memory.writebyte(_player_obj.meter_update_flag, 0x01)
+function zero_gauge(player_obj)
+  memory.writebyte(player_obj.gauge_addr, 0)
+  memory.writebyte(player_obj.meter_addr[2], 0)
+--   memory.writebyte(player_obj.meter_update_flag, 0x01)
 end
 
-function full_gauge(_player_obj)
-  memory.writebyte(_player_obj.gauge_addr, _player_obj.max_meter_gauge)
-  memory.writebyte(_player_obj.meter_addr[2], _player_obj.max_meter_count)
-  memory.writebyte(_player_obj.meter_update_flag, 0x01)
+function full_gauge(player_obj)
+  memory.writebyte(player_obj.gauge_addr, player_obj.max_meter_gauge)
+  memory.writebyte(player_obj.meter_addr[2], player_obj.max_meter_count)
+  memory.writebyte(player_obj.meter_update_flag, 0x01)
 end
 
 
@@ -320,61 +320,61 @@ end
 function sgs()
   clear_input(P1)
   queue_input(P1, 0, motion_sgs)
-  queue_func(P1, #motion_sgs-2, {func=full_gauge, args={_player_obj}})
+  queue_func(P1, #motion_sgs-2, {func=full_gauge, args={player_obj}})
 end
 
-function overlap_hadou(_obj, _distance, _speed, _n)
-  if _obj.lifetime < _speed then
+function overlap_hadou(obj, distance, _speed, n)
+  if obj.lifetime < _speed then
     print("mod")
-    _velx = (air_hadou_startup * _n * base_lp_air_hadou_vel_x - _distance) / _speed
-    _vely = -1 * (air_hadou_startup * _n* -1 * base_lp_air_hadou_vel_y - _distance) / _speed
-    set_velocity_x(_obj, _velx, 0)
-    set_velocity_y(_obj, _vely, 0)
+    _velx = (air_hadou_startup * n * base_lp_air_hadou_vel_x - distance) / _speed
+    _vely = -1 * (air_hadou_startup * n* -1 * base_lp_air_hadou_vel_y - distance) / _speed
+    set_velocity_x(obj, _velx, 0)
+    set_velocity_y(obj, _vely, 0)
   else
-    set_velocity_x(_obj, base_lp_air_hadou_vel_x, 0)
-    set_velocity_y(_obj, base_lp_air_hadou_vel_y, 0)
+    set_velocity_x(obj, base_lp_air_hadou_vel_x, 0)
+    set_velocity_y(obj, base_lp_air_hadou_vel_y, 0)
   end
 end
 
-function bounce_hadou(_obj)
+function bounce_hadou(obj)
 
 end
 
-function queue_volley(_player_obj, _delay, _n, _speed, _version)
+function queue_volley(player_obj, delay, n, _speed, _version)
   _speed = math.max(_speed, air_hadou_startup + animation_cancel_delay)
-  for _i = 0, _n - 1 do
+  for _i = 0, n - 1 do
     if _version == "LP" then
-      queue_input(_player_obj, _delay + _i * _speed + 1, motion_hadou_lp)
-      queue_func(_player_obj, _delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=zero_gauge, args={_player_obj}})
+      queue_input(player_obj, delay + _i * _speed + 1, motion_hadou_lp)
+      queue_func(player_obj, delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=zero_gauge, args={player_obj}})
     elseif _version == "HP" then
-      queue_input(_player_obj, _delay + _i * _speed + 1, motion_hadou_hp)
-      queue_func(_player_obj, _delay + _i * _speed + 1 + #motion_hadou_hp - 1, {func=zero_gauge, args={_player_obj}})
+      queue_input(player_obj, delay + _i * _speed + 1, motion_hadou_hp)
+      queue_func(player_obj, delay + _i * _speed + 1 + #motion_hadou_hp - 1, {func=zero_gauge, args={player_obj}})
     elseif _version == "alternate" then
       if _i % 2 == 0 then
-        queue_input(_player_obj, _delay + _i * _speed + 1, motion_hadou_lp)
-        queue_func(_player_obj, _delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=zero_gauge, args={_player_obj}})
+        queue_input(player_obj, delay + _i * _speed + 1, motion_hadou_lp)
+        queue_func(player_obj, delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=zero_gauge, args={player_obj}})
       else
-        queue_input(_player_obj, _delay + _i * _speed + 1, motion_hadou_hp)
-        queue_func(_player_obj, _delay + _i * _speed + 1 + #motion_hadou_hp - 1, {func=zero_gauge, args={_player_obj}})
+        queue_input(player_obj, delay + _i * _speed + 1, motion_hadou_hp)
+        queue_func(player_obj, delay + _i * _speed + 1 + #motion_hadou_hp - 1, {func=zero_gauge, args={player_obj}})
       end
     elseif _version == "overlap" then
-      queue_input(_player_obj, _delay + _i * _speed + 1, motion_hadou_lp)
-      queue_func(_player_obj, _delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=zero_gauge, args={_player_obj}})
+      queue_input(player_obj, delay + _i * _speed + 1, motion_hadou_lp)
+      queue_func(player_obj, delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=zero_gauge, args={player_obj}})
       if _i ~= 0 then
-        queue_modify_projectile(_player_obj, _delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=overlap_hadou, args={4,2,_i}})
+        queue_modify_projectile(player_obj, delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=overlap_hadou, args={4,2,_i}})
       end
     end
 
 
-    queue_func(_player_obj, _delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=set_velocity_x, args={_player_obj, 0, 0}})
-    queue_func(_player_obj, _delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=set_velocity_y, args={_player_obj, 0, 0}})
-    queue_func(_player_obj, _delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=set_acceleration_x, args={_player_obj, 0, 0}})
-    if _i < _n - 1 then
-      queue_func(_player_obj, _delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=set_acceleration_y, args={_player_obj, 0, 0}})
+    queue_func(player_obj, delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=set_velocity_x, args={player_obj, 0, 0}})
+    queue_func(player_obj, delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=set_velocity_y, args={player_obj, 0, 0}})
+    queue_func(player_obj, delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=set_acceleration_x, args={player_obj, 0, 0}})
+    if _i < n - 1 then
+      queue_func(player_obj, delay + _i * _speed + 1 + #motion_hadou_lp - 1, {func=set_acceleration_y, args={player_obj, 0, 0}})
     else
-      queue_func(_player_obj, _delay + (_i + 1) * _speed + 1 + #motion_hadou_lp - 1, {func=set_velocity_x, args={_player_obj, 8, 0}})
-      queue_func(_player_obj, _delay + (_i + 1) * _speed + 1 + #motion_hadou_lp - 1, {func=set_velocity_y, args={_player_obj, 10, 0}})
-      queue_func(_player_obj, _delay + (_i + 1) * _speed + 1 + #motion_hadou_lp - 1, {func=set_acceleration_y, args={_player_obj, base_gravity, base_gravity_mantissa}})
+      queue_func(player_obj, delay + (_i + 1) * _speed + 1 + #motion_hadou_lp - 1, {func=set_velocity_x, args={player_obj, 8, 0}})
+      queue_func(player_obj, delay + (_i + 1) * _speed + 1 + #motion_hadou_lp - 1, {func=set_velocity_y, args={player_obj, 10, 0}})
+      queue_func(player_obj, delay + (_i + 1) * _speed + 1 + #motion_hadou_lp - 1, {func=set_acceleration_y, args={player_obj, base_gravity, base_gravity_mantissa}})
     end
   end
 
@@ -389,7 +389,7 @@ end
 --alternate side pattern
 --X Pattern
 --reverse flip of proj
---homing red fireball _y
+--homing red fireball y
 --flower petal falling hadou very top of screen --add each new proj to list, check emitter id and freeze
 --cancel out of sgs on player jump at higher levels
 --pause all projectiles
@@ -416,11 +416,11 @@ end
 --P2 base movespeed forward 3 3 4 backwards 2 3
 
 --set gauges and hp
--- memory.writebyte(_player_obj.gauge_addr, _gauge_value)
--- memory.writebyte(_player_obj.meter_addr[2], _player_obj.max_meter_count)
--- memory.writebyte(_player_obj.meter_update_flag, 0x01)
+-- memory.writebyte(player_obj.gauge_addr, _gauge_value)
+-- memory.writebyte(player_obj.meter_addr[2], player_obj.max_meter_count)
+-- memory.writebyte(player_obj.meter_update_flag, 0x01)
 
---air parry increases _y by 1
+--air parry increases y by 1
 
 --color code different hadou attacks
 
@@ -435,13 +435,13 @@ end
 -- ground_offset = 23
 
 
-function flip_box(_obj, _ptr, _type)
-  if _obj.friends > 1 then --Yang SA3
+function flip_box(obj, _ptr, _type)
+  if obj.friends > 1 then --Yang SA3
     if _type ~= "attack" then
       return
     end
   end
---   if _box.type
+--   if box.type
   local bottom = memory.readwordsigned(_ptr + 0x4)
   local height = memory.readwordsigned(_ptr + 0x6)
 
@@ -450,12 +450,12 @@ function flip_box(_obj, _ptr, _type)
 
 end
 
-function flippy(_obj)
---   if memory.readdword(_obj.base + 0x2A0) == 0 then --invalid objects
+function flippy(obj)
+--   if memory.readdword(obj.base + 0x2A0) == 0 then --invalid objects
 --     return false
 --   end
 
-  local _boxes = {
+  local boxes = {
     {initial = 1, offset = 0x2D4, type = "push", number = 1},
     {initial = 1, offset = 0x2C0, type = "throwable", number = 1},
     {initial = 1, offset = 0x2A0, type = "vulnerability", number = 4},
@@ -464,9 +464,9 @@ function flippy(_obj)
     {initial = 1, offset = 0x2B8, type = "throw", number = 1}
     }
 
-  for _, _box in ipairs(_boxes) do
-    for i = _box.initial, _box.number do
-      flip_box(_obj, memory.readdword(_obj.base + _box.offset) + (i-1)*8, _box.type)
+  for _, box in ipairs(boxes) do
+    for i = box.initial, box.number do
+      flip_box(obj, memory.readdword(obj.base + box.offset) + (i-1)*8, box.type)
     end
   end
   return true
@@ -594,20 +594,20 @@ function hadou_matsuri_run()
       if not(P1.previous_pos_x - P2.previous_pos_x > character_specific[P1.char_str].half_width) then
         --just switched sides
         memory.writebyte(P2.base + 0x0A, 1)
-        local _neg_x_vel_char = - P2.velocity_x_char - 1
-        local _neg_x_vel_mantissa = 1 - P2.velocity_x_mantissa
---         local _neg_x_accel_char = - P2.acceleration_x_char - 1
---         local _neg_x_accel_mantissa = 1 - P2.acceleration_x_mantissa
-        set_velocity_x(P2, _neg_x_vel_char, _neg_x_vel_mantissa)
---         set_acceleration_x({P2, _neg_x_accel_char, _neg_x_accel_mantissa})
+        local neg_x_vel_char = - P2.velocity_x_char - 1
+        local neg_x_vel_mantissa = 1 - P2.velocity_x_mantissa
+--         local neg_x_accel_char = - P2.acceleration_x_char - 1
+--         local neg_x_accel_mantissa = 1 - P2.acceleration_x_mantissa
+        set_velocity_x(P2, neg_x_vel_char, neg_x_vel_mantissa)
+--         set_acceleration_x({P2, neg_x_accel_char, neg_x_accel_mantissa})
       end
     elseif P2.pos_x - P1.pos_x > character_specific[P1.char_str].half_width then
       if not (P2.previous_pos_x - P1.previous_pos_x > character_specific[P1.char_str].half_width) then
         --just switched sides
         memory.writebyte(P2.base + 0x0A, 0)
-        local _neg_x_vel_char = - P2.velocity_x_char - 1
-        local _neg_x_vel_mantissa = 1 - P2.velocity_x_mantissa
-        set_velocity_x(P2, _neg_x_vel_char, _neg_x_vel_mantissa)
+        local neg_x_vel_char = - P2.velocity_x_char - 1
+        local neg_x_vel_mantissa = 1 - P2.velocity_x_mantissa
+        set_velocity_x(P2, neg_x_vel_char, neg_x_vel_mantissa)
       end
     end
 --     if P1.pos_y < 25 then
@@ -627,34 +627,34 @@ function hadou_matsuri_run()
 
 
 
-  for _id, _obj in pairs(projectiles) do
-    if bit.tohex(memory.readword(_obj.base + 0x202), 4) ~= "0000" then
-      if _obj.emitter_id == 2 then
-        if _obj.lifetime == 0 then --new projectile
+  for _id, obj in pairs(projectiles) do
+    if bit.tohex(memory.readword(obj.base + 0x202), 4) ~= "0000" then
+      if obj.emitter_id == 2 then
+        if obj.lifetime == 0 then --new projectile
           if #modify_projectile_queue >= 1 then
-            _obj.modify = {}
-            _obj.modify.run = modify_projectile_queue[1].func
-            _obj.modify.args = {_obj, unpack(modify_projectile_queue[1].args)}
+            obj.modify = {}
+            obj.modify.run = modify_projectile_queue[1].func
+            obj.modify.args = {obj, unpack(modify_projectile_queue[1].args)}
             table.remove(modify_projectile_queue,1)
           end
         end
       end
-      if _obj.modify and _obj.modify.run then
-        _obj.modify.run(unpack(_obj.modify.args))
+      if obj.modify and obj.modify.run then
+        obj.modify.run(unpack(obj.modify.args))
       end
-      print(_obj.id, _obj.lifetime)
+      print(obj.id, obj.lifetime)
 --       if
---       P1_Current_search_adr = _obj.base
---       set_velocity(_obj, 0, 0, 0, 0)
---       set_acceleration(_obj, 0, 0, 0, 0)
---           memory.writeword(_obj.base + 0x202, 0x8ce8) --pyrokinesis
---           memory.writebyte(_obj.base + 0x91, 37)
+--       P1_Current_search_adr = obj.base
+--       set_velocity(obj, 0, 0, 0, 0)
+--       set_acceleration(obj, 0, 0, 0, 0)
+--           memory.writeword(obj.base + 0x202, 0x8ce8) --pyrokinesis
+--           memory.writebyte(obj.base + 0x91, 37)
 
---       memory.writebyte(_obj.base + 0x0A, 3) -- 0-3. 2&3 flip y
-      memory.writeword(_obj.base + 154, 10) --projectile life
+--       memory.writebyte(obj.base + 0x0A, 3) -- 0-3. 2&3 flip y
+      memory.writeword(obj.base + 154, 10) --projectile life
 
---       memory.writebyte(_obj.base + 0x9C + 2, 2) -- # hits
-      memory.writedword(_obj.base + 616, debug_color)
+--       memory.writebyte(obj.base + 0x9C + 2, 2) -- # hits
+      memory.writedword(obj.base + 616, debug_color)
       if frame_number % 30 == 0 then
 
         debug_color = debug_color + 1
@@ -668,8 +668,8 @@ function hadou_matsuri_run()
       --616 color --treats flip side differently
       --618 animation 68c2 fiery 6818 6820
       --619 color
---       memory.writeword(_obj.base + 0x202, 0x8ce8)
---       memory.writeword(_obj.base + 0x91, 37)
+--       memory.writeword(obj.base + 0x202, 0x8ce8)
+--       memory.writeword(obj.base + 0x91, 37)
     end
   end
 
@@ -688,11 +688,11 @@ function hadou_matsuri_run()
 --   memory.writebyte(P1.parry_forward_validity_time_addr,0x00000008)
 --   memory.writebyte(P2.parry_forward_validity_time_addr,0x00000008)
 
-  for _k, _player_obj in pairs(player_objects) do
-    memory.writebyte(_player_obj.life_addr, 160)
+  for _k, player_obj in pairs(player_objects) do
+    memory.writebyte(player_obj.life_addr, 160)
     if frame_number % 8 == 0 then
 
-      memory.writedword(_player_obj.base + 616, debug_color)
+      memory.writedword(player_obj.base + 616, debug_color)
       debugframedatagui("c", string.format("%x", debug_color))
 
       debug_color=debug_color+1
@@ -737,10 +737,10 @@ process_command_queue(P2, joypad.get())
 end
 
 function debug_hadou_gui()
-for _id, _obj in pairs(projectiles) do
-  if bit.tohex(memory.readword(_obj.base + 0x202), 4) ~= "0000" then
-    if _obj.emitter_id == 2 then
-      gui.text(textx+98,texty-4, string.format("Proj Vel: %d, %d", _obj.velocity_x, _obj.velocity_y))
+for _id, obj in pairs(projectiles) do
+  if bit.tohex(memory.readword(obj.base + 0x202), 4) ~= "0000" then
+    if obj.emitter_id == 2 then
+      gui.text(textx+98,texty-4, string.format("Proj Vel: %d, %d", obj.velocity_x, obj.velocity_y))
     end
   end
 end

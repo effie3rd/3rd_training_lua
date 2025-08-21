@@ -1,4 +1,5 @@
 require "gd"
+local gamestate = require("src/gamestate")
 
 -- # Constants
 screen_width = 383
@@ -64,21 +65,21 @@ controller_styles = {'default', 'rose', 'cherry', 'blueberry', 'sky', 'blood_ora
 img_button_small = {}
 img_button_big = {}
 for i = 1, #controller_styles do
-  local _name = controller_styles[i]
-  img_button_small[_name] = {}
-  table.insert(img_button_small[_name], gd.createFromPng("images/controller/LP_s_" .. _name  .. ".png"):gdStr())
-  table.insert(img_button_small[_name], gd.createFromPng("images/controller/MP_s_" .. _name  .. ".png"):gdStr())
-  table.insert(img_button_small[_name], gd.createFromPng("images/controller/HP_s_" .. _name  .. ".png"):gdStr())
-  table.insert(img_button_small[_name], gd.createFromPng("images/controller/LK_s_" .. _name  .. ".png"):gdStr())
-  table.insert(img_button_small[_name], gd.createFromPng("images/controller/MK_s_" .. _name  .. ".png"):gdStr())
-  table.insert(img_button_small[_name], gd.createFromPng("images/controller/HK_s_" .. _name  .. ".png"):gdStr())
-  img_button_big[_name] = {}
-  table.insert(img_button_big[_name], gd.createFromPng("images/controller/LP_b_" .. _name  .. ".png"):gdStr())
-  table.insert(img_button_big[_name], gd.createFromPng("images/controller/MP_b_" .. _name  .. ".png"):gdStr())
-  table.insert(img_button_big[_name], gd.createFromPng("images/controller/HP_b_" .. _name  .. ".png"):gdStr())
-  table.insert(img_button_big[_name], gd.createFromPng("images/controller/LK_b_" .. _name  .. ".png"):gdStr())
-  table.insert(img_button_big[_name], gd.createFromPng("images/controller/MK_b_" .. _name  .. ".png"):gdStr())
-  table.insert(img_button_big[_name], gd.createFromPng("images/controller/HK_b_" .. _name  .. ".png"):gdStr())
+  local name = controller_styles[i]
+  img_button_small[name] = {}
+  table.insert(img_button_small[name], gd.createFromPng("images/controller/LP_s_" .. name  .. ".png"):gdStr())
+  table.insert(img_button_small[name], gd.createFromPng("images/controller/MP_s_" .. name  .. ".png"):gdStr())
+  table.insert(img_button_small[name], gd.createFromPng("images/controller/HP_s_" .. name  .. ".png"):gdStr())
+  table.insert(img_button_small[name], gd.createFromPng("images/controller/LK_s_" .. name  .. ".png"):gdStr())
+  table.insert(img_button_small[name], gd.createFromPng("images/controller/MK_s_" .. name  .. ".png"):gdStr())
+  table.insert(img_button_small[name], gd.createFromPng("images/controller/HK_s_" .. name  .. ".png"):gdStr())
+  img_button_big[name] = {}
+  table.insert(img_button_big[name], gd.createFromPng("images/controller/LP_b_" .. name  .. ".png"):gdStr())
+  table.insert(img_button_big[name], gd.createFromPng("images/controller/MP_b_" .. name  .. ".png"):gdStr())
+  table.insert(img_button_big[name], gd.createFromPng("images/controller/HP_b_" .. name  .. ".png"):gdStr())
+  table.insert(img_button_big[name], gd.createFromPng("images/controller/LK_b_" .. name  .. ".png"):gdStr())
+  table.insert(img_button_big[name], gd.createFromPng("images/controller/MK_b_" .. name  .. ".png"):gdStr())
+  table.insert(img_button_big[name], gd.createFromPng("images/controller/HK_b_" .. name  .. ".png"):gdStr())
 end
 
 
@@ -111,12 +112,12 @@ local characters =
 }
 chibi_characters = {}
 
-for _,_char in pairs(characters) do
-  chibi_characters[_char] = {}
-  chibi_characters[_char].image = gd.createFromPng("images/characters/chibi_" .. _char ..".png")
-  chibi_characters[_char].width = chibi_characters[_char].image:sizeX()
-  chibi_characters[_char].height = chibi_characters[_char].image:sizeY()
-  chibi_characters[_char].image = chibi_characters[_char].image:gdStr()
+for _,char in pairs(characters) do
+  chibi_characters[char] = {}
+  chibi_characters[char].image = gd.createFromPng("images/characters/chibi_" .. char ..".png")
+  chibi_characters[char].width = chibi_characters[char].image:sizeX()
+  chibi_characters[char].height = chibi_characters[char].image:sizeY()
+  chibi_characters[char].image = chibi_characters[char].image:gdStr()
 end
 
 
@@ -131,23 +132,23 @@ function draw_read()
 end
 
 -- # Tools
-function game_to_screen_space_x(_x)
-  return _x - screen_x + emu.screenwidth()/2
+function game_to_screen_space_x(x)
+  return x - screen_x + emu.screenwidth()/2
 end
-function game_to_screen_space_y(_y)
-  return emu.screenheight() - (_y - screen_y) - ground_offset
+function game_to_screen_space_y(y)
+  return emu.screenheight() - (y - screen_y) - ground_offset
 end
-function game_to_screen_space(_x, _y)
-  return game_to_screen_space_x(_x), game_to_screen_space_y(_y)
+function game_to_screen_space(x, y)
+  return game_to_screen_space_x(x), game_to_screen_space_y(y)
 end
 
 
-function get_text_width(_text)
-  if #_text == 0 then
+function get_text_width(text)
+  if #text == 0 then
     return 0
   end
 
-  return #_text * 4
+  return #text * 4
 end
 
 -- # Draw functions
@@ -161,231 +162,262 @@ local color_throw = 0xFFFF00FF
 local color_push = 0xFF00FFFF
 local color_extvuln = 0x00FFFFFF
 
-function draw_hitboxes(_pos_x, _pos_y, _flip_x, _boxes, _filter, _dilation, _color, _opacity)
-  _dilation = _dilation or 0
-  local _px, _py = game_to_screen_space(_pos_x, _pos_y)
+function draw_hitboxes(pos_x, pos_y, flip_x, boxes, filter, dilation, color, opacity)
+  dilation = dilation or 0
+  local px, py = game_to_screen_space(pos_x, pos_y)
 
-  for __, _box in pairs(_boxes) do
-    _box = format_box(_box)
-    if _filter == nil or _filter[_box.type] == true then
+  for __, box in pairs(boxes) do
+    box = format_box(box)
+    if filter == nil or filter[box.type] == true then
       --vulnerability
-      local _c = color_vuln
-      if (_box.type == "attack") then
-        _c = color_attack
-      elseif (_box.type == "throwable") then
-        _c = color_throwable
-      elseif (_box.type == "throw") then
-        _c = color_throw
-      elseif (_box.type == "push") then
-        _c = color_push
-      elseif (_box.type == "ext. vulnerability") then
-        _c = color_extvuln
+      local c = color_vuln
+      if (box.type == "attack") then
+        c = color_attack
+      elseif (box.type == "throwable") then
+        c = color_throwable
+      elseif (box.type == "throw") then
+        c = color_throw
+      elseif (box.type == "push") then
+        c = color_push
+      elseif (box.type == "ext. vulnerability") then
+        c = color_extvuln
       end
 
-      _c = _color or _c
+      c = color or c
 
-      if _opacity then
-        _c = bit.band(_c, 0xFFFFFF00) + _opacity
+      if opacity then
+        c = bit.band(c, 0xFFFFFF00) + opacity
       end
 
-      local _l, _r
-      if _flip_x == 0 then
-        _l = _px + _box.left
+      local l, r
+      if flip_x == 0 then
+        l = px + box.left
       else
-        _l = _px - _box.left - _box.width
+        l = px - box.left - box.width
       end
-      local _r = _l + _box.width
-      local _b = _py - _box.bottom
-      local _t = _b - _box.height
+      local r = l + box.width
+      local b = py - box.bottom
+      local t = b - box.height
 
-      _l = _l - _dilation
-      _r = _r + _dilation
-      _b = _b + _dilation
-      _t = _t - _dilation
+      l = l - dilation
+      r = r + dilation
+      b = b + dilation
+      t = t - dilation
 
-      gui.box(_l, _b, _r, _t, 0x00000000, _c)
+      gui.box(l, b, r, t, 0x00000000, c)
     end
   end
 end
 
-function draw_hitboxes_opacity(_pos_x, _pos_y, _flip_x, _boxes, _filter, _dilation, _color, _opacity)
-  _dilation = _dilation or 0
-  local _px, _py = game_to_screen_space(_pos_x, _pos_y)
-  _opacity = _opacity or 0xFF
-  for __, _box in pairs(_boxes) do
-    _box = format_box(_box)
-    if _filter == nil or _filter[_box.type] == true then
+function draw_hitboxes_opacity(pos_x, pos_y, flip_x, boxes, filter, dilation, color, opacity)
+  dilation = dilation or 0
+  local px, py = game_to_screen_space(pos_x, pos_y)
+  opacity = opacity or 0xFF
+  for __, box in pairs(boxes) do
+    box = format_box(box)
+    if filter == nil or filter[box.type] == true then
       --vulnerability
-      local _c = tonumber(string.format("0x%06X%02X", 0x0000FF, _opacity))
-      if (_box.type == "attack") then
-        _c = tonumber(string.format("0x%06X%02X", 0xFF0000, _opacity))
-      elseif (_box.type == "throwable") then
-        _c = tonumber(string.format("0x%06X%02X", 0x00FF00, _opacity))
-      elseif (_box.type == "throw") then
-        _c = tonumber(string.format("0x%06X%02X", 0xFFFF00, _opacity))
-      elseif (_box.type == "push") then
-        _c = tonumber(string.format("0x%06X%02X", 0xFF00FF, _opacity))
-      elseif (_box.type == "ext. vulnerability") then
-        _c = tonumber(string.format("0x%06X%02X", 0x00FFFF, _opacity))
+      local c = tonumber(string.format("0x%06X%02X", 0x0000FF, opacity))
+      if (box.type == "attack") then
+        c = tonumber(string.format("0x%06X%02X", 0xFF0000, opacity))
+      elseif (box.type == "throwable") then
+        c = tonumber(string.format("0x%06X%02X", 0x00FF00, opacity))
+      elseif (box.type == "throw") then
+        c = tonumber(string.format("0x%06X%02X", 0xFFFF00, opacity))
+      elseif (box.type == "push") then
+        c = tonumber(string.format("0x%06X%02X", 0xFF00FF, opacity))
+      elseif (box.type == "ext. vulnerability") then
+        c = tonumber(string.format("0x%06X%02X", 0x00FFFF, opacity))
       end
 
-      _c = _color or _c
+      c = color or c
 
-      local _l, _r
-      if _flip_x == 0 then
-        _l = _px + _box.left
+      local l, r
+      if flip_x == 0 then
+        l = px + box.left
       else
-        _l = _px - _box.left - _box.width
+        l = px - box.left - box.width
       end
-      local _r = _l + _box.width
-      local _b = _py - _box.bottom
-      local _t = _b - _box.height
+      local r = l + box.width
+      local b = py - box.bottom
+      local t = b - box.height
 
-      _l = _l - _dilation
-      _r = _r + _dilation
-      _b = _b + _dilation
-      _t = _t - _dilation
+      l = l - dilation
+      r = r + dilation
+      b = b + dilation
+      t = t - dilation
 
-      gui.box(_l, _b, _r, _t, 0x00000000, _c)
+      gui.box(l, b, r, t, 0x00000000, c)
     end
   end
 end
 
 -- draws a point
-function draw_point(_x, _y, _color)
-  local _cross_half_size = 4
-  local _l = _x - _cross_half_size
-  local _r = _x + _cross_half_size
-  local _t = _y - _cross_half_size
-  local _b = _y + _cross_half_size
+function draw_point(x, y, color)
+  local cross_half_size = 4
+  local l = x - cross_half_size
+  local r = x + cross_half_size
+  local t = y - cross_half_size
+  local b = y + cross_half_size
 
-  gui.box(_l, _y, _r, _y, 0x00000000, _color)
-  gui.box(_x, _t, _x, _b, 0x00000000, _color)
+  gui.box(l, y, r, y, 0x00000000, color)
+  gui.box(x, t, x, b, 0x00000000, color)
 end
 
 -- draws a controller representation
-function draw_controller_big(_entry, _x, _y, _style)
-  gui.image(_x, _y, img_dir_big[_entry.direction])
+function draw_controller_big(entry, x, y, style)
+  gui.image(x, y, img_dir_big[entry.direction])
 
-  local _img_LP = img_no_button_big
-  local _img_MP = img_no_button_big
-  local _img_HP = img_no_button_big
-  local _img_LK = img_no_button_big
-  local _img_MK = img_no_button_big
-  local _img_HK = img_no_button_big
-  if _entry.buttons[1] then _img_LP = img_button_big[_style][1] end
-  if _entry.buttons[2] then _img_MP = img_button_big[_style][2] end
-  if _entry.buttons[3] then _img_HP = img_button_big[_style][3] end
-  if _entry.buttons[4] then _img_LK = img_button_big[_style][4] end
-  if _entry.buttons[5] then _img_MK = img_button_big[_style][5] end
-  if _entry.buttons[6] then _img_HK = img_button_big[_style][6] end
+  local img_LP = img_no_button_big
+  local img_MP = img_no_button_big
+  local img_HP = img_no_button_big
+  local img_LK = img_no_button_big
+  local img_MK = img_no_button_big
+  local img_HK = img_no_button_big
+  if entry.buttons[1] then img_LP = img_button_big[style][1] end
+  if entry.buttons[2] then img_MP = img_button_big[style][2] end
+  if entry.buttons[3] then img_HP = img_button_big[style][3] end
+  if entry.buttons[4] then img_LK = img_button_big[style][4] end
+  if entry.buttons[5] then img_MK = img_button_big[style][5] end
+  if entry.buttons[6] then img_HK = img_button_big[style][6] end
 
-  gui.image(_x + 13, _y, _img_LP)
-  gui.image(_x + 18, _y, _img_MP)
-  gui.image(_x + 23, _y, _img_HP)
-  gui.image(_x + 13, _y + 5, _img_LK)
-  gui.image(_x + 18, _y + 5, _img_MK)
-  gui.image(_x + 23, _y + 5, _img_HK)
+  gui.image(x + 13, y, img_LP)
+  gui.image(x + 18, y, img_MP)
+  gui.image(x + 23, y, img_HP)
+  gui.image(x + 13, y + 5, img_LK)
+  gui.image(x + 18, y + 5, img_MK)
+  gui.image(x + 23, y + 5, img_HK)
 end
 
-function draw_buttons_preview_big(_x, _y, _style)
+function draw_buttons_preview_big(x, y, style)
 
-  local _img_LP = img_button_big[_style][1]
-  local _img_MP = img_button_big[_style][2]
-  local _img_HP = img_button_big[_style][3]
-  local _img_LK = img_button_big[_style][4]
-  local _img_MK = img_button_big[_style][5]
-  local _img_HK = img_button_big[_style][6]
+  local img_LP = img_button_big[style][1]
+  local img_MP = img_button_big[style][2]
+  local img_HP = img_button_big[style][3]
+  local img_LK = img_button_big[style][4]
+  local img_MK = img_button_big[style][5]
+  local img_HK = img_button_big[style][6]
 
-  gui.image(_x, _y, _img_LP)
-  gui.image(_x + 5, _y, _img_MP)
-  gui.image(_x + 10, _y, _img_HP)
-  gui.image(_x, _y + 5, _img_LK)
-  gui.image(_x + 5, _y + 5, _img_MK)
-  gui.image(_x + 10, _y + 5, _img_HK)
+  gui.image(x, y, img_LP)
+  gui.image(x + 5, y, img_MP)
+  gui.image(x + 10, y, img_HP)
+  gui.image(x, y + 5, img_LK)
+  gui.image(x + 5, y + 5, img_MK)
+  gui.image(x + 10, y + 5, img_HK)
 end
 
 -- draws a controller representation
-function draw_controller_small(_entry, _x, _y, _is_right, _style)
-  local _x_offset = 0
-  local _sign = 1
-  if _is_right then
-    _x_offset = _x_offset - 9
-    _sign = -1
+function draw_controller_small(entry, x, y, is_right, style)
+  local x_offset = 0
+  local sign = 1
+  if is_right then
+    x_offset = x_offset - 9
+    sign = -1
   end
 
-  gui.image(_x + _x_offset, _y, img_dir_small[_entry.direction])
-  _x_offset = _x_offset + _sign * 2
+  gui.image(x + x_offset, y, img_dir_small[entry.direction])
+  x_offset = x_offset + sign * 2
 
 
-  local _interval = 8
-  _x_offset = _x_offset + _sign * _interval
+  local interval = 8
+  x_offset = x_offset + sign * interval
 
-  if _entry.buttons[1] then
-    gui.image(_x + _x_offset, _y, img_button_small[_style][1])
-    _x_offset = _x_offset + _sign * _interval
+  if entry.buttons[1] then
+    gui.image(x + x_offset, y, img_button_small[style][1])
+    x_offset = x_offset + sign * interval
   end
 
-  if _entry.buttons[2] then
-    gui.image(_x + _x_offset, _y, img_button_small[_style][2])
-    _x_offset = _x_offset + _sign * _interval
+  if entry.buttons[2] then
+    gui.image(x + x_offset, y, img_button_small[style][2])
+    x_offset = x_offset + sign * interval
   end
 
-  if _entry.buttons[3] then
-    gui.image(_x + _x_offset, _y, img_button_small[_style][3])
-    _x_offset = _x_offset + _sign * _interval
+  if entry.buttons[3] then
+    gui.image(x + x_offset, y, img_button_small[style][3])
+    x_offset = x_offset + sign * interval
   end
 
-  if _entry.buttons[4] then
-    gui.image(_x + _x_offset, _y, img_button_small[_style][4])
-    _x_offset = _x_offset + _sign * _interval
+  if entry.buttons[4] then
+    gui.image(x + x_offset, y, img_button_small[style][4])
+    x_offset = x_offset + sign * interval
   end
 
-  if _entry.buttons[5] then
-    gui.image(_x + _x_offset, _y, img_button_small[_style][5])
-    _x_offset = _x_offset + _sign * _interval
+  if entry.buttons[5] then
+    gui.image(x + x_offset, y, img_button_small[style][5])
+    x_offset = x_offset + sign * interval
   end
 
-  if _entry.buttons[6] then
-    gui.image(_x + _x_offset, _y, img_button_small[_style][6])
-    _x_offset = _x_offset + _sign * _interval
+  if entry.buttons[6] then
+    gui.image(x + x_offset, y, img_button_small[style][6])
+    x_offset = x_offset + sign * interval
   end
 
 end
 
 -- draws a gauge
-function draw_gauge(_x, _y, _width, _height, _fill_ratio, _fill_color, _bg_color, _border_color, _reverse_fill)
-  _bg_color = _bg_color or 0x00000000
-  _border_color = _border_color or 0xFFFFFFFF
-  _reverse_fill = _reverse_fill or false
+function draw_gauge(x, y, width, height, fill_ratio, fill_color, bg_color, border_color, reverse_fill)
+  bg_color = bg_color or 0x00000000
+  border_color = border_color or 0xFFFFFFFF
+  reverse_fill = reverse_fill or false
 
-  _width = _width + 1
-  _height = _height + 1
+  width = width + 1
+  height = height + 1
 
-  gui.box(_x, _y, _x + _width, _y + _height, _bg_color, _border_color)
-  if _reverse_fill then
-    gui.box(_x + _width, _y, _x + _width - _width * clamp(_fill_ratio, 0, 1), _y + _height, _fill_color, 0x00000000)
+  gui.box(x, y, x + width, y + height, bg_color, border_color)
+  if reverse_fill then
+    gui.box(x + width, y, x + width - width * clamp(fill_ratio, 0, 1), y + height, fill_color, 0x00000000)
   else
-    gui.box(_x, _y, _x + _width * clamp(_fill_ratio, 0, 1), _y + _height, _fill_color, 0x00000000)
+    gui.box(x, y, x + width * clamp(fill_ratio, 0, 1), y + height, fill_color, 0x00000000)
   end
 end
 
 -- draws an horizontal line
-function draw_horizontal_line(_x_start, _x_end, _y, _color, _thickness)
-  _thickness = _thickness or 1.0
-  local _l = _x_start - 1
-  local _b =  _y + math.ceil(_thickness * 0.5)
-  local _r = _x_end + 1
-  local _t = _y - math.floor(_thickness * 0.5) - 1
-  gui.box(_l, _b, _r, _t, _color, 0x00000000)
+function draw_horizontal_line(x_start, x_end, y, color, thickness)
+  thickness = thickness or 1.0
+  local l = x_start - 1
+  local b =  y + math.ceil(thickness * 0.5)
+  local r = x_end + 1
+  local t = y - math.floor(thickness * 0.5) - 1
+  gui.box(l, b, r, t, color, 0x00000000)
 end
 
 -- draws a vertical line
-function draw_vertical_line(_x, _y_start, _y_end, _color, _thickness)
-  _thickness = _thickness or 1.0
-  local _l = _x - math.floor(_thickness * 0.5) - 1
-  local _b =  _y_end + 1
-  local _r = _x + math.ceil(_thickness * 0.5)
-  local _t = _y_start - 1
-  gui.box(_l, _b, _r, _t, _color, 0x00000000)
+function draw_vertical_line(x, y_start, y_end, color, thickness)
+  thickness = thickness or 1.0
+  local l = x - math.floor(thickness * 0.5) - 1
+  local b =  y_end + 1
+  local r = x + math.ceil(thickness * 0.5)
+  local t = y_start - 1
+  gui.box(l, b, r, t, color, 0x00000000)
+end
+
+local load_frame_data_bar_fade_time = 40
+local load_frame_data_bar_fade_start = 0
+local load_frame_data_bar_elapsed = 0
+local load_frame_data_bar_fading = false
+
+function loading_bar_display(loaded, total)
+  if load_frame_data_bar_fading then
+    load_frame_data_bar_elapsed = gamestate.frame_number - load_frame_data_bar_fade_start
+    if load_frame_data_bar_fading and load_frame_data_bar_elapsed > load_frame_data_bar_fade_time then
+      return
+    end
+  end
+
+  local width = 60
+  local height = 1
+  local padding = 1
+  local x = screen_width - width - padding
+  local y = screen_height - height - padding
+  local fill_color = 0xFFFFFFDD
+  local opacity = 0xDD
+  if load_frame_data_bar_fading then
+    opacity = 0xDD * (1 - load_frame_data_bar_elapsed / load_frame_data_bar_fade_time)
+    fill_color = tonumber(string.format("0xFFFFFF%02x", opacity))
+  end
+  draw_gauge(x, y, width, height, loaded / total, fill_color, 0x00000000, 0x00000000, false)
+  if loaded >= total and not load_frame_data_bar_fading then
+    load_frame_data_bar_fade_start = gamestate.frame_number
+    load_frame_data_bar_fading = true
+  end
 end

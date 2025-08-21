@@ -6,68 +6,68 @@ text_image_disabled_color = "grey"
 
 function load_menu_images()
   _map = read_object_from_json_file("images/menu/image_map.json")
-  _colors = {"white", "red", "green", "grey"}
+  colors = {"white", "red", "green", "grey"}
   im = {}
-  for _name,_data in pairs(_map) do
-    im[_name] = {}
-    im[_name].en = {}
-    im[_name].jp = {}
-    for _,_color in pairs(_colors) do
-      im[_name].en[_color] = gd.createFromPng(_map[_name].en[_color])
-      im[_name].jp[_color] = gd.createFromPng(_map[_name].jp[_color])
+  for name,data in pairs(map) do
+    im[name] = {}
+    im[name].en = {}
+    im[name].jp = {}
+    for _,color in pairs(colors) do
+      im[name].en[color] = gd.createFromPng(map[name].en[color])
+      im[name].jp[color] = gd.createFromPng(map[name].jp[color])
 
-      im[_name].en.width = im[_name].en[_color]:sizeX()
-      im[_name].en.height = im[_name].en[_color]:sizeY()
-      im[_name].jp.width = im[_name].jp[_color]:sizeX()
-      im[_name].jp.height = im[_name].jp[_color]:sizeY()
+      im[name].en.width = im[name].en[color]:sizeX()
+      im[name].en.height = im[name].en[color]:sizeY()
+      im[name].jp.width = im[name].jp[color]:sizeX()
+      im[name].jp.height = im[name].jp[color]:sizeY()
 
-      im[_name].en[_color] = im[_name].en[_color]:gdStr()
-      im[_name].jp[_color] = im[_name].jp[_color]:gdStr()
+      im[name].en[color] = im[name].en[color]:gdStr()
+      im[name].jp[color] = im[name].jp[color]:gdStr()
     end
   end
 end
 
 
 
-function text_image_menu_item(_name)
-  local _o = {}
-  _o.name = _name
+function text_image_menu_item(name)
+  local o = {}
+  o.name = name
 
-  function _o:draw(_x, _y, _state)
-    local _color = text_image_default_color
+  function o:draw(x, y, _state)
+    local color = text_image_default_color
     if _state == "active" then
-      _color = text_image_default_color
+      color = text_image_default_color
     elseif _state == "selected" then
-      _color = text_image_selected_color
+      color = text_image_selected_color
     elseif _state == "disabled" then
-      _color = text_image_disabled_color
+      color = text_image_disabled_color
     end
-    local _img = im[_name][training_settings.language][_color]
+    local _img = im[name][training_settings.language][color]
 
-    gui.image(_x, _y, _img)
+    gui.image(x, y, _img)
   end
 
-  function _o:is_image()
+  function o:is_image()
     return true
   end
 
-  function _o:width()
-    return im[_name][training_settings.language].width
+  function o:width()
+    return im[name][training_settings.language].width
   end
 
-  function _o:height()
-    return im[_name][training_settings.language].height
+  function o:height()
+    return im[name][training_settings.language].height
   end
 
-  return _o
+  return o
 end
 
-function number_display(_num, _x, _y)
-  local _offset = 0
-  for _i=1,string.len(_num) do
-    local _digit = string.sub(_num, _i, _i)
-    gui.image(_x + _offset, _y, im[_digit].en.green)
-    _offset = _offset + im[_digit].en.width - 1
+function number_display(num, x, y)
+  local offset = 0
+  for _i=1,string.len(num) do
+    local digit = string.sub(num, _i, _i)
+    gui.image(x + offset, y, im[digit].en.green)
+    offset = offset + im[digit].en.width - 1
   end
 end
 

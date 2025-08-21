@@ -28,83 +28,83 @@ end
 
 --init_jumpins()
 
-function jumpins_display(_player)
+function jumpins_display(player)
   if is_in_match then
     player_position_display()
     local _name = "jump_forward"
     if frame_number % 50 == 0 then
-      local _player_mdata, _dummy_mdata = simulate_jump(_player, "jump_forward", _player.pos_x)
-      jump_arcs[_name] = create_jump_arc(_player_mdata)
+      local player_mdata, dummy_mdata = simulate_jump(player, "jump_forward", player.pos_x)
+      jump_arcs[name] = create_jump_arc(player_mdata)
     end
     draw_jump_arcs(jump_arcs)
   end
 end
 
-function create_jump_arc(_mdata)
-  local _jump_arc = {}
-  for i = 1, #_mdata do
-    local _x, _y = game_to_screen_space(_mdata[i].pos_x, _mdata[i].pos_y)
-    table.insert(_jump_arc, {_x, _y})
+function create_jump_arc(mdata)
+  local jump_arc = {}
+  for i = 1, #mdata do
+    local x, y = game_to_screen_space(mdata[i].pos_x, mdata[i].pos_y)
+    table.insert(jump_arc, {x, y})
   end
-  return _jump_arc
+  return jump_arc
 end
 
 local max_sim_time = 100
-function simulate_jump(_player, _jump_type, _start_x, _attack, _attack_frame)
-  local _dummy = _player.other
-  _start_x = _start_x or _player.pos_x
+function simulate_jump(player, jump_type, _start_x, attack, attack_frame)
+  local dummy = player.other
+  _start_x = _start_x or player.pos_x
   local _startup_type = "jump_startup"
-  local _anim, _frame_data = find_frame_data_by_name(_player.char_str, _startup_type)
-  local _jump_startup_length = #_frame_data.frames
-  local _jump_startup = predict_frames_branching(_player, _anim, 0, _jump_startup_length, nil, true)[1]
-  local _anim, _frame_data = find_frame_data_by_name(_player.char_str, _jump_type)
+  local anim, fdata = find_frame_data_by_name(player.char_str, _startup_type)
+  local jump_startup_length = #fdata.frames
+  local jump_startup = predict_frames_branching(player, anim, 0, jump_startup_length, nil, true)[1]
+  local anim, fdata = find_frame_data_by_name(player.char_str, jump_type)
 
-  local _player_motion_data = init_motion_data_zero(_player)
-  _player_motion_data[0].pos_x = _start_x
+  local player_motion_data = init_motion_data_zero(player)
+  player_motion_data[0].pos_x = _start_x
 
-  local _dummy_motion_data = init_motion_data(_dummy)
+  local dummy_motion_data = init_motion_data(dummy)
 
-  if _frame_data then
-    local _player_line = predict_frames_branching(_player, _anim, 0, max_sim_time, nil, true)[1]
-    _player_line[0] = {animation = _player.animation, frame = _player.animation_frame, delta = 0}
+  if fdata then
+    local player_line = predict_frames_branching(player, anim, 0, max_sim_time, nil, true)[1]
+    player_line[0] = {animation = player.animation, frame = player.animation_frame, delta = 0}
 
-  print_pline(_player_line)
+  print_pline(player_line)
 
-    local _dummy_line = predict_frames_branching(_dummy, _dummy.animation, nil, max_sim_time)[1]
-    if _dummy_line == nil then
-      _dummy_line = {}
+    local dummy_line = predict_frames_branching(dummy, dummy.animation, nil, max_sim_time)[1]
+    if dummy_line == nil then
+      dummy_line = {}
       for i = 1, max_sim_time do
-        table.insert(_dummy_line, {animation = _dummy.animation, frame = _dummy.animation_frame + i, delta = i})
+        table.insert(dummy_line, {animation = dummy.animation, frame = dummy.animation_frame + i, delta = i})
       end
     end
-    _dummy_line[0] = {animation = _dummy.animation, frame = _dummy.animation_frame, delta = 0}
+    dummy_line[0] = {animation = dummy.animation, frame = dummy.animation_frame, delta = 0}
     
-    _player_motion_data.switched_sides = check_switch_sides(_player)
-    _dummy_motion_data.switched_sides = check_switch_sides(_dummy)
+    player_motion_data.switched_sides = check_switch_sides(player)
+    dummy_motion_data.switched_sides = check_switch_sides(dummy)
 
-    for i = 1, #_player_line do
+    for i = 1, #player_line do
 
-      predict_player_movement(_player, _player_motion_data, _player_line,
-                              _dummy, _dummy_motion_data, _dummy_line, i)
+      predict_player_movement(player, player_motion_data, player_line,
+                              dummy, dummy_motion_data, dummy_line, i)
 
-    -- print(i, _player_line[i].animation, _player_line[i].frame, _player_motion_data[i].pos_y, _player_motion_data[i].velocity_y, _player_motion_data[i].acceleration_y)
---[[       if _player_motion_data[i].pos_y == 0 then
-        for j = 1, #_player_motion_data - i do
-          table.remove(_player_motion_data)
+    -- print(i, player_line[i].animation, player_line[i].frame, player_motion_data[i].pos_y, player_motion_data[i].velocity_y, player_motion_data[i].acceleration_y)
+--[[       if player_motion_data[i].pos_y == 0 then
+        for j = 1, #player_motion_data - i do
+          table.remove(player_motion_data)
         end
         break
       end ]]
     end
   end
-  return _player_motion_data, _dummy_motion_data
+  return player_motion_data, dummy_motion_data
 end
 
-function draw_jump_arcs(_jump_arcs)
+function draw_jump_arcs(jump_arcs)
   --t:{x,y}
-  for _, _jump_arc in pairs(_jump_arcs) do
-  -- print("draw", #_jump_arc)
-    for i = 1, #_jump_arc do
-      gui.pixel(_jump_arc[i][1], _jump_arc[i][2], 0xFFFFFFFF)
+  for _, jump_arc in pairs(jump_arcs) do
+  -- print("draw", #jump_arc)
+    for i = 1, #jump_arc do
+      gui.pixel(jump_arc[i][1], jump_arc[i][2], 0xFFFFFFFF)
     end
   end
 end

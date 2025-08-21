@@ -38,6 +38,9 @@ addresses = {
 
       -- [byte] time before Hyakuretsu Kyaku button count reset
       kyaku_reset_time = 0x020259f3,
+
+
+      
     },
     {
       character_select_row = 0x020154D1,

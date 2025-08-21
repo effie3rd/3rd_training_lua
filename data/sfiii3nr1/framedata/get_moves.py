@@ -74,7 +74,7 @@ def sort_key(item):
 
 with open('fdm.txt', 'w') as fdm:
     fdm.write("")
-for filepath in glob.glob("/home/epi/Scripts/3rd_training_effie/data/sfiii3nr1/framedata/*_framedata.json"):
+for filepath in glob.glob("/home/epi/Scripts/3rd_training_effie/data/sfiii3nr1/framedata/*framedata.json"):
     fname = os.path.basename(filepath)
     match = PAT.match(fname)
     char = match.group("prefix")[1:]

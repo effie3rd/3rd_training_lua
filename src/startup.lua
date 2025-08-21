@@ -18,7 +18,7 @@ else
 end
 
 -- CHARACTERS
-characters =
+Characters =
 {
   "gill",
   "alex",
@@ -43,10 +43,7 @@ characters =
   "remy",
 }
 
-frame_data_keys = copytable(characters)
-table.insert(frame_data_keys, "projectiles")
-
 if is_4rd_strike then
-  characters[1] = "gill"
-  characters[16] = "usean"
+  Characters[1] = "gill"
+  Characters[16] = "usean"
 end

@@ -24,11 +24,11 @@ for color,color_code in colors.items():
     # lang = ""
     # text = ""
     # for c in char:
-    #     _code = ord(c)
-    #     if _code < 12288:
+    #     code = ord(c)
+    #     if code < 12288:
     #         if lang == "jp":
     #             i = i + 1
-    #     elif _code <= 40879:
+    #     elif code <= 40879:
 #jp
     size = "10"
     ucode = "test"

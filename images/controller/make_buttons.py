@@ -121,4 +121,4 @@ for name, colors in styles.items():
             subprocess.Popen(f"magick P_button_base_s.png -fill '{colorscale(color,.8)}' -opaque '#00ff00' -fill '{color}' -opaque '#0000ff' -fill '{text_color}' -opaque '#FF0000' png32:{buttons[i]}_s_{name}.png", cwd=cwd, shell=True)
         else:
             subprocess.Popen(f"magick K_button_base_s.png -fill '{colorscale(color,.8)}' -opaque '#00ff00' -fill '{color}' -opaque '#0000ff' -fill '{text_color}' -opaque '#FF0000' png32:{buttons[i]}_s_{name}.png", cwd=cwd, shell=True)
-        subprocess.Popen(f"magick button_base_b.png -fill '{colorscale(color,.1)}' -opaque '#00ff00' -fill '{color}' -opaque '#0000ff' png32:{buttons[i]}_b_{name}.png", cwd=cwd, shell=True)
+        subprocess.Popen(f"magick button_base_b.png -fill '{colorscale(color,.1)}' -opaque '#00ff00' -fill '{color}' -opaque '#0000ff' png32:{buttons[i]}b_{name}.png", cwd=cwd, shell=True)

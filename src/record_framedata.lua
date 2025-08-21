@@ -1,5 +1,21 @@
-local _state = ""
-local _setup = false
+local loading = require("src/loading")
+local text = require("src/text")
+local fd = require("src/framedata")
+local movedata = require("src/movedata")
+local gamestate = require("src/gamestate")
+local character_select = require("src/character_select")
+
+local frame_data, character_specific = fd.frame_data, fd.character_specific
+local test_collision, find_frame_data_by_name = fd.test_collision, fd.find_frame_data_by_name
+local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_slow_jumper
+local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text, text.render_text_multiple, text.get_text_dimensions, text.get_text_dimensions_multiple
+local move_list, get_move_sequence_by_name = movedata.move_list, movedata.get_move_sequence_by_name
+
+local frame_data_keys = copytable(Characters)
+table.insert(frame_data_keys, "projectiles")
+
+local state = ""
+local setup = false
 local normals = {}
 local jumping_normals = {{{"LP"}},{{"MP"}},{{"HP"}},{{"LK"}},{{"MK"}},{{"HK"}},{{"LP"}},{{"MP"}},{{"HP"}},{{"LK"}},{{"MK"}},{{"HK"}},{{"LP"}},{{"MP"}},{{"HP"}},{{"LK"}},{{"MK"}},{{"HK"}}}
 local normals_list = {
@@ -583,8 +599,8 @@ local freeze_player_for_projectile = false
 local pressing_F12 = 0
 local pressing_F11 = 0
 
-local _player = nil
-local _dummy = nil
+local player = nil
+local dummy = nil
 local recording = false
 local recording_projectiles = false
 local self_freeze = 10
@@ -600,11 +616,11 @@ local current_attack_category = {}
 local i_attack_categories = 1
 local i_attacks = 1
 local recording_geneijin = false
-local _dummy_offset_x = 0
-local _dummy_offset_y = 0
-local _reset_pos_x = 444
-local _default_air_miss_height = 200
-local _default_air_block_height = 26
+local dummy_offset_x = 0
+local dummy_offset_y = 0
+local reset_pos_x = 444
+local default_air_miss_height = 200
+local default_air_block_height = 26
 
 local overwrite = false
 local first_record = true
@@ -625,27 +641,27 @@ local i_record = 4
 local i_characters = 8
 local end_character = 21
 local record_char_state = "start"
-local char_list = deepcopy(characters)
+local char_list = deepcopy(Characters)
 table.sort(char_list)
 local last_category = 1
 
-function record_all_characters(_player_obj, _projectiles)
+function record_all_characters(player_obj, projectiles)
   if recording_framedata then
     -- emu.speedmode("turbo")
     training_settings.blocking_mode = 1
-    _player = _player_obj
-    _dummy = _player_obj.other
+    player = player_obj
+    dummy = player_obj.other
     if record_char_state == "start" then
       frame_data["projectiles"] = {}
       record_char_state = "new_character"
     elseif record_char_state == "new_character" then
       if i_characters <= end_character then
-        _char = char_list[i_characters]
+        char = char_list[i_characters]
         overwrite = false
         first_record = true
-        -- frame_data[_char] = {}
-        _state = "start"
-        _setup = false
+        -- frame_data[char] = {}
+        state = "start"
+        setup = false
         recording = false
         i_attack_categories = 7
         last_category = 7
@@ -654,9 +670,9 @@ function record_all_characters(_player_obj, _projectiles)
         block_until = 0
         block_max_hits = 0
         recording_options.hit_type = "miss"
-        table.insert(after_load_state_callback, {command = force_select_character, args = {_player.id, _char, 1, "LP"} })
-        table.insert(after_load_state_callback, {command = force_select_character, args = {_dummy.id, "urien", 1, "MP"} })
-        start_character_select_sequence()
+        Register_After_Load_State(character_select.force_select_character, {player.id, char, 1, "LP"})
+        Register_After_Load_State(character_select.force_select_character, {dummy.id, "urien", 1, "MP"})
+        character_select.start_character_select_sequence()
         record_char_state = "recording"
       else
         record_char_state = "finished"
@@ -665,20 +681,20 @@ function record_all_characters(_player_obj, _projectiles)
       debug_settings.record_framedata = true
 
       if i_record == 1 then
-        record_idle(_player)
+        record_idle(player)
       elseif i_record == 2 then
-        record_movement(_player)
+        record_movement(player)
       elseif i_record == 3 then
-        record_wakeups(_player)
+        record_wakeups(player)
       elseif i_record == 4 then
-        record_attacks(_player, _projectiles)
+        record_attacks(player, projectiles)
       elseif i_record == 5 then
         record_landing()
       end
 
-      if _state == "finished" then
-        _state = "start"
-        _setup = false
+      if state == "finished" then
+        state = "start"
+        setup = false
         recording = false
         debug_settings.record_framedata = false
         i_record = i_record + 1
@@ -690,110 +706,110 @@ function record_all_characters(_player_obj, _projectiles)
         record_char_state = "new_character"
       save_frame_data()
       --make space in memory
-        frame_data[_char] = {}
+        frame_data[char] = {}
       end
     elseif record_char_state == "finished" then
       save_frame_data()
       load_frame_data_co = coroutine.create(load_frame_data_async)
-      frame_data_loaded = false --debug
+      loading.frame_data_loaded = false --debug
       record_char_state = "the_end"
     end
   end
 end
 
-function update_framedata_recording(_player_obj, _projectiles)
-  record_all_characters(_player_obj, _projectiles)
+function update_framedata_recording(player_obj, projectiles)
+  record_all_characters(player_obj, projectiles)
 end
 
 local record_idle_duration = 600
 local record_idle_start_frame = 0
 local record_idle_states = {"standing", "crouching", "to_stand", "to_crouch"}
 local i_record_idle_states = 1
-function record_idle(_player_obj)
-  local _player = _player_obj
-  local _dummy = _player_obj.other
-  function start_recording_idle(_name)
-    new_recording(_player, {}, _name)
-    record_idle_start_frame = frame_number
-    write_pos(_player, 440, 0)
-    write_pos(_dummy, 540, 0)
-    print(_name)
+function record_idle(player_obj)
+  local player = player_obj
+  local dummy = player_obj.other
+  function start_recording_idle(name)
+    new_recording(player, {}, name)
+    record_idle_start_frame = gamestate.frame_number
+    write_pos(player, 440, 0)
+    write_pos(dummy, 540, 0)
+    print(name)
   end
 
-  if is_in_match and debug_settings.record_framedata then
+  if gamestate.is_in_match and debug_settings.record_framedata then
     if i_record_idle_states <= #record_idle_states then
-      local _name = record_idle_states[i_record_idle_states]
-      if _name == "standing" then
-        if _setup then
-          if not (_state == "recording") and _player.action == 0 then
+      local name = record_idle_states[i_record_idle_states]
+      if name == "standing" then
+        if setup then
+          if not (state == "recording") and player.action == 0 then
             recording_options = {recording_idle = true}
             -- recording_options.infinite_loop = true
-            start_recording_idle(_name)
+            start_recording_idle(name)
           end
         else
-          queue_input_sequence(_player, {{"down"}})
-          if _player.action == 7 then
-            clear_motion_data(_player)
-            _setup = true
+          queue_input_sequence(player, {{"down"}})
+          if player.action == 7 then
+            clear_motion_data(player)
+            setup = true
           end
         end
-      elseif _name == "crouching" then
-        if _setup then
-          if not (_state == "recording") and _player.action == 7 then
+      elseif name == "crouching" then
+        if setup then
+          if not (state == "recording") and player.action == 7 then
             recording_options = {recording_idle = true}
             -- recording_options.infinite_loop = true
-            start_recording_idle(_name)
+            start_recording_idle(name)
           end
-          queue_input_sequence(_player, {{"down"}})
+          queue_input_sequence(player, {{"down"}})
         else
-          if _player.action == 0 then
-            clear_motion_data(_player)
-            _setup = true
+          if player.action == 0 then
+            clear_motion_data(player)
+            setup = true
           end
         end
-      elseif _name == "to_stand" then
-        if _setup then
-          if not (_state == "recording") and _player.action == 11 then
+      elseif name == "to_stand" then
+        if setup then
+          if not (state == "recording") and player.action == 11 then
             recording_options = {recording_idle = true}
-            start_recording_idle(_name)
+            start_recording_idle(name)
           end
         else
-          queue_input_sequence(_player, {{"down"}})
-          if _player.action == 7 then
-            clear_motion_data(_player)
-            _setup = true
+          queue_input_sequence(player, {{"down"}})
+          if player.action == 7 then
+            clear_motion_data(player)
+            setup = true
           end
         end
-      elseif _name == "to_crouch" then
-        if _setup then
-          if not (_state == "recording") and _player.action == 6 then
+      elseif name == "to_crouch" then
+        if setup then
+          if not (state == "recording") and player.action == 6 then
             recording_options = {recording_idle = true}
-            start_recording_idle(_name)
+            start_recording_idle(name)
           end
-          queue_input_sequence(_player, {{"down"}})
+          queue_input_sequence(player, {{"down"}})
         else
-          if _player.action == 0 then
-            clear_motion_data(_player)
-            _setup = true
+          if player.action == 0 then
+            clear_motion_data(player)
+            setup = true
           end
         end
       end
-      if _state == "recording" then
-        if (frame_number - record_idle_start_frame >= record_idle_duration)
-        or (_name == "to_stand" and _player.action ~= 11)
-        or (_name == "to_crouch" and _player.action ~= 6)
+      if state == "recording" then
+        if (gamestate.frame_number - record_idle_start_frame >= record_idle_duration)
+        or (name == "to_stand" and player.action ~= 11)
+        or (name == "to_crouch" and player.action ~= 6)
         then
-          end_recording(_player, {}, _name)
+          end_recording(player, {}, name)
           i_record_idle_states = i_record_idle_states + 1
-          _setup = false
+          setup = false
         end
       end
-      if _state == "recording" and _player.has_animation_just_changed and record_idle_start_frame ~= frame_number then
-        new_animation(_player, {}, _name)
+      if state == "recording" and player.has_animation_just_changed and record_idle_start_frame ~= gamestate.frame_number then
+        new_animation(player, {}, name)
       end
-      record_framedata(_player, {}, _name)
+      record_framedata(player, {}, name)
     else
-      _state = "finished"
+      state = "finished"
       i_record_idle_states = 1
       return
     end
@@ -802,359 +818,359 @@ end
 
 local movement_list = {"walk_forward", "walk_back", "dash_forward", "dash_back", "standing_turn", "crouching_turn", "jump_forward", "jump_neutral", "jump_back", "sjump_forward", "sjump_neutral", "sjump_back", "air_dash", "block_high", "block_low", "parry_high", "parry_low", "parry_air"}
 local i_movement_list = 1
-local _m_player_reset_pos = {440, 0}
-local _m_dummy_reset_pos_offset = {100, 0}
-local _clear_jump_after = 30
+local m_player_reset_pos = {440, 0}
+local m_dummy_reset_pos_offset = {100, 0}
+local clear_jump_after = 30
 local allow_dummy_movement = false
-local _name = ""
+local name = ""
 
-function record_movement(_player_obj)
-  local _player = _player_obj
-  local _dummy = _player_obj.other
-  if is_in_match and debug_settings.record_framedata then
-    if _player.action == 0 or _player.action == 7 then
+function record_movement(player_obj)
+  local player = player_obj
+  local dummy = player_obj.other
+  if gamestate.is_in_match and debug_settings.record_framedata then
+    if player.action == 0 or player.action == 7 then
       if recording then
-        if _player.has_animation_just_changed then
-          end_recording(_player, {}, _name)
+        if player.has_animation_just_changed then
+          end_recording(player, {}, name)
           i_movement_list = i_movement_list + 1
         end
       end
-    elseif _state == "wait_for_initial_anim" and _player.has_animation_just_changed then
+    elseif state == "wait_for_initial_anim" and player.has_animation_just_changed then
 
 
-      if _name == "walk_forward" then
-        if _player.action == 2 then
-          new_recording(_player, {}, _name)
+      if name == "walk_forward" then
+        if player.action == 2 then
+          new_recording(player, {}, name)
         end
-      elseif _name == "walk_back" then
-        if _player.action == 3 then
-          new_recording(_player, {}, _name)
+      elseif name == "walk_back" then
+        if player.action == 3 then
+          new_recording(player, {}, name)
         end
-      elseif _name == "dash_forward" then
-        if _player.action == 23 then
-          _name = "dash_startup"
+      elseif name == "dash_forward" then
+        if player.action == 23 then
+          name = "dash_startup"
           recording_options.record_next_anim = true
-          new_recording(_player, {}, _name)
+          new_recording(player, {}, name)
         end
-      elseif _name == "dash_back" then
-        if _player.action == 23 then
-          _name = "dash_startup"
+      elseif name == "dash_back" then
+        if player.action == 23 then
+          name = "dash_startup"
           recording_options.record_next_anim = true
-          new_recording(_player, {}, _name)
+          new_recording(player, {}, name)
         end
-      elseif _name == "standing_turn" then
-        if _player.action == 1 then
-          new_recording(_player, {}, _name)
+      elseif name == "standing_turn" then
+        if player.action == 1 then
+          new_recording(player, {}, name)
         end
-      elseif _name == "crouching_turn" then
-        if _player.action == 8 then
-          new_recording(_player, {}, _name)
+      elseif name == "crouching_turn" then
+        if player.action == 8 then
+          new_recording(player, {}, name)
         end
-      elseif _name == "block_high" then
-        if _player.action == 30 then
-          new_recording(_player, {}, _name)
+      elseif name == "block_high" then
+        if player.action == 30 then
+          new_recording(player, {}, name)
         end
-      elseif _name == "block_low" then
-        if _player.action == 31 then
-          new_recording(_player, {}, _name)
+      elseif name == "block_low" then
+        if player.action == 31 then
+          new_recording(player, {}, name)
         end
-      elseif _name == "parry_high" then
-        if _player.action == 24 or _player.action == 25 then
-          new_recording(_player, {}, _name)
+      elseif name == "parry_high" then
+        if player.action == 24 or player.action == 25 then
+          new_recording(player, {}, name)
         end
-      elseif _name == "parry_low" then
-        if _player.action == 26 then
-          new_recording(_player, {}, _name)
+      elseif name == "parry_low" then
+        if player.action == 26 then
+          new_recording(player, {}, name)
         end
-      elseif _name == "parry_air" then
-        if _player.action == 27 then
-          new_recording(_player, {}, _name)
+      elseif name == "parry_air" then
+        if player.action == 27 then
+          new_recording(player, {}, name)
         end
-      elseif _name == "jump_forward"
-      or _name == "jump_neutral"
-      or _name == "jump_back" then
-        if _player.action == 12 then
-          _name = "jump_startup"
+      elseif name == "jump_forward"
+      or name == "jump_neutral"
+      or name == "jump_back" then
+        if player.action == 12 then
+          name = "jump_startup"
           recording_options.record_next_anim = true
-          new_recording(_player, {}, _name)
+          new_recording(player, {}, name)
         end
-      elseif _name == "sjump_forward"
-      or _name == "sjump_neutral"
-      or _name == "sjump_back" then
-        if _player.action == 13 then
-          _name = "sjump_startup"
+      elseif name == "sjump_forward"
+      or name == "sjump_neutral"
+      or name == "sjump_back" then
+        if player.action == 13 then
+          name = "sjump_startup"
           recording_options.record_next_anim = true
-          new_recording(_player, {}, _name)
+          new_recording(player, {}, name)
         end
-      elseif _name == "air_dash" then
-        if _player.animation == "b394" then
-          new_recording(_player, {}, _name)
+      elseif name == "air_dash" then
+        if player.animation == "b394" then
+          new_recording(player, {}, name)
         end
       else
-        new_recording(_player, {}, _name)
+        new_recording(player, {}, name)
       end
     elseif recording then
-      if _player.has_animation_just_changed then
-        if _player.action == 4 then
-          _name = "dash_forward"
-        elseif _player.action == 5 then
-          _name = "dash_back"
-        elseif _player.action == 14 then
-          _name = "jump_forward"
-        elseif _player.action == 15 then
-          _name = "jump_neutral"
-        elseif _player.action == 16 then
-          _name = "jump_back"
-        elseif _player.action == 20 then
-          _name = "sjump_forward"
-        elseif _player.action == 21 then
-          _name = "sjump_neutral"
-        elseif _player.action == 22 then
-          _name = "sjump_back"
+      if player.has_animation_just_changed then
+        if player.action == 4 then
+          name = "dash_forward"
+        elseif player.action == 5 then
+          name = "dash_back"
+        elseif player.action == 14 then
+          name = "jump_forward"
+        elseif player.action == 15 then
+          name = "jump_neutral"
+        elseif player.action == 16 then
+          name = "jump_back"
+        elseif player.action == 20 then
+          name = "sjump_forward"
+        elseif player.action == 21 then
+          name = "sjump_neutral"
+        elseif player.action == 22 then
+          name = "sjump_back"
         end
-        new_animation(_player, {}, _name)
+        new_animation(player, {}, name)
       end
     end
-    if _state == "ready" then
-      if _player.is_idle and _dummy.is_idle and _player.action == 0 then
-        _state = "queue_move"
+    if state == "ready" then
+      if player.is_idle and dummy.is_idle and player.action == 0 then
+        state = "queue_move"
       end
-    elseif _state == "wait_for_match_start" then
-      if has_match_just_started then
-        _state = "queue_move"
+    elseif state == "wait_for_match_start" then
+      if gamestate.has_match_just_started then
+        state = "queue_move"
       end
     end
 
-    if not _setup and _state == "start" then
-      _setup = true
-      _state = "ready"
+    if not setup and state == "start" then
+      setup = true
+      state = "ready"
     end
 
-    if _state == "make_sure_action_is_0" then
+    if state == "make_sure_action_is_0" then
       --remy turns around slow
-      if _player.action == 0 then
-        _state = "wait_for_initial_anim"
+      if player.action == 0 then
+        state = "wait_for_initial_anim"
       end
     end
 
-    if _state == "queue_move" then
-      _state = "wait_for_initial_anim"
+    if state == "queue_move" then
+      state = "wait_for_initial_anim"
       if i_movement_list <= #movement_list then
         recording_options = {recording_movement = true}
         allow_dummy_movement = false
-        _name = movement_list[i_movement_list]
-        local _is_jump = false
-        local _sequence = {}
-        _m_player_reset_pos = {440, 0}
-        _m_dummy_reset_pos_offset = {100, 0}
-        if _name == "walk_forward" then
+        name = movement_list[i_movement_list]
+        local is_jump = false
+        local sequence = {}
+        m_player_reset_pos = {440, 0}
+        m_dummy_reset_pos_offset = {100, 0}
+        if name == "walk_forward" then
           for i = 1, 160 do
-            table.insert(_sequence, {"forward"})
+            table.insert(sequence, {"forward"})
           end
-          _m_player_reset_pos = {150, 0}
-        elseif _name == "walk_back" then
+          m_player_reset_pos = {150, 0}
+        elseif name == "walk_back" then
           for i = 1, 160 do
-            table.insert(_sequence, {"back"})
+            table.insert(sequence, {"back"})
           end
-          _m_player_reset_pos = {650, 0}
-        elseif _name == "dash_forward" then
-          _sequence = {{"forward"}, {}, {"forward"}}
-        elseif _name == "dash_back" then
-          _sequence = {{"back"}, {}, {"back"}}
-        elseif _name == "standing_turn" then
-          _m_dummy_reset_pos_offset = {90, 0}
+          m_player_reset_pos = {650, 0}
+        elseif name == "dash_forward" then
+          sequence = {{"forward"}, {}, {"forward"}}
+        elseif name == "dash_back" then
+          sequence = {{"back"}, {}, {"back"}}
+        elseif name == "standing_turn" then
+          m_dummy_reset_pos_offset = {90, 0}
           allow_dummy_movement = true
-          if _player.char_str == "remy" then
-            _state = "make_sure_action_is_0"
+          if player.char_str == "remy" then
+            state = "make_sure_action_is_0"
           end
-          queue_input_sequence(_dummy, {{"down"},{"up","forward"},{"up","forward"},{"up","forward"},{},{},{},{}})
-        elseif _name == "crouching_turn" then
-          _m_dummy_reset_pos_offset = {90, 0}
+          queue_input_sequence(dummy, {{"down"},{"up","forward"},{"up","forward"},{"up","forward"},{},{},{},{}})
+        elseif name == "crouching_turn" then
+          m_dummy_reset_pos_offset = {90, 0}
           allow_dummy_movement = true
-          queue_command(frame_number + 10, {command = queue_input_sequence, args = {_dummy, {{"down"},{"up","forward"},{"up","forward"},{"up","forward"},{},{},{},{}}}})
+          Queue_Command(gamestate.frame_number + 10, {command = queue_input_sequence, args = {dummy, {{"down"},{"up","forward"},{"up","forward"},{"up","forward"},{},{},{},{}}}})
           for i = 1, 100 do
-            table.insert(_sequence, {"down"})
+            table.insert(sequence, {"down"})
           end
-          queue_command(frame_number + 8, {command = clear_motion_data, args = {_player}})
-        elseif _name == "jump_forward" then
-          _is_jump = true
-          _sequence = {{"up","forward"},{"up","forward"},{"up","forward"},{},{},{},{}}
-        elseif _name == "jump_neutral" then
-          _is_jump = true
-          _sequence = {{"up"},{"up"},{"up"},{},{},{},{}}
-        elseif _name == "jump_back" then
-          _is_jump = true
-          _sequence = {{"up","back"},{"up","back"},{"up","back"},{},{},{},{}}
-        elseif _name == "sjump_forward" then
-          _is_jump = true
-          _sequence = {{"down"},{"up","forward"},{"up","forward"},{"up","forward"},{},{},{},{}}
-        elseif _name == "sjump_neutral" then
-          _is_jump = true
-          _sequence = {{"down"},{"up"},{"up"},{"up"},{},{},{},{}}
-        elseif _name == "sjump_back" then
-          _is_jump = true
-          _sequence = {{"down"},{"up","back"},{"up","back"},{"up","back"},{},{},{},{}}
-        elseif _name == "air_dash" then
-          if _player.char_str == "twelve" then
-            _sequence = {{"down"},{"up","back"},{"up","back"},{"up","back"},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{"forward"},{},{"forward"}}
+          Queue_Command(gamestate.frame_number + 8, {command = clear_motion_data, args = {player}})
+        elseif name == "jump_forward" then
+          is_jump = true
+          sequence = {{"up","forward"},{"up","forward"},{"up","forward"},{},{},{},{}}
+        elseif name == "jump_neutral" then
+          is_jump = true
+          sequence = {{"up"},{"up"},{"up"},{},{},{},{}}
+        elseif name == "jump_back" then
+          is_jump = true
+          sequence = {{"up","back"},{"up","back"},{"up","back"},{},{},{},{}}
+        elseif name == "sjump_forward" then
+          is_jump = true
+          sequence = {{"down"},{"up","forward"},{"up","forward"},{"up","forward"},{},{},{},{}}
+        elseif name == "sjump_neutral" then
+          is_jump = true
+          sequence = {{"down"},{"up"},{"up"},{"up"},{},{},{},{}}
+        elseif name == "sjump_back" then
+          is_jump = true
+          sequence = {{"down"},{"up","back"},{"up","back"},{"up","back"},{},{},{},{}}
+        elseif name == "air_dash" then
+          if player.char_str == "twelve" then
+            sequence = {{"down"},{"up","back"},{"up","back"},{"up","back"},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{"forward"},{},{"forward"}}
           else
             i_movement_list = i_movement_list + 1
-            _state = "queue_move"
+            state = "queue_move"
             return
           end
-        elseif _name == "block_high" then
+        elseif name == "block_high" then
           recording_options.ignore_movement = true
-          queue_input_sequence(_dummy, {{"MK"}})
+          queue_input_sequence(dummy, {{"MK"}})
           for i = 1, 30 do
-            table.insert(_sequence, {"back"})
-            queue_command(frame_number + i, {command = clear_motion_data, args = {_player}})
+            table.insert(sequence, {"back"})
+            Queue_Command(gamestate.frame_number + i, {command = clear_motion_data, args = {player}})
           end
-        elseif _name == "block_low" then
+        elseif name == "block_low" then
           recording_options.ignore_movement = true
-          queue_input_sequence(_dummy, {{"down","MK"}})
+          queue_input_sequence(dummy, {{"down","MK"}})
           for i = 1, 30 do
-            table.insert(_sequence, {"down","back"})
-            queue_command(frame_number + i, {command = clear_motion_data, args = {_player}})
+            table.insert(sequence, {"down","back"})
+            Queue_Command(gamestate.frame_number + i, {command = clear_motion_data, args = {player}})
           end
-        elseif _name == "parry_high" then
-          queue_input_sequence(_dummy, {{"MK"}})
-          queue_command(frame_number + 1, {command = queue_input_sequence, args = {_player, {{"forward"}}}})
-          queue_command(frame_number + 2, {command = clear_motion_data, args = {_player}})
+        elseif name == "parry_high" then
+          queue_input_sequence(dummy, {{"MK"}})
+          Queue_Command(gamestate.frame_number + 1, {command = queue_input_sequence, args = {player, {{"forward"}}}})
+          Queue_Command(gamestate.frame_number + 2, {command = clear_motion_data, args = {player}})
           --24 25
-        elseif _name == "parry_low" then
-          queue_input_sequence(_dummy, {{"down","MK"}})
-          queue_command(frame_number + 1, {command = queue_input_sequence, args = {_player, {{"down"}}}})
-          queue_command(frame_number + 2, {command = clear_motion_data, args = {_player}})
+        elseif name == "parry_low" then
+          queue_input_sequence(dummy, {{"down","MK"}})
+          Queue_Command(gamestate.frame_number + 1, {command = queue_input_sequence, args = {player, {{"down"}}}})
+          Queue_Command(gamestate.frame_number + 2, {command = clear_motion_data, args = {player}})
           --26
-        elseif _name == "parry_air" then
-          _m_dummy_reset_pos_offset = {100, 40}
-          queue_input_sequence(_dummy, {{"up"},{"up"},{},{},{},{},{"HK"}})
-          queue_input_sequence(_player, {{"up"}})
-          queue_command(frame_number + 14, {command = queue_input_sequence, args = {_player, {{"forward"}}}})
-          queue_command(frame_number + 15, {command = clear_motion_data, args = {_player}})
-          -- queue_command(frame_number + 80, {command = write_pos, args = {_player, _player.pos_x, 0}})
-          queue_command(frame_number + 80, {command = land_player, args = {_player}})
+        elseif name == "parry_air" then
+          m_dummy_reset_pos_offset = {100, 40}
+          queue_input_sequence(dummy, {{"up"},{"up"},{},{},{},{},{"HK"}})
+          queue_input_sequence(player, {{"up"}})
+          Queue_Command(gamestate.frame_number + 14, {command = queue_input_sequence, args = {player, {{"forward"}}}})
+          Queue_Command(gamestate.frame_number + 15, {command = clear_motion_data, args = {player}})
+          -- Queue_Command(gamestate.frame_number + 80, {command = write_pos, args = {player, player.pos_x, 0}})
+          Queue_Command(gamestate.frame_number + 80, {command = land_player, args = {player}})
           --27
         end
-        if _is_jump then
+        if is_jump then
           -- recording_options.infinite_loop = true
-          queue_command(frame_number + _clear_jump_after, {command = clear_motion_data, args = {_player}})
-          queue_command(frame_number + _clear_jump_after, {command = function() recording_options.ignore_motion = true end})
-          queue_command(frame_number + _clear_jump_after + 100, {command = land_player, args = {_player}})
+          Queue_Command(gamestate.frame_number + clear_jump_after, {command = clear_motion_data, args = {player}})
+          Queue_Command(gamestate.frame_number + clear_jump_after, {command = function() recording_options.ignore_motion = true end})
+          Queue_Command(gamestate.frame_number + clear_jump_after + 100, {command = land_player, args = {player}})
         end
 
-        write_pos(_player, _m_player_reset_pos[1], _m_player_reset_pos[2])
-        write_pos(_dummy, _player.pos_x + _m_dummy_reset_pos_offset[1], _player.pos_y + _m_dummy_reset_pos_offset[2])
-        fix_screen_pos(_player, _dummy)
-        queue_input_sequence(_player, _sequence)
-        print(_name)
+        write_pos(player, m_player_reset_pos[1], m_player_reset_pos[2])
+        write_pos(dummy, player.pos_x + m_dummy_reset_pos_offset[1], player.pos_y + m_dummy_reset_pos_offset[2])
+        fix_screen_pos(player, dummy)
+        queue_input_sequence(player, sequence)
+        print(name)
       else
-        _state = "finished"
+        state = "finished"
         i_movement_list = 1
         return
       end
     end
-    if _setup then
+    if setup then
       if not allow_dummy_movement then
-        write_pos(_dummy, _player.pos_x + _m_dummy_reset_pos_offset[1], _player.pos_y + _m_dummy_reset_pos_offset[2])
+        write_pos(dummy, player.pos_x + m_dummy_reset_pos_offset[1], player.pos_y + m_dummy_reset_pos_offset[2])
       end
-      record_framedata(_player, {}, _name)
+      record_framedata(player, {}, name)
     end
   end
 end
 
 local i_wakeups = 1
-local _previous_posture = 0
-function record_wakeups(_player_obj)
-  local _player = _player_obj
-  local _dummy = _player_obj.other
-  if is_in_match and debug_settings.record_framedata then
+local previous_posture = 0
+function record_wakeups(player_obj)
+  local player = player_obj
+  local dummy = player_obj.other
+  if gamestate.is_in_match and debug_settings.record_framedata then
 
-    if not _setup and _state == "start" then
-      _setup = true
-      _state = "ready"
+    if not setup and state == "start" then
+      setup = true
+      state = "ready"
     end
-    if _state == "wait_for_match_start" then
-      if has_match_just_started then
-        _state = "queue_move"
+    if state == "wait_for_match_start" then
+      if gamestate.has_match_just_started then
+        state = "queue_move"
       end
-    elseif _state == "ready" then
-      if is_in_match then
-        _state = "queue_move"
+    elseif state == "ready" then
+      if gamestate.is_in_match then
+        state = "queue_move"
       end
     end
 
-    if _state == "queue_move" then
+    if state == "queue_move" then
       if i_wakeups <= #wakeups_list then
         recording_options = {recording_wakeups = true, record_next_anim = true}
         current_attack = deepcopy(wakeups_list[i_wakeups])
-        if _dummy.char_str ~= current_attack.character then
-          _state = "wait_for_match_start"
-          table.insert(after_load_state_callback, {command = force_select_character, args = {_player.id, _player.char_str, 1, "LP"} })
-          table.insert(after_load_state_callback, {command = force_select_character, args = {_dummy.id, current_attack.character, 1, "MK"} })
-          start_character_select_sequence()
+        if dummy.char_str ~= current_attack.character then
+          state = "wait_for_match_start"
+          Register_After_Load_State(character_select.force_select_character, {player.id, player.char_str, 1, "LP"} )
+          Register_After_Load_State(character_select.force_select_character, {dummy.id, current_attack.character, 1, "MK"})
+          character_select.start_character_select_sequence()
           return
         end
         current_attack.reset_pos_x = 440
-        _dummy_offset_x = 60
+        dummy_offset_x = 60
         if current_attack.name == "raida" then
-          _name = "wakeup"
+          name = "wakeup"
         elseif current_attack.name == "kazekiri" then
-          _name = "wakeup_quick"
+          name = "wakeup_quick"
         elseif current_attack.name == "kubiori" then
-          _name = "wakeup_quick_reverse"
+          name = "wakeup_quick_reverse"
         end
-        write_pos(_player, current_attack.reset_pos_x, 0)
-        write_pos(_dummy, current_attack.reset_pos_x + _dummy_offset_x, 0)
-        memory.writebyte(_dummy.stun_bar_char_addr, 0)
-        memory.writebyte(_dummy.life_addr, 160)
-        fix_screen_pos(_player, _dummy)
-        queue_input_sequence(_dummy, current_attack.sequence)
+        write_pos(player, current_attack.reset_pos_x, 0)
+        write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
+        memory.writebyte(dummy.stun_bar_char_addr, 0)
+        memory.writebyte(dummy.life_addr, 160)
+        fix_screen_pos(player, dummy)
+        queue_input_sequence(dummy, current_attack.sequence)
 
-        _state = "wait_for_knockdown"
+        state = "wait_for_knockdown"
       else
         i_wakeups = 1
-        _state = "finished"
+        state = "finished"
         return
       end
     end
     if recording then
-      if _player.posture == 0 and _previous_posture == 0x26 then
+      if player.posture == 0 and previous_posture == 0x26 then
         recording_options.insert_wakeup = true
-        _state = "wait_for_idle"
+        state = "wait_for_idle"
       end
-      if _state == "wait_for_idle" then
-        if _player.is_idle and _player.has_animation_just_changed and _player.action == 0 then
-          end_recording(_player, {}, _name)
+      if state == "wait_for_idle" then
+        if player.is_idle and player.has_animation_just_changed and player.action == 0 then
+          end_recording(player, {}, name)
           i_wakeups = i_wakeups + 1
-          _state = "queue_move"
+          state = "queue_move"
         end
-      elseif _state == "recording" then
-        if _player.has_animation_just_changed then
-          new_animation(_player, {}, _name)
+      elseif state == "recording" then
+        if player.has_animation_just_changed then
+          new_animation(player, {}, name)
         end
       end
     else
-      if _state == "wait_for_knockdown" then
-        if _player.posture == 0x26 then
-          clear_motion_data(_player)
-          new_recording(_player, {}, _name)
-          _state = "recording"
+      if state == "wait_for_knockdown" then
+        if player.posture == 0x26 then
+          clear_motion_data(player)
+          new_recording(player, {}, name)
+          state = "recording"
         end
       end
     end
-    if _setup then
-      local _should_tap_down = _player.previous_can_fast_wakeup == 0 and _player.can_fast_wakeup == 1
+    if setup then
+      local should_tap_down = player.previous_can_fast_wakeup == 0 and player.can_fast_wakeup == 1
 
-      if _should_tap_down and current_attack.quick then
-        local _input = joypad.get()
-        _input[_player.prefix..' Down'] = true
-        joypad.set(_input)
+      if should_tap_down and current_attack.quick then
+        local input = joypad.get()
+        input[player.prefix..' Down'] = true
+        joypad.set(input)
       end
 
-      record_framedata(_player, {}, _name)
+      record_framedata(player, {}, name)
     end
-    _previous_posture = _player.posture
+    previous_posture = player.posture
   end
 end
 
@@ -1187,9 +1203,9 @@ local landing_height = hi
 local n_no_data = 0
 
 function record_landing()
-  local _player = P1
-  if _state == "start" and not _setup and has_match_just_started then
-    make_invulnerable(_player.other, true)
+  local player = gamestate.P1
+  if state == "start" and not setup and gamestate.has_match_just_started then
+    make_invulnerable(player.other, true)
 
     landing_categories = {
       {name = "empty_jumps", list = empty_jumps},
@@ -1197,10 +1213,10 @@ function record_landing()
       {name = "jumping_target_combos", list = jumping_target_combos},
       {name = "air_specials", list = air_specials}
     }
-    _setup = true
-    _state = "queue_move"
+    setup = true
+    state = "queue_move"
   end
-  if _state == "queue_move" then
+  if state == "queue_move" then
     --jumps
     --normals
     --specials
@@ -1210,11 +1226,11 @@ function record_landing()
       current_landing_category = landing_categories[i_landing_categories]
     else
       if i_landing_categories >= #landing_categories then
-        _state = "finished"
+        state = "finished"
         i_landings = 1
         i_landing_categories = 1
         current_landing_category = {}
-        make_invulnerable(_dummy, false)
+        make_invulnerable(dummy, false)
         return
       end
       i_landing_categories = i_landing_categories + 1
@@ -1222,7 +1238,7 @@ function record_landing()
       current_landing_category = landing_categories[i_landing_categories]
       if #landing_categories[i_landing_categories].list == 0 then
         i_landing_categories = i_landing_categories + 1
-        _state = "finished"
+        state = "finished"
       end
       return
     end
@@ -1239,77 +1255,77 @@ function record_landing()
 
     if current_landing_category.name == "empty_jumps" then
       current_attack = deepcopy(empty_jumps[i_landings])
-      local _, _startup = 0, 4
+      local _, startup = 0, 4
       if current_attack.name == "jump_forward"
       or current_attack.name == "jump_neutral"
       or current_attack.name == "jump_back"
       then
-        _, _startup = find_frame_data_by_name(_player.char_str, "jump_startup")
+        _, startup = find_frame_data_by_name(player.char_str, "jump_startup")
       end
 
       if current_attack.name == "sjump_forward"
       or current_attack.name == "sjump_neutral"
       or current_attack.name == "sjump_back"
       then
-        _, _startup = find_frame_data_by_name(_player.char_str, "sjump_startup")
+        _, startup = find_frame_data_by_name(player.char_str, "sjump_startup")
       end
-      current_attack.initial_jump_offset = #_startup.frames + 2
+      current_attack.initial_jump_offset = #startup.frames + 2
       landing_recording.act_offset = 0
     elseif current_landing_category.name == "jumping_normals" then
       -- current_attack = deepcopy(landing_j_normals[i_landings])
         current_attack = {name = "uf_HP"}
 
-        local _sequence = {{"up","forward"},{"up","forward"},{"up","forward"},{},{},{}}
-        current_attack.sequence = _sequence
+        local sequence = {{"up","forward"},{"up","forward"},{"up","forward"},{},{},{}}
+        current_attack.sequence = sequence
         landing_recording.sequence = {{"HP"}}
         current_attack.offset = #landing_recording.sequence
         landing_recording.act_offset = #landing_recording.sequence
     end
-    local _key, _fd = find_frame_data_by_name(_player.char_str, current_attack.name)
-    if _fd then
-      landing_recording.animation = _key
-      landing_recording.max_frames = #_fd.frames
+    local key, fd = find_frame_data_by_name(player.char_str, current_attack.name)
+    if fd then
+      landing_recording.animation = key
+      landing_recording.max_frames = #fd.frames
     else
       print(current_attack.name, "framedata not found")
     end
 
     print(current_attack.name)
-    setup_landing_state(_player, current_attack.sequence, current_attack.initial_jump_offset)
+    setup_landing_state(player, current_attack.sequence, current_attack.initial_jump_offset)
     n_no_data = 0
-    _state = "setting_up"
+    state = "setting_up"
   end
 
-  if _state == "next_landing_frame" then
+  if state == "next_landing_frame" then
     if landing_recording.frame <= 1 then
-      table.insert(after_load_state_callback, {command = queue_landing_move, args = {landing_recording.sequence}})
+      Register_After_Load_State(queue_landing_move, {landing_recording.sequence})
     end
     landing_recording.frame = landing_recording.frame + 1
     landing_recording.act_frame_number = landing_recording.act_frame_number + 1
-    table.insert(after_load_state_callback, {command = landing_reset_player_pos})
-    table.insert(after_load_state_callback, {command = increment_landing_ss})
+    Register_After_Load_State(landing_reset_player_pos)
+    Register_After_Load_State(increment_landing_ss)
     savestate.load(landing_ss)
-    _state = "setting_up"
+    state = "setting_up"
   end
 
-  if _state == "setup_landing" then
+  if state == "setup_landing" then
     if landing_recording.frame == 0 then
-      table.insert(after_load_state_callback, {command = queue_landing_move, args = {landing_recording.sequence}})
-      table.insert(after_load_state_callback, {command = landing_write_player_pos_y, args = {landing_height} })
-      table.insert(after_load_state_callback, {command = landing_queue_guess})
-      -- table.insert(after_load_state_callback, {command = print_info})
+      Register_After_Load_State(queue_landing_move, {landing_recording.sequence})
+      Register_After_Load_State(landing_write_player_pos_y, {landing_height})
+      Register_After_Load_State(landing_queue_guess)
+      -- Register_After_Load_State(print_info})
 
       savestate.load(landing_ss)
-      _state = "wait_for_setup"
+      state = "wait_for_setup"
     else
-      table.insert(after_load_state_callback, {command = landing_write_player_pos_y, args = {landing_height} })
-      table.insert(after_load_state_callback, {command = landing_queue_guess})
-      -- table.insert(after_load_state_callback, {command = print_info})
+      Register_After_Load_State(landing_write_player_pos_y, {landing_height})
+      Register_After_Load_State(landing_queue_guess)
+      -- Register_After_Load_State(print_info})
       savestate.load(landing_ss)
-      _state = "wait_for_setup"
+      state = "wait_for_setup"
     end
   end
 
-  if _state == "finished_guess" then
+  if state == "finished_guess" then
     if hi - 1 == 0 then
       n_no_data = n_no_data + 1
     else
@@ -1317,335 +1333,335 @@ function record_landing()
     end
     if n_no_data > 15 then
       i_landings = i_landings + 1
-      _state = "queue_move"
+      state = "queue_move"
       return
     end
-    -- frame_data[_player.char_str][landing_recording.animation].frames[landing_recording.frame].landing = -hi
-    print(current_attack.name, landing_recording.frame, hi - 1, P1.animation, P1.animation_frame_hash)
+    -- frame_data[player.char_str][landing_recording.animation].frames[landing_recording.frame].landing = -hi
+    print(current_attack.name, landing_recording.frame, hi - 1, gamestate.P1.animation, gamestate.P1.animation_frame_hash)
     lo, hi = -100, 60
     landing_height = hi
     if landing_recording.frame < landing_recording.max_frames then
-      _state = "next_landing_frame"
+      state = "next_landing_frame"
     else
       i_landings = i_landings + 1
-      _state = "queue_move"
+      state = "queue_move"
     end
   end
 end
 
 landing_ss = savestate.create("data/"..rom_name.."/savestates/landing.fs")
 
-function setup_landing_state(_player, _sequence, _jump_offset)
-  queue_input_sequence(_player, _sequence)
-  write_pos(_player, 400, 0)
-  queue_command(frame_number + _jump_offset - 1 - 1, {command = clear_motion_data, args={_player}})
-  queue_command(frame_number + _jump_offset - 1 - 1, {command = write_pos, args={_player, 400, 100}})
-  queue_command(frame_number + _jump_offset - 1, {command = savestate.save, args={landing_ss}})
-  queue_command(frame_number + _jump_offset - 1, {command = function() print("save ss", frame_number) end})
-  queue_command(frame_number + _jump_offset, {command = function() _state = "setup_landing" end})
-  landing_recording.act_frame_number = frame_number + _jump_offset
-  print(frame_number, landing_recording.act_frame_number)
+function setup_landing_state(player, sequence, jump_offset)
+  queue_input_sequence(player, sequence)
+  write_pos(player, 400, 0)
+  Queue_Command(gamestate.frame_number + jump_offset - 1 - 1, {command = clear_motion_data, args={player}})
+  Queue_Command(gamestate.frame_number + jump_offset - 1 - 1, {command = write_pos, args={player, 400, 100}})
+  Queue_Command(gamestate.frame_number + jump_offset - 1, {command = savestate.save, args={landing_ss}})
+  Queue_Command(gamestate.frame_number + _jump_offset - 1, {command = function() print("save ss", gamestate.frame_number) end})
+  Queue_Command(gamestate.frame_number + _jump_offset, {command = function() state = "setup_landing" end})
+  landing_recording.act_frame_number = gamestate.frame_number + jump_offset
+  print(gamestate.frame_number, landing_recording.act_frame_number)
 end
 
 function print_info()
-  print(">", frame_number, P1.animation, P1.animation_frame_hash)
+  print(">", gamestate.frame_number, gamestate.P1.animation, gamestate.P1.animation_frame_hash)
 end
 
 
-function landing_write_player_pos_y(_y)
-  clear_motion_data(P1)
-  write_pos_y(P1, _y)
+function landing_write_player_pos_y(y)
+  clear_motion_data(gamestate.P1)
+  write_pos_y(gamestate.P1, y)
 end
 
 function landing_reset_player_pos()
-  clear_motion_data(P1)
-  write_pos(P1, 400, 100)
+  clear_motion_data(gamestate.P1)
+  write_pos(gamestate.P1, 400, 100)
 end
 
 function landing_queue_guess()
-  queue_command(frame_number + landing_recording.act_offset + 1, {command = guess_landing_height})
+  Queue_Command(gamestate.frame_number + landing_recording.act_offset + 1, {command = guess_landing_height})
 end
 
 function increment_landing_ss()
   savestate.save(landing_ss)
-  queue_command(frame_number + 1, {command = function() _state = "setup_landing" end})
-  -- queue_command(frame_number + _delta + 1, {command = function() print("save ss", frame_number) end})
+  Queue_Command(gamestate.frame_number + 1, {command = function() state = "setup_landing" end})
+  -- Queue_Command(gamestate.frame_number + delta + 1, {command = function() print("save ss", gamestate.frame_number) end})
 end
 
-function landing_queue_write_pos(_val)
-  local _delta = landing_recording.act_frame_number - frame_number
-  queue_command(_delta, {command = write_pos, args={P1, _val}})
+function landing_queue_write_pos(val)
+  local delta = landing_recording.act_frame_number - gamestate.frame_number
+  Queue_Command(delta, {command = write_pos, args={gamestate.P1, val}})
 end
 
-function queue_landing_move(_sequence)
-  queue_input_sequence(P1, _sequence)
+function queue_landing_move(sequence)
+  queue_input_sequence(gamestate.P1, sequence)
 end
 
 
 function guess_landing_height()
-  local _player = P1
-  local result = _player.posture == 0
+  local player = gamestate.P1
+  local result = player.posture == 0
   if result then
     lo = landing_height
   else
     hi = landing_height
   end
   if hi - lo == 1 then
-    _state = "finished_guess"
+    state = "finished_guess"
     return true
   end
   if lo <= hi then
     landing_height = lo + math.floor((hi - lo) / 2)
   end
-  _state = "setup_landing"
+  state = "setup_landing"
   return false
 end
 
 function queue_guess_landing_height()
-  queue_command(frame_number + 1, {command = guess_landing_height})
+  Queue_Command(gamestate.frame_number + 1, {command = guess_landing_height})
 end
 
 
-function record_attacks(_player_obj, _projectiles)
-  if is_in_match and debug_settings.record_framedata then
-    _player = _player_obj
-    _dummy = _player_obj.other
+function record_attacks(player_obj, projectiles)
+  if gamestate.is_in_match and debug_settings.record_framedata then
+    player = player_obj
+    dummy = player_obj.other
 
-    function has_projectiles(_p)
-      for _id, _obj in pairs(_projectiles) do
-        if _obj.emitter_id == _p.id then
+    function has_projectiles(p)
+      for _, obj in pairs(projectiles) do
+        if obj.emitter_id == p.id then
           return true
         end
       end
       return false
     end
 
-    _far_dist = character_specific[_player.char_str].half_width + 80
-    _close_dist = character_specific[_player.char_str].half_width + character_specific[_dummy.char_str].half_width
+    far_dist = character_specific[player.char_str].half_width + 80
+    close_dist = character_specific[player.char_str].half_width + character_specific[dummy.char_str].half_width
 
-    if _player.is_idle then
-      if _setup then
+    if player.is_idle then
+      if setup then
         if recording then
-          if _player.has_animation_just_changed and _player.action == 0 then
-            end_recording(_player, _projectiles, _name)
+          if player.has_animation_just_changed and player.action == 0 then
+            end_recording(player, projectiles, name)
           end
         end
       end
-    elseif _state == "wait_for_initial_anim" and _player.has_animation_just_changed then
-      if _player.is_attacking or _player.is_throwing then
-        new_recording(_player, _projectiles, _name)
-        _state = "new_recording"
+    elseif state == "wait_for_initial_anim" and player.has_animation_just_changed then
+      if player.is_attacking or player.is_throwing then
+        new_recording(player, projectiles, name)
+        state = "new_recording"
 
-  --     elseif _player.pending_input_sequence == nil then
-  --       print("----->", _player.animation)
+  --     elseif player.pending_input_sequence == nil then
+  --       print("----->", player.animation)
       elseif current_attack.name and current_attack.name == "pa" then
-        new_recording(_player, _projectiles, _name)
-        _state = "new_recording"
+        new_recording(player, projectiles, name)
+        state = "new_recording"
       end
     elseif recording then
-      if _player.has_animation_just_changed then
-        new_animation(_player, _projectiles, _name)
+      if player.has_animation_just_changed then
+        new_animation(player, projectiles, name)
       end
     end
-    if _state == "ready" then
-      if has_projectiles(_player) then
-        _state = "wait_for_projectiles"
-      elseif _dummy.is_idle then
-        _state = "update_hit_state"
+    if state == "ready" then
+      if has_projectiles(player) then
+        state = "wait_for_projectiles"
+      elseif dummy.is_idle then
+        state = "update_hit_state"
       end
-    elseif _state == "wait_for_projectiles" then
-      if not has_projectiles(_player) and _dummy.is_idle then
-        _state = "update_hit_state"
+    elseif state == "wait_for_projectiles" then
+      if not has_projectiles(player) and dummy.is_idle then
+        state = "update_hit_state"
       end
-    elseif _state == "wait_for_match_start" then
-      if has_match_just_started then
-        _state = "queue_move"
+    elseif state == "wait_for_match_start" then
+      if gamestate.has_match_just_started then
+        state = "queue_move"
       end
     end
 
-    if not _setup and _state == "start" and is_in_match then
-      _setup = true
-      _state = "ready"
-      local _moves = deepcopy(move_list[_player.char_str])
+    if not setup and state == "start" and gamestate.is_in_match then
+      setup = true
+      state = "ready"
+      local moves = deepcopy(move_list[player.char_str])
       local i = 1
       specials = {}
       supers = {}
       block_pattern = nil
-      while i <= #_moves do
-        if _moves[i].air and _moves[i].air == "yes" then
-          _moves[i].air = nil
-          local _move = deepcopy(_moves[i])
-          _move.air = "only"
-          _move.name = _move.name .. "_air"
-          table.insert(_moves, i + 1, _move)
+      while i <= #moves do
+        if moves[i].air and moves[i].air == "yes" then
+          moves[i].air = nil
+          local move = deepcopy(moves[i])
+          move.air = "only"
+          move.name = move.name .. "air"
+          table.insert(moves, i + 1, move)
         end
-        if _moves[i].move_type == "special" then
-          if _moves[i].name == "tsumuji" then
-            local _move = deepcopy(_moves[i])
-            _move.name = "tsumuji_low"
-            table.insert(_moves, i + 1, _move)
-          elseif _moves[i].name == "ducking" then
-            local _move = deepcopy(_moves[i])
-            _move.name = "ducking_upper"
-            table.insert(_moves, i + 1, _move)
-            _move = deepcopy(_moves[i])
-            _move.name = "ducking_straight"
-            table.insert(_moves, i + 1, _move)
-          elseif _moves[i].name == "hyakki" then
-            local _move = deepcopy(_moves[i])
-            _move.name = "hyakki_kick"
-            table.insert(_moves, i + 1, _move)
-            _move = deepcopy(_moves[i])
-            _move.name = "hyakki_punch"
-            table.insert(_moves, i + 1, _move)
-            _move = deepcopy(_moves[i])
-            _move.name = "hyakki_throw"
-            table.insert(_moves, i + 1, _move)
-          elseif _moves[i].name == "hayate" then
-            local _move = deepcopy(_moves[i])
-            _move.name = "hayate_3"
-            table.insert(_moves, i + 1, _move)
-            _move = deepcopy(_moves[i])
-            _move.name = "hayate_2"
-            table.insert(_moves, i + 1, _move)
-            _move = deepcopy(_moves[i])
-            _move.name = "hayate_1"
-            table.insert(_moves, i + 1, _move)
-          elseif _moves[i].name == "dashing_head_attack" then
-            local _move = deepcopy(_moves[i])
-            _move.name = "dashing_head_attack_high"
-            table.insert(_moves, i + 1, _move)
-          elseif _moves[i].name == "tourouzan" then
-            local _move = deepcopy(_moves[i])
-            _move.name = "tourouzan_2"
-            table.insert(_moves, i + 1, _move)
-            _move = deepcopy(_moves[i])
-            _move.name = "tourouzan_3"
-            table.insert(_moves, i + 2, _move)
-          elseif _moves[i].name == "byakko" then
-            _moves[i].buttons = {"LP","EXP"}
-          elseif _moves[i].name == "kobokushi" then
-            _moves[i].buttons = {"LP","EXP"}
+        if moves[i].move_type == "special" then
+          if moves[i].name == "tsumuji" then
+            local move = deepcopy(moves[i])
+            move.name = "tsumuji_low"
+            table.insert(moves, i + 1, move)
+          elseif moves[i].name == "ducking" then
+            local move = deepcopy(moves[i])
+            move.name = "ducking_upper"
+            table.insert(moves, i + 1, move)
+            move = deepcopy(moves[i])
+            move.name = "ducking_straight"
+            table.insert(moves, i + 1, move)
+          elseif moves[i].name == "hyakki" then
+            local move = deepcopy(moves[i])
+            move.name = "hyakki_kick"
+            table.insert(moves, i + 1, move)
+            move = deepcopy(moves[i])
+            move.name = "hyakki_punch"
+            table.insert(moves, i + 1, move)
+            move = deepcopy(moves[i])
+            move.name = "hyakki_throw"
+            table.insert(moves, i + 1, move)
+          elseif moves[i].name == "hayate" then
+            local move = deepcopy(moves[i])
+            move.name = "hayate_3"
+            table.insert(moves, i + 1, move)
+            move = deepcopy(moves[i])
+            move.name = "hayate_2"
+            table.insert(moves, i + 1, move)
+            move = deepcopy(moves[i])
+            move.name = "hayate_1"
+            table.insert(moves, i + 1, move)
+          elseif moves[i].name == "dashing_head_attack" then
+            local move = deepcopy(moves[i])
+            move.name = "dashing_head_attack_high"
+            table.insert(moves, i + 1, move)
+          elseif moves[i].name == "tourouzan" then
+            local move = deepcopy(moves[i])
+            move.name = "tourouzan_2"
+            table.insert(moves, i + 1, move)
+            move = deepcopy(moves[i])
+            move.name = "tourouzan_3"
+            table.insert(moves, i + 2, move)
+          elseif moves[i].name == "byakko" then
+            moves[i].buttons = {"LP","EXP"}
+          elseif moves[i].name == "kobokushi" then
+            moves[i].buttons = {"LP","EXP"}
           end
-          if #_moves[i].buttons > 0 then
-            for j = 1, #_moves[i].buttons do
+          if #moves[i].buttons > 0 then
+            for j = 1, #moves[i].buttons do
               table.insert(specials, {})
-              specials[#specials].air = _moves[i].air
-              specials[#specials].button = _moves[i].buttons[j]
-              specials[#specials].input = deepcopy(_moves[i].input)
-              specials[#specials].name = _moves[i].name
-              if _moves[i].name == "tourouzan_3" and _moves[i].buttons[j] == "EXP" then
-                local _move = deepcopy(_moves[i])
-                _move.name = "tourouzan_4"
-                _move.buttons = {"EXP"}
-                table.insert(_moves, i + 1, _move)
-                _move = deepcopy(_moves[i])
-                _move.name = "tourouzan_5"
-                _move.buttons = {"EXP"}
-                table.insert(_moves, i + 2, _move)
+              specials[#specials].air = moves[i].air
+              specials[#specials].button = moves[i].buttons[j]
+              specials[#specials].input = deepcopy(moves[i].input)
+              specials[#specials].name = moves[i].name
+              if moves[i].name == "tourouzan_3" and moves[i].buttons[j] == "EXP" then
+                local move = deepcopy(moves[i])
+                move.name = "tourouzan_4"
+                move.buttons = {"EXP"}
+                table.insert(moves, i + 1, move)
+                move = deepcopy(moves[i])
+                move.name = "tourouzan_5"
+                move.buttons = {"EXP"}
+                table.insert(moves, i + 2, move)
               end
             end
           else
             table.insert(specials, {})
-            specials[#specials].name = _moves[i].name
-            specials[#specials].air = _moves[i].air
+            specials[#specials].name = moves[i].name
+            specials[#specials].air = moves[i].air
             specials[#specials].button = nil
-            specials[#specials].input = deepcopy(_moves[i].input)
+            specials[#specials].input = deepcopy(moves[i].input)
           end
-        elseif _moves[i].move_type == "sa1"
-        or _moves[i].move_type == "sa2"
-        or _moves[i].move_type == "sa3"
-        or _moves[i].move_type == "sgs"
-        or _moves[i].move_type == "kkz" then
-          if _moves[i].name == "hammer_mountain" then
-            local _move = deepcopy(_moves[i])
-            _move.name = "hammer_mountain_miss"
-            table.insert(_moves, i + 1, _move)
+        elseif moves[i].move_type == "sa1"
+        or moves[i].move_type == "sa2"
+        or moves[i].move_type == "sa3"
+        or moves[i].move_type == "sgs"
+        or moves[i].move_type == "kkz" then
+          if moves[i].name == "hammer_mountain" then
+            local move = deepcopy(moves[i])
+            move.name = "hammer_mountain_miss"
+            table.insert(moves, i + 1, move)
           end
-          if #_moves[i].buttons > 0 then
-            for j = 1, #_moves[i].buttons do
+          if #moves[i].buttons > 0 then
+            for j = 1, #moves[i].buttons do
               table.insert(supers, {})
-              supers[#supers].air = _moves[i].air
-              supers[#supers].button = _moves[i].buttons[j]
-              supers[#supers].input = deepcopy(_moves[i].input)
-              supers[#supers].name = _moves[i].name
-              supers[#supers].move_type = _moves[i].move_type
+              supers[#supers].air = moves[i].air
+              supers[#supers].button = moves[i].buttons[j]
+              supers[#supers].input = deepcopy(moves[i].input)
+              supers[#supers].name = moves[i].name
+              supers[#supers].move_type = moves[i].move_type
             end
           else
             table.insert(supers, {})
-            supers[#supers].name = _moves[i].name
-            supers[#supers].move_type = _moves[i].move_type
-            supers[#supers].air = _moves[i].air
+            supers[#supers].name = moves[i].name
+            supers[#supers].move_type = moves[i].move_type
+            supers[#supers].air = moves[i].air
             supers[#supers].button = nil
-            supers[#supers].input = deepcopy(_moves[i].input)
+            supers[#supers].input = deepcopy(moves[i].input)
           end
         end
 
         i = i + 1
       end
-      if _player.char_str == "gill" then
-        local _ressurection = table.remove(supers, 1)
-        table.insert(supers, _ressurection)
-      elseif _player.char_str == "oro" then
-        local _move = deepcopy(supers[1])
-        _move.name = "kishinriki_activation"
-        _move.button = nil
-        _move.input[#_move.input] = {"forward","LP"}
-        table.insert(supers, 1, _move)
-      elseif _player.char_str == "q" then
-        local _move = deepcopy(supers[3])
-        _move.name = "total_destruction_activation"
-        _move.button = nil
-        _move.input[#_move.input] = {"forward","LP"}
-        table.insert(supers, 3, _move)
-        local _move = supers[4]
-        _move.name = "total_destruction_attack"
-        _move.button = nil
-        _move.input = {{"down"},{"down","forward"},{"forward","LP"}}
-        local _move = deepcopy(supers[4])
-        _move.name = "total_destruction_throw"
-        _move.button = nil
-        _move.input = {{"down"},{"down","forward"},{"forward","LK"}}
-        table.insert(supers, _move)
-      elseif _player.char_str == "ryu" then
-        local _move = deepcopy(supers[3])
-        _move.name = "denjin_hadouken_2"
+      if player.char_str == "gill" then
+        local ressurection = table.remove(supers, 1)
+        table.insert(supers, ressurection)
+      elseif player.char_str == "oro" then
+        local move = deepcopy(supers[1])
+        move.name = "kishinriki_activation"
+        move.button = nil
+        move.input[#move.input] = {"forward","LP"}
+        table.insert(supers, 1, move)
+      elseif player.char_str == "q" then
+        local move = deepcopy(supers[3])
+        move.name = "total_destruction_activation"
+        move.button = nil
+        move.input[#move.input] = {"forward","LP"}
+        table.insert(supers, 3, move)
+        local move = supers[4]
+        move.name = "total_destruction_attack"
+        move.button = nil
+        move.input = {{"down"},{"down","forward"},{"forward","LP"}}
+        local move = deepcopy(supers[4])
+        move.name = "total_destruction_throw"
+        move.button = nil
+        move.input = {{"down"},{"down","forward"},{"forward","LK"}}
+        table.insert(supers, move)
+      elseif player.char_str == "ryu" then
+        local move = deepcopy(supers[3])
+        move.name = "denjin_hadouken_2"
         local n = 30
         for j = 1, n do
-          table.insert(_move.input, {"LP","down","forward"})
-          table.insert(_move.input, {"LP","down","back"})
+          table.insert(move.input, {"LP","down","forward"})
+          table.insert(move.input, {"LP","down","back"})
         end
-        table.insert(supers, _move)
-        _move = deepcopy(supers[3])
-        _move.name = "denjin_hadouken_3"
+        table.insert(supers, move)
+        move = deepcopy(supers[3])
+        move.name = "denjin_hadouken_3"
         n = 35
         for j = 1, n do
-          table.insert(_move.input, {"LP","down","forward"})
-          table.insert(_move.input, {"LP","down","back"})
+          table.insert(move.input, {"LP","down","forward"})
+          table.insert(move.input, {"LP","down","back"})
         end
-        table.insert(supers, _move)
-        _move = deepcopy(supers[3])
-        _move.name = "denjin_hadouken_4"
+        table.insert(supers, move)
+        move = deepcopy(supers[3])
+        move.name = "denjin_hadouken_4"
         n = 45
         for j = 1, n do
-          table.insert(_move.input, {"LP","down","forward"})
-          table.insert(_move.input, {"LP","down","back"})
+          table.insert(move.input, {"LP","down","forward"})
+          table.insert(move.input, {"LP","down","back"})
         end
-        table.insert(supers, _move)
-        _move = deepcopy(supers[3])
-        _move.name = "denjin_hadouken_5"
+        table.insert(supers, move)
+        move = deepcopy(supers[3])
+        move.name = "denjin_hadouken_5"
         n = 65
         for j = 1, n do
-          table.insert(_move.input, {"LP","down","forward"})
-          table.insert(_move.input, {"LP","down","back"})
+          table.insert(move.input, {"LP","down","forward"})
+          table.insert(move.input, {"LP","down","back"})
         end
-        table.insert(supers, _move)
+        table.insert(supers, move)
       end
 
 
-      normals = normals_list[_player.char_str]
-      other_normals = other_normals_list[_player.char_str]
-      target_combos = target_combos_list[_player.char_str]
+      normals = normals_list[player.char_str]
+      other_normals = other_normals_list[player.char_str]
+      target_combos = target_combos_list[player.char_str]
       attack_categories ={
         {name = "normals", list = normals},
         {name = "jumping_normals", list = jumping_normals},
@@ -1654,24 +1670,24 @@ function record_attacks(_player_obj, _projectiles)
         {name = "throw_uoh_pa", list = throw_uoh_pa},
         {name = "specials", list = specials},
         {name = "supers", list = supers}}
-      _state = "queue_move"
+      state = "queue_move"
     end
 
-    if _dummy.char_str ~= "urien" then
-      _state = "wait_for_match_start"
-      table.insert(after_load_state_callback, {command = force_select_character, args = {_player.id, _player.char_str, 1, "LP"} })
-      table.insert(after_load_state_callback, {command = force_select_character, args = {_dummy.id, "urien", 1, "MP"} })
-      start_character_select_sequence()
+    if dummy.char_str ~= "urien" then
+      state = "wait_for_match_start"
+      Register_After_Load_State(character_select.force_select_character, {player.id, player.char_str, 1, "LP"})
+      Register_After_Load_State(character_select.force_select_character, {dummy.id, "urien", 1, "MP"})
+      character_select.start_character_select_sequence()
       return
     end
 
-    if _state == "queue_move" then
+    if state == "queue_move" then
       if i_attacks <= #attack_categories[i_attack_categories].list then
         current_attack_category = attack_categories[i_attack_categories]
       else
         if i_attack_categories >= last_category--#attack_categories
         and (i_recording_hit_types == #recording_hit_types or current_attack_category.name == "supers") then
-          _state = "finished"
+          state = "finished"
           i_attacks = 1
           i_attack_categories = 1
           i_recording_hit_types = 1
@@ -1679,7 +1695,7 @@ function record_attacks(_player_obj, _projectiles)
           received_hits = 0
           block_until = 0
           block_max_hits = 0
-          make_invulnerable(_dummy, false)
+          make_invulnerable(dummy, false)
           return
         end
         if i_recording_hit_types < #recording_hit_types then
@@ -1693,12 +1709,12 @@ function record_attacks(_player_obj, _projectiles)
         end
         if #attack_categories[i_attack_categories].list == 0 then
           i_attack_categories = i_attack_categories + 1
-          _state = "queue_move"
+          state = "queue_move"
           return
         end
         return
       end
-      _state = "wait_for_initial_anim"
+      state = "wait_for_initial_anim"
 
       recording_options = {hit_type = recording_hit_types[i_recording_hit_types]}
 
@@ -1708,13 +1724,13 @@ function record_attacks(_player_obj, _projectiles)
       if current_attack_category.name == "normals" then
         current_attack = deepcopy(normals[i_attacks])
         current_attack.name = sequence_to_name(current_attack.sequence)
-        current_attack.reset_pos_x = _reset_pos_x
-        _dummy_offset_x = _far_dist
-        _dummy_offset_y = 0
+        current_attack.reset_pos_x = reset_pos_x
+        dummy_offset_x = far_dist
+        dummy_offset_y = 0
         if not (recording_options.hit_type == "miss") then
-          _dummy_offset_x = _close_dist
+          dummy_offset_x = close_dist
           if current_attack.far then
-            _dummy_offset_x = _far_dist
+            dummy_offset_x = far_dist
           end
         end
         if recording_geneijin then
@@ -1727,76 +1743,76 @@ function record_attacks(_player_obj, _projectiles)
         if not current_attack.name then
           current_attack.name = sequence_to_name(current_attack.sequence)
           if current_attack.air then
-            current_attack.name = current_attack.name .. "_air"
+            current_attack.name = current_attack.name .. "air"
           end
           if string.len(current_attack.name) == 2 then
             current_attack.name = "cl_" .. current_attack.name
           end
         end
-        current_attack.reset_pos_x = _reset_pos_x
-        _dummy_offset_x = _close_dist
-        _dummy_offset_y = 0
+        current_attack.reset_pos_x = reset_pos_x
+        dummy_offset_x = close_dist
+        dummy_offset_y = 0
         if not (recording_options.hit_type == "miss") then
-          _dummy_offset_x = _close_dist
+          dummy_offset_x = close_dist
         end
 
-        local _sequence = current_attack.sequence
+        local sequence = current_attack.sequence
 
         if player.char_str == "chunli" then
           if current_attack.name == "cl_MK" then
             current_attack.hits_appear_after_block = true
             block_max_hits = 2
-            local _n = 0
-            _n = 22 * block_until
+            local n = 0
+            n = 22 * block_until
             if recording_options.hit_type == "block" then
-              _n = _n + 14
+              n = n + 14
             end
-            for i = 1, _n do
-              table.insert(_sequence, {"MK"})
+            for i = 1, n do
+              table.insert(sequence, {"MK"})
             end
           elseif current_attack.name == "d_MK_air" and recording_options.hit_type == "block" then
             current_attack.offset_x = -30
-            queue_command(frame_number + #_sequence, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 5, 0}})
+            Queue_Command(gamestate.frame_number + #sequence, {command = write_pos, args={dummy, current_attack.reset_pos_x + 5, 0}})
           elseif current_attack.name == "d_HP_air" and recording_options.hit_type == "block" then
-            queue_command(frame_number + #_sequence+10, {command = write_pos_y, args={_player, 40}})
+            Queue_Command(gamestate.frame_number + #sequence+10, {command = write_pos_y, args={player, 40}})
           end
         elseif player.char_str == "hugo" then
           if current_attack.name == "d_HP_air" and recording_options.hit_type == "block" then
-            queue_command(frame_number + #_sequence + 8, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 20, 0}})
+            Queue_Command(gamestate.frame_number + #sequence + 8, {command = write_pos, args={dummy, current_attack.reset_pos_x + 20, 0}})
           end
         elseif player.char_str == "ken" then
           if current_attack.name == "MK_hold" then
             current_attack.hits_appear_after_block = true
             block_max_hits = 2
-            local _n = 0
-            _n = 22 * block_until
+            local n = 0
+            n = 22 * block_until
             if recording_options.hit_type == "block" then
-              _n = _n + 14
+              n = n + 14
             end
-            for i = 1, _n do
-              table.insert(_sequence, {"MK"})
+            for i = 1, n do
+              table.insert(sequence, {"MK"})
             end
           elseif current_attack.name == "f_HK_hold" then
-            local _n = 10
-            for i = 1, _n do
-              table.insert(_sequence, {"forward","HK"})
+            local n = 10
+            for i = 1, n do
+              table.insert(sequence, {"forward","HK"})
             end
           end
         elseif player.char_str == "makoto" then
           if current_attack.name == "f_HK_hold" then
-            local _n = 20
-            for i = 1, _n do
-              table.insert(_sequence, {"forward","HK"})
+            local n = 20
+            for i = 1, n do
+              table.insert(sequence, {"forward","HK"})
             end
           end
         elseif player.char_str == "yang" or player.char_str == "yun" then
           if current_attack.name == "raigeki_LK" and recording_options.hit_type == "block" then
-            queue_command(frame_number + #_sequence + 20, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 30, 0}})
+            Queue_Command(gamestate.frame_number + #sequence + 20, {command = write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
           end
         end
         if current_attack.max_hits == 0 and recording_options.hit_type == "block" then
           i_attacks = i_attacks + 1
-          _state = "queue_move"
+          state = "queue_move"
           return
         end
         if recording_geneijin then
@@ -1806,88 +1822,88 @@ function record_attacks(_player_obj, _projectiles)
         end
       elseif current_attack_category.name == "jumping_normals" then
         current_attack = {}
-        _dummy_offset_x = _close_dist
-        _dummy_offset_y = 0
+        dummy_offset_x = close_dist
+        dummy_offset_y = 0
         recording_options.ignore_next_anim = true
         if not (recording_options.hit_type == "miss") then
-          _dummy_offset_x = _close_dist
+          dummy_offset_x = close_dist
         end
-        local _sequence = {}
-        local _button = jumping_normals[i_attacks][1][1]
+        local sequence = {}
+        local button = jumping_normals[i_attacks][1][1]
         if i_attacks <= 6 then
-          _name = "u_" .. _button
+          name = "u_" .. button
           current_attack.jump_dir = "neutral"
         elseif i_attacks <= 12 then
-          _name = "uf_" .. _button
+          name = "uf_" .. button
           current_attack.jump_dir = "forward"
         else
-          _name = "ub_" .. _button
+          name = "ub_" .. button
           current_attack.jump_dir = "back"
         end
-        _sequence = deepcopy(jumping_normals[i_attacks])
-        current_attack.name = _name
+        sequence = deepcopy(jumping_normals[i_attacks])
+        current_attack.name = name
 
-        current_attack.sequence = _sequence
+        current_attack.sequence = sequence
         current_attack.air = true
-        current_attack.reset_pos_x = _reset_pos_x
+        current_attack.reset_pos_x = reset_pos_x
 
 
         if player.char_str == "alex" then
-          if _button == "LK" and recording_options.hit_type == "block" then
+          if button == "LK" and recording_options.hit_type == "block" then
             current_attack.offset_x = -4
           end
         end
         if player.char_str == "elena" then
-          if _button == "LP" and recording_options.hit_type == "block" then
-            queue_command(frame_number + #_sequence + 10, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 30, 0}})
-          elseif _button == "HK" then
+          if button == "LP" and recording_options.hit_type == "block" then
+            Queue_Command(gamestate.frame_number + #sequence + 10, {command = write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
+          elseif button == "HK" then
             current_attack.max_hits = 2
           end
         end
         if player.char_str == "necro" then
-          if _button == "MK" then
+          if button == "MK" then
             current_attack.player_offset_y = -10
-          elseif _button == "LP" and current_attack.jump_dir == "neutral" then
+          elseif button == "LP" and current_attack.jump_dir == "neutral" then
             current_attack.player_offset_y = -14
-          elseif _button == "MP" and current_attack.jump_dir == "neutral" then
+          elseif button == "MP" and current_attack.jump_dir == "neutral" then
             current_attack.player_offset_y = -14
           end
         end
         if player.char_str == "oro" then
-          if (_button == "LK" or _button == "MK") and recording_options.hit_type == "block" then
-            queue_command(frame_number + #_sequence + 10, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 30, 0}})
-          elseif _button == "HP" and not (current_attack.jump_dir == "neutral") then
+          if (button == "LK" or button == "MK") and recording_options.hit_type == "block" then
+            Queue_Command(gamestate.frame_number + #sequence + 10, {command = write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
+          elseif button == "HP" and not (current_attack.jump_dir == "neutral") then
             current_attack.offset_x = -12
             current_attack.max_hits = 2
           end
         end
         if player.char_str == "ryu" then
-          if _button == "MP" and not (current_attack.jump_dir == "neutral") then
+          if button == "MP" and not (current_attack.jump_dir == "neutral") then
             current_attack.player_offset_y = -24
             current_attack.max_hits = 2
-          elseif _button == "HP" and current_attack.jump_dir == "neutral" then
+          elseif button == "HP" and current_attack.jump_dir == "neutral" then
             current_attack.player_offset_y = -10
           end
         end
         if player.char_str == "shingouki" then
-          if _button == "MK" then
+          if button == "MK" then
             current_attack.player_offset_y = -14
           end
         end
         if player.char_str == "twelve" then
-          if _button == "MP" or _button == "MK" then
+          if button == "MP" or button == "MK" then
             current_attack.player_offset_y = -14
-          elseif _button == "HK" then
-            queue_command(frame_number + #_sequence + 10, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 30, 0}})
+          elseif button == "HK" then
+            Queue_Command(gamestate.frame_number + #sequence + 10, {command = write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
           end
         end
         if player.char_str == "yang" or player.char_str == "yun" then
-          if _button == "LP" then
-            queue_command(frame_number + #_sequence + 10, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 30, 0}})
+          if button == "LP" then
+            Queue_Command(gamestate.frame_number + #sequence + 10, {command = write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
           end
         end
       elseif current_attack_category.name == "target_combos" then
-        _state = "setup_target_combo"
+        state = "setup_target_combo"
         recording_options.target_combo = true
         recording_options.record_frames_after_hit = true
 --         if i_attacks <= #target_combos then
@@ -1896,14 +1912,14 @@ function record_attacks(_player_obj, _projectiles)
         
         
         if recording_geneijin then
-          _name = current_attack.name .. "_geneijin"
+          name = current_attack.name .. "_geneijin"
         end
 
-        _name = current_attack.name
+        name = current_attack.name
 
         if recording_geneijin and current_attack.name ~= "tc_6" then
           i_attacks = i_attacks + 1
-          _state = "queue_move"
+          state = "queue_move"
           return
         end
 
@@ -1923,54 +1939,54 @@ function record_attacks(_player_obj, _projectiles)
           block_pattern = current_attack.block
         end
 
-        current_attack.reset_pos_x = _reset_pos_x
+        current_attack.reset_pos_x = reset_pos_x
 
-        _dummy_offset_x = _close_dist
-        _dummy_offset_y = 0
+        dummy_offset_x = close_dist
+        dummy_offset_y = 0
 
         if current_attack.far then
-          _dummy_offset_x = _far_dist
+          dummy_offset_x = far_dist
         end
         if current_attack.offset_x then
-          _dummy_offset_x = _dummy_offset_x + current_attack.offset_x
+          dummy_offset_x = dummy_offset_x + current_attack.offset_x
         end
 
         if current_attack.dummy_offset_list then
-          local _index = received_hits + 1
-          if _index <= #current_attack.dummy_offset_list then
-            _dummy_offset_x = current_attack.dummy_offset_list[_index][1]
-            _dummy_offset_y = current_attack.dummy_offset_list[_index][2]
+          local index = received_hits + 1
+          if index <= #current_attack.dummy_offset_list then
+            dummy_offset_x = current_attack.dummy_offset_list[index][1]
+            dummy_offset_y = current_attack.dummy_offset_list[index][2]
           end
         end
 
 
-        local _player_offset_y = current_attack.player_offset_y or 0
+        local player_offset_y = current_attack.player_offset_y or 0
 
-        make_invulnerable(_dummy, false)
-        clear_motion_data(_player)
+        make_invulnerable(dummy, false)
+        clear_motion_data(player)
 
         if current_attack.air then
           recording_options.air = true
-          local _sequence = {{"up","forward"},{"up","forward"},{},{},{},{}}
-          if(is_slow_jumper(_player.char_str)) then
-            table.insert(_sequence,#_sequence,{})
-          elseif is_really_slow_jumper(_player.char_str) then
-            table.insert(_sequence,#_sequence,{})
-            table.insert(_sequence,#_sequence,{})
+          local sequence = {{"up","forward"},{"up","forward"},{},{},{},{}}
+          if(is_slow_jumper(player.char_str)) then
+            table.insert(sequence,#sequence,{})
+          elseif is_really_slow_jumper(player.char_str) then
+            table.insert(sequence,#sequence,{})
+            table.insert(sequence,#sequence,{})
           end
-          table.insert(_sequence,current_attack.sequence[1])
-          current_attack.attack_start_frame = #_sequence
+          table.insert(sequence,current_attack.sequence[1])
+          current_attack.attack_start_frame = #sequence
 
-          queue_input_sequence(_player, _sequence)
-          queue_command(frame_number + current_attack.attack_start_frame + 100, {command = land_player, args={_player}})
-          queue_command(frame_number + current_attack.attack_start_frame, {command = clear_motion_data, args={_player}})
-          queue_command(frame_number + current_attack.attack_start_frame, {command = write_pos, args={_player, current_attack.reset_pos_x, _default_air_block_height + _player_offset_y}})
-          write_pos(_dummy, current_attack.reset_pos_x + _dummy_offset_x, 0)
+          queue_input_sequence(player, sequence)
+          Queue_Command(gamestate.frame_number + current_attack.attack_start_frame + 100, {command = land_player, args={player}})
+          Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = clear_motion_data, args={player}})
+          Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = write_pos, args={player, current_attack.reset_pos_x, default_air_block_height + player_offset_y}})
+          write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
         else
-          write_pos(_player, current_attack.reset_pos_x, 0)
-          write_pos(_dummy, current_attack.reset_pos_x + _dummy_offset_x, 0)
---               queue_command(frame_number + 2, {command = queue_input_sequence, args={current_attack.sequence[1]}})
-          queue_input_sequence(_player, {current_attack.sequence[1]})
+          write_pos(player, current_attack.reset_pos_x, 0)
+          write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
+--               Queue_Command(gamestate.frame_number + 2, {command = queue_input_sequence, args={current_attack.sequence[1]}})
+          queue_input_sequence(player, {current_attack.sequence[1]})
         end
 
         if overwrite and first_record then
@@ -1978,25 +1994,25 @@ function record_attacks(_player_obj, _projectiles)
           first_record = false
         end
 
-        _state = "wait_for_initial_anim"
+        state = "wait_for_initial_anim"
       elseif current_attack_category.name == "throw_uoh_pa" then
         current_attack = deepcopy(throw_uoh_pa[i_attacks])
-        current_attack.reset_pos_x = _reset_pos_x
-        local _sequence = current_attack.sequence
-        current_attack.attack_start_frame = #_sequence
+        current_attack.reset_pos_x = reset_pos_x
+        local sequence = current_attack.sequence
+        current_attack.attack_start_frame = #sequence
 
-        _dummy_offset_x = _far_dist
-        _dummy_offset_y = 0
+        dummy_offset_x = far_dist
+        dummy_offset_y = 0
         if not (recording_options.hit_type == "miss") then
-          _dummy_offset_x = _close_dist - character_specific[_dummy.char_str].half_width
+          dummy_offset_x = close_dist - character_specific[dummy.char_str].half_width
           if current_attack.far then
-            _dummy_offset_x = _far_dist
+            dummy_offset_x = far_dist
           end
         end
         if recording_options.hit_type == "miss" then
           if current_attack.name == "throw_forward" or current_attack.name == "throw_back" then
             i_attacks = i_attacks + 1
-            _state = "queue_move"
+            state = "queue_move"
             return
           end
         end
@@ -2007,7 +2023,7 @@ function record_attacks(_player_obj, _projectiles)
           current_attack.throw = true
           if recording_options.hit_type == "block" then
             for i = 1, 6 do
-              table.insert(_sequence, 1, {})
+              table.insert(sequence, 1, {})
             end
           end
         end
@@ -2015,104 +2031,104 @@ function record_attacks(_player_obj, _projectiles)
         if current_attack.name == "pa" then
           current_attack.max_hits = 0
         end
-        if _player.char_str == "alex" then
+        if player.char_str == "alex" then
           if current_attack.name == "pa" then
             for i = 1, 80 do
-              table.insert(_sequence, {"HP","HK"})
+              table.insert(sequence, {"HP","HK"})
             end
             recording_options.infinite_loop = true
           end
         end
-        if _player.char_str == "chunli" then
+        if player.char_str == "chunli" then
           if current_attack.name == "pa" then
             for i = 1, 60 do
-              table.insert(_sequence, {"HP","HK"})
+              table.insert(sequence, {"HP","HK"})
             end
           end
         end
-        if _player.char_str == "dudley" then
+        if player.char_str == "dudley" then
           if current_attack.name == "pa" then
             current_attack.is_projectile = true
             current_attack.max_hits = 1
             current_attack.offset_x = 150
           end
         end
-        if _player.char_str == "elena" then
+        if player.char_str == "elena" then
           if current_attack.name == "pa" then
             current_attack.max_hits = 1
             current_attack.block = {2,1}
           end
         end
-        if _player.char_str == "hugo" then
+        if player.char_str == "hugo" then
           if current_attack.name == "pa" then
             for i = 1, 80 do
-              table.insert(_sequence, {"HP","HK"})
+              table.insert(sequence, {"HP","HK"})
             end
           end
         end
-        if _player.char_str == "ibuki" then
+        if player.char_str == "ibuki" then
           if current_attack.name == "pa" then
             current_attack.max_hits = 1
           end
         end
-        if _player.char_str == "ken" then
+        if player.char_str == "ken" then
           if current_attack.name == "pa" then
             current_attack.max_hits = 2
           end
         end
-        if _player.char_str == "makoto" then
+        if player.char_str == "makoto" then
           if current_attack.name == "pa" then
             for i = 1, 250 do
-              table.insert(_sequence, {"HP","HK"})
+              table.insert(sequence, {"HP","HK"})
             end
             if recording_options.hit_type == "block" then
               for i = 1, 20 do
-                table.insert(_sequence, {"HP","HK"})
+                table.insert(sequence, {"HP","HK"})
               end
             end
             current_attack.max_hits = 1
           end
         end
-        if _player.char_str == "necro" then
+        if player.char_str == "necro" then
           if current_attack.name == "pa" then
             for i = 1, 60 do
-              table.insert(_sequence, {"HP","HK"})
+              table.insert(sequence, {"HP","HK"})
             end
             if recording_options.hit_type == "block" then
               for i = 1, 60 do
-                table.insert(_sequence, {"HP","HK"})
+                table.insert(sequence, {"HP","HK"})
               end
             end
             recording_options.infinite_loop = true
             current_attack.max_hits = 6
           end
         end
-        if _player.char_str == "sean" then
+        if player.char_str == "sean" then
           if current_attack.name == "pa" then
             current_attack.is_projectile = true
             current_attack.max_hits = 1
             current_attack.offset_x = 150
           end
         end
-        if _player.char_str == "urien" then
+        if player.char_str == "urien" then
           if current_attack.name == "pa" then
             current_attack.max_hits = 1
             current_attack.block = {2}
           end
         end
-        if _player.char_str == "yang" then
+        if player.char_str == "yang" then
           if current_attack.name == "pa" then
             current_attack.max_hits = 1
           end
         end
-        if _player.char_str == "yun" then
+        if player.char_str == "yun" then
           if current_attack.name == "pa" then
             for i = 1, 120 do
-              table.insert(_sequence, {"HP","HK"})
+              table.insert(sequence, {"HP","HK"})
             end
             if recording_options.hit_type == "block" then
               for i = 1, 100 do
-                table.insert(_sequence, {"HP","HK"})
+                table.insert(sequence, {"HP","HK"})
               end
             end
             recording_options.infinite_loop = true
@@ -2123,50 +2139,50 @@ function record_attacks(_player_obj, _projectiles)
         if current_attack.name == "pa" and recording_options.hit_type == "block" then
           if current_attack.max_hits == 0 then
             i_attacks = i_attacks + 1
-            _state = "queue_move"
+            state = "queue_move"
             return
           end
         end
 
-        current_attack.sequence = _sequence
+        current_attack.sequence = sequence
       elseif current_attack_category.name == "specials" then
         current_attack = deepcopy(specials[i_attacks])
-        local _base_name = current_attack.name
-        local _button = current_attack.button
-        local _sequence = current_attack.input
-        current_attack.attack_start_frame = #_sequence
-        current_attack.base_name = _base_name
+        local base_name = current_attack.name
+        local button = current_attack.button
+        local sequence = current_attack.input
+        current_attack.attack_start_frame = #sequence
+        current_attack.base_name = base_name
 
 
-        if _button then
-          current_attack.name = current_attack.name .. "_" .. _button
+        if button then
+          current_attack.name = current_attack.name .. "_" .. button
         end
 
-        _dummy_offset_x = _close_dist
-        _dummy_offset_y = 0
+        dummy_offset_x = close_dist
+        dummy_offset_y = 0
 
         if current_attack.air and current_attack.air == "only" then
           current_attack.land_after = 100
         end
 
-        current_attack.reset_pos_x = _reset_pos_x
+        current_attack.reset_pos_x = reset_pos_x
 
         local i = 1
-        while i <= #_sequence do
+        while i <= #sequence do
           local j = 1
-          while j <= #_sequence[i] do
-            if _sequence[i][j] == "button" then
-              if _button == "EXP"  then
-                table.remove(_sequence[i], j)
-                table.insert(_sequence[i], j, "LP")
-                table.insert(_sequence[i], j, "MP")
-              elseif _button == "EXK"  then
-                table.remove(_sequence[i], j)
-                table.insert(_sequence[i], j, "LK")
-                table.insert(_sequence[i], j, "MK")
+          while j <= #sequence[i] do
+            if sequence[i][j] == "button" then
+              if button == "EXP"  then
+                table.remove(sequence[i], j)
+                table.insert(sequence[i], j, "LP")
+                table.insert(sequence[i], j, "MP")
+              elseif button == "EXK"  then
+                table.remove(sequence[i], j)
+                table.insert(sequence[i], j, "LK")
+                table.insert(sequence[i], j, "MK")
               else
-                table.remove(_sequence[i], j)
-                table.insert(_sequence[i], j, _button)
+                table.remove(sequence[i], j)
+                table.insert(sequence[i], j, button)
               end
             end
             j = j + 1
@@ -2174,624 +2190,624 @@ function record_attacks(_player_obj, _projectiles)
           i = i + 1
         end
 
-        if _base_name == "hyakuretsukyaku" then
-          if _button == "EXK"  then
-            _sequence = {{"legs_" .. _button, "LK", "MK"}}
+        if base_name == "hyakuretsukyaku" then
+          if button == "EXK"  then
+            sequence = {{"legs_" .. button, "LK", "MK"}}
           else
-            _sequence = {{"legs_" .. _button, _button}}
+            sequence = {{"legs_" .. button, button}}
           end
         end
 
 
-        if _player.char_str == "alex" then
-          if _base_name == "flash_chop" then
-            if _button == "EXP"  then
+        if player.char_str == "alex" then
+          if base_name == "flash_chop" then
+            if button == "EXP"  then
               current_attack.max_hits = 2
             end
           end
-          if _base_name == "air_knee_smash" then
-            _dummy_offset_y = 100
+          if base_name == "air_knee_smash" then
+            dummy_offset_y = 100
             current_attack.max_hits = 0
             current_attack.throw = true
-            if _button == "HK" then
-              _dummy_offset_y = 120
-            elseif _button == "EXK" then
+            if button == "HK" then
+              dummy_offset_y = 120
+            elseif button == "EXK" then
               current_attack.max_hits = 1
-              _dummy_offset_x = 80
-              _dummy_offset_y = 0
+              dummy_offset_x = 80
+              dummy_offset_y = 0
             end
           end
-          if _base_name == "air_stampede" then
-            if _button == "MK" then
-              _dummy_offset_x = 120
-            elseif _button == "HK" then
-              _dummy_offset_x = 150
-            elseif _button == "EXK" then
-              _dummy_offset_x = 120
+          if base_name == "air_stampede" then
+            if button == "MK" then
+              dummy_offset_x = 120
+            elseif button == "HK" then
+              dummy_offset_x = 150
+            elseif button == "EXK" then
+              dummy_offset_x = 120
             end
           end
-          if _base_name == "slash_elbow" then
-            _dummy_offset_x = 120
-            if _button == "EXK" then
+          if base_name == "slash_elbow" then
+            dummy_offset_x = 120
+            if button == "EXK" then
               current_attack.max_hits = 2
             end
           end
-          if _base_name == "spiral_ddt" then
-            current_attack.name = _base_name
+          if base_name == "spiral_ddt" then
+            current_attack.name = base_name
           end
-          if _base_name == "power_bomb" or _base_name == "spiral_ddt" then
+          if base_name == "power_bomb" or base_name == "spiral_ddt" then
             current_attack.throw = true
-            if _base_name == "spiral_ddt" then
-              if _button == "HK" then
-                _dummy_offset_x = 160
+            if base_name == "spiral_ddt" then
+              if button == "HK" then
+                dummy_offset_x = 160
               end
             end
           end
         end
 
-        if _player.char_str == "chunli" then
-          if _base_name == "hyakuretsukyaku" then
-            if _button == "LK" then
-              _n = 40
+        if player.char_str == "chunli" then
+          if base_name == "hyakuretsukyaku" then
+            if button == "LK" then
+              n = 40
               current_attack.max_hits = 16
-            elseif _button == "MK" then
-              _n = 40
+            elseif button == "MK" then
+              n = 40
               current_attack.max_hits = 20
-            elseif _button == "HK" then
-              _n = 30
+            elseif button == "HK" then
+              n = 30
               current_attack.max_hits = 16
-            elseif _button == "EXK" then
-              _n = 30
+            elseif button == "EXK" then
+              n = 30
               current_attack.max_hits = 16
             end
 
             if recording_options.hit_type == "block" then
-              _n = _n * 5
+              n = n * 5
             end
 
-            for i = 1, _n do
-              table.insert(_sequence, {})
-              if _button == "EXK" then
-                table.insert(_sequence, {"LK","MK"})
+            for i = 1, n do
+              table.insert(sequence, {})
+              if button == "EXK" then
+                table.insert(sequence, {"LK","MK"})
               else
-                table.insert(_sequence, {_button})
+                table.insert(sequence, {button})
               end
             end
           end
-          if _base_name == "kikouken" then
-            _dummy_offset_x = 150
+          if base_name == "kikouken" then
+            dummy_offset_x = 150
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
           end
-          if _base_name == "spinning_bird_kick" then
-            _dummy_offset_x = 80
-            if _button == "LK" then
+          if base_name == "spinning_bird_kick" then
+            dummy_offset_x = 80
+            if button == "LK" then
               current_attack.max_hits = 4
-            elseif _button == "MK" then
+            elseif button == "MK" then
               current_attack.max_hits = 6
-            elseif _button == "HK" then
+            elseif button == "HK" then
               current_attack.max_hits = 8
-            elseif _button == "EXK" then
+            elseif button == "EXK" then
               current_attack.max_hits = 5
               current_attack.dummy_offset_list = {{80,0},{-80,0},{80,0},{-80,0},{80,0}}
             end
           end
-          if _base_name == "hazanshuu" then
-            _dummy_offset_x = 80
-            if _button == "LK" then
-            elseif _button == "MK" then
-              _dummy_offset_x = 100
-            elseif _button == "HK" then
-              _dummy_offset_x = 150
+          if base_name == "hazanshuu" then
+            dummy_offset_x = 80
+            if button == "LK" then
+            elseif button == "MK" then
+              dummy_offset_x = 100
+            elseif button == "HK" then
+              dummy_offset_x = 150
             end
           end
         end
 
-        if _player.char_str == "dudley" then
-          if _base_name == "jet_upper" then
-            _dummy_offset_x = 80
-            if _button == "HP" or _button == "EXP" then
+        if player.char_str == "dudley" then
+          if base_name == "jet_upper" then
+            dummy_offset_x = 80
+            if button == "HP" or button == "EXP" then
               current_attack.max_hits = 2
             end
           end
-          if _base_name == "ducking" then
-            _dummy_offset_x = 150
+          if base_name == "ducking" then
+            dummy_offset_x = 150
             current_attack.max_hits = 0
             if recording_options.hit_type == "block" then
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
-          if _base_name == "ducking_straight" then
-            current_attack.name = _base_name
-            local _n = 10
-            if _button == "LK" then
-            _n = 10
-            elseif _button == "MK" then
-              _n = 10
-            elseif _button == "HK" then
-              _n = 15
+          if base_name == "ducking_straight" then
+            current_attack.name = base_name
+            local n = 10
+            if button == "LK" then
+            n = 10
+            elseif button == "MK" then
+              n = 10
+            elseif button == "HK" then
+              n = 15
             end
 
-            for i = 1, _n do
-              table.insert(_sequence, {})
+            for i = 1, n do
+              table.insert(sequence, {})
             end
-            table.insert(_sequence, {"HP"})
-            _dummy_offset_x = 100
+            table.insert(sequence, {"HP"})
+            dummy_offset_x = 100
             current_attack.max_hits = 1
           end
-          if _base_name == "ducking_upper" then
-            current_attack.name = _base_name
-            local _n = 10
-            if _button == "LK" then
-            _n = 10
-            elseif _button == "MK" then
-              _n = 10
-            elseif _button == "HK" then
-              _n = 15
+          if base_name == "ducking_upper" then
+            current_attack.name = base_name
+            local n = 10
+            if button == "LK" then
+            n = 10
+            elseif button == "MK" then
+              n = 10
+            elseif button == "HK" then
+              n = 15
             end
-            for i = 1, _n do
-              table.insert(_sequence, {})
+            for i = 1, n do
+              table.insert(sequence, {})
             end
-            table.insert(_sequence, {"HK"})
-            _dummy_offset_x = 100
+            table.insert(sequence, {"HK"})
+            dummy_offset_x = 100
             current_attack.max_hits = 2
           end
-          if _base_name == "machinegun_blow" then
-            _dummy_offset_x = 100
-            if _button == "LP" then
+          if base_name == "machinegun_blow" then
+            dummy_offset_x = 100
+            if button == "LP" then
               current_attack.max_hits = 3
-            elseif _button == "MP" then
+            elseif button == "MP" then
               current_attack.max_hits = 4
-            elseif _button == "HP" then
+            elseif button == "HP" then
               current_attack.max_hits = 6
-            elseif _button == "EXP" then
+            elseif button == "EXP" then
               current_attack.max_hits = 7
             end
           end
-          if _base_name == "cross_counter" then
+          if base_name == "cross_counter" then
             current_attack.max_hits = 0
             if recording_options.hit_type == "block" then
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
-          if _base_name == "short_swing_blow" then
-            if _button == "EXK" then
+          if base_name == "short_swing_blow" then
+            if button == "EXK" then
               current_attack.max_hits = 3
             end
           end
         end
-        if _player.char_str == "elena" then
-          if _base_name == "scratch_wheel" then
-            if _button == "LK" then
+        if player.char_str == "elena" then
+          if base_name == "scratch_wheel" then
+            if button == "LK" then
               current_attack.max_hits = 1
-            elseif _button == "MK" then
+            elseif button == "MK" then
               current_attack.max_hits = 2
-            elseif _button == "HK" then
+            elseif button == "HK" then
               current_attack.max_hits = 3
-            elseif _button == "EXK" then
+            elseif button == "EXK" then
               current_attack.max_hits = 4
             end
           end
-          if _base_name == "rhino_horn" then
-            if _button == "LK" then
+          if base_name == "rhino_horn" then
+            if button == "LK" then
               current_attack.max_hits = 3
-            elseif _button == "MK" then
+            elseif button == "MK" then
               current_attack.max_hits = 3
-            elseif _button == "HK" then
+            elseif button == "HK" then
               current_attack.max_hits = 3
-            elseif _button == "EXK" then
+            elseif button == "EXK" then
               current_attack.max_hits = 4
             end
           end
-          if _base_name == "mallet_smash" then
-            _dummy_offset_x = 100
+          if base_name == "mallet_smash" then
+            dummy_offset_x = 100
             current_attack.max_hits = 2
           end
-          if _base_name == "spin_sides" then
-            _dummy_offset_x = 100
+          if base_name == "spin_sides" then
+            dummy_offset_x = 100
             current_attack.max_hits = 4
             current_attack.optional_anim = {0,0,1,0}
-            if _button == "EXK" then
+            if button == "EXK" then
               current_attack.max_hits = 5
               current_attack.optional_anim = {0,0,0,0,1}
             end
-            local _n = 30
+            local n = 30
             if recording_options.hit_type == "block" then
-              _n = 60
+              n = 60
             end
-            for i = 1, _n do
-              table.insert(_sequence, {})
+            for i = 1, n do
+              table.insert(sequence, {})
             end
-            table.insert(_sequence, {"down"})
-            table.insert(_sequence, {"down","back"})
-            table.insert(_sequence, {"back"})
-            if _button == "EXK" then
-              table.insert(_sequence, {"LK","MK"})
+            table.insert(sequence, {"down"})
+            table.insert(sequence, {"down","back"})
+            table.insert(sequence, {"back"})
+            if button == "EXK" then
+              table.insert(sequence, {"LK","MK"})
             else
-              table.insert(_sequence, {_button})
+              table.insert(sequence, {button})
             end
 
           end
-          if _base_name == "lynx_tail" then
-            if _button == "LK" then
+          if base_name == "lynx_tail" then
+            if button == "LK" then
               current_attack.max_hits = 2
               current_attack.block = {2,2}
-            elseif _button == "MK" then
+            elseif button == "MK" then
               current_attack.max_hits = 2
               current_attack.block = {2,2}
-            elseif _button == "HK" then
+            elseif button == "HK" then
               current_attack.max_hits = 4
               current_attack.block = {2,2,2,2}
-            elseif _button == "EXK" then
+            elseif button == "EXK" then
               current_attack.max_hits = 5
               current_attack.block = {2,2,2,2,1}
             end
           end
         end
 
-        if _player.char_str == "gill" then
-          if _base_name == "pyrokinesis" then
+        if player.char_str == "gill" then
+          if base_name == "pyrokinesis" then
             current_attack.max_hits = 2
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
-            _dummy_offset_x = 80
-            if _button == "LP" then
-              _dummy_offset_x = 120
-            elseif _button == "HP" then
-              _dummy_offset_x = 100
+            dummy_offset_x = 80
+            if button == "LP" then
+              dummy_offset_x = 120
+            elseif button == "HP" then
+              dummy_offset_x = 100
               if recording_options.hit_type == "block" then
                 current_attack.projectile_offset = {0, -50}
               end
             end
           end
-          if _base_name == "cyber_lariat" then
+          if base_name == "cyber_lariat" then
             current_attack.max_hits = 2
-            _dummy_offset_x = 100
+            dummy_offset_x = 100
           end
-          if _base_name == "moonsault_kneedrop" then
+          if base_name == "moonsault_kneedrop" then
             current_attack.max_hits = 2
             block_max_hits = 1
             current_attack.hits_appear_after_block = true
-            _dummy_offset_x = 70
-            queue_command(frame_number + 2, {command = write_pos, args={_dummy, _player.pos_x + 250, 0}})
+            dummy_offset_x = 70
+            Queue_Command(gamestate.frame_number + 2, {command = write_pos, args={dummy, player.pos_x + 250, 0}})
           end
         end
 
-        if _player.char_str == "gouki" then
-          if _base_name == "gohadouken" then
-            _dummy_offset_x = 100
+        if player.char_str == "gouki" then
+          if base_name == "gohadouken" then
+            dummy_offset_x = 100
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
           end
-          if _base_name == "gohadouken_air" then
-            _dummy_offset_x = 100
+          if base_name == "gohadouken_air" then
+            dummy_offset_x = 100
             current_attack.is_projectile = true
           end
-          if _base_name == "shakunetsu" then
-            _dummy_offset_x = 100
+          if base_name == "shakunetsu" then
+            dummy_offset_x = 100
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
-            if _button == "LP" then
+            if button == "LP" then
               current_attack.max_hits = 1
-            elseif _button == "MP" then
+            elseif button == "MP" then
               current_attack.max_hits = 2
-            elseif _button == "HP" then
+            elseif button == "HP" then
               current_attack.max_hits = 3
             end
           end
-          if _base_name == "goshoryuken" then
-            if _button == "LP" then
+          if base_name == "goshoryuken" then
+            if button == "LP" then
               current_attack.max_hits = 1
-            elseif _button == "MP" then
+            elseif button == "MP" then
               current_attack.max_hits = 2
-            elseif _button == "HP" then
+            elseif button == "HP" then
               current_attack.max_hits = 3
             end
           end
-          if _base_name == "tatsumaki" then
-            if _button == "LK" then
+          if base_name == "tatsumaki" then
+            if button == "LK" then
               current_attack.max_hits = 2
               current_attack.dummy_offset_list = {{80,0},{-70,0}}
-            elseif _button == "MK" then
+            elseif button == "MK" then
               current_attack.max_hits = 5
               current_attack.dummy_offset_list = {{80,0},{80,0},{-70,0},{80,0},{-70,0}}
-            elseif _button == "HK" then
+            elseif button == "HK" then
               current_attack.max_hits = 9
               current_attack.dummy_offset_list = {{80,0},{80,0},{-70,0},{80,0},{-70,0},{80,0},{-70,0},{80,0},{-70,0}}
             end
           end
-          if _base_name == "tatsumaki_air" then
-            if _button == "LK" then
+          if base_name == "tatsumaki_air" then
+            if button == "LK" then
               current_attack.player_offset_y = -20
               current_attack.dummy_offset_list = {{80,0},{-70,0}}
               current_attack.max_hits = 2
-            elseif _button == "MK" then
+            elseif button == "MK" then
               current_attack.player_offset_y = -20
               current_attack.dummy_offset_list = {{80,0},{-70,0},{80,0},{-70,0}}
               current_attack.max_hits = 4
-            elseif _button == "HK" then
+            elseif button == "HK" then
               current_attack.player_offset_y = -10
               current_attack.dummy_offset_list = {{80,0},{-70,0},{80,0},{-70,0},{80,0},{-70,0},{80,0},{-70,0},{80,0}}
               current_attack.max_hits = 8
               current_attack.land_after = 120
             end
             if recording_options.hit_type == "block" then
-              queue_command(frame_number + 10, {command = clear_motion_data, args={_player}})
+              Queue_Command(gamestate.frame_number + 10, {command = clear_motion_data, args={player}})
             end
           end
 
           --hyakki only has one animation. button determines the velocity/acceleration applied at the start
-          if _base_name == "hyakki" then
-            current_attack.name = _base_name
+          if base_name == "hyakki" then
+            current_attack.name = base_name
             current_attack.block = {2}
             current_attack.reset_pos_x = 220
-            if _button == "MK" then
-              _dummy_offset_x = 150
+            if button == "MK" then
+              dummy_offset_x = 150
             else
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
-          if _base_name == "hyakki_punch" then
-            current_attack.name = _base_name
-            if _button == "MK" then
-              _dummy_offset_x = 150
-            local _n = 20
-            for i = 1, _n do
-              table.insert(_sequence, {})
+          if base_name == "hyakki_punch" then
+            current_attack.name = base_name
+            if button == "MK" then
+              dummy_offset_x = 150
+            local n = 20
+            for i = 1, n do
+              table.insert(sequence, {})
             end
-              table.insert(_sequence, {"LP"})
+              table.insert(sequence, {"LP"})
             else
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
-          if _base_name == "hyakki_kick" then
-            current_attack.name = _base_name
-            if _button == "MK" then
-              _dummy_offset_x = 150
-            local _n = 20
-            for i = 1, _n do
-              table.insert(_sequence, {})
+          if base_name == "hyakki_kick" then
+            current_attack.name = base_name
+            if button == "MK" then
+              dummy_offset_x = 150
+            local n = 20
+            for i = 1, n do
+              table.insert(sequence, {})
             end
-              table.insert(_sequence, {"LK"})
+              table.insert(sequence, {"LK"})
             else
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
-          if _base_name == "hyakki_throw" then
-            current_attack.name = _base_name
+          if base_name == "hyakki_throw" then
+            current_attack.name = base_name
             current_attack.throw = true
-            if _button == "MK" then
-              _dummy_offset_x = 150
-            local _n = 20
-            for i = 1, _n do
-              table.insert(_sequence, {})
+            if button == "MK" then
+              dummy_offset_x = 150
+            local n = 20
+            for i = 1, n do
+              table.insert(sequence, {})
             end
-              table.insert(_sequence, {"LP","LK"})
+              table.insert(sequence, {"LP","LK"})
             else
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
-          if _base_name == "asura_forward" or _base_name == "asura_backward" then
+          if base_name == "asura_forward" or base_name == "asura_backward" then
             current_attack.max_hits = 0
             if recording_options.hit_type == "block" then
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
         end
 
-        if _player.char_str == "hugo" then
-          if _base_name == "moonsault_press" or _base_name == "ultra_throw" then
+        if player.char_str == "hugo" then
+          if base_name == "moonsault_press" or base_name == "ultra_throw" then
             current_attack.throw = true
           end
-          if _base_name == "shootdown_backbreaker" then
+          if base_name == "shootdown_backbreaker" then
             current_attack.throw = true
-            _dummy_offset_y = 90
-            if _button == "HK" then
-              _dummy_offset_y = 140
+            dummy_offset_y = 90
+            if button == "HK" then
+              dummy_offset_y = 140
             end
           end
-          if _base_name == "meat_squasher" then
-            _dummy_offset_x = 100
+          if base_name == "meat_squasher" then
+            dummy_offset_x = 100
             current_attack.throw = true
           end
-          if _base_name == "giant_palm_bomber" then
-            _dummy_offset_x = 120
-            if _button == "EXP" then
+          if base_name == "giant_palm_bomber" then
+            dummy_offset_x = 120
+            if button == "EXP" then
               current_attack.max_hits = 3
             end
           end
-          if _base_name == "monster_lariat" then
-            _dummy_offset_x = 120
+          if base_name == "monster_lariat" then
+            dummy_offset_x = 120
             current_attack.reset_pos_x = 180
-            if _button == "EXK" then
-              local _n = 60
-              for i = 1, _n do
-                table.insert(_sequence, {"LK"})
+            if button == "EXK" then
+              local n = 60
+              for i = 1, n do
+                table.insert(sequence, {"LK"})
               end
             end
           end
         end
 
-        if _player.char_str == "ibuki" then
-          if _base_name == "kunai" then
+        if player.char_str == "ibuki" then
+          if base_name == "kunai" then
             current_attack.is_projectile = true
-            _dummy_offset_x = 90
-            if _button == "MP" or _button == "HP" then
-              _dummy_offset_x = 120
-            elseif _button == "EXP" then
+            dummy_offset_x = 90
+            if button == "MP" or button == "HP" then
+              dummy_offset_x = 120
+            elseif button == "EXP" then
               current_attack.max_hits = 2
-              _dummy_offset_x = 150
+              dummy_offset_x = 150
             end
           end
-          if _base_name == "kubiori" then
+          if base_name == "kubiori" then
             current_attack.block = {2}
-            _dummy_offset_x = 100
+            dummy_offset_x = 100
           end
-          if _base_name == "tsumuji" or _base_name == "tsumuji_low" then
-            _dummy_offset_x = 100
-            if _button == "MK" then
+          if base_name == "tsumuji" or base_name == "tsumuji_low" then
+            dummy_offset_x = 100
+            if button == "MK" then
               current_attack.max_hits = 3
-              local _n = 30
+              local n = 30
               if recording_options.hit_type == "block" then
-                _n = 50
+                n = 50
               end
-              for i = 1, _n do
-                table.insert(_sequence, {})
-                table.insert(_sequence, {_button})
+              for i = 1, n do
+                table.insert(sequence, {})
+                table.insert(sequence, {button})
               end
               current_attack.optional_anim = {0,0,1}
-              if _base_name == "tsumuji_low" then
+              if base_name == "tsumuji_low" then
                 current_attack.block = {1,1,2}
-                for i = 5, #_sequence do
-                  table.insert(_sequence[i], "down")
+                for i = 5, #sequence do
+                  table.insert(sequence[i], "down")
                 end
               end
             else
-              if _button == "LK" then
+              if button == "LK" then
                 current_attack.max_hits = 2
                 current_attack.optional_anim = {0,1}
-                if _base_name == "tsumuji_low" then
+                if base_name == "tsumuji_low" then
                   current_attack.block = {1,2}
                 end
-              elseif _button == "HK" then
+              elseif button == "HK" then
                 current_attack.max_hits = 3
                 current_attack.optional_anim = {0,0,1}
-                if _base_name == "tsumuji_low" then
+                if base_name == "tsumuji_low" then
                   current_attack.block = {1,1,2}
                 end
-              elseif _button == "EXK" then
+              elseif button == "EXK" then
                 current_attack.max_hits = 4
                 current_attack.optional_anim = {0,1,1,1}
-                if _base_name == "tsumuji_low" then
+                if base_name == "tsumuji_low" then
                   current_attack.block = {1,2,2,2}
                 end
               end
-              if _base_name == "tsumuji_low" then
-                local _n = 50
+              if base_name == "tsumuji_low" then
+                local n = 50
                 if recording_options.hit_type == "block" then
-                  _n = 120
+                  n = 120
                 end
-                if _button == "LK" then
+                if button == "LK" then
                   if recording_options.hit_type == "block" then
-                    _n = 100
+                    n = 100
                   end
                 end
-                if _button == "EXK" then
+                if button == "EXK" then
                   if recording_options.hit_type == "block" then
-                    _n = 150
+                    n = 150
                   end
                 end
-                for i = 1, _n do
-                  table.insert(_sequence, {"down"})
+                for i = 1, n do
+                  table.insert(sequence, {"down"})
                 end
               end
             end
           end
-          if _base_name == "kazekiri" then
-            if _button == "LK" or _button == "MK" then
+          if base_name == "kazekiri" then
+            if button == "LK" or button == "MK" then
               current_attack.max_hits = 3
-            elseif _button == "HK" or _button == "EXK" then
+            elseif button == "HK" or button == "EXK" then
               current_attack.max_hits = 3
             end
           end
-          if _base_name == "hien" then
+          if base_name == "hien" then
             current_attack.max_hits = 2
             current_attack.hits_appear_after_block = true
-            _dummy_offset_x = 100
+            dummy_offset_x = 100
             block_max_hits = 1
-            if _button == "MK" then
+            if button == "MK" then
               if recording_options.hit_type == "miss" then
-                _dummy_offset_x = 140
+                dummy_offset_x = 140
               end
-            elseif _button == "HK" then
+            elseif button == "HK" then
               if recording_options.hit_type == "miss" then
-                _dummy_offset_x = 100
+                dummy_offset_x = 100
               end
-              queue_command(frame_number + 15, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 250, 0}})
-            elseif _button == "EXK" then
-              _dummy_offset_x = 80
-              queue_command(frame_number + 15, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 100, 0}})
+              Queue_Command(gamestate.frame_number + 15, {command = write_pos, args={dummy, current_attack.reset_pos_x + 250, 0}})
+            elseif button == "EXK" then
+              dummy_offset_x = 80
+              Queue_Command(gamestate.frame_number + 15, {command = write_pos, args={dummy, current_attack.reset_pos_x + 100, 0}})
             end
           end
-          if _base_name == "tsukijigoe" or _base_name == "kasumigake" then
+          if base_name == "tsukijigoe" or base_name == "kasumigake" then
             if recording_options.hit_type == "block" then
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
         end
 
-        if _player.char_str == "ken" then
-          if _base_name == "hadouken" then
-            _dummy_offset_x = 100
+        if player.char_str == "ken" then
+          if base_name == "hadouken" then
+            dummy_offset_x = 100
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
-            if _button == "EXP" then
+            if button == "EXP" then
               current_attack.max_hits = 2
             end
           end
-          if _base_name == "shoryuken" then
-            if _button == "LP" then
+          if base_name == "shoryuken" then
+            if button == "LP" then
               current_attack.max_hits = 1
-            elseif _button == "MP" then
+            elseif button == "MP" then
               current_attack.max_hits = 2
-            elseif _button == "HP" then
+            elseif button == "HP" then
               current_attack.max_hits = 3
-            elseif _button == "EXP" then
+            elseif button == "EXP" then
               current_attack.max_hits = 4
             end
           end
-          if _base_name == "tatsumaki" then
+          if base_name == "tatsumaki" then
             current_attack.reset_pos_x = 200
-            if _button == "LK" then
+            if button == "LK" then
               current_attack.max_hits = 3
               current_attack.dummy_offset_list = {{80,0},{80,0},{-60,0}}
-            elseif _button == "MK" then
+            elseif button == "MK" then
               current_attack.max_hits = 6
               current_attack.dummy_offset_list = {{80,0},{80,0},{-60,0},{80,0},{-60,0},{80,0}}
-            elseif _button == "HK" then
+            elseif button == "HK" then
               current_attack.max_hits = 8
               current_attack.dummy_offset_list = {{80,0},{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0},{80,0}}
-            elseif _button == "EXK" then
+            elseif button == "EXK" then
               current_attack.max_hits = 10
               current_attack.dummy_offset_list = {{80,0},{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0},{80,0}}
             end
           end
-          if _base_name == "tatsumaki_air" then
+          if base_name == "tatsumaki_air" then
             if recording_options.hit_type == "block" then
-              queue_command(frame_number + 10, {command = clear_motion_data, args={_player}})
+              Queue_Command(gamestate.frame_number + 10, {command = clear_motion_data, args={player}})
             end
-            if _button == "LK" then
+            if button == "LK" then
               current_attack.player_offset_y = -20
               current_attack.dummy_offset_list = {{80,0},{-60,0},{80,0}}
               current_attack.max_hits = 3
-            elseif _button == "MK" then
+            elseif button == "MK" then
               current_attack.player_offset_y = -20
               current_attack.dummy_offset_list = {{80,0},{-60,0},{80,0},{-60,0},{80,0}}
               current_attack.max_hits = 5
-            elseif _button == "HK" then
+            elseif button == "HK" then
               current_attack.player_offset_y = -20
               current_attack.dummy_offset_list = {{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0}}
               current_attack.max_hits = 8
               if recording_options.hit_type == "block" then
                 current_attack.land_after = 250
               end
-            elseif _button == "EXK" then
+            elseif button == "EXK" then
               current_attack.player_offset_y = -20
               current_attack.dummy_offset_list = {{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0}}
               current_attack.max_hits = 20
@@ -2802,108 +2818,108 @@ function record_attacks(_player_obj, _projectiles)
           end
         end
 
-        if _player.char_str == "makoto" then
-          if _base_name == "hayate" then -- level 4
-            current_attack.name = _base_name
-            _dummy_offset_x = 100
-            if not (_button == "EXP") then
+        if player.char_str == "makoto" then
+          if base_name == "hayate" then -- level 4
+            current_attack.name = base_name
+            dummy_offset_x = 100
+            if not (button == "EXP") then
               current_attack.optional_anim = {1}
-              local _n = 120
-              for i = 1, _n do
-                table.insert(_sequence, {_button})
+              local n = 120
+              for i = 1, n do
+                table.insert(sequence, {button})
               end
             end
           end
-          if (_base_name == "hayate_3" or _base_name == "hayate_2" or _base_name == "hayate_1") and _button == "EXP" then
+          if (base_name == "hayate_3" or base_name == "hayate_2" or base_name == "hayate_1") and button == "EXP" then
             i_attacks = i_attacks + 1
-            _state = "queue_move"
+            state = "queue_move"
             return
           end
-          if _base_name == "hayate_3" then
-            current_attack.name = _base_name
-            _dummy_offset_x = 100
+          if base_name == "hayate_3" then
+            current_attack.name = base_name
+            dummy_offset_x = 100
             current_attack.optional_anim = {1}
-            local _n = 50
-            for i = 1, _n do
-              table.insert(_sequence, {_button})
+            local n = 50
+            for i = 1, n do
+              table.insert(sequence, {button})
             end
           end
-          if _base_name == "hayate_2" then
-            current_attack.name = _base_name
-            _dummy_offset_x = 100
+          if base_name == "hayate_2" then
+            current_attack.name = base_name
+            dummy_offset_x = 100
             current_attack.optional_anim = {1}
-            local _n = 30
-            for i = 1, _n do
-              table.insert(_sequence, {_button})
+            local n = 30
+            for i = 1, n do
+              table.insert(sequence, {button})
             end
           end
-          if _base_name == "hayate_1" then
-            current_attack.name = _base_name
-            _dummy_offset_x = 100
+          if base_name == "hayate_1" then
+            current_attack.name = base_name
+            dummy_offset_x = 100
             current_attack.optional_anim = {1}
           end
-          if _base_name == "fukiage" then
-            _dummy_offset_x = 100
+          if base_name == "fukiage" then
+            dummy_offset_x = 100
             if recording_options.hit_type == "block" then
-              if _button == "LP" then
-                queue_command(frame_number + 10, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 3, 0}})
-              elseif _button == "MP" then
-                queue_command(frame_number + 13, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 3, 0}})
-              elseif _button == "HP" then
-                queue_command(frame_number + 17, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 3, 0}})
-              elseif _button == "EXP" then
-                queue_command(frame_number + 14, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 73, 0}})
+              if button == "LP" then
+                Queue_Command(gamestate.frame_number + 10, {command = write_pos, args={dummy, current_attack.reset_pos_x + 3, 0}})
+              elseif button == "MP" then
+                Queue_Command(gamestate.frame_number + 13, {command = write_pos, args={dummy, current_attack.reset_pos_x + 3, 0}})
+              elseif button == "HP" then
+                Queue_Command(gamestate.frame_number + 17, {command = write_pos, args={dummy, current_attack.reset_pos_x + 3, 0}})
+              elseif button == "EXP" then
+                Queue_Command(gamestate.frame_number + 14, {command = write_pos, args={dummy, current_attack.reset_pos_x + 73, 0}})
               end
             end
           end
 
-          if _base_name == "karakusa" then
+          if base_name == "karakusa" then
             current_attack.throw = true
           end
-          if _base_name == "tsurugi" then
-            if _button == "EXK" then
+          if base_name == "tsurugi" then
+            if button == "EXK" then
               current_attack.max_hits = 2
               current_attack.land_after = -1
             end
           end
         end
 
-        if _player.char_str == "necro" then
-          if _base_name == "denji_blast" then
-            local _n = 40
-            if _button == "LP" then
-              _n = 40
+        if player.char_str == "necro" then
+          if base_name == "denji_blast" then
+            local n = 40
+            if button == "LP" then
+              n = 40
               if recording_options.hit_type == "block" then
-                _n = 10
+                n = 10
               end
-            elseif _button == "MP" then
-              _n = 60
+            elseif button == "MP" then
+              n = 60
               current_attack.max_hits = 21
               if recording_options.hit_type == "block" then
-                _n = 240
+                n = 240
               end
             else
-              _n = 60
+              n = 60
               current_attack.max_hits = 41
               if recording_options.hit_type == "block" then
-                _n = 480
+                n = 480
               end
             end
-            for i = 1, _n do
-              table.insert(_sequence, {})
-              if _button == "EXP" then
-                table.insert(_sequence, {"LP","MP"})
+            for i = 1, n do
+              table.insert(sequence, {})
+              if button == "EXP" then
+                table.insert(sequence, {"LP","MP"})
               else
-                table.insert(_sequence, {_button})
+                table.insert(sequence, {button})
               end
             end
-          elseif _base_name == "tornado_hook" then
+          elseif base_name == "tornado_hook" then
             current_attack.offset_x = 40
-            if _button == "LP" then
+            if button == "LP" then
               current_attack.max_hits = 2
-            elseif _button == "MP" then
+            elseif button == "MP" then
               current_attack.max_hits = 2
-            elseif _button == "HP" then
+            elseif button == "HP" then
               current_attack.offset_x = 70
               current_attack.reset_pos_x = 140
               current_attack.max_hits = 3
@@ -2912,170 +2928,170 @@ function record_attacks(_player_obj, _projectiles)
               current_attack.reset_pos_x = 140
               current_attack.max_hits = 5
             end
-          elseif _base_name == "flying_viper" then
-            if _button == "LP" then
-            elseif _button == "MP" then
+          elseif base_name == "flying_viper" then
+            if button == "LP" then
+            elseif button == "MP" then
               current_attack.offset_x = 80
-            elseif _button == "HP" then
+            elseif button == "HP" then
               current_attack.offset_x = 80
-            elseif _button == "EXP" then
+            elseif button == "EXP" then
               current_attack.offset_x = 60
               current_attack.max_hits = 2
               current_attack.hits_appear_after_parry = true
               block_max_hits = 1
             end
-          elseif _base_name == "rising_cobra" then
+          elseif base_name == "rising_cobra" then
             current_attack.offset_x = 20
-            if _button == "EXK" then
+            if button == "EXK" then
               current_attack.max_hits = 2
             end
-          elseif _base_name == "snake_fang" then
+          elseif base_name == "snake_fang" then
             current_attack.offset_x = 70
             current_attack.block = {2}
             current_attack.throw = true
           end
         end
 
-        if _player.char_str == "oro" then
-          if _base_name == "nichirin" then
+        if player.char_str == "oro" then
+          if base_name == "nichirin" then
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
-            _dummy_offset_x = 80
-            if _button == "HP" then
+            dummy_offset_x = 80
+            if button == "HP" then
               if recording_options.hit_type == "block" then
                 current_attack.projectile_offset = {0, -50}
               end
-            elseif _button == "EXP" then
-              _dummy_offset_x = 250
+            elseif button == "EXP" then
+              dummy_offset_x = 250
               current_attack.max_hits = 2
             end
           end
-          if _base_name == "oniyanma" then
-            _dummy_offset_x = 80
-            if _button == "HP" or _button == "EXP" then
+          if base_name == "oniyanma" then
+            dummy_offset_x = 80
+            if button == "HP" or button == "EXP" then
               current_attack.max_hits = 4
               if recording_options.hit_type == "block" then
-                _dummy_offset_x = 30
+                dummy_offset_x = 30
               end
             end
           end
-          if _base_name == "hitobashira" then
+          if base_name == "hitobashira" then
             current_attack.reset_pos_x = 150
             current_attack.max_hits = 2
-            _dummy_offset_x = 65
+            dummy_offset_x = 65
 
-            if _button == "LK" then
-            elseif _button == "MK" then
-              queue_command(frame_number + 5, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 160, 0}})
-            elseif _button == "HK" then
-              queue_command(frame_number + 5, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 200, 0}})
-            elseif _button == "EXK" then
-              queue_command(frame_number + 5, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 200, 0}})
+            if button == "LK" then
+            elseif button == "MK" then
+              Queue_Command(gamestate.frame_number + 5, {command = write_pos, args={dummy, current_attack.reset_pos_x + 160, 0}})
+            elseif button == "HK" then
+              Queue_Command(gamestate.frame_number + 5, {command = write_pos, args={dummy, current_attack.reset_pos_x + 200, 0}})
+            elseif button == "EXK" then
+              Queue_Command(gamestate.frame_number + 5, {command = write_pos, args={dummy, current_attack.reset_pos_x + 200, 0}})
               current_attack.max_hits = 3
             end
-            local _n = 20
-            for i = 1, _n do
-              table.insert(_sequence, {})
-              if _button == "EXK" then
-                table.insert(_sequence, {"LK","MK"})
+            local n = 20
+            for i = 1, n do
+              table.insert(sequence, {})
+              if button == "EXK" then
+                table.insert(sequence, {"LK","MK"})
               else
-                table.insert(_sequence, {_button})
+                table.insert(sequence, {button})
               end
             end
           end
-          if _base_name == "hitobashira_air" then
-            current_attack.name = _base_name
-            if _button == "EXK" then
-              current_attack.name = _base_name .. _button
+          if base_name == "hitobashira_air" then
+            current_attack.name = base_name
+            if button == "EXK" then
+              current_attack.name = base_name .. button
             end
             current_attack.reset_pos_x = 150
-            _dummy_offset_x = 80
+            dummy_offset_x = 80
             current_attack.max_hits = 2
             current_attack.player_offset_y = 0
 
             if recording_options.hit_type == "block" then
-              _dummy_offset_x = 35
-              queue_command(frame_number + 10, {command = clear_motion_data, args={_player}})
+              dummy_offset_x = 35
+              Queue_Command(gamestate.frame_number + 10, {command = clear_motion_data, args={player}})
             end
-            local _n = 20
-            for i = 1, _n do
-              table.insert(_sequence, {})
-              if _button == "EXK" then
-                table.insert(_sequence, {"LK","MK"})
+            local n = 20
+            for i = 1, n do
+              table.insert(sequence, {})
+              if button == "EXK" then
+                table.insert(sequence, {"LK","MK"})
               else
-                table.insert(_sequence, {_button})
+                table.insert(sequence, {button})
               end
             end
           end
-          if _base_name == "niouriki" then
+          if base_name == "niouriki" then
             current_attack.throw = true
           end
         end
 
-        if _player.char_str == "q" then
-          if _base_name == "dashing_head_attack" then
+        if player.char_str == "q" then
+          if base_name == "dashing_head_attack" then
             current_attack.reset_pos_x = 150
-            _dummy_offset_x = 80
+            dummy_offset_x = 80
           end
-          if _base_name == "dashing_head_attack_high" then
+          if base_name == "dashing_head_attack_high" then
             current_attack.reset_pos_x = 150
-            _dummy_offset_x = 80
-            local _n = 30
-            for i = 1, _n do
-              table.insert(_sequence, {_button})
+            dummy_offset_x = 80
+            local n = 30
+            for i = 1, n do
+              table.insert(sequence, {button})
             end
-            if _button == "EXP" then
+            if button == "EXP" then
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
-          if _base_name == "dashing_leg_attack" then
+          if base_name == "dashing_leg_attack" then
             current_attack.reset_pos_x = 150
-            _dummy_offset_x = 80
+            dummy_offset_x = 80
             current_attack.block = {2}
-            if _button == "EXK" then
+            if button == "EXK" then
               current_attack.max_hits = 2
               current_attack.block = {2,2}
             end
           end
-          if _base_name == "high_speed_barrage" then
-            _dummy_offset_x = 80
+          if base_name == "high_speed_barrage" then
+            dummy_offset_x = 80
             current_attack.max_hits = 3
-            if _button == "EXP" then
+            if button == "EXP" then
               current_attack.max_hits = 7
             end
           end
-          if _base_name == "capture_and_deadly_blow" then
-            _dummy_offset_x = 80
+          if base_name == "capture_and_deadly_blow" then
+            dummy_offset_x = 80
             current_attack.throw = true
           end
         end
 
-        if _player.char_str == "remy" then
-          if _base_name == "light_of_virtue" then
+        if player.char_str == "remy" then
+          if base_name == "light_of_virtue" then
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
-            _dummy_offset_x = 120
-            if _button == "LK" or _button == "MK" or _button == "HK" then
+            dummy_offset_x = 120
+            if button == "LK" or button == "MK" or button == "HK" then
               current_attack.block = {2}
-            elseif _button == "EXP" then
+            elseif button == "EXP" then
               current_attack.max_hits = 2
               current_attack.block = {1,2}
-            elseif _button == "EXK" then
+            elseif button == "EXK" then
               current_attack.max_hits = 2
               current_attack.block = {2,2}
             end
           end
-          if _base_name == "rising_rage_flash" then
-            _dummy_offset_x = 80
-            if _button == "EXK" then
+          if base_name == "rising_rage_flash" then
+            dummy_offset_x = 80
+            if button == "EXK" then
               current_attack.max_hits = 2
             end
           end
-          if _base_name == "cold_blue_kick" then
-            _dummy_offset_x = 150
-            if _button == "EXK" then
+          if base_name == "cold_blue_kick" then
+            dummy_offset_x = 150
+            if button == "EXK" then
               current_attack.max_hits = 2
               current_attack.hits_appear_after_block = true
               block_max_hits = 1
@@ -3083,586 +3099,586 @@ function record_attacks(_player_obj, _projectiles)
           end
         end
 
-        if _player.char_str == "ryu" then
-          if _base_name == "hadouken" then
-            _dummy_offset_x = 100
+        if player.char_str == "ryu" then
+          if base_name == "hadouken" then
+            dummy_offset_x = 100
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
-            if _button == "EXP" then
+            if button == "EXP" then
               current_attack.max_hits = 2
             end
           end
-          if _base_name == "shoryuken" then
-            if _button == "LP" then
+          if base_name == "shoryuken" then
+            if button == "LP" then
               current_attack.max_hits = 1
-            elseif _button == "MP" then
+            elseif button == "MP" then
               current_attack.max_hits = 1
-            elseif _button == "HP" then
+            elseif button == "HP" then
               current_attack.max_hits = 1
-            elseif _button == "EXP" then
+            elseif button == "EXP" then
               current_attack.max_hits = 2
             end
           end
 
-          if _base_name == "tatsumaki" then
+          if base_name == "tatsumaki" then
             current_attack.reset_pos_x = 200
-            if _button == "LK" then
+            if button == "LK" then
               current_attack.max_hits = 1
-            elseif _button == "MK" then
+            elseif button == "MK" then
               current_attack.max_hits = 3
-            elseif _button == "HK" then
+            elseif button == "HK" then
               current_attack.max_hits = 3
-            elseif _button == "EXK" then
+            elseif button == "EXK" then
               current_attack.max_hits = 5
               current_attack.dummy_offset_list = {{80,0},{-50,0},{80,0},{-50,0},{80,0}}
             end
           end
-          if _base_name == "tatsumaki_air" then
+          if base_name == "tatsumaki_air" then
             if recording_options.hit_type == "block" then
-              queue_command(frame_number + 10, {command = clear_motion_data, args={_player}})
+              Queue_Command(gamestate.frame_number + 10, {command = clear_motion_data, args={player}})
             end
-            if _button == "LK" then
+            if button == "LK" then
               current_attack.player_offset_y = -20
               current_attack.dummy_offset_list = {{80,0},{-50,0},{80,0},{-50,0}}
               current_attack.max_hits = 4
-            elseif _button == "MK" then
+            elseif button == "MK" then
               current_attack.player_offset_y = -20
               current_attack.dummy_offset_list = {{80,0},{-50,0},{80,0},{-50,0},{80,0},{-50,0}}
               current_attack.max_hits = 6
               current_attack.land_after = 150
-            elseif _button == "HK" then
+            elseif button == "HK" then
               current_attack.player_offset_y = -20
               current_attack.dummy_offset_list = {{80,0},{-50,0},{80,0},{-50,0},{80,0},{-50,0},{80,0},{-50,0}}
               current_attack.max_hits = 8
               current_attack.land_after = 200
-            elseif _button == "EXK" then
+            elseif button == "EXK" then
               current_attack.player_offset_y = -20
               current_attack.dummy_offset_list = {{80,0},{-50,0},{80,0},{-50,0},{80,0},{-50,0}}
               current_attack.max_hits = 6
               current_attack.land_after = 150
             end
           end
-          if _base_name == "joudan" then
-            _dummy_offset_x = 100
+          if base_name == "joudan" then
+            dummy_offset_x = 100
           end
         end
 
-        if _player.char_str == "sean" then
-          if _base_name == "sean_tackle" then
+        if player.char_str == "sean" then
+          if base_name == "sean_tackle" then
             current_attack.throw = true
-            _dummy_offset_x = 100
+            dummy_offset_x = 100
 
-            local _n = 50
-            for i = 1, _n do
-              if _button == "EXP" then
-                table.insert(_sequence, {"LP","MP"})
+            local n = 50
+            for i = 1, n do
+              if button == "EXP" then
+                table.insert(sequence, {"LP","MP"})
               else
-                table.insert(_sequence, {_button})
+                table.insert(sequence, {button})
               end
             end
           end
-          if _base_name == "dragon_smash" then
-            if _button == "EXP" then
+          if base_name == "dragon_smash" then
+            if button == "EXP" then
               current_attack.max_hits = 2
             end
           end
-          if _base_name == "tornado" then
-            _dummy_offset_x = 80
-            if _button == "LK" then
+          if base_name == "tornado" then
+            dummy_offset_x = 80
+            if button == "LK" then
               current_attack.max_hits = 2
-            elseif _button == "MK" then
+            elseif button == "MK" then
               current_attack.max_hits = 3
-            elseif _button == "HK" then
+            elseif button == "HK" then
               current_attack.max_hits = 4
-            elseif _button == "EXK" then
+            elseif button == "EXK" then
               current_attack.max_hits = 4
             end
           end
-          if _base_name == "ryuubikyaku" then
-            current_attack.name = _base_name
-            if _button == "EXK" then
-              current_attack.name = _base_name .. _button
+          if base_name == "ryuubikyaku" then
+            current_attack.name = base_name
+            if button == "EXK" then
+              current_attack.name = base_name .. button
             end
-            _dummy_offset_x = 80
-            if _button == "EXK" then
+            dummy_offset_x = 80
+            if button == "EXK" then
               current_attack.max_hits = 3
             end
           end
-          if _base_name == "roll" then
-            _dummy_offset_x = 80
+          if base_name == "roll" then
+            dummy_offset_x = 80
             current_attack.max_hits = 0
             if recording_options.hit_type == "block" then
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
         end
 
-        if _player.char_str == "shingouki" then
-          if _base_name == "gohadouken" then
-            _dummy_offset_x = 100
+        if player.char_str == "shingouki" then
+          if base_name == "gohadouken" then
+            dummy_offset_x = 100
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
           end
-          if _base_name == "gohadouken_air" then
-            _dummy_offset_x = 100
+          if base_name == "gohadouken_air" then
+            dummy_offset_x = 100
             current_attack.max_hits = 2
             current_attack.is_projectile = true
           end
-          if _base_name == "shakunetsu" then
-            _dummy_offset_x = 100
+          if base_name == "shakunetsu" then
+            dummy_offset_x = 100
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
-            if _button == "LP" then
+            if button == "LP" then
               current_attack.max_hits = 1
-            elseif _button == "MP" then
+            elseif button == "MP" then
               current_attack.max_hits = 2
-            elseif _button == "HP" then
+            elseif button == "HP" then
               current_attack.max_hits = 3
             end
           end
-          if _base_name == "goshoryuken" then
-            if _button == "LP" then
+          if base_name == "goshoryuken" then
+            if button == "LP" then
               current_attack.max_hits = 1
-            elseif _button == "MP" then
+            elseif button == "MP" then
               current_attack.max_hits = 2
-            elseif _button == "HP" then
+            elseif button == "HP" then
               current_attack.max_hits = 3
             end
           end
-          if _base_name == "tatsumaki" then
-            if _button == "LK" then
+          if base_name == "tatsumaki" then
+            if button == "LK" then
               current_attack.max_hits = 2
               current_attack.dummy_offset_list = {{80,0},{-70,0}}
-            elseif _button == "MK" then
+            elseif button == "MK" then
               current_attack.max_hits = 5
               current_attack.dummy_offset_list = {{80,0},{80,0},{-70,0},{80,0},{-70,0}}
-            elseif _button == "HK" then
+            elseif button == "HK" then
               current_attack.max_hits = 9
               current_attack.dummy_offset_list = {{80,0},{80,0},{-70,0},{80,0},{-70,0},{80,0},{-70,0},{80,0},{-70,0}}
             end
           end
-          if _base_name == "tatsumaki_air" then
-            if _button == "LK" then
+          if base_name == "tatsumaki_air" then
+            if button == "LK" then
               current_attack.player_offset_y = -20
               current_attack.dummy_offset_list = {{80,0},{-60,0},{80,0},{-60,0}}
               current_attack.max_hits = 2
-            elseif _button == "MK" then
+            elseif button == "MK" then
               current_attack.player_offset_y = -20
               current_attack.dummy_offset_list = {{80,0},{-60,0},{80,0},{-60,0}}
               current_attack.max_hits = 4
-            elseif _button == "HK" then
+            elseif button == "HK" then
               current_attack.player_offset_y = -20
               current_attack.dummy_offset_list = {{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0},{80,0},{-60,0}}
               current_attack.max_hits = 8
               current_attack.land_after = 150
             end
             if recording_options.hit_type == "block" then
-              queue_command(frame_number + 10, {command = clear_motion_data, args={_player}})
+              Queue_Command(gamestate.frame_number + 10, {command = clear_motion_data, args={player}})
             end
           end
-          if _base_name == "asura_forward" or _base_name == "asura_backward" then
+          if base_name == "asura_forward" or base_name == "asura_backward" then
             current_attack.max_hits = 0
             if recording_options.hit_type == "block" then
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
         end
 
-        if _player.char_str == "twelve" then
-          if _base_name == "ndl" then
+        if player.char_str == "twelve" then
+          if base_name == "ndl" then
             current_attack.is_projectile = true
-            if _button == "MP" then
-              _dummy_offset_x = 150
-            elseif _button == "HP" then
-              _dummy_offset_x = 210
-              queue_command(frame_number + 10, {command = write_pos, args={_player, current_attack.reset_pos_x - 80, 0}})
-              queue_command(frame_number + 10, {command = set_screen_pos, args={current_attack.reset_pos_x, 0}})
-            elseif _button == "EXP" then
-              _dummy_offset_x = 190
+            if button == "MP" then
+              dummy_offset_x = 150
+            elseif button == "HP" then
+              dummy_offset_x = 210
+              Queue_Command(gamestate.frame_number + 10, {command = write_pos, args={player, current_attack.reset_pos_x - 80, 0}})
+              Queue_Command(gamestate.frame_number + 10, {command = set_screen_pos, args={current_attack.reset_pos_x, 0}})
+            elseif button == "EXP" then
+              dummy_offset_x = 190
               current_attack.max_hits = 2
             end
           end
-          if _base_name == "axe" then
-            _dummy_offset_x = 80
-            local _n = 25
-            if _button == "LP" then
+          if base_name == "axe" then
+            dummy_offset_x = 80
+            local n = 25
+            if button == "LP" then
               current_attack.max_hits = 9
-            elseif _button == "MP" then
+            elseif button == "MP" then
               current_attack.max_hits = 9
-            elseif _button == "HP" then
-              _n = 30
+            elseif button == "HP" then
+              n = 30
               current_attack.max_hits = 12
-            elseif _button == "EXP" then
-              _n = 20
+            elseif button == "EXP" then
+              n = 20
               current_attack.max_hits = 6
             end
             if recording_options.hit_type == "block" then
               current_attack.max_hits = 2
-              if _button ~= "LP" then
+              if button ~= "LP" then
                 current_attack.max_hits = 3
               end
             end
 
-            for i = 1, _n do
-              table.insert(_sequence, {})
-              if _button == "EXP" then
-                table.insert(_sequence, {"LP","MP"})
+            for i = 1, n do
+              table.insert(sequence, {})
+              if button == "EXP" then
+                table.insert(sequence, {"LP","MP"})
               else
-                table.insert(_sequence, {_button})
+                table.insert(sequence, {button})
               end
             end
           end
-          if _base_name == "axe_air" then
-            _dummy_offset_x = 80
+          if base_name == "axe_air" then
+            dummy_offset_x = 80
             current_attack.player_offset_y = 100
-            local _n = 25
-            for i = 1, _n do
-              table.insert(_sequence, {})
-              if _button == "EXP" then
-                table.insert(_sequence, {"LP","MP"})
+            local n = 25
+            for i = 1, n do
+              table.insert(sequence, {})
+              if button == "EXP" then
+                table.insert(sequence, {"LP","MP"})
               else
-                table.insert(_sequence, {_button})
+                table.insert(sequence, {button})
               end
             end
             current_attack.max_hits = 3
             current_attack.player_offset_y = -20
             current_attack.land_after = 150
             if recording_options.hit_type == "block" then
-              queue_command(frame_number + 10, {command = clear_motion_data, args={_player}})
+              Queue_Command(gamestate.frame_number + 10, {command = clear_motion_data, args={player}})
             end
           end
-          if _base_name == "dra" then
+          if base_name == "dra" then
             current_attack.reset_pos_x = 150
-            _dummy_offset_x = 100
-            if _button == "HK" then
-              _dummy_offset_x = 120
-            elseif _button == "EXK" then
-              _dummy_offset_x = 120
+            dummy_offset_x = 100
+            if button == "HK" then
+              dummy_offset_x = 120
+            elseif button == "EXK" then
+              dummy_offset_x = 120
               recording_options.infinite_loop = true
               current_attack.max_hits = 2
             end
           end
         end
 
-        if _player.char_str == "urien" then
-          if _base_name == "metallic_sphere" then
-            _dummy_offset_x = 100
+        if player.char_str == "urien" then
+          if base_name == "metallic_sphere" then
+            dummy_offset_x = 100
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
-            if _button == "HP" then
+            if button == "HP" then
               if recording_options.hit_type == "block" then
                 current_attack.projectile_offset = {0, -50}
               end
             end
-            if _button == "EXP" then
+            if button == "EXP" then
               current_attack.max_hits = 2
             end
           end
-          if _base_name == "chariot_tackle" then
+          if base_name == "chariot_tackle" then
             current_attack.reset_pos_x = 150
-            _dummy_offset_x = 100
-            if _button == "EXK" then
+            dummy_offset_x = 100
+            if button == "EXK" then
               current_attack.max_hits = 2
             end
           end
-          if _base_name == "violence_kneedrop" then
+          if base_name == "violence_kneedrop" then
             current_attack.reset_pos_x = 150
-            _dummy_offset_x = 80
-            if _button == "EXK" then
+            dummy_offset_x = 80
+            if button == "EXK" then
               current_attack.hits_appear_after_block = true
               current_attack.max_hits = 2
               block_max_hits = 1
             end
           end
-          if _base_name == "dangerous_headbutt" then
-            _dummy_offset_x = 80
-            if _button == "EXP" then
+          if base_name == "dangerous_headbutt" then
+            dummy_offset_x = 80
+            if button == "EXP" then
               current_attack.max_hits = 2
             end
           end
         end
 
-        if _player.char_str == "yang" then
-          if _base_name == "tourouzan" then
-            _dummy_offset_x = 100
+        if player.char_str == "yang" then
+          if base_name == "tourouzan" then
+            dummy_offset_x = 100
             if recording_options.hit_type == "block" then
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
-          if _base_name == "tourouzan_2"
-          or _base_name == "tourouzan_3"
-          or _base_name == "tourouzan_4"
-          or _base_name == "tourouzan_5" then
+          if base_name == "tourouzan_2"
+          or base_name == "tourouzan_3"
+          or base_name == "tourouzan_4"
+          or base_name == "tourouzan_5" then
             current_attack.optional_anim = {1}
             current_attack.max_hits = 2
-            local _n = 4
-            if _button == "EXP" then
-              _n = 10
+            local n = 4
+            if button == "EXP" then
+              n = 10
             end
             if recording_options.hit_type == "block" then
-              _n = 25
+              n = 25
             end
-            for i = 1, _n do
-              table.insert(_sequence, {})
+            for i = 1, n do
+              table.insert(sequence, {})
             end
-            table.insert(_sequence, {"down"})
-            table.insert(_sequence, {"down","forward"})
-            table.insert(_sequence, {"forward"})
-            if _button == "EXP" then
-              table.insert(_sequence, {"LP","MP"})
+            table.insert(sequence, {"down"})
+            table.insert(sequence, {"down","forward"})
+            table.insert(sequence, {"forward"})
+            if button == "EXP" then
+              table.insert(sequence, {"LP","MP"})
             else
-              table.insert(_sequence, {_button})
+              table.insert(sequence, {button})
             end
-            if _base_name == "tourouzan_2" then
+            if base_name == "tourouzan_2" then
               if recording_options.hit_type == "block" then
                 i_attacks = i_attacks + 1
-                _state = "queue_move"
+                state = "queue_move"
                 return
               end
             end
           end
-          if _base_name == "tourouzan_3"
-          or _base_name == "tourouzan_4"
-          or _base_name == "tourouzan_5" then
+          if base_name == "tourouzan_3"
+          or base_name == "tourouzan_4"
+          or base_name == "tourouzan_5" then
             current_attack.optional_anim = {1,1}
             current_attack.max_hits = 3
-            local _n = 25
-            if _button == "EXP" then
-              _n = 8
+            local n = 25
+            if button == "EXP" then
+              n = 8
             end
             if recording_options.hit_type == "block" then
-              _n = 14
+              n = 14
             end
-            for i = 1, _n do
-              table.insert(_sequence, {})
+            for i = 1, n do
+              table.insert(sequence, {})
             end
-            table.insert(_sequence, {"down"})
-            table.insert(_sequence, {"down","forward"})
-            table.insert(_sequence, {"forward"})
-            if _button == "EXP" then
-              table.insert(_sequence, {"LP","MP"})
+            table.insert(sequence, {"down"})
+            table.insert(sequence, {"down","forward"})
+            table.insert(sequence, {"forward"})
+            if button == "EXP" then
+              table.insert(sequence, {"LP","MP"})
             else
-              table.insert(_sequence, {_button})
+              table.insert(sequence, {button})
             end
-            if _base_name == "tourouzan_3" and _button == "EXP" then
+            if base_name == "tourouzan_3" and button == "EXP" then
               if recording_options.hit_type == "block" then
                 i_attacks = i_attacks + 1
-                _state = "queue_move"
+                state = "queue_move"
                 return
               end
             end
           end
-          if _base_name == "tourouzan_4"
-          or _base_name == "tourouzan_5" then
+          if base_name == "tourouzan_4"
+          or base_name == "tourouzan_5" then
             current_attack.optional_anim = {1,1,1}
             current_attack.max_hits = 4
-            local _n = 2
-            if _button == "EXP" then
-              _n = 8
+            local n = 2
+            if button == "EXP" then
+              n = 8
             end
             if recording_options.hit_type == "block" then
-              _n = 25
+              n = 25
             end
-            for i = 1, _n do
-              table.insert(_sequence, {})
+            for i = 1, n do
+              table.insert(sequence, {})
             end
-            table.insert(_sequence, {"down"})
-            table.insert(_sequence, {"down","forward"})
-            table.insert(_sequence, {"forward"})
-            if _button == "EXP" then
-              table.insert(_sequence, {"LP","MP"})
+            table.insert(sequence, {"down"})
+            table.insert(sequence, {"down","forward"})
+            table.insert(sequence, {"forward"})
+            if button == "EXP" then
+              table.insert(sequence, {"LP","MP"})
             else
-              table.insert(_sequence, {_button})
+              table.insert(sequence, {button})
             end
 
-            if _base_name == "tourouzan_4" and _button == "EXP" then
+            if base_name == "tourouzan_4" and button == "EXP" then
               if recording_options.hit_type == "block" then
                 i_attacks = i_attacks + 1
-                _state = "queue_move"
+                state = "queue_move"
                 return
               end
             end
           end
-          if _base_name == "tourouzan_5" then
+          if base_name == "tourouzan_5" then
             current_attack.optional_anim = {1,1,1,1}
             current_attack.max_hits = 5
-            local _n = 2
-            if _button == "EXP" then
-              _n = 9
+            local n = 2
+            if button == "EXP" then
+              n = 9
             end
             if recording_options.hit_type == "block" then
-              _n = 25
+              n = 25
             end
-            for i = 1, _n do
-              table.insert(_sequence, {})
+            for i = 1, n do
+              table.insert(sequence, {})
             end
-            table.insert(_sequence, {"down"})
-            table.insert(_sequence, {"down","forward"})
-            table.insert(_sequence, {"forward"})
-            if _button == "EXP" then
-              table.insert(_sequence, {"LP","MP"})
+            table.insert(sequence, {"down"})
+            table.insert(sequence, {"down","forward"})
+            table.insert(sequence, {"forward"})
+            if button == "EXP" then
+              table.insert(sequence, {"LP","MP"})
             else
-              table.insert(_sequence, {_button})
+              table.insert(sequence, {button})
             end
           end
-          if _base_name == "senkyuutai" then
+          if base_name == "senkyuutai" then
             current_attack.reset_pos_x = 150
             current_attack.max_hits = 2
-            if _button == "EXK" then
+            if button == "EXK" then
               current_attack.max_hits = 3
             end
           end
-          if _base_name == "kaihou" then
+          if base_name == "kaihou" then
             current_attack.reset_pos_x = 150
-            _dummy_offset_x = 200
+            dummy_offset_x = 200
             current_attack.max_hits = 0
             if recording_options.hit_type == "block" then
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
-          if _base_name == "byakko" then
-            current_attack.name = _base_name
-            if _button == "EXK" then
-              current_attack.name = _base_name .. _button
+          if base_name == "byakko" then
+            current_attack.name = base_name
+            if button == "EXK" then
+              current_attack.name = base_name .. button
             end
-            _dummy_offset_x = 100
-            if _button == "EXP" then
+            dummy_offset_x = 100
+            if button == "EXP" then
               current_attack.max_hits = 0
               if recording_options.hit_type == "block" then
                 i_attacks = i_attacks + 1
-                _state = "queue_move"
+                state = "queue_move"
                 return
               end
             end
           end
-          if _base_name == "zenpou" then
-            _dummy_offset_x = 72
+          if base_name == "zenpou" then
+            dummy_offset_x = 72
             current_attack.throw = true
           end
         end
 
-        if _player.char_str == "yun" then
-          if _base_name == "zesshou" then
+        if player.char_str == "yun" then
+          if base_name == "zesshou" then
             current_attack.reset_pos_x = 150
-            _dummy_offset_x = 100
-            if _button == "EXP" then
+            dummy_offset_x = 100
+            if button == "EXP" then
               current_attack.max_hits = 2
             end
             if recording_geneijin then
-              if _button == "HP" then
+              if button == "HP" then
                 current_attack.name = "zesshou"
                 current_attack.max_hits = 3
               else
                 i_attacks = i_attacks + 1
-                _state = "queue_move"
+                state = "queue_move"
                 return
               end
             end
           end
-          if _base_name == "tetsuzan" then
+          if base_name == "tetsuzan" then
             current_attack.reset_pos_x = 150
-            if _button == "EXP" then
+            if button == "EXP" then
               current_attack.max_hits = 2
             end
             if recording_geneijin then
-              if _button ~= "EXP" then
+              if button ~= "EXP" then
                 current_attack.max_hits = 2
               else
                 i_attacks = i_attacks + 1
-                _state = "queue_move"
+                state = "queue_move"
                 return
               end
             end
           end
-          if _base_name == "nishoukyaku" then
+          if base_name == "nishoukyaku" then
             if recording_geneijin then
-              current_attack.name = _base_name
-              if _button == "LK" then
+              current_attack.name = base_name
+              if button == "LK" then
                 current_attack.max_hits = 2
               else
                 i_attacks = i_attacks + 1
-                _state = "queue_move"
+                state = "queue_move"
                 return
               end
             else
               current_attack.max_hits = 1
               if recording_options.hit_type == "block" then
-                queue_command(frame_number + 38, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 150, 0}})
+                Queue_Command(gamestate.frame_number + 38, {command = write_pos, args={dummy, current_attack.reset_pos_x + 150, 0}})
               end
             end
           end
-          if _base_name == "kobokushi" then
-            current_attack.name = _base_name
-            if _button == "EXK" then
-              current_attack.name = _base_name .. _button
+          if base_name == "kobokushi" then
+            current_attack.name = base_name
+            if button == "EXK" then
+              current_attack.name = base_name .. button
             end
-            if _button == "EXP" then
+            if button == "EXP" then
               current_attack.max_hits = 0
               if recording_options.hit_type == "block" then
                 i_attacks = i_attacks + 1
-                _state = "queue_move"
+                state = "queue_move"
                 return
               end
             end
           end
-          if _base_name == "zenpou" then
+          if base_name == "zenpou" then
             current_attack.throw = true
           end
         end
 
-        current_attack.sequence = _sequence
+        current_attack.sequence = sequence
 
       elseif current_attack_category.name == "supers" then
 
         current_attack = deepcopy(supers[i_attacks])
-        local _base_name = current_attack.name
-        local _button = current_attack.button
-        if _button then
-          current_attack.name = current_attack.name .. "_" .. _button
+        local base_name = current_attack.name
+        local button = current_attack.button
+        if button then
+          current_attack.name = current_attack.name .. "_" .. button
         end
-        current_attack.base_name = _base_name
+        current_attack.base_name = base_name
 
 
-        _dummy_offset_x = _close_dist
-        _dummy_offset_y = 0
+        dummy_offset_x = close_dist
+        dummy_offset_y = 0
 
-        current_attack.reset_pos_x = _reset_pos_x
+        current_attack.reset_pos_x = reset_pos_x
 
-        local _sequence = current_attack.input
+        local sequence = current_attack.input
 
-        current_attack.attack_start_frame = #_sequence
+        current_attack.attack_start_frame = #sequence
 
         local i = 1
-        while i <= #_sequence do
+        while i <= #sequence do
           local j = 1
-          while j <= #_sequence[i] do
-            if _sequence[i][j] == "button" then
-              if _button == "EXP"  then
-                table.remove(_sequence[i], j)
-                table.insert(_sequence[i], j, "LP")
-                table.insert(_sequence[i], j, "MP")
-              elseif _button == "EXK"  then
-                table.remove(_sequence[i], j)
-                table.insert(_sequence[i], j, "LK")
-                table.insert(_sequence[i], j, "MK")
+          while j <= #sequence[i] do
+            if sequence[i][j] == "button" then
+              if button == "EXP"  then
+                table.remove(sequence[i], j)
+                table.insert(sequence[i], j, "LP")
+                table.insert(sequence[i], j, "MP")
+              elseif button == "EXK"  then
+                table.remove(sequence[i], j)
+                table.insert(sequence[i], j, "LK")
+                table.insert(sequence[i], j, "MK")
               else
-                table.remove(_sequence[i], j)
-                table.insert(_sequence[i], j, _button)
+                table.remove(sequence[i], j)
+                table.insert(sequence[i], j, button)
               end
             end
             j = j + 1
           end
           i = i + 1
         end
-        if _player.char_str == "alex" then
+        if player.char_str == "alex" then
           if current_attack.move_type == "sa1" then
             current_attack.throw = true
             --reverse
@@ -3671,47 +3687,47 @@ function record_attacks(_player_obj, _projectiles)
             current_attack.max_hits = 5
           elseif current_attack.move_type == "sa3" then
             current_attack.throw = true
-            if _button == "MP" then
-              current_attack.name = _base_name
-              _dummy_offset_x = 150
+            if button == "MP" then
+              current_attack.name = base_name
+              dummy_offset_x = 150
             end
-            if _button ~= "MP" then
+            if button ~= "MP" then
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
-        elseif _player.char_str == "chunli" then
+        elseif player.char_str == "chunli" then
           if current_attack.move_type == "sa1" then
             current_attack.max_hits = 20
           elseif current_attack.move_type == "sa2" then
-            _dummy_offset_x = 80
+            dummy_offset_x = 80
             current_attack.reset_pos_x = 200
             current_attack.max_hits = 17
           elseif current_attack.move_type == "sa3" then
             current_attack.max_hits = 3 --9
           end
-        elseif _player.char_str == "dudley" then
+        elseif player.char_str == "dudley" then
           if current_attack.move_type == "sa1" then
             current_attack.max_hits = 8 --11
           elseif current_attack.move_type == "sa2" then
             current_attack.max_hits = 8
-            _dummy_offset_x = 120
-            local _n = 80
+            dummy_offset_x = 120
+            local n = 80
             if recording_options.hit_type == "block" then
-              _dummy_offset_x = 30
-              _n = 140
+              dummy_offset_x = 30
+              n = 140
             end
-            for i = 1, _n do
-              table.insert(_sequence, {})
-              table.insert(_sequence, {"LP"})
+            for i = 1, n do
+              table.insert(sequence, {})
+              table.insert(sequence, {"LP"})
             end
           elseif current_attack.move_type == "sa3" then
-            current_attack.name = _base_name
-            _dummy_offset_x = 90
+            current_attack.name = base_name
+            dummy_offset_x = 90
             current_attack.max_hits = 5
           end
-        elseif _player.char_str == "elena" then
+        elseif player.char_str == "elena" then
           if current_attack.move_type == "sa1" then
             current_attack.max_hits = 7
           elseif current_attack.move_type == "sa2" then
@@ -3719,31 +3735,31 @@ function record_attacks(_player_obj, _projectiles)
           elseif current_attack.move_type == "sa3" then
             current_attack.max_hits = 0
           end
-        elseif _player.char_str == "gill" then
+        elseif player.char_str == "gill" then
           if current_attack.move_type == "sa1" then
             if recording_options.hit_type == "block" then
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
             current_attack.max_hits = 0
-            _dummy_offset_x = 90
+            dummy_offset_x = 90
             training_settings.life_mode = 1
-            queue_command(frame_number + 11, {command=memory.writebyte, args={_player.life_addr, 0}})
-            queue_input_sequence(_dummy, {{"HP"}})
+            Queue_Command(gamestate.frame_number + 11, {command=memory.writebyte, args={player.life_addr, 0}})
+            queue_input_sequence(dummy, {{"HP"}})
           elseif current_attack.move_type == "sa2" then
-            _dummy_offset_x = 100
+            dummy_offset_x = 100
             current_attack.is_projectile = true
             current_attack.max_hits = 16
             if recording_options.hit_type == "block" then
-              _dummy_offset_x = 150
+              dummy_offset_x = 150
               current_attack.home_projectiles = true --meteor swarm has randomness
             end
           elseif current_attack.move_type == "sa3" then
-            _dummy_offset_x = 120
+            dummy_offset_x = 120
             current_attack.max_hits = 17
           end
-        elseif _player.char_str == "gouki" then
+        elseif player.char_str == "gouki" then
           if current_attack.move_type == "sa1" then
             current_attack.max_hits = 6
             current_attack.is_projectile = true
@@ -3754,13 +3770,13 @@ function record_attacks(_player_obj, _projectiles)
             current_attack.max_hits = 3 --12
           elseif current_attack.move_type == "sgs" then
             current_attack.throw = true
-            table.insert(_sequence, 1, {"down", "HK"})
-            _state = "waiting_for_sgs"
-            queue_command(frame_number + 8, {command=function() _state = "wait_for_initial_anim" end})
+            table.insert(sequence, 1, {"down", "HK"})
+            state = "waiting_for_sgs"
+            Queue_Command(gamestate.frame_number + 8, {command=function() state = "wait_for_initial_anim" end})
           elseif current_attack.move_type == "kkz" then
             current_attack.max_hits = 1 --12
           end
-        elseif _player.char_str == "hugo" then
+        elseif player.char_str == "hugo" then
           if current_attack.move_type == "sa1" then
             current_attack.throw = true
           elseif current_attack.move_type == "sa2" then
@@ -3768,12 +3784,12 @@ function record_attacks(_player_obj, _projectiles)
             current_attack.reset_pos_x = 150
             if current_attack.button ~= "HK" then
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
             current_attack.name = "megaton_press"
             if recording_options.hit_type == "block" then
-              _dummy_offset_y = 100
+              dummy_offset_y = 100
             end
           elseif current_attack.move_type == "sa3" then
             current_attack.reset_pos_x = 150
@@ -3781,33 +3797,33 @@ function record_attacks(_player_obj, _projectiles)
             if current_attack.name == "hammer_mountain_miss" then
               if recording_options.hit_type == "block" then
                 i_attacks = i_attacks + 1
-                _state = "queue_move"
+                state = "queue_move"
                 return
               end
               current_attack.max_hits = 0
-              local _n = 100
-              for i = 1, _n do
-                table.insert(_sequence, {"LP"})
+              local n = 100
+              for i = 1, n do
+                table.insert(sequence, {"LP"})
               end
             end
           end
-        elseif _player.char_str == "ibuki" then
+        elseif player.char_str == "ibuki" then
           if current_attack.move_type == "sa1" then
             current_attack.is_projectile = true
             current_attack.max_hits = 20
-            current_attack.attack_start_frame = #_sequence + 6
-            local _n = 70
+            current_attack.attack_start_frame = #sequence + 6
+            local n = 70
             if recording_options.hit_type == "block" then
-              _n = 350
+              n = 350
               current_attack.player_offset_y = 80
             end
-            for i = 1, _n do
-              table.insert(_sequence, {})
-              table.insert(_sequence, {_button})
+            for i = 1, n do
+              table.insert(sequence, {})
+              table.insert(sequence, {button})
             end
-            if _button == "MP" then
+            if button == "MP" then
               current_attack.offset_x = 30
-            elseif _button == "HP" then
+            elseif button == "HP" then
               current_attack.player_offset_y = 40
               current_attack.offset_x = 60
             end
@@ -3820,14 +3836,14 @@ function record_attacks(_player_obj, _projectiles)
               current_attack.home_projectiles = true
               recording_options.hit_type = "miss"
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
             current_attack.max_hits = 3
             current_attack.reset_pos_x = 200
             current_attack.block={2,2,2}
           end
-        elseif _player.char_str == "ken" then
+        elseif player.char_str == "ken" then
           if current_attack.move_type == "sa1" then
             current_attack.max_hits = 11 --12
           elseif current_attack.move_type == "sa2" then
@@ -3835,77 +3851,77 @@ function record_attacks(_player_obj, _projectiles)
           elseif current_attack.move_type == "sa3" then
             current_attack.max_hits = 5 --9
           end
-        elseif _player.char_str == "makoto" then
+        elseif player.char_str == "makoto" then
           if current_attack.move_type == "sa1" then
             current_attack.max_hits = 1
           elseif current_attack.move_type == "sa2" then
-            -- current_attack.name = _base_name
+            -- current_attack.name = base_name
             current_attack.max_hits = 4
             current_attack.do_not_fix_screen = true
             current_attack.hits_appear_after_block = true
             block_max_hits = 1
-            -- if _button ~= "MK" then
+            -- if button ~= "MK" then
             --   i_attacks = i_attacks + 1
-            --   _state = "queue_move"
+            --   state = "queue_move"
             --   return
             -- end
-            if _button == "LK" then
-              queue_command(frame_number + 15, {command = write_pos, args={_dummy, current_attack.reset_pos_x - 40, 0}})
-            elseif _button == "MK" then
-              queue_command(frame_number + 15, {command = write_pos, args={_dummy, current_attack.reset_pos_x, 0}})
-            elseif _button == "HK" then
-              queue_command(frame_number + 15, {command = write_pos, args={_dummy, current_attack.reset_pos_x + 50, 0}})
+            if button == "LK" then
+              Queue_Command(gamestate.frame_number + 15, {command = write_pos, args={dummy, current_attack.reset_pos_x - 40, 0}})
+            elseif button == "MK" then
+              Queue_Command(gamestate.frame_number + 15, {command = write_pos, args={dummy, current_attack.reset_pos_x, 0}})
+            elseif button == "HK" then
+              Queue_Command(gamestate.frame_number + 15, {command = write_pos, args={dummy, current_attack.reset_pos_x + 50, 0}})
             end
           elseif current_attack.move_type == "sa3" then
             current_attack.max_hits = 0
           end
-        elseif _player.char_str == "necro" then
+        elseif player.char_str == "necro" then
           if current_attack.move_type == "sa1" then
             current_attack.reset_pos_x = 600
             current_attack.max_hits = 13
-            local _n = 60
+            local n = 60
             if recording_options.hit_type == "block" then
-              _dummy_offset_x = 30
-              _n = 140
+              dummy_offset_x = 30
+              n = 140
             end
-            for i = 1, _n do
-              table.insert(_sequence, {})
-              table.insert(_sequence, {"LP"})
+            for i = 1, n do
+              table.insert(sequence, {})
+              table.insert(sequence, {"LP"})
             end
           elseif current_attack.move_type == "sa2" then
             current_attack.throw = true
           elseif current_attack.move_type == "sa3" then
 
-            _dummy_offset_x = 150
+            dummy_offset_x = 150
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
             current_attack.reset_pos_x = 160
             current_attack.max_hits = 3
             current_attack.block = {2,2,2}
           end
-        elseif _player.char_str == "oro" then
+        elseif player.char_str == "oro" then
           if current_attack.move_type == "sa1" then
             current_attack.max_hits = 0
             if current_attack.name == "kishinriki_activation" then
               if recording_options.hit_type == "block" then
                 i_attacks = i_attacks + 1
                 i_recording_hit_types = 1
-                _state = "queue_move"
+                state = "queue_move"
                 return
               end
             else
               current_attack.throw = true
-              if _button == "LP" then
+              if button == "LP" then
                 current_attack.name = "kishinriki"
                 if recording_options.hit_type == "block" then
-                  queue_command(frame_number + 10, {command = memory.writebyte, args = {_player.gauge_addr, 1}})
+                  Queue_Command(gamestate.frame_number + 10, {command = memory.writebyte, args = {player.gauge_addr, 1}})
                 end
-              elseif _button == "EXP" then
-                  queue_command(frame_number + 1, {command = memory.writebyte, args = {_player.gauge_addr, 1}})
+              elseif button == "EXP" then
+                  Queue_Command(gamestate.frame_number + 1, {command = memory.writebyte, args = {player.gauge_addr, 1}})
               else
                 i_recording_hit_types = 1
                 i_attacks = i_attacks + 1
-                _state = "queue_move"
+                state = "queue_move"
                 return
               end
             end
@@ -3913,30 +3929,30 @@ function record_attacks(_player_obj, _projectiles)
             current_attack.is_projectile = true
             current_attack.max_hits = 4
             current_attack.reset_pos_x = 200
-            _dummy_offset_x = 150
-            if _button == "EXP" then
+            dummy_offset_x = 150
+            if button == "EXP" then
               current_attack.max_hits = 12
             end
           elseif current_attack.move_type == "sa3" then
             current_attack.max_hits = 0
             recording_options.ignore_projectiles = true
-            if _button == "LP" then
+            if button == "LP" then
               current_attack.name = "tenguishi"
-            elseif _button == "EXP" then
+            elseif button == "EXP" then
             else
               i_recording_hit_types = 1
               i_attacks = i_attacks + 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
-        elseif _player.char_str == "q" then
+        elseif player.char_str == "q" then
           if current_attack.move_type == "sa1" then
             current_attack.reset_pos_x = 200
             current_attack.max_hits = 5
             current_attack.block = {1,1,1,2,1}
           elseif current_attack.move_type == "sa2" then
-            _dummy_offset_x = 90
+            dummy_offset_x = 90
             current_attack.max_hits = 1
             current_attack.hits_appear_after_parry = true
             block_max_hits = 1
@@ -3946,42 +3962,42 @@ function record_attacks(_player_obj, _projectiles)
               if recording_options.hit_type == "block" then
                 i_attacks = i_attacks + 1
                 i_recording_hit_types = 1
-                _state = "queue_move"
+                state = "queue_move"
                 return
               end
             elseif current_attack.name == "total_destruction_attack" then
             current_attack.max_hits = 1              
-              queue_command(frame_number + 50, {command = memory.writebyte, args = {_player.gauge_addr, _player.max_meter_gauge}})
+              Queue_Command(gamestate.frame_number + 50, {command = memory.writebyte, args = {player.gauge_addr, player.max_meter_gauge}})
             elseif current_attack.name == "total_destruction_throw" then
               current_attack.throw = true
             end
           end
-        elseif _player.char_str == "remy" then
+        elseif player.char_str == "remy" then
           if current_attack.move_type == "sa1" then
             current_attack.max_hits = 7
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
-            _dummy_offset_x = 150
+            dummy_offset_x = 150
           elseif current_attack.move_type == "sa2" then
             current_attack.max_hits = 10
-            _dummy_offset_x = 90
+            dummy_offset_x = 90
           elseif current_attack.move_type == "sa3" then
             current_attack.max_hits = 7
             current_attack.hits_appear_after_hit = true
             -- block_max_hits = 1
-            _dummy_offset_x = 90
-            queue_input_sequence(_dummy, {{},{},{},{},{},{},{"down","LP"}})
+            dummy_offset_x = 90
+            queue_input_sequence(dummy, {{},{},{},{},{},{},{"down","LP"}})
           end
-        elseif _player.char_str == "ryu" then
+        elseif player.char_str == "ryu" then
           if current_attack.move_type == "sa1" then
-            _dummy_offset_x = 150
+            dummy_offset_x = 150
             current_attack.max_hits = 5
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
           elseif current_attack.move_type == "sa2" then
             current_attack.max_hits = 6
           elseif current_attack.move_type == "sa3" then
-            _dummy_offset_x = 150
+            dummy_offset_x = 150
             if current_attack.name == "denjin_hadouken" then
               current_attack.max_hits = 1
             elseif current_attack.name == "denjin_hadouken_2" then
@@ -3998,90 +4014,90 @@ function record_attacks(_player_obj, _projectiles)
             if recording_options.hit_type == "block" then
               i_attacks = i_attacks + 1
               i_recording_hit_types = 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
-        elseif _player.char_str == "sean" then
+        elseif player.char_str == "sean" then
           if current_attack.move_type == "sa1" then
             current_attack.max_hits = 1
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
-            _dummy_offset_x = 150
+            dummy_offset_x = 150
           elseif current_attack.move_type == "sa2" then
             current_attack.max_hits = 14
-            local _n = 30
+            local n = 30
             if recording_options.hit_type == "block" then
-              _dummy_offset_x = 30
-              _n = 140
+              dummy_offset_x = 30
+              n = 140
             end
-            for i = 1, _n do
-              table.insert(_sequence, {"LP"})
-              table.insert(_sequence, {"MP"})
-              table.insert(_sequence, {"HP"})
+            for i = 1, n do
+              table.insert(sequence, {"LP"})
+              table.insert(sequence, {"MP"})
+              table.insert(sequence, {"HP"})
             end
           elseif current_attack.move_type == "sa3" then
             current_attack.max_hits = 1
             current_attack.block = {2}
           end
-        elseif _player.char_str == "shingouki" then
+        elseif player.char_str == "shingouki" then
           if current_attack.move_type == "sa1" then
             current_attack.max_hits = 7
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
-            _dummy_offset_x = 150
+            dummy_offset_x = 150
           elseif current_attack.move_type == "sa2" then
             current_attack.max_hits = 11
           elseif current_attack.move_type == "sa3" then
             current_attack.max_hits = 0
           elseif current_attack.move_type == "sgs" then
             current_attack.throw = true
-            table.insert(_sequence, 1, {"down", "HK"})
-            _state = "waiting_for_sgs"
-            queue_command(frame_number + 8, {command=function() _state = "wait_for_initial_anim" end})
+            table.insert(sequence, 1, {"down", "HK"})
+            state = "waiting_for_sgs"
+            Queue_Command(gamestate.frame_number + 8, {command=function() state = "wait_for_initial_anim" end})
           end
-        elseif _player.char_str == "twelve" then
+        elseif player.char_str == "twelve" then
           if current_attack.move_type == "sa1" then
             current_attack.max_hits = 5
-            _dummy_offset_x = 180
+            dummy_offset_x = 180
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
             if recording_options.hit_type == "block" then
               i_attacks = i_attacks + 1
               i_recording_hit_types = 1
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           elseif current_attack.move_type == "sa2" then
             current_attack.max_hits = 1
             current_attack.player_offset_y = -20
-            _dummy_offset_x = 150
+            dummy_offset_x = 150
           elseif current_attack.move_type == "sa3" then
             current_attack.max_hits = 0
-            queue_command(frame_number + 50, {command = memory.writebyte, args = {_player.gauge_addr, 1}})
+            Queue_Command(gamestate.frame_number + 50, {command = memory.writebyte, args = {player.gauge_addr, 1}})
           end
-        elseif _player.char_str == "urien" then
+        elseif player.char_str == "urien" then
           if current_attack.move_type == "sa1" then
             current_attack.reset_pos_x = 110
             current_attack.offset_x = 30
             current_attack.max_hits = 5
           elseif current_attack.move_type == "sa2" then
             current_attack.max_hits = 5
-            _dummy_offset_x = 150
+            dummy_offset_x = 150
             current_attack.is_projectile = true
             current_attack.queue_track_projectile = true
           elseif current_attack.move_type == "sa3" then
             current_attack.max_hits = 6
             current_attack.is_projectile = true
             current_attack.end_recording_after_proectile = true
-            if _button == "MP" then
-              _dummy_offset_x = 120
-            elseif _button == "HP" then
-              _dummy_offset_x = 210
-            elseif _button == "EXP" then
+            if button == "MP" then
+              dummy_offset_x = 120
+            elseif button == "HP" then
+              dummy_offset_x = 210
+            elseif button == "EXP" then
             end
           end
-        elseif _player.char_str == "yang" then
+        elseif player.char_str == "yang" then
           if current_attack.move_type == "sa1" then
             current_attack.max_hits = 1
           elseif current_attack.move_type == "sa2" then
@@ -4091,7 +4107,7 @@ function record_attacks(_player_obj, _projectiles)
             current_attack.max_hits = 0
             recording_options.ignore_projectiles = true
           end
-        elseif _player.char_str == "yun" then
+        elseif player.char_str == "yun" then
           if current_attack.move_type == "sa1" then
             current_attack.max_hits = 3
             current_attack.hits_appear_after_parry = true
@@ -4108,7 +4124,7 @@ function record_attacks(_player_obj, _projectiles)
               i_attacks = 1
               i_attack_categories = 1
               last_category = 6
-              _state = "queue_move"
+              state = "queue_move"
               return
             end
           end
@@ -4118,17 +4134,17 @@ function record_attacks(_player_obj, _projectiles)
           if current_attack.max_hits == 0 and not current_attack.throw then
             i_attacks = i_attacks + 1
             i_recording_hit_types = 1
-            _state = "queue_move"
+            state = "queue_move"
             return
           end
         end
 
-        current_attack.sequence = _sequence
+        current_attack.sequence = sequence
       else
         recording = false
-        _setup = false
-        _state = "off"
-        make_invulnerable(_dummy, false)
+        setup = false
+        state = "off"
+        make_invulnerable(dummy, false)
         return
       end
 
@@ -4141,24 +4157,24 @@ function record_attacks(_player_obj, _projectiles)
         else
           current_sa = tonumber(string.sub(current_attack.move_type, 3, 3))
         end
-        if _player.selected_sa ~= current_sa
+        if player.selected_sa ~= current_sa
         and not (current_attack.move_type == "sgs" or current_attack.move_type == "kkz")
-        and not (_player.char_str == "gill") then
-          _state = "wait_for_match_start"
-          table.insert(after_load_state_callback, {command = force_select_character, args = {_player.id, _player.char_str, current_sa, "LP"} })
-          table.insert(after_load_state_callback, {command = force_select_character, args = {_dummy.id, "urien", 1, "MP"} })
-          start_character_select_sequence()
+        and not (player.char_str == "gill") then
+          state = "wait_for_match_start"
+          Register_After_Load_State(character_select.force_select_character, {player.id, player.char_str, current_sa, "LP"})
+          Register_After_Load_State(character_select.force_select_character, {dummy.id, "urien", 1, "MP"})
+          character_select.start_character_select_sequence()
           return
         end
       end
 
       if not recording_options.target_combo then
-        _name = current_attack.name or input_to_text(current_attack.sequence)[1]
+        name = current_attack.name or input_to_text(current_attack.sequence)[1]
         if recording_geneijin then
-          _name = (current_attack.name or input_to_text(current_attack.sequence)[1]) .. "_geneijin"
+          name = (current_attack.name or input_to_text(current_attack.sequence)[1]) .. "_geneijin"
         end
         if current_attack.offset_x then
-          _dummy_offset_x = _dummy_offset_x + current_attack.offset_x
+          dummy_offset_x = dummy_offset_x + current_attack.offset_x
         end
 
         current_attack.player_offset_y = current_attack.player_offset_y or 0
@@ -4171,11 +4187,11 @@ function record_attacks(_player_obj, _projectiles)
         if current_attack.queue_track_projectile and not current_attack.queued_track_projectile then
           current_attack_category.list[i_attacks].queued_track_projectile = true
           current_attack_category.list[i_attacks].record_projectile_emit_animation = true
-          local _attack = deepcopy(current_attack)
-          _attack.name = _attack.base_name
-          _attack.track_projectile = true
-          _attack.queued_track_projectile = true
-          table.insert(current_attack_category.list, i_attacks + 1, _attack)
+          local attack = deepcopy(current_attack)
+          attack.name = attack.base_name
+          attack.track_projectile = true
+          attack.queued_track_projectile = true
+          table.insert(current_attack_category.list, i_attacks + 1, attack)
           current_attack.record_projectile_emit_animation = true
         end
 
@@ -4191,7 +4207,7 @@ function record_attacks(_player_obj, _projectiles)
               i_recording_hit_types = 1
             end
             i_attacks = i_attacks + 1
-            _state = "queue_move"
+            state = "queue_move"
             return
           end
         end
@@ -4234,109 +4250,109 @@ function record_attacks(_player_obj, _projectiles)
 
         if current_attack.air then
           recording_options.air = true
-          local _sequence = {{"up","forward"},{"up","forward"},{},{},{},{}}
+          local sequence = {{"up","forward"},{"up","forward"},{},{},{},{}}
           if current_attack.jump_dir == "back" then
-            _sequence = {{"up","back"},{"up","back"},{},{},{},{}}
+            sequence = {{"up","back"},{"up","back"},{},{},{},{}}
           elseif current_attack.jump_dir == "neutral" then
-            _sequence = {{"up"},{"up"},{},{},{},{}}
+            sequence = {{"up"},{"up"},{},{},{},{}}
           end
-          if(is_slow_jumper(_player.char_str)) then
-            table.insert(_sequence,#_sequence,{})
-          elseif is_really_slow_jumper(_player.char_str) then
-            table.insert(_sequence,#_sequence,{})
-            table.insert(_sequence,#_sequence,{})
+          if(is_slow_jumper(player.char_str)) then
+            table.insert(sequence,#sequence,{})
+          elseif is_really_slow_jumper(player.char_str) then
+            table.insert(sequence,#sequence,{})
+            table.insert(sequence,#sequence,{})
           end
 
           for i = 1, #current_attack.sequence do
-            table.insert(_sequence, current_attack.sequence[i])
+            table.insert(sequence, current_attack.sequence[i])
           end
-          current_attack.sequence = _sequence
+          current_attack.sequence = sequence
 
-          current_attack.attack_start_frame = current_attack.attack_start_frame or #_sequence
+          current_attack.attack_start_frame = current_attack.attack_start_frame or #sequence
 
-          queue_input_sequence(_player, current_attack.sequence)
+          queue_input_sequence(player, current_attack.sequence)
 
           if current_attack.name == "drill_LK" then
             recording_options.infinite_loop = true
             if recording_options.hit_type == "miss" then
-              _dummy_offset_x = 200
-              write_pos(_player, 150, 300)
-              write_pos(_dummy, current_attack.reset_pos_x + _dummy_offset_x, 300)
+              dummy_offset_x = 200
+              write_pos(player, 150, 300)
+              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 300)
               block_max_hits = 0
             else
-              _dummy_offset_x = 350
-              write_pos(_player, 150, 200)
-              write_pos(_dummy, current_attack.reset_pos_x + _dummy_offset_x, 0)
-              queue_command(frame_number + 50, {command = write_pos, args={_dummy, current_attack.reset_pos_x + _dummy_offset_x, 0}})
-              _dummy_offset_x = 100
+              dummy_offset_x = 350
+              write_pos(player, 150, 200)
+              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
+              Queue_Command(gamestate.frame_number + 50, {command = write_pos, args={dummy, current_attack.reset_pos_x + dummy_offset_x, 0}})
+              dummy_offset_x = 100
             end
-            queue_command(frame_number + #current_attack.sequence, {command = clear_motion_data, args={_player}})
+            Queue_Command(gamestate.frame_number + #current_attack.sequence, {command = clear_motion_data, args={player}})
           elseif current_attack.name == "drill_MK" then
             recording_options.infinite_loop = true
             if recording_options.hit_type == "miss" then
-              _dummy_offset_x = 150
-              write_pos(_player, 150, 300)
-              write_pos(_dummy, current_attack.reset_pos_x + _dummy_offset_x, 300)
+              dummy_offset_x = 150
+              write_pos(player, 150, 300)
+              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 300)
               block_max_hits = 0
             else
-              _dummy_offset_x = 200
-              write_pos(_player, 150, 200)
-              write_pos(_dummy, current_attack.reset_pos_x + _dummy_offset_x, 0)
-              _dummy_offset_x = 100
+              dummy_offset_x = 200
+              write_pos(player, 150, 200)
+              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
+              dummy_offset_x = 100
             end
-            queue_command(frame_number + #current_attack.sequence, {command = clear_motion_data, args={_player}})
+            Queue_Command(gamestate.frame_number + #current_attack.sequence, {command = clear_motion_data, args={player}})
           elseif current_attack.name == "drill_HK" then
             recording_options.infinite_loop = true
             if recording_options.hit_type == "miss" then
-              _dummy_offset_x = 150
-              write_pos(_player, 150, 300)
-              write_pos(_dummy, current_attack.reset_pos_x + _dummy_offset_x, 300)
+              dummy_offset_x = 150
+              write_pos(player, 150, 300)
+              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 300)
               block_max_hits = 0
             else
-              _dummy_offset_x = 0
-              write_pos(_player, 150, 200)
-              queue_command(frame_number + 1, {command = write_pos, args={_dummy, current_attack.reset_pos_x + _dummy_offset_x, 0}})
-              _dummy_offset_x = 100
+              dummy_offset_x = 0
+              write_pos(player, 150, 200)
+              Queue_Command(gamestate.frame_number + 1, {command = write_pos, args={dummy, current_attack.reset_pos_x + dummy_offset_x, 0}})
+              dummy_offset_x = 100
             end
-            queue_command(frame_number + #current_attack.sequence, {command = clear_motion_data, args={_player}})
+            Queue_Command(gamestate.frame_number + #current_attack.sequence, {command = clear_motion_data, args={player}})
           else
             if current_attack.land_after then
               if current_attack.land_after > 0 then
-                queue_command(frame_number + current_attack.land_after, {command = land_player, args={_player}})
+                Queue_Command(gamestate.frame_number + current_attack.land_after, {command = land_player, args={player}})
               end
             else
-              queue_command(frame_number + #current_attack.sequence + 100, {command = land_player, args={_player}})
+              Queue_Command(gamestate.frame_number + #current_attack.sequence + 100, {command = land_player, args={player}})
             end
-            queue_command(frame_number + #current_attack.sequence, {command = clear_motion_data, args={_player}})
+            Queue_Command(gamestate.frame_number + #current_attack.sequence, {command = clear_motion_data, args={player}})
 
             if recording_options.hit_type == "miss" then
-              write_pos(_player, current_attack.reset_pos_x, 0)
-              queue_command(frame_number + current_attack.attack_start_frame, {command = write_pos, args={_player, current_attack.reset_pos_x, _default_air_miss_height + current_attack.player_offset_y}})
-              write_pos(_dummy, current_attack.reset_pos_x + _dummy_offset_x, 200)
+              write_pos(player, current_attack.reset_pos_x, 0)
+              Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = write_pos, args={player, current_attack.reset_pos_x, default_air_miss_height + current_attack.player_offset_y}})
+              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 200)
             else
-              write_pos(_player, current_attack.reset_pos_x, 0)
-              queue_command(frame_number + current_attack.attack_start_frame, {command = write_pos, args={_player, current_attack.reset_pos_x, _default_air_block_height + current_attack.player_offset_y}})
-              write_pos(_dummy, current_attack.reset_pos_x + _dummy_offset_x, 0)
+              write_pos(player, current_attack.reset_pos_x, 0)
+              Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = write_pos, args={player, current_attack.reset_pos_x, default_air_block_height + current_attack.player_offset_y}})
+              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
             end
           end
         else
           current_attack.attack_start_frame = current_attack.attack_start_frame or #current_attack.sequence
-          write_pos(_player, current_attack.reset_pos_x, 0)
-          write_pos(_dummy, current_attack.reset_pos_x + _dummy_offset_x, _player.pos_y + _dummy_offset_y)
-          queue_input_sequence(_player, current_attack.sequence)
-          queue_command(frame_number + current_attack.attack_start_frame, {command = clear_motion_data, args={_player}})
+          write_pos(player, current_attack.reset_pos_x, 0)
+          write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, player.pos_y + dummy_offset_y)
+          queue_input_sequence(player, current_attack.sequence)
+          Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = clear_motion_data, args={player}})
         end
 
         if current_attack.self_chain then
-          make_invulnerable(_dummy, false)
+          make_invulnerable(dummy, false)
           recording_options.self_chain = true
         end
 
-        memory.writebyte(_dummy.stun_bar_char_addr, 0)
-        memory.writebyte(_dummy.life_addr, 160)
-        clear_motion_data(_player)
-        fix_screen_pos(_player, _dummy)
-        print(_name)
+        memory.writebyte(dummy.stun_bar_char_addr, 0)
+        memory.writebyte(dummy.life_addr, 160)
+        clear_motion_data(player)
+        fix_screen_pos(player, dummy)
+        print(name)
 
         if overwrite and first_record then
           recording_options.clear_frame_data = true
@@ -4346,10 +4362,10 @@ function record_attacks(_player_obj, _projectiles)
     end
 
 
-    if _setup then
+    if setup then
 
-      -- print(_state,recording_options.hit_type, received_hits, block_until, block_max_hits, i_attacks)
-      if _state == "update_hit_state" then
+      -- print(state,recording_options.hit_type, received_hits, block_until, block_max_hits, i_attacks)
+      if state == "update_hit_state" then
         if received_hits >= block_until then
           if block_until < block_max_hits then
             block_until = block_until + 1
@@ -4374,7 +4390,7 @@ function record_attacks(_player_obj, _projectiles)
             end
           end
         end
-        _state = "queue_move"
+        state = "queue_move"
       end
 
       if recording_options.hit_type == "miss" then
@@ -4383,74 +4399,74 @@ function record_attacks(_player_obj, _projectiles)
         or current_attack.hits_appear_after_block
         or current_attack.hits_appear_after_hit
         or current_attack.hits_appear_after_parry) then
-          make_invulnerable(_dummy, true)
-          write_pos(_dummy, _player.pos_x + _dummy_offset_x, _player.pos_y + _dummy_offset_y)
+          make_invulnerable(dummy, true)
+          write_pos(dummy, player.pos_x + dummy_offset_x, player.pos_y + dummy_offset_y)
         else
           if received_hits < block_until then
-            make_invulnerable(_dummy, false)
+            make_invulnerable(dummy, false)
             if current_attack.hits_appear_after_parry then
-              memory.writebyte(_dummy.parry_forward_validity_time_addr, 0xA)
-              memory.writebyte(_dummy.parry_down_validity_time_addr, 0xA)
-              memory.writebyte(_dummy.parry_air_validity_time_addr, 0x7)
-              memory.writebyte(_dummy.parry_antiair_validity_time_addr, 0x5)            
+              memory.writebyte(dummy.parry_forward_validity_time_addr, 0xA)
+              memory.writebyte(dummy.parry_down_validity_time_addr, 0xA)
+              memory.writebyte(dummy.parry_air_validity_time_addr, 0x7)
+              memory.writebyte(dummy.parry_antiair_validity_time_addr, 0x5)            
             end
           else
-            make_invulnerable(_dummy, true)
-            write_pos(_dummy, _player.pos_x + _dummy_offset_x, _player.pos_y + _dummy_offset_y)
+            make_invulnerable(dummy, true)
+            write_pos(dummy, player.pos_x + dummy_offset_x, player.pos_y + dummy_offset_y)
           end
         end
 
-        if _state == "new_recording" then
-          _state = "recording"
+        if state == "new_recording" then
+          state = "recording"
         end
       elseif recording_options.hit_type == "block" then
         if not (recording_options.target_combo or current_attack.self_chain) then
-          make_invulnerable(_dummy, false)
-          if _state == "new_recording" then
+          make_invulnerable(dummy, false)
+          if state == "new_recording" then
             received_hits = 0
-            _state = "recording"
+            state = "recording"
           end
           if current_attack.is_projectile then
             if current_projectile and current_projectile.expired and not recording_pushback then
               current_projectile = nil
               freeze_player_for_projectile = false
               if current_attack.end_recording_after_proectile then
-                end_recording(_player, _projectiles, _name)
+                end_recording(player, projectiles, name)
               end
             end
-            for _id, _obj in pairs(_projectiles) do
+            for _, obj in pairs(projectiles) do
               if not current_projectile then
-                current_projectile = _obj
+                current_projectile = obj
                 if current_attack.projectile_offset then
-                  write_pos(_obj, _obj.pos_x + current_attack.projectile_offset[1], _obj.pos_y + current_attack.projectile_offset[2])
+                  write_pos(obj, obj.pos_x + current_attack.projectile_offset[1], obj.pos_y + current_attack.projectile_offset[2])
                 end
               end
               if current_attack.home_projectiles then
-                local _dx = _dummy.pos_x - _obj.pos_x
-                local _dy = _dummy.pos_y - _obj.pos_y
-                local _dist = math.sqrt(_dx*_dx + _dy*_dy)
-                local _vx =  _dx / _dist * 16
-                local _vy =  _dy / _dist * 16
-                write_velocity(_obj, _vx, _vy)
+                local dx = dummy.pos_x - obj.pos_x
+                local dy = dummy.pos_y - obj.pos_y
+                local dist = math.sqrt(dx*dx + dy*dy)
+                local vx =  dx / dist * 16
+                local vy =  dy / dist * 16
+                write_velocity(obj, vx, vy)
               end
-              if _obj ~= current_projectile then
-                set_freeze(_obj, 2)
+              if obj ~= current_projectile then
+                set_freeze(obj, 2)
               end
             end
             if current_projectile then
-              for _, _box in pairs(current_projectile.boxes) do
-                if convert_box_types[_box[1]] == "attack"then
+              for _, box in pairs(current_projectile.boxes) do
+                if convert_box_types[box[1]] == "attack"then
                   freeze_player_for_projectile = true
                 end
               end
             end
             if freeze_player_for_projectile then
-              if _player.animation == "d17c" then --gill meteor swarm
+              if player.animation == "d17c" then --gill meteor swarm
                 if current_projectile then
-                  set_freeze(_player, 255)
+                  set_freeze(player, 255)
                 end
               else
-                set_freeze(_player, 2)
+                set_freeze(player, 2)
               end
             end
             recording_options.is_projectile = true
@@ -4458,15 +4474,15 @@ function record_attacks(_player_obj, _projectiles)
         end
       end
 
-      if _dummy.has_just_blocked or _dummy.has_just_been_hit or _dummy.received_connection then
+      if dummy.has_just_blocked or dummy.has_just_been_hit or dummy.received_connection then
         received_hits = received_hits + 1
       end
 
       if current_attack.dummy_offset_list then
-        local _index = received_hits + 1
-        if _index <= #current_attack.dummy_offset_list then
-          _dummy_offset_x = current_attack.dummy_offset_list[_index][1]
-          _dummy_offset_y = current_attack.dummy_offset_list[_index][2]
+        local index = received_hits + 1
+        if index <= #current_attack.dummy_offset_list then
+          dummy_offset_x = current_attack.dummy_offset_list[index][1]
+          dummy_offset_y = current_attack.dummy_offset_list[index][2]
         end
       end
 
@@ -4477,7 +4493,7 @@ function record_attacks(_player_obj, _projectiles)
         recording_options.optional_anim = false
       end
 
-      if _dummy.has_just_blocked or _dummy.has_just_been_hit then
+      if dummy.has_just_blocked or dummy.has_just_been_hit then
         if recording_options.target_combo then
           if current_attack.cancel_on_whiff
           or (current_attack.cancel_on_hit and current_attack.cancel_on_hit[received_hits] == 1)
@@ -4485,42 +4501,42 @@ function record_attacks(_player_obj, _projectiles)
             if tc_hit_index <= #current_attack.sequence then
               if recording_options.hit_type == "miss" then
                 tc_hit_index = tc_hit_index + 1
-                set_freeze(_player, 1)
-                local _delay = 0
+                set_freeze(player, 1)
+                local delay = 0
                 if current_attack.delay then
-                  _delay = current_attack.delay[tc_hit_index]
+                  delay = current_attack.delay[tc_hit_index]
                 end
-                queue_command(frame_number + 1 + _delay, {command = queue_input_sequence, args={_player, {current_attack.sequence[tc_hit_index]}}})
+                Queue_Command(gamestate.frame_number + 1 + delay, {command = queue_input_sequence, args={player, {current_attack.sequence[tc_hit_index]}}})
               end
             end
           end
         end
         if current_attack.self_chain and received_hits < current_attack.max_hits then
-          local _delay = 0
+          local delay = 0
           if current_attack.delay then
-            _delay = current_attack.delay[1]
+            delay = current_attack.delay[1]
           end
-          set_freeze(_player, 1)
-          _player.animation_action_count = 0
-          queue_command(frame_number + 1 + _delay, {command = queue_input_sequence, args={_player, current_attack.sequence}})
+          set_freeze(player, 1)
+          player.animation_action_count = 0
+          Queue_Command(gamestate.frame_number + 1 + delay, {command = queue_input_sequence, args={player, current_attack.sequence}})
         end
       end
 
-      if _dummy.has_just_blocked or _dummy.has_just_been_hit or _dummy.received_connection then
+      if dummy.has_just_blocked or dummy.has_just_been_hit or dummy.received_connection then
         if (recording_options.hit_type == "block" or recording_options.hit_type == "hit")
         and not current_attack.throw
         and not (block_pattern and block_pattern[received_hits] == 3) then
           unfreeze_dummy = true
-          _state = "pause_for_data"
+          state = "pause_for_data"
         end
       end
-      if _state == "resume_attack" then
+      if state == "resume_attack" then
         if not current_attack.is_projectile then
           if unfreeze_player then
-            if _player.animation == "dadc" then
-              set_freeze(_player, 0xFF)
+            if player.animation == "dadc" then
+              set_freeze(player, 0xFF)
             else
-              set_freeze(_player, 1)
+              set_freeze(player, 1)
             end
             unfreeze_player = false
           end
@@ -4528,122 +4544,122 @@ function record_attacks(_player_obj, _projectiles)
           if recording_options.target_combo then
             tc_hit_index = tc_hit_index + 1
             if tc_hit_index <= #current_attack.sequence then
-              local _delay = 0
+              local delay = 0
               if current_attack.delay then
-                _delay = current_attack.delay[tc_hit_index]
+                delay = current_attack.delay[tc_hit_index]
               end
-              queue_command(frame_number + 1 + _delay, {command = queue_input_sequence, args={_player, {current_attack.sequence[tc_hit_index]}}})
+              Queue_Command(gamestate.frame_number + 1 + delay, {command = queue_input_sequence, args={player, {current_attack.sequence[tc_hit_index]}}})
             end
           end
           if current_attack.self_chain and received_hits < current_attack.max_hits then
-            local _delay = 0
+            local delay = 0
             if current_attack.delay then
-              _delay = current_attack.delay[1]
+              delay = current_attack.delay[1]
             end
-            _player.animation_action_count = 0
-            queue_command(frame_number + 1 + _delay, {command = queue_input_sequence, args={_player, current_attack.sequence}})
+            player.animation_action_count = 0
+            Queue_Command(gamestate.frame_number + 1 + delay, {command = queue_input_sequence, args={player, current_attack.sequence}})
           end
         else
           if current_projectile then
             set_freeze(current_projectile, 1)
           end
         end
-        _state = "recording"
+        state = "recording"
       end
-      if _player.previous_remaining_freeze_frames > 0
-      and _player.remaining_freeze_frames - _player.previous_remaining_freeze_frames == 1
+      if player.previous_remaining_freeze_frames > 0
+      and player.remaining_freeze_frames - player.previous_remaining_freeze_frames == 1
       then
-        set_freeze(_player, 0xFF)
-        if _player.animation == "d17c" then
-          set_freeze(_player, 1)
+        set_freeze(player, 0xFF)
+        if player.animation == "d17c" then
+          set_freeze(player, 1)
         end
-        -- set_freeze(_player, 127)
-        -- queue_command(frame_number + 2, {command = set_freeze, args={_player, 1}})
+        -- set_freeze(player, 127)
+        -- Queue_Command(gamestate.frame_number + 2, {command = set_freeze, args={player, 1}})
       end
       if received_hits < block_until then
         if block_pattern then
-          local _index = math.min(received_hits + 1, block_max_hits)
-          if block_pattern[_index] ~= 2 then
-            block_high(_dummy)
+          local index = math.min(received_hits + 1, block_max_hits)
+          if block_pattern[index] ~= 2 then
+            block_high(dummy)
           else
-            block_low(_dummy)
+            block_low(dummy)
           end
         else
-          block_high(_dummy)
+          block_high(dummy)
         end
       end
-      if _state == "pause_for_data" then
+      if state == "pause_for_data" then
         if not current_attack.is_projectile then
-          if _player.freeze_just_began then
+          if player.freeze_just_began then
             if not current_projectile then
               recording_self_freeze = true
             end
-            self_freeze = _player.remaining_freeze_frames
-            if _player.animation == "f50c"
-            or _player.animation == "4bf4"
-            or _player.animation == "a498"
-            or _player.animation == "aa18"
-            or _player.animation == "af98"
-            or (_player.animation == "b518" and _player.action_count < 2)
+            self_freeze = player.remaining_freeze_frames
+            if player.animation == "f50c"
+            or player.animation == "4bf4"
+            or player.animation == "a498"
+            or player.animation == "aa18"
+            or player.animation == "af98"
+            or (player.animation == "b518" and player.action_count < 2)
             then
-              set_freeze(_player, 0xFF)
-              queue_command(frame_number + 1, {command = function() self_freeze = 0xFF end})
+              set_freeze(player, 0xFF)
+              Queue_Command(gamestate.frame_number + 1, {command = function() self_freeze = 0xFF end})
             else
-              queue_command(frame_number + 1, {command = set_freeze, args={_player, math.min(2, self_freeze)}})
+              Queue_Command(gamestate.frame_number + 1, {command = set_freeze, args={player, math.min(2, self_freeze)}})
             end
           else
             recording_self_freeze = false
-            set_freeze(_player, math.min(2, self_freeze))
+            set_freeze(player, math.min(2, self_freeze))
           end
         else
           if current_projectile then
             set_freeze(current_projectile, 2)
           end
         end
-        if _dummy.freeze_just_began then
+        if dummy.freeze_just_began then
           recording_opponent_freeze = true
         else
           recording_opponent_freeze = false
 
-          if _dummy.remaining_freeze_frames > 0 and unfreeze_dummy then
-            set_freeze(_dummy, 1)
+          if dummy.remaining_freeze_frames > 0 and unfreeze_dummy then
+            set_freeze(dummy, 1)
             unfreeze_dummy = false
           end
 
-          if _dummy.remaining_freeze_frames - _dummy.previous_remaining_freeze_frames == 1 then
-            set_freeze(_dummy, 0xFF)
+          if dummy.remaining_freeze_frames - dummy.previous_remaining_freeze_frames == 1 then
+            set_freeze(dummy, 0xFF)
           end
 
-          if _dummy.freeze_just_ended then
-            queue_command(frame_number + 1, {command = function() recording_recovery = true end})
-            queue_command(frame_number + 2, {command = function() recording_recovery = false end})
+          if dummy.freeze_just_ended then
+            Queue_Command(gamestate.frame_number + 1, {command = function() recording_recovery = true end})
+            Queue_Command(gamestate.frame_number + 2, {command = function() recording_recovery = false end})
           end
-          if _dummy.movement_type == 1 and _dummy.remaining_freeze_frames == 0 then
+          if dummy.movement_type == 1 and dummy.remaining_freeze_frames == 0 then
             begin_recording_pushback = true
-            queue_command(frame_number + 1, {command = function() recording_pushback = true end})
+            Queue_Command(gamestate.frame_number + 1, {command = function() recording_pushback = true end})
           end
         end
       end
-      if begin_recording_pushback and _dummy.movement_type == 0 then
+      if begin_recording_pushback and dummy.movement_type == 0 then
         begin_recording_pushback = false
         recording_pushback = false
-        write_pos(_dummy, _player.pos_x + _dummy_offset_x, 0)
-        fix_screen_pos(_player, _dummy)
+        write_pos(dummy, player.pos_x + dummy_offset_x, 0)
+        fix_screen_pos(player, dummy)
         unfreeze_player = true
-        _state = "resume_attack"
+        state = "resume_attack"
       end
     end
 
-    if _dummy.stunned and _dummy.stun_timer >= 0 then
-      memory.writebyte(_dummy.stun_timer_addr, 0)
+    if dummy.stunned and dummy.stun_timer >= 0 then
+      memory.writebyte(dummy.stun_timer_addr, 0)
     end
 
     if recording_geneijin then
-      memory.writebyte(_player.gauge_addr, _player.max_meter_gauge)
+      memory.writebyte(player.gauge_addr, player.max_meter_gauge)
     end
 
     if not current_attack.do_not_fix_screen then
-      fix_screen_pos(_player, _dummy)
+      fix_screen_pos(player, dummy)
     end
 
     if current_attack.queue_track_projectile
@@ -4652,125 +4668,127 @@ function record_attacks(_player_obj, _projectiles)
       if current_projectile and current_projectile.expired then
         current_projectile = nil
       end
-      for _id, _obj in pairs(_projectiles) do
+      for _, obj in pairs(projectiles) do
         if not current_projectile then
-          current_projectile = _obj
+          current_projectile = obj
         end
       end
       if current_projectile then
         fix_screen_pos(current_projectile, current_projectile)
         if current_projectile.pos_y > 100 and current_projectile.pos_y < 280 then
-          write_pos_y(_player, current_projectile.pos_y)
-          write_pos_y(_dummy, current_projectile.pos_y)
-          queue_input_sequence(_player, {{"up"}})
-          queue_input_sequence(_dummy, {{"up"}})
+          write_pos_y(player, current_projectile.pos_y)
+          write_pos_y(dummy, current_projectile.pos_y)
+          queue_input_sequence(player, {{"up"}})
+          queue_input_sequence(dummy, {{"up"}})
         else
-          write_pos_y(_player, 0)
-          write_pos_y(_dummy, 0)
+          write_pos_y(player, 0)
+          write_pos_y(dummy, 0)
         end
       end
     end
 
     if recording_options.hit_type == "miss"
     and test_collision(
-    _dummy.pos_x, _dummy.pos_y, _dummy.flip_x, _dummy.boxes, -- defender
-    _player.pos_x, _player.pos_y, _player.flip_x, _player.boxes, -- attacker
+    dummy.pos_x, dummy.pos_y, dummy.flip_x, dummy.boxes, -- defender
+    player.pos_x, player.pos_y, player.flip_x, player.boxes, -- attacker
     {{{"push"}, {"push"}}})
     then
       print(">>overlapping push boxes<<")
     end
 
-    record_framedata(_player, _projectiles, _name)
+    record_framedata(player, projectiles, name)
   end
 end
 
-function debugframedatagui(_player_obj, _projectiles)
-  if is_in_match then
-    _display = {}
-    local _p2 = P2
---[[     debuggui("frame", frame_number)
-    debuggui("state", _state)
-    debuggui("anim", _player_obj.animation)
-    debuggui("anim f", _player_obj.animation_frame)
-    debuggui("hash", _player_obj.animation_frame_hash)
-    debuggui("freeze", _player_obj.remaining_freeze_frames)
-    debuggui("sfreeze", _player_obj.superfreeze_decount)
-    debuggui("action #", _player_obj.action_count)
-    debuggui("action #", _player_obj.animation_action_count)
-    debuggui("conn action #", _player_obj.connected_action_count)
-    debuggui("hit id", _player_obj.current_hit_id)
-    -- debuggui("attacking", tostring(_player_obj.is_attacking))
-    -- debuggui("wakeup", _player_obj.remaining_wakeup_time)
-    -- debuggui("wakeup2", _p2.remaining_wakeup_time)
-    debuggui("pos", string.format("%04f,%04f",_player_obj.pos_x, _player_obj.pos_y))
-    debuggui("pos", string.format("%04f,%04f",_p2.pos_x, _p2.pos_y))
-    debuggui("diff", string.format("%04f,%04f",_player_obj.pos_x - _player_obj.previous_pos_x, _player_obj.pos_y - _player_obj.previous_pos_y ))
-    debuggui("diff", string.format("%04f,%04f",_p2.pos_x - _p2.previous_pos_x, _p2.pos_y - _p2.previous_pos_y ))
-    debuggui("vel", string.format("%04f,%04f",_player_obj.velocity_x, _player_obj.velocity_y))
-    debuggui("vel", string.format("%04f,%04f",_p2.velocity_x, _p2.velocity_y))
-    debuggui("acc", string.format("%04f,%04f",_player_obj.acceleration_x, _player_obj.acceleration_y)) ]]
+function debugframedatagui(player_obj, projectiles)
+  if gamestate.is_in_match then
+    display = {}
+    local p2 = gamestate.P2
+--[[     debuggui("frame", gamestate.frame_number)
+    debuggui("state", state)
+    debuggui("anim", player_obj.animation)
+    debuggui("anim f", player_obj.animation_frame)
+    debuggui("hash", player_obj.animation_frame_hash)
+    debuggui("freeze", player_obj.remaining_freeze_frames)
+    debuggui("sfreeze", player_obj.superfreeze_decount)
+    debuggui("action #", player_obj.action_count)
+    debuggui("action #", player_obj.animation_action_count)
+    debuggui("conn action #", player_obj.connected_action_count)
+    debuggui("hit id", player_obj.current_hit_id)
+    -- debuggui("attacking", tostring(player_obj.is_attacking))
+    -- debuggui("wakeup", player_obj.remaining_wakeup_time)
+    -- debuggui("wakeup2", p2.remaining_wakeup_time)
+    debuggui("pos", string.format("%04f,%04f",player_obj.pos_x, player_obj.pos_y))
+    debuggui("pos", string.format("%04f,%04f",p2.pos_x, p2.pos_y))
+    debuggui("diff", string.format("%04f,%04f",player_obj.pos_x - player_obj.previous_pos_x, player_obj.pos_y - player_obj.previous_pos_y ))
+    debuggui("diff", string.format("%04f,%04f",p2.pos_x - p2.previous_pos_x, p2.pos_y - p2.previous_pos_y ))
+    debuggui("vel", string.format("%04f,%04f",player_obj.velocity_x, player_obj.velocity_y))
+    debuggui("vel", string.format("%04f,%04f",p2.velocity_x, p2.velocity_y))
+    debuggui("acc", string.format("%04f,%04f",player_obj.acceleration_x, player_obj.acceleration_y)) ]]
     -- debuggui("recording", tostring(recording))
 
-    for _id, _obj in pairs(_projectiles) do
-      if _obj.emitter_id == _player_obj.id and _obj.alive then
-        -- debuggui("s_type", _obj.projectile_start_type)
-        debuggui("type", _obj.projectile_type)
-        -- debuggui("emitter", _obj.emitter_id)
+    for _, obj in pairs(projectiles) do
+      if obj.emitter_id == player_obj.id and obj.alive then
+        -- debuggui("s_type", obj.projectile_start_type)
+        debuggui("type", obj.projectile_type)
+        -- debuggui("emitter", obj.emitter_id)
 
---         debuggui("xy", tostring(_obj.pos_x) .. ", " .. tostring(_obj.pos_y))
---         debuggui("frame", _obj.animation_frame)
-        debuggui("freeze", _obj.remaining_freeze_frames)
---         if frame_data["projectiles"] and frame_data["projectiles"][_obj.projectile_start_type] and frame_data["projectiles"][_obj.projectile_start_type].frames[_obj.animation_frame+1] then
---           if _obj.animation_frame_hash ~= frame_data["projectiles"][_obj.projectile_start_type].frames[_obj.animation_frame+1].hash then
---             debuggui("desync!", _obj.animation_frame_hash)
+--         debuggui("xy", tostring(obj.pos_x) .. ", " .. tostring(obj.pos_y))
+--         debuggui("frame", obj.animation_frame)
+        debuggui("freeze", obj.remaining_freeze_frames)
+--         if frame_data["projectiles"] and frame_data["projectiles"][obj.projectile_start_type] and frame_data["projectiles"][obj.projectile_start_type].frames[obj.animation_frame+1] then
+--           if obj.animation_frame_hash ~= frame_data["projectiles"][obj.projectile_start_type].frames[obj.animation_frame+1].hash then
+--             debuggui("desync!", obj.animation_frame_hash)
 --           end
 --         end
-        debuggui("vx", _obj.velocity_x)
-        debuggui("vy", _obj.velocity_y)
-        debuggui("hits", _obj.remaining_hits)
-        debuggui("cd", _obj.cooldown)
+        debuggui("vx", obj.velocity_x)
+        debuggui("vy", obj.velocity_y)
+        debuggui("hits", obj.remaining_hits)
+        debuggui("cd", obj.cooldown)
 
---         debuggui("rem", string.format("%x", _obj.remaining_lifetime))
+--         debuggui("rem", string.format("%x", obj.remaining_lifetime))
       end
     end
   end
 end
 
-function debuggui(_name, _var)
-  if _name and _var then
-    table.insert(_display, {_name, _var})
+function debuggui(name, var)
+  if name and var then
+    table.insert(display, {name, var})
   end
 end
 
 function draw_debug_gui()
-  local _y = 44
-  gui.box(2, 2 + _y, 80, 5+10*#_display + _y, gui_box_bg_color, gui_box_bg_color)
-  for i=1,#_display do
-    render_text(6,6+10*(i-1) + _y, string.format("%s: %s", _display[i][1], _display[i][2]), "en", nil, "white")
+  local gui_box_bg_color = 0x1F1F1FF0
+  local gui_box_outline_color = 0xBBBBBBF0
+  local y = 44
+  gui.box(2, 2 + y, 80, 5+10*#display + y, gui_box_bg_color, gui_box_bg_color)
+  for i=1,#display do
+    render_text(6,6+10*(i-1) + y, string.format("%s: %s", display[i][1], display[i][2]), "en", nil, "white")
   end
 end
 
-function land_player(_obj)
-  memory.writeword(_obj.base + 0x64 + 36, -1)
-  memory.writeword(_obj.base + 0x64 + 38, 0)
-  queue_command(frame_number + 1, {command = function() current_recording_acceleration_offset = -1 end})
+function land_player(obj)
+  memory.writeword(obj.base + 0x64 + 36, -1)
+  memory.writeword(obj.base + 0x64 + 38, 0)
+  Queue_Command(gamestate.frame_number + 1, {command = function() current_recording_acceleration_offset = -1 end})
 end
 
-function block_high(_player_obj)
-  queue_input_sequence(_player_obj, {{"back"}})
-  clear_motion_data(_player_obj)
+function block_high(player_obj)
+  queue_input_sequence(player_obj, {{"back"}})
+  clear_motion_data(player_obj)
 end
 
-function block_low(_player_obj)
-  queue_input_sequence(_player_obj, {{"down","back"}})
-  clear_motion_data(_player_obj)
+function block_low(player_obj)
+  queue_input_sequence(player_obj, {{"down","back"}})
+  clear_motion_data(player_obj)
 end
 
-function is_hit_frame(_frame)
-  if _frame.boxes then
-    for _k, _box in pairs(_frame.boxes) do
-      local _type = convert_box_types[_box[1]]
-      if _type == "attack" or _type == "throw" then
+function is_hit_frame(frame)
+  if frame.boxes then
+    for _, box in pairs(frame.boxes) do
+      local type = convert_box_types[box[1]]
+      if type == "attack" or type == "throw" then
         return true
       end
     end
@@ -4778,53 +4796,53 @@ function is_hit_frame(_frame)
   return false
 end
 
-function is_idle_frame(_frame)
-  if _frame.idle then
+function is_idle_frame(frame)
+  if frame.idle then
     return true
   end
   return false
 end
 
-function divide_hit_frames(_anim)
-  local _result = {}
+function divide_hit_frames(anim)
+  local result = {}
 
-  if _anim.hit_frames then
-    for _k, _hf in pairs(_anim.hit_frames) do
-      local _hf_start = _hf[1]
-      local _hf_end = _hf[2]
-      local _search_start = math.min(_hf[1] + 2, _hf_end + 1)
-      local _i = _search_start
-      while _i <= _hf[2] + 1 do
-        local _end = -1
-        if _anim.frames[_i].hit_start then
-          _end = math.max(_i - 2, _hf_start)
-        elseif _i == _hf_end + 1 then
-          _end = _hf[2]
+  if anim.hit_frames then
+    for _, hf in pairs(anim.hit_frames) do
+      local hf_start = hf[1]
+      local hf_end = hf[2]
+      local search_start = math.min(hf[1] + 2, hf_end + 1)
+      local i = search_start
+      while i <= hf[2] + 1 do
+        local section_end = -1
+        if anim.frames[i].hit_start then
+          section_end = math.max(i - 2, hf_start)
+        elseif i == hf_end + 1 then
+          section_end = hf[2]
         end
 
-        if _end ~= -1 then
-          table.insert(_result, {_hf_start, _end})
-          _hf_start = _end + 1
-          if _anim.frames[_i].hit_start and _hf_start == _hf_end then
-            table.insert(_result, {_hf_start, _hf_end})
+        if section_end ~= -1 then
+          table.insert(result, {hf_start, section_end})
+          hf_start = section_end + 1
+          if anim.frames[i].hit_start and hf_start == hf_end then
+            table.insert(result, {hf_start, hf_end})
           end
         end
 
-        _i = _i + 1
+        i = i + 1
 
       end
     end
   end
-  return _result
+  return result
 end
 
-function calculate_ranges(_list, _predicate)
+function calculate_ranges(list, predicate)
   local ranges = {}
   local in_range = false
   local range_start = nil
 
-  for i, value in ipairs(_list) do
-    if _predicate(value) then
+  for i, value in ipairs(list) do
+    if predicate(value) then
       if not in_range then
         in_range = true
         range_start = i
@@ -4838,7 +4856,7 @@ function calculate_ranges(_list, _predicate)
   end
 
   if in_range then
-    table.insert(ranges, {range_start, #_list})
+    table.insert(ranges, {range_start, #list})
   end
 
   return ranges
@@ -4849,44 +4867,44 @@ function span_frame_data()
   local file_names = {}
   local key_list = deepcopy(frame_data_keys)
   table.sort(key_list)
-   _char = "dudley" -- for _key, _char in ipairs(key_list) do
-    decode_times[_char] = {}
-    file_names[_char] = {}
-    local _frame_data = frame_data[_char]
-    for _id, _data in pairs(_frame_data) do
-      local _obj = {}
-      _obj[_id] = _data
-      local _str = json.encode(_obj)
-      local stats = estimate_decode_time(_str, json.decode, 10)
-      table.insert(decode_times, {object = _obj, size = stats.average_time})
-      print(string.format("%s: %.16f", _id, stats.average_time))
+   char = "dudley" -- for key, char in ipairs(key_list) do
+    decode_times[char] = {}
+    file_names[char] = {}
+    local fdata = frame_data[char]
+    for id, data in pairs(fdata) do
+      local obj = {}
+      obj[id] = data
+      local str = json.encode(obj)
+      local stats = estimate_decode_time(str, json.decode, 10)
+      table.insert(decode_times, {object = obj, size = stats.average_time})
+      print(string.format("%s: %.16f", id, stats.average_time))
     end
     local bins, _ = pack_ffd(decode_times, 1/60/10)
     for k, bin in ipairs(bins) do
       for _, item in ipairs(bin) do
-        local _file_name = _char..k..".json"
-        local _file_path = framedata_path.._file_name
-        table.insert(file_names[_char], _file_name)
-        if not write_object_to_json_file(item.object, _file_path, false) then
-          print(string.format("Error: Failed to write frame data to \"%s\"", _file_path))
+        local file_name = char..k..".json"
+        local file_path = framedata_path..file_name
+        table.insert(file_names[char], file_name)
+        if not write_object_to_json_file(item.object, file_path, false) then
+          print(string.format("Error: Failed to write frame data to \"%s\"", file_path))
         else
-          print(string.format("Saved frame data to \"%s\"", _file_path))
+          print(string.format("Saved frame data to \"%s\"", file_path))
         end
       end
     end
   --end
-  local _file_path = framedata_path.."file_names.json"
-  if not write_object_to_json_file(file_names, _file_path, false) then
-    print(string.format("Error: Failed to write frame data to \"%s\"", _file_path))
+  local file_path = framedata_path.."file_names.json"
+  if not write_object_to_json_file(file_names, file_path, false) then
+    print(string.format("Error: Failed to write frame data to \"%s\"", file_path))
   else
-    print(string.format("Saved frame data to \"%s\"", _file_path))
+    print(string.format("Saved frame data to \"%s\"", file_path))
   end
 
-  for _, _file in ipairs(file_names[_char]) do
-    local _file_path = framedata_path.._file
-    local _f = io.open(_file_path, "r")
-    local stats = estimate_decode_time(_f:read("*all"), json.decode, 10)
-    _f:close()
+  for _, file in ipairs(file_names[char]) do
+    local file_path = framedata_path..file
+    local f = io.open(file_path, "r")
+    local stats = estimate_decode_time(f:read("*all"), json.decode, 10)
+    f:close()
     print(string.format("%.06fs - %.06f error", stats.average_time,
       (1/60/10 - stats.average_time)/(1/60/10)))
   end
@@ -4958,85 +4976,87 @@ function estimate_decode_time(json_str, decode_fn, trials)
   }
 end
 
-
+local data_path = "data/"..rom_name.."/"
+local framedata_path = data_path.."framedata/"
+local frame_data_file_ext = "_framedata.json"
 local final_props = {"name", "frames", "hit_frames", "idle_frames", "loops", "pushback", "advantage", "uses_velocity", "air", "infinite_loop", "max_hits", "cooldown", "self_chain", "exceptions"}
 local final_frame_props = {"hash", "boxes", "movement", "velocity", "acceleration", "loop", "next_anim", "optional_anim", "wakeup", "bypass_freeze"}
 function save_frame_data()
-  for _key, _char in ipairs(frame_data_keys) do
-    if frame_data[_char].should_save then
-      frame_data[_char].should_save = nil
-      local _frame_data = deepcopy(frame_data[_char])
-      if not (_char == "projectiles") then
-        _frame_data.standing = ""
-        _frame_data.standing_turn = ""
-        _frame_data.crouching = ""
-        _frame_data.crouching_turn = ""
-        if not _frame_data.wakeups then
-          _frame_data.wakeups = {}
+  for _, char in ipairs(frame_data_keys) do
+    if frame_data[char].should_save then
+      frame_data[char].should_save = nil
+      local fdata = deepcopy(frame_data[char])
+      if not (char == "projectiles") then
+        fdata.standing = ""
+        fdata.standing_turn = ""
+        fdata.crouching = ""
+        fdata.crouching_turn = ""
+        if not fdata.wakeups then
+          fdata.wakeups = {}
         end
       end
-      for _id, _data in pairs(_frame_data) do
-        if type(_data) == "table" and _id ~= "wakeups" then
-          for k, v in pairs(_data) do
+      for id, data in pairs(fdata) do
+        if type(data) == "table" and id ~= "wakeups" then
+          for k, v in pairs(data) do
             if k == "name" then
               if v == "standing" then
-                _frame_data.standing = _id
+                fdata.standing = id
               elseif v == "standing_turn" then
-                _frame_data.standing_turn = _id
+                fdata.standing_turn = id
               elseif v == "crouching" then
-                _frame_data.crouching = _id
+                fdata.crouching = id
               elseif v == "crouching_turn" then
-                _frame_data.crouching_turn = _id
+                fdata.crouching_turn = id
               elseif string.find(v, "wakeup") then
-                if not table_contains_deep(_frame_data.wakeups, _id) then
-                  table.insert(_frame_data.wakeups, _id)
+                if not table_contains_deep(fdata.wakeups, id) then
+                  table.insert(fdata.wakeups, id)
                 end
               end
             else
               if k == "hit_frames" then
                 if deep_equal(v, {}) then
-                  _frame_data[_id][k] = nil
+                  fdata[id][k] = nil
                 end
               end
             end
             if not table_contains_deep(final_props, k) then
-              _data[k] = nil
+              data[k] = nil
             end
           end
 
-          local _frames = {}
-          if _data.frames then
-            for i, _frame in ipairs(_data.frames) do
-              for _k, _v in pairs(_data.frames[i]) do
-                if not table_contains_deep(final_frame_props, _k) then
-                  _data.frames[i][_k] = nil
+          local frames = {}
+          if data.frames then
+            for i, frame in ipairs(data.frames) do
+              for k, v in pairs(data.frames[i]) do
+                if not table_contains_deep(final_frame_props, k) then
+                  data.frames[i][k] = nil
                 end
-                if _k == "movement"
-                or _k == "velocity"
-                or _k == "acceleration"
+                if k == "movement"
+                or k == "velocity"
+                or k == "acceleration"
                 then
-                  if deep_equal(_v, {0,0}) then
-                    _data.frames[i][_k] = nil
+                  if deep_equal(v, {0,0}) then
+                    data.frames[i][k] = nil
                   end
-                elseif _k == "boxes" then
-                  if deep_equal(_v, {}) then
-                    _data.frames[i][_k] = nil
+                elseif k == "boxes" then
+                  if deep_equal(v, {}) then
+                    data.frames[i][k] = nil
                   end
                 end
               end
-              table.insert(_frames, _data.frames[i])
+              table.insert(frames, data.frames[i])
             end
-            _data.frames = _frames
+            data.frames = frames
           else
-            print("no frames", _id)
+            print("no frames", id)
           end
         end
       end
-      local _file_path = framedata_path.."@".._char..frame_data_file_ext
-      if not write_object_to_json_file(_frame_data, _file_path, true) then
-        print(string.format("Error: Failed to write frame data to \"%s\"", _file_path))
+      local file_path = framedata_path.."@"..char..frame_data_file_ext
+      if not write_object_to_json_file(fdata, file_path, true) then
+        print(string.format("Error: Failed to write frame data to \"%s\"", file_path))
       else
-        print(string.format("Saved frame data to \"%s\"", _file_path))
+        print(string.format("Saved frame data to \"%s\"", file_path))
       end
     end
   end
@@ -5053,13 +5073,13 @@ end
 reset_current_recording_animation()
 
 
-_display = {}
+display = {}
 local next_anim_types = {"next_anim", "optional_anim"}
 local props_to_copy = {"self_freeze", "opponent_freeze", "opponent_recovery", "pushback","wakeup"}
 
-function new_recording(_player_obj, _projectiles, _name)
+function new_recording(player_obj, projectiles, name)
   reset_current_recording_animation()
-  current_recording_animation = {name = _name, frames = {}, hit_frames = {}, id = _player_obj.animation}
+  current_recording_animation = {name = name, frames = {}, hit_frames = {}, id = player_obj.animation}
   if recording_options.air then
     current_recording_animation.air = true
   end
@@ -5067,60 +5087,60 @@ function new_recording(_player_obj, _projectiles, _name)
   current_recording_proj_list = {}
   current_recording_acceleration_offset = 0
   recording = true
-  _state = "recording"
+  state = "recording"
 end 
 
-function new_animation(_player_obj, _projectiles, _name)
-  local _frames = current_recording_animation.frames
-  if not _frames[#_frames].hash then --patch up missing frames
-    _frames[#_frames].hash = _player_obj.animation_frame_hash
+function new_animation(player_obj, projectiles, name)
+  local frames = current_recording_animation.frames
+  if not frames[#frames].hash then --patch up missing frames
+    frames[#frames].hash = player_obj.animation_frame_hash
   end
 
-  local _next_anim_type = "next_anim"
+  local next_anim_type = "next_anim"
   if recording_options.optional_anim then
-    _next_anim_type = "optional_anim"
+    next_anim_type = "optional_anim"
     recording_options.optional_anim = false
   end
 
-  if not _frames[#_frames][_next_anim_type] then
-    _frames[#_frames][_next_anim_type] = {}
+  if not frames[#frames][next_anim_type] then
+    frames[#frames][next_anim_type] = {}
   end
-  if not next_anim_contains(_frames[#_frames][_next_anim_type], {_player_obj.animation}) then
-    table.insert(_frames[#_frames][_next_anim_type], {id = _player_obj.animation, hash = _player_obj.animation_frame_hash})
-  end
-
-  if current_recording_animation.name == _name then
-    _name = _name .. "_ext"
+  if not next_anim_contains(frames[#frames][next_anim_type], {player_obj.animation}) then
+    table.insert(frames[#frames][next_anim_type], {id = player_obj.animation, hash = player_obj.animation_frame_hash})
   end
 
-  current_recording_animation = {name = _name, frames = {}, hit_frames = {}, id = _player_obj.animation}
+  if current_recording_animation.name == name then
+    name = name .. "_ext"
+  end
+
+  current_recording_animation = {name = name, frames = {}, hit_frames = {}, id = player_obj.animation}
   table.insert(current_recording_anim_list, current_recording_animation)
   recording = true
-  _state = "recording"
+  state = "recording"
 end
 
-function end_recording(_player_obj, _projectiles, _name)
-  local _frames = current_recording_animation.frames
-  if not _frames[#_frames].hash then --patch up missing frames
-    _frames[#_frames].hash = _player_obj.animation_frame_hash
+function end_recording(player_obj, projectiles, name)
+  local frames = current_recording_animation.frames
+  if not frames[#frames].hash then --patch up missing frames
+    frames[#frames].hash = player_obj.animation_frame_hash
   end
-  if not _frames[#_frames]["next_anim"] then
-    _frames[#_frames]["next_anim"] = {}
+  if not frames[#frames]["next_anim"] then
+    frames[#frames]["next_anim"] = {}
   end
-  if not next_anim_contains(_frames[#_frames]["next_anim"], {"idle"})  then
-    table.insert(_frames[#_frames]["next_anim"], {"idle"})
+  if not next_anim_contains(frames[#frames]["next_anim"], {"idle"})  then
+    table.insert(frames[#frames]["next_anim"], {"idle"})
   end
 
-  if (frame_data[_player_obj.char_str] == nil) then
-    frame_data[_player_obj.char_str] = {}
+  if (frame_data[player_obj.char_str] == nil) then
+    frame_data[player_obj.char_str] = {}
   end
-  frame_data[_player_obj.char_str].should_save = true
+  frame_data[player_obj.char_str].should_save = true
 
   process_motion_data(current_recording_anim_list)
 
   for i = 1, #current_recording_anim_list do
     local id = current_recording_anim_list[i].id
-    local _frame_data = frame_data[_player_obj.char_str][id]
+    local fdata = frame_data[player_obj.char_str][id]
 
     if current_recording_anim_list[i].discard_all then
       for j = 1, #current_recording_anim_list[i].frames do
@@ -5132,81 +5152,81 @@ function end_recording(_player_obj, _projectiles, _name)
         current_recording_anim_list[i].frames[j].discard = nil
       end
     end
-    local _new_frames = deepcopy(current_recording_anim_list[i].frames)
+    local new_frames = deepcopy(current_recording_anim_list[i].frames)
     --special case for drill kicks
     if id == "e9e4" or id == "f2cc" or id == "f51c" then
-      fill_missing_boxes(_new_frames)
+      fill_missing_boxes(new_frames)
       current_recording_anim_list[i].cooldown = 6 --debug
     end
 
-    if _frame_data then
+    if fdata then
       if recording_options.hit_type == "block"
       or recording_options.self_chain then
-        for j = 1, #_new_frames - 1 do
+        for j = 1, #new_frames - 1 do
           -- local str = "0000000000"
-          -- if _frame_data.frames[j] then
-          --   str = _frame_data.frames[j].hash
+          -- if fdata.frames[j] then
+          --   str = fdata.frames[j].hash
           -- end
-          -- print(j-1, str, _new_frames[j].hash)
-          if index_of_hash(_frame_data.frames, _new_frames[j].hash) == 0 then
-            local _index_of_next_frame = find_exception_position(_frame_data.frames, _new_frames, j + 1) - 1 - 1
-            if _index_of_next_frame >= 0 then
-              if not _frame_data.exceptions then
-                _frame_data.exceptions = {}
+          -- print(j-1, str, new_frames[j].hash)
+          if index_of_hash(fdata.frames, new_frames[j].hash) == 0 then
+            local index_of_next_frame = find_exception_position(fdata.frames, new_frames, j + 1) - 1 - 1
+            if index_of_next_frame >= 0 then
+              if not fdata.exceptions then
+                fdata.exceptions = {}
               end
-              _frame_data.exceptions[_new_frames[j].hash] = _index_of_next_frame
+              fdata.exceptions[new_frames[j].hash] = index_of_next_frame
             end
           end
         end
-        if _frame_data.exceptions then
-          print(_frame_data.exceptions)
+        if fdata.exceptions then
+          print(fdata.exceptions)
         end
       end
     end
 
 
-    if _frame_data == nil or recording_options.clear_frame_data then
-      frame_data[_player_obj.char_str][id] = current_recording_anim_list[i]
+    if fdata == nil or recording_options.clear_frame_data then
+      frame_data[player_obj.char_str][id] = current_recording_anim_list[i]
     else
 
       if recording_options.record_frames_after_hit and recording_options.hit_type == "miss" then
-        for j = 1, #_new_frames do
-          if tonumber(string.sub(_new_frames[j].hash, 9 ,10)) >= 1 then
-            _new_frames[j].discard = nil
+        for j = 1, #new_frames do
+          if tonumber(string.sub(new_frames[j].hash, 9 ,10)) >= 1 then
+            new_frames[j].discard = nil
           end
         end
       end
 
       local j = 1
-      while j <= #_new_frames do
-        if _new_frames[j].discard then
-          table.remove(_new_frames, j)
+      while j <= #new_frames do
+        if new_frames[j].discard then
+          table.remove(new_frames, j)
         else
           j = j + 1
         end
       end
 
-      local _merged = false
+      local merged = false
       if recording_options.record_frames_after_hit then
-        _merged = force_merge_sequence(_frame_data.frames, _new_frames)
+        merged = force_merge_sequence(fdata.frames, new_frames)
       else
-        _merged = merge_sequence(_frame_data.frames, _new_frames)
+        merged = merge_sequence(fdata.frames, new_frames)
       end
 
-      local _f = current_recording_anim_list[i].frames
+      local f = current_recording_anim_list[i].frames
 
-      connect_next_anim(_frame_data, _f, "optional_anim")
-      if _merged and not recording_options.ignore_next_anim
+      connect_next_anim(fdata, f, "optional_anim")
+      if merged and not recording_options.ignore_next_anim
       or recording_options.record_next_anim then
-        connect_next_anim(_frame_data, _f, "next_anim")
+        connect_next_anim(fdata, f, "next_anim")
       end
 
-      for j = 1, #_f do
+      for j = 1, #f do
         for k, prop in pairs(props_to_copy) do
-          if _f[j][prop] then
-            local _index = index_of_hash(_frame_data.frames, _f[j].hash)
-            if _index > 0 then
-              _frame_data.frames[_index][prop] = _f[j][prop]
+          if f[j][prop] then
+            local index = index_of_hash(fdata.frames, f[j].hash)
+            if index > 0 then
+              fdata.frames[index][prop] = f[j][prop]
             end
           end
         end
@@ -5214,120 +5234,120 @@ function end_recording(_player_obj, _projectiles, _name)
     end
   end
 
-  local _ids = {}
+  local ids = {}
   for k,v in pairs(current_recording_anim_list) do
-    if not _ids[v.id] then
-      _ids[v.id] = v.id
+    if not ids[v.id] then
+      ids[v.id] = v.id
     end
   end
 
-  for _id,_ in pairs(_ids) do
-    frame_data[_player_obj.char_str][_id].frames = handle_loops(frame_data[_player_obj.char_str][_id].frames)
+  for id,_ in pairs(ids) do
+    frame_data[player_obj.char_str][id].frames = handle_loops(frame_data[player_obj.char_str][id].frames)
   end
 
-  for _id,_ in pairs(_ids) do
-    local _anim = frame_data[_player_obj.char_str][_id]
-    local _frames = frame_data[_player_obj.char_str][_id].frames
+  for id,_ in pairs(ids) do
+    local anim = frame_data[player_obj.char_str][id]
+    local frames = frame_data[player_obj.char_str][id].frames
 
-    local _hit_frames = calculate_ranges(_frames, is_hit_frame)
-    if #_hit_frames > 0 then
+    local hit_frames = calculate_ranges(frames, is_hit_frame)
+    if #hit_frames > 0 then
       --make 0 index
-      for _k,_f in pairs(_hit_frames) do
-        _f[1] = _f[1] - 1
-        _f[2] = _f[2] - 1
+      for _,f in pairs(hit_frames) do
+        f[1] = f[1] - 1
+        f[2] = f[2] - 1
       end
-      _anim.hit_frames = _hit_frames
+      anim.hit_frames = hit_frames
     end
 
-    _anim.hit_frames = divide_hit_frames(_anim)
+    anim.hit_frames = divide_hit_frames(anim)
 
-    local _idle_frames = calculate_ranges(_frames, is_idle_frame)
-    if #_idle_frames > 0 then
+    local idle_frames = calculate_ranges(frames, is_idle_frame)
+    if #idle_frames > 0 then
       --make 0 index
-      for _k,_f in pairs(_idle_frames) do
-        _f[1] = _f[1] - 1
-        _f[2] = _f[2] - 1
+      for _,f in pairs(idle_frames) do
+        f[1] = f[1] - 1
+        f[2] = f[2] - 1
       end
-      _anim.idle_frames = _idle_frames
+      anim.idle_frames = idle_frames
     end
 
-    local _p_index = 1
-    local _a_index = 1
-    for i = 1, #_frames do
-      if _frames[i].pushback then
-        if not _anim.pushback then
-          _anim.pushback = {}
+    local p_index = 1
+    local a_index = 1
+    for i = 1, #frames do
+      if frames[i].pushback then
+        if not anim.pushback then
+          anim.pushback = {}
         end
-      _anim.pushback[_p_index] = _frames[i].pushback
-      _p_index = _p_index + 1
+      anim.pushback[p_index] = frames[i].pushback
+      p_index = p_index + 1
       end
-      if _frames[i].opponent_recovery
-      and _frames[i].opponent_freeze then
-        if not _anim.advantage then
-          _anim.advantage = {}
+      if frames[i].opponent_recovery
+      and frames[i].opponent_freeze then
+        if not anim.advantage then
+          anim.advantage = {}
         end
-        local _self_freeze = 0
-        if _frames[i].self_freeze then
-          _self_freeze =  _frames[i].self_freeze[1]
+        local self_freeze = 0
+        if frames[i].self_freeze then
+          self_freeze =  frames[i].self_freeze[1]
         end
-        _anim.advantage[_a_index] = _frames[i].opponent_freeze[1] + 1 - _self_freeze + _frames[i].opponent_recovery[1]
-        _a_index = _a_index + 1
+        anim.advantage[a_index] = frames[i].opponent_freeze[1] + 1 - self_freeze + frames[i].opponent_recovery[1]
+        a_index = a_index + 1
       end
     end
-    for i = 1, #_frames do
-      if _frames[i].next_anim then
-        for _k,_na in pairs(_frames[i].next_anim) do
-          if _na.hash then
-            local _index = index_of_hash(frame_data[_player_obj.char_str][_na.id].frames, _na.hash)
-            if _index == 0 then
-              _index = 1
+    for i = 1, #frames do
+      if frames[i].next_anim then
+        for k,na in pairs(frames[i].next_anim) do
+          if na.hash then
+            local index = index_of_hash(frame_data[player_obj.char_str][na.id].frames, na.hash)
+            if index == 0 then
+              index = 1
             end
-            _frames[i].next_anim[_k] = {_na.id, _index - 1}
+            frames[i].next_anim[k] = {na.id, index - 1}
           end
         end
       end
-      if _frames[i].optional_anim then
-        for _k,_na in pairs(_frames[i].optional_anim) do
-          if _na.hash then
-            local _index = index_of_hash(frame_data[_player_obj.char_str][_na.id].frames, _na.hash)
-            if _index == 0 then
-              _index = 1
+      if frames[i].optional_anim then
+        for k,na in pairs(frames[i].optional_anim) do
+          if na.hash then
+            local index = index_of_hash(frame_data[player_obj.char_str][na.id].frames, na.hash)
+            if index == 0 then
+              index = 1
             end
-            _frames[i].optional_anim[_k] = {_na.id, _index - 1}
+            frames[i].optional_anim[k] = {na.id, index - 1}
           end
         end
       end
-      if _frames[i].loop_start then
-        if _anim.loops == nil then
-          _anim.loops = {}
+      if frames[i].loop_start then
+        if anim.loops == nil then
+          anim.loops = {}
         end
-        local _l_start = _frames[i].loop_start[1]
-        local _l_end = _frames[i].loop_start[2]
-        if not table_contains_deep(_anim.loops, {_l_start, _l_end}) then
-          table.insert(_anim.loops, {_l_start, _l_end})
-          _frames[_l_end + 1].loop = _l_start
+        local l_start = frames[i].loop_start[1]
+        local l_end = frames[i].loop_start[2]
+        if not table_contains_deep(anim.loops, {l_start, l_end}) then
+          table.insert(anim.loops, {l_start, l_end})
+          frames[l_end + 1].loop = l_start
         end
       end
     end
   end
 
   recording = false
-  _state = "ready"
+  state = "ready"
 end
 
-local _previous_hash = ""
+local previous_hash = ""
 
-function record_framedata(_player_obj, _projectiles, _name)
-  local _player = _player_obj
-  local _dummy = _player_obj.other
-  local _frame = _player.animation_frame
-  local _sign = flip_to_sign(_player.flip_x)
+function record_framedata(player_obj, projectiles, name)
+  local player = player_obj
+  local dummy = player_obj.other
+  local frame = player.animation_frame
+  local sign = flip_to_sign(player.flip_x)
 
   if recording then
 
-    if _player.has_just_been_blocked or _player.has_just_hit then
+    if player.has_just_been_blocked or player.has_just_hit then
       if recording_options.record_frames_after_hit then
-        for i = 1, _frame + 1 - 1 do
+        for i = 1, frame + 1 - 1 do
           current_recording_animation.frames[i].discard = true
         end
       else
@@ -5338,101 +5358,101 @@ function record_framedata(_player_obj, _projectiles, _name)
       current_recording_animation.discard_all = true
     end
 
-    if _player.remaining_freeze_frames > 0 and _player.animation_frame_hash ~= _previous_hash and _player.superfreeze_decount == 0 then
+    if player.remaining_freeze_frames > 0 and player.animation_frame_hash ~= previous_hash and player.superfreeze_decount == 0 then
       if #current_recording_animation.frames == 0 then
-        _player.animation_start_frame = frame_number
-        _player.animation_freeze_frames = 0
-        _frame = 0
+        player.animation_start_frame = gamestate.frame_number
+        player.animation_freeze_frames = 0
+        frame = 0
         bypassing_freeze = true
-      elseif not _player.freeze_just_began then
-        _player.animation_freeze_frames = _player.animation_freeze_frames - 1
-        _frame = frame_number - _player.animation_freeze_frames - _player.animation_start_frame
+      elseif not player.freeze_just_began then
+        player.animation_freeze_frames = player.animation_freeze_frames - 1
+        frame = gamestate.frame_number - player.animation_freeze_frames - player.animation_start_frame
         bypassing_freeze = true
       end
       if bypassing_freeze then
-        print(">", current_recording_animation.id, "bypassing freeze", _frame)
+        print(">", current_recording_animation.id, "bypassing freeze", frame)
       end
     else
       bypassing_freeze = false
     end
 
-    if not current_recording_animation.frames[_frame + 1] then
+    if not current_recording_animation.frames[frame + 1] then
       table.insert(current_recording_animation.frames, {})
     end
 
     if bypassing_freeze then
-      current_recording_animation.frames[_frame + 1].bypass_freeze = true
+      current_recording_animation.frames[frame + 1].bypass_freeze = true
     end
 
-    if _player.has_just_acted then
-      current_recording_animation.frames[_frame + 1].hit_start = true
+    if player.has_just_acted then
+      current_recording_animation.frames[frame + 1].hit_start = true
       --ex dra
       if current_recording_animation.id == "b1f4" then
-        if _player.action_count > 1 then
-          current_recording_animation.frames[_frame + 1].hit_start = nil
+        if player.action_count > 1 then
+          current_recording_animation.frames[frame + 1].hit_start = nil
         end
       end
     end
 
     if recording_self_freeze and not recording_options.is_projectile then
-      if not current_recording_animation.frames[_frame + 1].self_freeze then
-        current_recording_animation.frames[_frame + 1].self_freeze = {} --block, hit, cr. hit
+      if not current_recording_animation.frames[frame + 1].self_freeze then
+        current_recording_animation.frames[frame + 1].self_freeze = {} --block, hit, cr. hit
       end
       if recording_options.hit_type == "block" then
-        current_recording_animation.frames[_frame + 1].self_freeze[1] = _player.remaining_freeze_frames
+        current_recording_animation.frames[frame + 1].self_freeze[1] = player.remaining_freeze_frames
       end
     end
     if recording_opponent_freeze and not recording_options.is_projectile then
-      if not current_recording_animation.frames[_frame + 1].opponent_freeze then
-        current_recording_animation.frames[_frame + 1].opponent_freeze = {} --block, hit, cr. hit
+      if not current_recording_animation.frames[frame + 1].opponent_freeze then
+        current_recording_animation.frames[frame + 1].opponent_freeze = {} --block, hit, cr. hit
       end
       if recording_options.hit_type == "block" then
-        current_recording_animation.frames[_frame + 1].opponent_freeze[1] = _dummy.remaining_freeze_frames
+        current_recording_animation.frames[frame + 1].opponent_freeze[1] = dummy.remaining_freeze_frames
       end
     end
     if recording_recovery and not recording_options.is_projectile then
-      if not current_recording_animation.frames[_frame + 1].opponent_recovery then
-        current_recording_animation.frames[_frame + 1].opponent_recovery = {} --block, hit, cr. hit
+      if not current_recording_animation.frames[frame + 1].opponent_recovery then
+        current_recording_animation.frames[frame + 1].opponent_recovery = {} --block, hit, cr. hit
       end
       if recording_options.hit_type == "block" then
-        current_recording_animation.frames[_frame + 1].opponent_recovery[1] = _dummy.recovery_time
+        current_recording_animation.frames[frame + 1].opponent_recovery[1] = dummy.recovery_time
       end
     end
     if recording_pushback and not recording_options.is_projectile then
-      if not current_recording_animation.frames[_frame + 1].pushback then
-        current_recording_animation.frames[_frame + 1].pushback = {}
+      if not current_recording_animation.frames[frame + 1].pushback then
+        current_recording_animation.frames[frame + 1].pushback = {}
       end
-      table.insert(current_recording_animation.frames[_frame + 1].pushback, (_dummy.pos_x - _dummy.previous_pos_x) * _sign)
+      table.insert(current_recording_animation.frames[frame + 1].pushback, (dummy.pos_x - dummy.previous_pos_x) * sign)
     end
 
-    if _player.remaining_freeze_frames == 0 or bypassing_freeze then
-      --print(string.format("recording frame %d (%d - %d - %d)", _frame, frame_number, _player.animation_freeze_frames, _player.animation_start_frame))
+    if player.remaining_freeze_frames == 0 or bypassing_freeze then
+      --print(string.format("recording frame %d (%d - %d - %d)", frame, gamestate.frame_number, player.animation_freeze_frames, player.animation_start_frame))
 
-      if _player.standing_state == 1 then current_recording_acceleration_offset = 0 end
+      if player.standing_state == 1 then current_recording_acceleration_offset = 0 end
 
       if current_recording_acceleration_offset ~= 0 then
-        current_recording_animation.frames[_frame + 1].acceleration_offset = current_recording_acceleration_offset
+        current_recording_animation.frames[frame + 1].acceleration_offset = current_recording_acceleration_offset
       end
 
       local additional_props = {}
 
-      if _player.velocity_x ~= 0
-      or _player.velocity_y ~= 0
-      or _player.acceleration_x ~= 0
-      or _player.acceleration_y ~= 0 then
+      if player.velocity_x ~= 0
+      or player.velocity_y ~= 0
+      or player.acceleration_x ~= 0
+      or player.acceleration_y ~= 0 then
         additional_props.uses_velocity = true
       end
-      if (not recording_options.recording_movement and _frame == 0 and not _player.is_attacking and _player.standing_state == 1)
-      or (recording_options.recording_movement and _frame == 0 and not _player.is_attacking and _player.standing_state == 1 and _player.standing_state == 3)
+      if (not recording_options.recording_movement and frame == 0 and not player.is_attacking and player.standing_state == 1)
+      or (recording_options.recording_movement and frame == 0 and not player.is_attacking and player.standing_state == 1 and player.standing_state == 3)
       then
         --recovery animation (landing, after dash, etc)
-        clear_motion_data(_player)
+        clear_motion_data(player)
         additional_props.uses_velocity = false
         additional_props.landing_frame = true
       end
 
-      local movement_x = (_player.pos_x - _player.previous_pos_x) * _sign
-      local movement_y = _player.pos_y - _player.previous_pos_y
+      local movement_x = (player.pos_x - player.previous_pos_x) * sign
+      local movement_y = player.pos_y - player.previous_pos_y
 
       if recording_options.ignore_movement then
         movement_x = 0
@@ -5444,236 +5464,236 @@ function record_framedata(_player_obj, _projectiles, _name)
       end
 
       if recording_options.insert_wakeup then
-        current_recording_animation.frames[_frame + 1].wakeup = true
+        current_recording_animation.frames[frame + 1].wakeup = true
         recording_options.insert_wakeup = nil
       end
 
-      local _hash = _player.animation_frame_hash
+      local hash = player.animation_frame_hash
       if recording_options.infinite_loop then
         if #current_recording_anim_list == 1 then
-          _hash = string.sub(_hash, 1, 8)
+          hash = string.sub(hash, 1, 8)
           additional_props.infinite_loop = true
         end
       end
 
-      local _new_frame = {
+      local new_frame = {
         boxes = {},
         raw_movement = {movement_x, movement_y},
-        hash = _hash,
-        frame_id = _player.animation_frame_id,
-        frame_id2 = _player.animation_frame_id2,
-        raw_velocity = {_player.velocity_x, _player.velocity_y},
-        raw_acceleration = {_player.acceleration_x, _player.acceleration_y},
-        idle = _player.is_idle
+        hash = hash,
+        frame_id = player.animation_frame_id,
+        frame_id2 = player.animation_frame_id2,
+        raw_velocity = {player.velocity_x, player.velocity_y},
+        raw_acceleration = {player.acceleration_x, player.acceleration_y},
+        idle = player.is_idle
       }
 
       if recording_options.ignore_motion then
-        _new_frame.raw_movement = {0, 0}
-        _new_frame.raw_velocity = {0, 0}
-        _new_frame.raw_acceleration = {0, 0}
-        _new_frame.ignore_motion = true
+        new_frame.raw_movement = {0, 0}
+        new_frame.raw_velocity = {0, 0}
+        new_frame.raw_acceleration = {0, 0}
+        new_frame.ignore_motion = true
       end
 
-      for _k,_v in pairs(additional_props) do
-        current_recording_animation[_k] = _v
+      for k,v in pairs(additional_props) do
+        current_recording_animation[k] = v
       end
 
-      if current_recording_animation.frames[_frame + 1] then
-        for _k,_v in pairs(current_recording_animation.frames[_frame + 1]) do
-          _new_frame[_k] = _v
+      if current_recording_animation.frames[frame + 1] then
+        for k,v in pairs(current_recording_animation.frames[frame + 1]) do
+          new_frame[k] = v
         end
       end
 
-      current_recording_animation.frames[_frame + 1] = _new_frame
+      current_recording_animation.frames[frame + 1] = new_frame
 
-      for __, _box in ipairs(_player.boxes) do
-        local _type = convert_box_types[_box[1]]
-        if (_type == "attack") or (_type == "throw") then
-          table.insert(current_recording_animation.frames[_frame + 1].boxes, copytable(_box))
+      for __, box in ipairs(player.boxes) do
+        local type = convert_box_types[box[1]]
+        if (type == "attack") or (type == "throw") then
+          table.insert(current_recording_animation.frames[frame + 1].boxes, copytable(box))
         end
       end
 
       if recording_options.recording_wakeups or recording_options.recording_movement or recording_options.recording_idle then
-        for __, _box in ipairs(_player.boxes) do
-          local _type = convert_box_types[_box[1]]
-          if (_type == "vulnerability") then
-            table.insert(current_recording_animation.frames[_frame + 1].boxes, copytable(_box))
+        for __, box in ipairs(player.boxes) do
+          local type = convert_box_types[box[1]]
+          if (type == "vulnerability") then
+            table.insert(current_recording_animation.frames[frame + 1].boxes, copytable(box))
           end
         end
       end
     end
   end
   if (recording or recording_projectiles) and not recording_options.ignore_projectiles then
-    local _has_projectiles = false
-    for _id, _obj in pairs(_projectiles) do
-      if _obj.emitter_id == _player.id then
-        _has_projectiles = true
-        local _type = _obj.projectile_type
+    local has_projectiles = false
+    for _, obj in pairs(projectiles) do
+      if obj.emitter_id == player.id then
+        has_projectiles = true
+        local type = obj.projectile_type
 
-        local _i = index_of_projectile(current_recording_proj_list, _obj)
-        if _i == 0 then
-          local _dx = _obj.pos_x - _player.pos_x
-          local _dy = _obj.pos_y - _player.pos_y
-          if _player.flip_x == 0 then _dx = _dx * -1 end
+        local i = index_of_projectile(current_recording_proj_list, obj)
+        if i == 0 then
+          local dx = obj.pos_x - player.pos_x
+          local dy = obj.pos_y - player.pos_y
+          if player.flip_x == 0 then dx = dx * -1 end
 
 
-          current_recording_animation.frames[_frame + 1].projectile = {type = _type, offset = {_dx, _dy}}
+          current_recording_animation.frames[frame + 1].projectile = {type = type, offset = {dx, dy}}
 
           local proj_list = {}
-          local _data = {name = _name, type = _type, frames = {}, animation_start_frame = frame_number, uses_velocity = true}
-          table.insert(proj_list, _data)
-          proj_list.object = _obj
+          local data = {name = name, type = type, frames = {}, animation_start_frame = gamestate.frame_number, uses_velocity = true}
+          table.insert(proj_list, data)
+          proj_list.object = obj
 
           table.insert(current_recording_proj_list, proj_list)
         else
-          local _latest = #current_recording_proj_list[_i]
-          local _latest_proj = current_recording_proj_list[_i][_latest]
-          if not (_latest_proj.type == _type) then
-            local _frames = _latest_proj.frames
-            if not _frames[#_frames]["next_anim"] then
-              _frames[#_frames]["next_anim"] = {}
+          local latest = #current_recording_proj_list[i]
+          local latest_proj = current_recording_proj_list[i][latest]
+          if not (latest_proj.type == type) then
+            local frames = latest_proj.frames
+            if not frames[#frames]["next_anim"] then
+              frames[#frames]["next_anim"] = {}
             end
-            if not next_anim_contains(_frames[#_frames]["next_anim"], {_type})  then
-              table.insert(_frames[#_frames]["next_anim"], {id = _type, hash = _obj.animation_frame_hash})
+            if not next_anim_contains(frames[#frames]["next_anim"], {type})  then
+              table.insert(frames[#frames]["next_anim"], {id = type, hash = obj.animation_frame_hash})
             end
 
-            local _data = {name = _name .. "_ext", type = _type, frames = {}, animation_start_frame = frame_number, uses_velocity = true}
-            table.insert(current_recording_proj_list[_i], _data)
+            local data = {name = name .. "ext", type = type, frames = {}, animation_start_frame = gamestate.frame_number, uses_velocity = true}
+            table.insert(current_recording_proj_list[i], data)
           end
         end
       end
     end
 
-    if _has_projectiles then
+    if has_projectiles then
       recording_projectiles = true
     else
       recording_projectiles = false
     end
 
-    for _id, _proj_list in pairs(current_recording_proj_list) do
-      local _obj = _proj_list.object
-      local _type = _obj.projectile_type
+    for _, proj_list in pairs(current_recording_proj_list) do
+      local obj = proj_list.object
+      local type = obj.projectile_type
 
-      for _i, _data in ipairs(_proj_list) do
-        if _data.type == _type then
-          local _f = frame_number - _obj.animation_freeze_frames - _data.animation_start_frame
-          if _obj.expired then
-            _f = #_data.frames - 1
+      for i, data in ipairs(proj_list) do
+        if data.type == type then
+          local f = gamestate.frame_number - obj.animation_freeze_frames - data.animation_start_frame
+          if obj.expired then
+            f = #data.frames - 1
           end
           if recording_options.hit_type == "block" then
-            _data.discard_all = true
+            data.discard_all = true
           end
-          if _obj == current_projectile then
+          if obj == current_projectile then
             if recording_pushback or recording_opponent_freeze or recording_recovery then
-              if not _data.frames[_f + 1] then
-                _data.frames[_f + 1] = {}
+              if not data.frames[f + 1] then
+                data.frames[f + 1] = {}
               end
             end
             if recording_pushback then
-              if not _data.frames[_f + 1].pushback then
-                _data.frames[_f + 1].pushback = {}
+              if not data.frames[f + 1].pushback then
+                data.frames[f + 1].pushback = {}
               end
-              table.insert(_data.frames[_f + 1].pushback, (_dummy.pos_x - _dummy.previous_pos_x) * _sign)
+              table.insert(data.frames[f + 1].pushback, (dummy.pos_x - dummy.previous_pos_x) * sign)
             end
             if recording_opponent_freeze then
-              if not _data.frames[_f + 1].opponent_freeze then
-                _data.frames[_f + 1].opponent_freeze = {}
+              if not data.frames[f + 1].opponent_freeze then
+                data.frames[f + 1].opponent_freeze = {}
               end
-              _data.frames[_f + 1].opponent_freeze[1] = _dummy.remaining_freeze_frames
+              data.frames[f + 1].opponent_freeze[1] = dummy.remaining_freeze_frames
             end
             if recording_recovery then
-              if not _data.frames[_f + 1].opponent_recovery then
-                _data.frames[_f + 1].opponent_recovery = {}
+              if not data.frames[f + 1].opponent_recovery then
+                data.frames[f + 1].opponent_recovery = {}
               end
-              _data.frames[_f + 1].opponent_recovery[1] = _dummy.recovery_time
+              data.frames[f + 1].opponent_recovery[1] = dummy.recovery_time
             end
           end
-          if _obj.remaining_freeze_frames == 0 then
+          if obj.remaining_freeze_frames == 0 then
 
-            local movement_x = (_obj.pos_x - _obj.previous_pos_x) * _sign
-            local movement_y = _obj.pos_y - _obj.previous_pos_y
+            local movement_x = (obj.pos_x - obj.previous_pos_x) * sign
+            local movement_y = obj.pos_y - obj.previous_pos_y
 
-            if _i == 1 and _f == 0 then
+            if i == 1 and f == 0 then
               movement_x = 0
               movement_y = 0
             end
 
 
-            local _new_frame = {
+            local new_frame = {
               boxes = {},
               raw_movement = {movement_x, movement_y},
-              hash = _obj.animation_frame_hash,
-              frame_id = _obj.animation_frame_id,
-              frame_id2 = _obj.animation_frame_id2,
-              frame_id3 = _obj.animation_frame_id3,
-              raw_velocity = {_obj.velocity_x, _obj.velocity_y},
-              raw_acceleration = {_obj.acceleration_x, _obj.acceleration_y}
+              hash = obj.animation_frame_hash,
+              frame_id = obj.animation_frame_id,
+              frame_id2 = obj.animation_frame_id2,
+              frame_id3 = obj.animation_frame_id3,
+              raw_velocity = {obj.velocity_x, obj.velocity_y},
+              raw_acceleration = {obj.acceleration_x, obj.acceleration_y}
             }
 
-            for __, _box in ipairs(_obj.boxes) do
-              local _type = convert_box_types[_box[1]]
-              if (_type == "attack") or (_type == "throw") then
-                table.insert(_new_frame.boxes, copytable(_box))
+            for __, box in ipairs(obj.boxes) do
+              local type = convert_box_types[box[1]]
+              if (type == "attack") or (type == "throw") then
+                table.insert(new_frame.boxes, copytable(box))
               end
             end
 
-            if _data.frames[_f + 1] then
-              for _k,_v in pairs(_data.frames[_f + 1]) do
-                _new_frame[_k] = _v
+            if data.frames[f + 1] then
+              for k,v in pairs(data.frames[f + 1]) do
+                new_frame[k] = v
               end
             end
 
-            _data.frames[_f + 1] = _new_frame
+            data.frames[f + 1] = new_frame
           end
         end
       end
     end
   end
 
-  if _setup and not recording_pushback and not recording_options.ignore_projectiles then
-    for _key,_proj_list in pairs(current_recording_proj_list) do
-      local _obj = _proj_list.object
-      if not table_contains_deep(_projectiles, _obj) then
-        process_motion_data(_proj_list)
-        for _i, _proj in ipairs(_proj_list) do
+  if setup and not recording_pushback and not recording_options.ignore_projectiles then
+    for key,proj_list in pairs(current_recording_proj_list) do
+      local obj = proj_list.object
+      if not table_contains_deep(projectiles, obj) then
+        process_motion_data(proj_list)
+        for i, proj in ipairs(proj_list) do
 
-          if _proj.discard_all then
-            for j = 1, #_proj.frames do
-              _proj.frames[j].discard = true
+          if proj.discard_all then
+            for j = 1, #proj.frames do
+              proj.frames[j].discard = true
             end
           end
-          if _proj.do_not_discard then
-            for j = 1, #_proj.frames do
-              _proj.frames[j].discard = nil
+          if proj.do_not_discard then
+            for j = 1, #proj.frames do
+              proj.frames[j].discard = nil
             end
           end
-          local _new_frames = deepcopy(_proj.frames)
-          local id = _proj.type
+          local new_frames = deepcopy(proj.frames)
+          local id = proj.type
 
-          local _frame_data = frame_data["projectiles"][id]
+          local fdata = frame_data["projectiles"][id]
           if frame_data["projectiles"][id] == nil or overwrite then
-            frame_data["projectiles"][id] = _proj
+            frame_data["projectiles"][id] = proj
             frame_data["projectiles"].should_save = true
           else
             local j = 1
-            while j <= #_new_frames do
-              if _new_frames[j].discard then
-                table.remove(_new_frames, j)
+            while j <= #new_frames do
+              if new_frames[j].discard then
+                table.remove(new_frames, j)
               else
                 j = j + 1
               end
             end
 
-            local _merged = merge_sequence(_frame_data.frames, _new_frames)
-            if _merged then
-              connect_next_anim(_frame_data, _proj.frames, "next_anim")
+            local merged = merge_sequence(fdata.frames, new_frames)
+            if merged then
+              connect_next_anim(fdata, proj.frames, "next_anim")
             end
-            for j = 1, #_proj.frames do
+            for j = 1, #proj.frames do
               for k, prop in pairs(props_to_copy) do
-                if _proj.frames[j][prop] then
-                  local _index = index_of_hash(_frame_data.frames, _proj.frames[j].hash)
-                  if _index > 0 then
-                    _frame_data.frames[_index][prop] = _proj.frames[j][prop]
+                if proj.frames[j][prop] then
+                  local index = index_of_hash(fdata.frames, proj.frames[j].hash)
+                  if index > 0 then
+                    fdata.frames[index][prop] = proj.frames[j][prop]
                   end
                 end
               end
@@ -5683,99 +5703,99 @@ function record_framedata(_player_obj, _projectiles, _name)
           end
         end
 
-        local _ids = {}
-        for _i, _proj in ipairs(_proj_list) do
-          if not _ids[_proj.type] then
-            _ids[_proj.type] = _proj.type
+        local ids = {}
+        for _, proj in ipairs(proj_list) do
+          if not ids[proj.type] then
+            ids[proj.type] = proj.type
           end
         end
 
-        for _id,_ in pairs(_ids) do
-          local _frame_data = frame_data["projectiles"][_id]
-          _frame_data.frames = handle_loops(_frame_data.frames)
+        for id,_ in pairs(ids) do
+          local fdata = frame_data["projectiles"][id]
+          fdata.frames = handle_loops(fdata.frames)
 
-          local _p_index = 1
-          local _anim = frame_data["projectiles"][_id]
-          local _frames = _frame_data.frames
+          local p_index = 1
+          local anim = frame_data["projectiles"][id]
+          local frames = fdata.frames
 
-          for i = 1, #_frames do
-            if _frames[i].pushback then
-              if not _frames.pushback then
-                _frames.pushback = {}
+          for i = 1, #frames do
+            if frames[i].pushback then
+              if not frames.pushback then
+                frames.pushback = {}
               end
-            _frames.pushback[_p_index] = _frames[i].pushback
-            _p_index = _p_index + 1
+            frames.pushback[p_index] = frames[i].pushback
+            p_index = p_index + 1
             end
-            if _frames[i].loop_start then
-              if _anim.loops == nil then
-                _anim.loops = {}
+            if frames[i].loop_start then
+              if anim.loops == nil then
+                anim.loops = {}
               end
-              local _l_start = _frames[i].loop_start[1]
-              local _l_end = _frames[i].loop_start[2]
-              if not table_contains_deep(_anim.loops, {_l_start, _l_end}) then
-                table.insert(_anim.loops, {_l_start, _l_end})
-                _frames[_l_end + 1].loop = _l_start
+              local l_start = frames[i].loop_start[1]
+              local l_end = frames[i].loop_start[2]
+              if not table_contains_deep(anim.loops, {l_start, l_end}) then
+                table.insert(anim.loops, {l_start, l_end})
+                frames[l_end + 1].loop = l_start
               end
             end
-            if _frames[i].next_anim then
-              for _k,_na in pairs(_frames[i].next_anim) do
-                if _na.hash then
-                  local _index = index_of_hash(frame_data["projectiles"][_na.id].frames, _na.hash)
-                  if _index == 0 then
-                    _index = 1
+            if frames[i].next_anim then
+              for k,na in pairs(frames[i].next_anim) do
+                if na.hash then
+                  local index = index_of_hash(frame_data["projectiles"][na.id].frames, na.hash)
+                  if index == 0 then
+                    index = 1
                   end
-                  _frames[i].next_anim[_k] = {_na.id, _index - 1}
+                  frames[i].next_anim[k] = {na.id, index - 1}
                 end
               end
             end
           end
         end
 
-      current_recording_proj_list[_key] = nil
+      current_recording_proj_list[key] = nil
       end
     end
 
-    _previous_hash = _player.animation_frame_hash
+    previous_hash = player.animation_frame_hash
   end
 end
 
 
-function index_of_projectile(_list, _proj)
-  for _k,_v in pairs(_list) do
-    if _v.object == _proj then
-      return _k
+function index_of_projectile(list, proj)
+  for k,v in pairs(list) do
+    if v.object == proj then
+      return k
     end
   end
   return 0
 end
 
-function index_of_hash(_t, _s)
-  for i = 1, #_t do
-    if _t[i].hash == _s then
+function index_of_hash(t, s)
+  for i = 1, #t do
+    if t[i].hash == s then
       return i
     end
   end
   return 0
 end
 
-function next_anim_contains(_t, _v)
-  _v = _v.id or _v[1]
-  for _,_val in pairs(_t) do
-    local _id = _val.id or _val[1]
-    if _id == _v then
+function next_anim_contains(t, v)
+  v = v.id or v[1]
+  for _,val in pairs(t) do
+    local id = val.id or val[1]
+    if id == v then
       return true
     end
   end
   return false
 end
 
-function index_of_frames(_t1, _t2)
+function index_of_frames(t1, t2)
   i_search = 1
   i_seq = 1
   i_begin = 1
-  while i_begin + #_t2.frames - 1 <= #_t1.frames do
-    if _t2.frames[i_seq].hash == _t1.frames[i_search].hash then
-      if i_seq == #_t2.frames then
+  while i_begin + #t2.frames - 1 <= #t1.frames do
+    if t2.frames[i_seq].hash == t1.frames[i_search].hash then
+      if i_seq == #t2.frames then
           return i_begin
       end
     else
@@ -5789,12 +5809,12 @@ function index_of_frames(_t1, _t2)
   return 0
 end
 
-function merge_sequence(_existing, _incoming)
-  local ne, ni = #_existing, #_incoming
+function merge_sequence(existing, incoming)
+  local ne, ni = #existing, #incoming
   for k = math.min(ne, ni), 1, -1 do
     local matching = true
     for i = 1, k do
-      if _existing[ne - k + i].hash ~= _incoming[i].hash then
+      if existing[ne - k + i].hash ~= incoming[i].hash then
         matching = false
         break
       end
@@ -5802,7 +5822,7 @@ function merge_sequence(_existing, _incoming)
     if matching then
       --append unmatched tail
       for j = k + 1, ni do
-        table.insert(_existing, _incoming[j])
+        table.insert(existing, incoming[j])
       end
       if k + 1 > ni then
 --         print("subset")
@@ -5817,22 +5837,22 @@ function merge_sequence(_existing, _incoming)
   for k = math.min(ne, ni), 1, -1 do
     local matching = true
     for i = 1, k do
-      if _existing[i].hash ~= _incoming[ni - k + i].hash then
+      if existing[i].hash ~= incoming[ni - k + i].hash then
         matching = false
         break
       end
     end
     if matching then
       --adjust loops
-      for j = 1, #_existing do
-        if _existing[j].loop_start then
-          _existing[j].loop_start[1] = _existing[j].loop_start[1] + (ni - k)
-          _existing[j].loop_start[2] = _existing[j].loop_start[2] + (ni - k)
+      for j = 1, #existing do
+        if existing[j].loop_start then
+          existing[j].loop_start[1] = existing[j].loop_start[1] + (ni - k)
+          existing[j].loop_start[2] = existing[j].loop_start[2] + (ni - k)
         end
       end
       --prepend unmatched head
       for j = 1, ni - k do
-        table.insert(_existing, 1, _incoming[j])
+        table.insert(existing, 1, incoming[j])
       end
       if ni - k < 1 then
 --         print("subset")
@@ -5851,7 +5871,7 @@ function merge_sequence(_existing, _incoming)
   for i = 1, ne - ni + 1 do
     local match = true
     for j = 1, ni do
-      if _existing[i + j - 1].hash ~= _incoming[j].hash then
+      if existing[i + j - 1].hash ~= incoming[j].hash then
         match = false
         break
       end
@@ -5864,68 +5884,68 @@ function merge_sequence(_existing, _incoming)
 
   --no overlap, append
   for k = 1, ni do
-    table.insert(_existing, _incoming[k])
+    table.insert(existing, incoming[k])
   end
 --   print("no matches, appended", ne, ni)
   return true
 end
 
-function force_merge_sequence(_existing, _incoming)
-  -- for i = 1, #_existing do
-  --   print(_existing[i].hash)
+function force_merge_sequence(existing, incoming)
+  -- for i = 1, #existing do
+  --   print(existing[i].hash)
   -- end
-  local _merged = false
+  local merged = false
   local i_incoming = 1
-  while i_incoming < #_incoming do
-    local index = index_of_hash(_existing, _incoming[i_incoming].hash)
+  while i_incoming < #incoming do
+    local index = index_of_hash(existing, incoming[i_incoming].hash)
     if index > 0 then
       local i = 0
-      while i_incoming + i <= #_incoming do
-        local _boxes = nil
-        if _existing[index + i] and _existing[index + i].boxes then
-          _boxes = _existing[index + i].boxes
+      while i_incoming + i <= #incoming do
+        local boxes = nil
+        if existing[index + i] and existing[index + i].boxes then
+          boxes = existing[index + i].boxes
         end
-        _existing[index + i] = _incoming[i_incoming + i]
-        if _boxes then
-          _existing[index + i].boxes = _boxes
+        existing[index + i] = incoming[i_incoming + i]
+        if boxes then
+          existing[index + i].boxes = boxes
         end
         i = i + 1
       end
-      _merged = true
+      merged = true
       break
     else
       i_incoming = i_incoming + 1
     end
   end
-  if not _merged then
-    for i = 1, #_incoming do
-      table.insert(_existing, _incoming[i])
+  if not merged then
+    for i = 1, #incoming do
+      table.insert(existing, incoming[i])
     end
   end
-  for j = 2, #_existing do
-    _existing[j].hit_start = nil
-    if string.sub(_existing[j - 1].hash, 9, 10) ~= string.sub(_existing[j].hash, 9, 10) then
-      _existing[j].hit_start = true
+  for j = 2, #existing do
+    existing[j].hit_start = nil
+    if string.sub(existing[j - 1].hash, 9, 10) ~= string.sub(existing[j].hash, 9, 10) then
+      existing[j].hit_start = true
     end
   end
-  -- for i = 1, #_incoming do
-  --   print(_incoming[i].hash)
+  -- for i = 1, #incoming do
+  --   print(incoming[i].hash)
   -- end
 
-  print("merged",_merged)
-  return _merged
+  print("merged",merged)
+  return merged
 end
 
-function fill_missing_boxes(_frames)
+function fill_missing_boxes(frames)
   local segments = {}
   local in_segment = false
   local seg_start = 0
 
-  for i = 1, #_frames do
-    local has_boxes = #_frames[i].boxes > 0
+  for i = 1, #frames do
+    local has_boxes = #frames[i].boxes > 0
     if not has_boxes then
       if not in_segment then
-        if i > 1 and #_frames[i-1].boxes > 0 then
+        if i > 1 and #frames[i-1].boxes > 0 then
           in_segment = true
           seg_start = i
         end
@@ -5937,25 +5957,25 @@ function fill_missing_boxes(_frames)
       end
     end
   end
-  for _, _seg in pairs(segments) do
-    for i = _seg.start, _seg.stop do
-      _frames[i].boxes = _frames[_seg.start - 1].boxes
+  for _, seg in pairs(segments) do
+    for i = seg.start, seg.stop do
+      frames[i].boxes = frames[seg.start - 1].boxes
     end
   end
 end
 
-function connect_next_anim(_frame_data, _f, _next_anim_type)
-  if #_f > 0 then
-    if _f[#_f][_next_anim_type] then
-      local _index = index_of_hash(_frame_data.frames, _f[#_f].hash)
-      if _index > 0 then
-        if not _frame_data.frames[_index][_next_anim_type] then
-          _frame_data.frames[_index][_next_anim_type] = {}
+function connect_next_anim(fdata, f, next_anim_type)
+  if #f > 0 then
+    if f[#f][next_anim_type] then
+      local index = index_of_hash(fdata.frames, f[#f].hash)
+      if index > 0 then
+        if not fdata.frames[index][next_anim_type] then
+          fdata.frames[index][next_anim_type] = {}
         end
-        if _f[#_f][_next_anim_type] then
-          for  j = 1, #_f[#_f][_next_anim_type] do
-            if not next_anim_contains(_frame_data.frames[_index][_next_anim_type], _f[#_f][_next_anim_type][j]) then
-              table.insert(_frame_data.frames[_index][_next_anim_type], _f[#_f][_next_anim_type][j])
+        if f[#f][next_anim_type] then
+          for  j = 1, #f[#f][next_anim_type] do
+            if not next_anim_contains(fdata.frames[index][next_anim_type], f[#f][next_anim_type][j]) then
+              table.insert(fdata.frames[index][next_anim_type], f[#f][next_anim_type][j])
             end
           end
         end
@@ -5964,93 +5984,93 @@ function connect_next_anim(_frame_data, _f, _next_anim_type)
   end
 end
 
-function process_motion_data(_anim_list)
-  local _all_frames = {}
-  local _uses_velocity = {}
-  local _ignore_motion = {}
-  for i = 1, #_anim_list do
-    if _anim_list[i].landing_frame then
-      _anim_list[i].frames[1].raw_movement = {0, 0}
+function process_motion_data(anim_list)
+  local all_frames = {}
+  local uses_velocity = {}
+  local ignore_motion = {}
+  for i = 1, #anim_list do
+    if anim_list[i].landing_frame then
+      anim_list[i].frames[1].raw_movement = {0, 0}
     end
-    for j = 1, #_anim_list[i].frames do
-      table.insert(_all_frames, _anim_list[i].frames[j])
-      table.insert(_uses_velocity, _anim_list[i].uses_velocity or false)
-      table.insert(_ignore_motion, _anim_list[i].frames[j].ignore_motion or false)
+    for j = 1, #anim_list[i].frames do
+      table.insert(all_frames, anim_list[i].frames[j])
+      table.insert(uses_velocity, anim_list[i].uses_velocity or false)
+      table.insert(ignore_motion, anim_list[i].frames[j].ignore_motion or false)
     end
   end
-  for i = 1, #_all_frames do
-    if _all_frames[i].acceleration_offset and not _all_frames[i].ignore_motion then
-      _all_frames[i].raw_acceleration[2] = _all_frames[i].raw_acceleration[2] - _all_frames[i].acceleration_offset
-      _all_frames[i].raw_velocity[2] = _all_frames[i].raw_velocity[2] - _all_frames[i].acceleration_offset
-      for j = i + 1, #_all_frames do
-        if _uses_velocity[j] then
-          _all_frames[j].raw_velocity[2] = _all_frames[j].raw_velocity[2] - _all_frames[i].acceleration_offset
-          _all_frames[j].raw_movement[2] = _all_frames[j].raw_movement[2] - _all_frames[i].acceleration_offset
+  for i = 1, #all_frames do
+    if all_frames[i].acceleration_offset and not all_frames[i].ignore_motion then
+      all_frames[i].raw_acceleration[2] = all_frames[i].raw_acceleration[2] - all_frames[i].acceleration_offset
+      all_frames[i].raw_velocity[2] = all_frames[i].raw_velocity[2] - all_frames[i].acceleration_offset
+      for j = i + 1, #all_frames do
+        if uses_velocity[j] then
+          all_frames[j].raw_velocity[2] = all_frames[j].raw_velocity[2] - all_frames[i].acceleration_offset
+          all_frames[j].raw_movement[2] = all_frames[j].raw_movement[2] - all_frames[i].acceleration_offset
         end
       end
-      _all_frames[i].acceleration_offset = nil
+      all_frames[i].acceleration_offset = nil
     end
   end
-  for i = #_all_frames, 1, -1 do
-    if _all_frames[i].raw_movement and _all_frames[i].raw_velocity and _all_frames[i].raw_acceleration then
-      if i - 1 >= 1 and _all_frames[i - 1].raw_movement and _all_frames[i - 1].raw_velocity and _all_frames[i - 1].raw_acceleration then
-        _all_frames[i].movement = {}
-        _all_frames[i].velocity = {}
-        _all_frames[i].acceleration = {}
+  for i = #all_frames, 1, -1 do
+    if all_frames[i].raw_movement and all_frames[i].raw_velocity and all_frames[i].raw_acceleration then
+      if i - 1 >= 1 and all_frames[i - 1].raw_movement and all_frames[i - 1].raw_velocity and all_frames[i - 1].raw_acceleration then
+        all_frames[i].movement = {}
+        all_frames[i].velocity = {}
+        all_frames[i].acceleration = {}
 
-        _all_frames[i].movement[1] = _all_frames[i].raw_movement[1]
-        _all_frames[i].movement[2] = _all_frames[i].raw_movement[2]
-        _all_frames[i].velocity[1] = _all_frames[i].raw_velocity[1]
-        _all_frames[i].velocity[2] = _all_frames[i].raw_velocity[2]
-        _all_frames[i].acceleration[1] = _all_frames[i].raw_acceleration[1]
-        _all_frames[i].acceleration[2] = _all_frames[i].raw_acceleration[2]
+        all_frames[i].movement[1] = all_frames[i].raw_movement[1]
+        all_frames[i].movement[2] = all_frames[i].raw_movement[2]
+        all_frames[i].velocity[1] = all_frames[i].raw_velocity[1]
+        all_frames[i].velocity[2] = all_frames[i].raw_velocity[2]
+        all_frames[i].acceleration[1] = all_frames[i].raw_acceleration[1]
+        all_frames[i].acceleration[2] = all_frames[i].raw_acceleration[2]
 
-        -- print(i, _all_frames[i].raw_movement, _all_frames[i].raw_velocity, _all_frames[i].raw_acceleration)
+        -- print(i, all_frames[i].raw_movement, all_frames[i].raw_velocity, all_frames[i].raw_acceleration)
 
-        if _uses_velocity[i] and not _ignore_motion[i] then
-          _all_frames[i].movement[1] = _all_frames[i].movement[1] - _all_frames[i - 1].raw_velocity[1]
-          _all_frames[i].movement[2] = _all_frames[i].movement[2] - _all_frames[i - 1].raw_velocity[2]
-          _all_frames[i].velocity[1] = _all_frames[i].velocity[1] - _all_frames[i - 1].raw_velocity[1]
-          _all_frames[i].velocity[2] = _all_frames[i].velocity[2] - _all_frames[i - 1].raw_velocity[2]
+        if uses_velocity[i] and not ignore_motion[i] then
+          all_frames[i].movement[1] = all_frames[i].movement[1] - all_frames[i - 1].raw_velocity[1]
+          all_frames[i].movement[2] = all_frames[i].movement[2] - all_frames[i - 1].raw_velocity[2]
+          all_frames[i].velocity[1] = all_frames[i].velocity[1] - all_frames[i - 1].raw_velocity[1]
+          all_frames[i].velocity[2] = all_frames[i].velocity[2] - all_frames[i - 1].raw_velocity[2]
 
-          if _all_frames[i].raw_velocity[1] - _all_frames[i - 1].raw_velocity[1] ~= 0 then
-            _all_frames[i].velocity[1] = _all_frames[i].velocity[1] - _all_frames[i - 1].raw_acceleration[1]
+          if all_frames[i].raw_velocity[1] - all_frames[i - 1].raw_velocity[1] ~= 0 then
+            all_frames[i].velocity[1] = all_frames[i].velocity[1] - all_frames[i - 1].raw_acceleration[1]
           end
-          if _all_frames[i].raw_velocity[2] - _all_frames[i - 1].raw_velocity[2] ~= 0 then
-            _all_frames[i].velocity[2] = _all_frames[i].velocity[2] - _all_frames[i - 1].raw_acceleration[2]
+          if all_frames[i].raw_velocity[2] - all_frames[i - 1].raw_velocity[2] ~= 0 then
+            all_frames[i].velocity[2] = all_frames[i].velocity[2] - all_frames[i - 1].raw_acceleration[2]
           end
 
-          _all_frames[i].acceleration[1] = _all_frames[i].acceleration[1] - _all_frames[i - 1].raw_acceleration[1]
-          _all_frames[i].acceleration[2] = _all_frames[i].acceleration[2] - _all_frames[i - 1].raw_acceleration[2]
+          all_frames[i].acceleration[1] = all_frames[i].acceleration[1] - all_frames[i - 1].raw_acceleration[1]
+          all_frames[i].acceleration[2] = all_frames[i].acceleration[2] - all_frames[i - 1].raw_acceleration[2]
         end
 
-        _all_frames[i].raw_movement = nil
-        _all_frames[i].raw_velocity = nil
-        _all_frames[i].raw_acceleration = nil
+        all_frames[i].raw_movement = nil
+        all_frames[i].raw_velocity = nil
+        all_frames[i].raw_acceleration = nil
       else
-        _all_frames[i].movement = {_all_frames[i].raw_movement[1], _all_frames[i].raw_movement[2]}
-        _all_frames[i].velocity = {_all_frames[i].raw_velocity[1], _all_frames[i].raw_velocity[2]}
-        _all_frames[i].acceleration = {_all_frames[i].raw_acceleration[1], _all_frames[i].raw_acceleration[2]}
+        all_frames[i].movement = {all_frames[i].raw_movement[1], all_frames[i].raw_movement[2]}
+        all_frames[i].velocity = {all_frames[i].raw_velocity[1], all_frames[i].raw_velocity[2]}
+        all_frames[i].acceleration = {all_frames[i].raw_acceleration[1], all_frames[i].raw_acceleration[2]}
 
-        _all_frames[i].raw_movement = nil
-        _all_frames[i].raw_velocity = nil
-        _all_frames[i].raw_acceleration = nil
+        all_frames[i].raw_movement = nil
+        all_frames[i].raw_velocity = nil
+        all_frames[i].raw_acceleration = nil
       end
     end
   end
 end
 
 
-function handle_loops(_frames)
-  local n = #_frames
-  if n < 2 then return _frames end
+function handle_loops(frames)
+  local n = #frames
+  if n < 2 then return frames end
 
   local dp = {}
   for i = n, 1, -1 do
     dp[i] = {}
     for j = n, 1, -1 do
       if j > i
-         and (_frames[i].hash == _frames[j].hash)
+         and (frames[i].hash == frames[j].hash)
          and dp[i+1] and dp[i+1][j+1] then
         dp[i][j] = dp[i+1][j+1] + 1
       else
@@ -6060,9 +6080,9 @@ function handle_loops(_frames)
   end
 
   local search_start = 1
-  for i = 1, #_frames do
-    if _frames[i].loop_start then
-      search_start = math.min(_frames[i].loop_start[2] + 2, #_frames)
+  for i = 1, #frames do
+    if frames[i].loop_start then
+      search_start = math.min(frames[i].loop_start[2] + 2, #frames)
     end
   end
 
@@ -6083,23 +6103,23 @@ function handle_loops(_frames)
         seq_end = i + L - 1
 
         for k = i, i + L - 1 do
-          if _frames[k].loop_start then
-            _frames[k].loop_start = nil
+          if frames[k].loop_start then
+            frames[k].loop_start = nil
           end
-          out[#out + 1] = _frames[k]
+          out[#out + 1] = frames[k]
         end
-        for k = i + L, #_frames do
-          if _frames[k].loop_start then
-            _frames[k].loop_start[1] = _frames[k].loop_start[1] - L
-            _frames[k].loop_start[2] = _frames[k].loop_start[2] - L
+        for k = i + L, #frames do
+          if frames[k].loop_start then
+            frames[k].loop_start[1] = frames[k].loop_start[1] - L
+            frames[k].loop_start[2] = frames[k].loop_start[2] - L
           end
         end
         seq_end = #out
         out[seq_start].loop_start = {seq_start - 1, seq_end - 1}
         local removed_start = j
         for k = 0, L - 1 do
-          copy_props(_frames[removed_start + k], out[seq_start + k], next_anim_types)
-          copy_props(_frames[removed_start + k], out[seq_start + k], props_to_copy)
+          copy_props(frames[removed_start + k], out[seq_start + k], next_anim_types)
+          copy_props(frames[removed_start + k], out[seq_start + k], props_to_copy)
         end
 
         i = i + 2 * L
@@ -6109,7 +6129,7 @@ function handle_loops(_frames)
       end
     end
     if not removed then
-      out[#out + 1] = _frames[i]
+      out[#out + 1] = frames[i]
       i = i + 1
     end
   end
@@ -6147,19 +6167,19 @@ function handle_loops(_frames)
 
 end
 
-function copy_props(_source_frame, _dest_frame, _props_to_copy)
-  for _,_prop in pairs(_props_to_copy) do
-    if _source_frame[_prop] then
-      _dest_frame[_prop] = _source_frame[_prop]
+function copy_props(source_frame, dest_frame, props_to_copy)
+  for _,prop in pairs(props_to_copy) do
+    if source_frame[prop] then
+      dest_frame[prop] = source_frame[prop]
     end
   end
 end
 
-function find_seq_start(_existing, _incoming)
-  local ne, ni = #_existing, #_incoming
+function find_seq_start(existing, incoming)
+  local ne, ni = #existing, #incoming
   for k = math.min(ne, ni), 1, -1 do
     for i = 1, k do
-      if _existing[ne - k + i].hash == _incoming[i].hash then
+      if existing[ne - k + i].hash == incoming[i].hash then
         print(ne - k + i, i)
         return ne - k + i, i
       end
@@ -6168,23 +6188,23 @@ function find_seq_start(_existing, _incoming)
   return nil
 end
 
-function find_exception_position(_existing, _incoming, _index)
-  for i = 1, #_existing do
-    if _existing[i].hash == _incoming[_index].hash then
+function find_exception_position(existing, incoming, index)
+  for i = 1, #existing do
+    if existing[i].hash == incoming[index].hash then
       return i
     end
   end
-  if _index + 1 <= #_incoming then
-    return find_exception_position(_existing, _incoming, _index + 1) - 1
+  if index + 1 <= #incoming then
+    return find_exception_position(existing, incoming, index + 1) - 1
   end
   return 0
 end
 
-function sequence_to_name(_seq)
+function sequence_to_name(seq)
   local btn = ""
   local ud = ""
   local bf = ""
-  for k,v in pairs(_seq[1]) do
+  for k,v in pairs(seq[1]) do
     if v == "LP" or v == "MP" or v == "HP"
     or v == "LK" or v == "MK" or v == "HK" then
       if btn == "" then

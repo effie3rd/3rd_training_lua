@@ -1,0 +1,2105 @@
+{
+  "alex": [{
+    "name": "flash_chop",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "air_knee_smash",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "air_stampede",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "v_charge"],
+      ["up", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "slash_elbow",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["back", "h_charge"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "power_bomb",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "kara_power_bomb",
+    "move_type": "kara_special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back", "LP"],
+      ["back", "button"]
+    ],
+    "buttons": ["MP", "HP"]
+  }, {
+    "name": "spiral_ddt",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "hyper_bomb",
+    "move_type": "sa1",
+    "input": [
+      ["forward","360"],
+      ["down"],
+      ["back"],
+      ["up", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "boomerang_raid",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "stungun_headbutt",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["forward", "HP"],
+      ["HK"]
+    ]
+  }],
+  "chunli": [{
+    "name": "hyakuretsukyaku",
+    "move_type": "special",
+    "input": [
+      ["button"],
+      [],
+      ["button"],
+      [],
+      ["button"],
+      [],
+      ["button"],
+      [],
+      ["button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "kikouken",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["down", "back"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "spinning_bird_kick",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "v_charge"],
+      ["up", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "hazanshuu",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "kikoushou",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "houyokusen",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "tenseiranka",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["MK"],
+      ["HK"]
+    ]
+  }],
+  "dudley": [{
+    "name": "jet_upper",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "ducking",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["down", "back"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "machinegun_blow",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["down", "back"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "cross_counter",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "short_swing_blow",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "punch_and_cross",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back"],
+      [],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "rocket_upper",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "rolling_thunder",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "corkscrew_blow",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["forward", "LP"],
+      ["forward", "HK"]
+    ]
+  }],
+  "elena": [{
+    "name": "scratch_wheel",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "rhino_horn",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["down", "back"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "mallet_smash",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "spin_sides",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "lynx_tail",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["down"],
+      ["down", "back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "spinning_beat",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "brave_dance",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "healing",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["forward", "MK"]
+    ]
+  }],
+  "gill": [{
+    "name": "pyrokinesis",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "cyber_lariat",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "moonsault_kneedrop",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "psycho_headbutt",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "ressurection",
+    "move_type": "sa1",
+    "input": [],
+    "buttons": []
+  }, {
+    "name": "meteor_strike",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "seraphic_wing",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["back", "MP"]
+    ]
+  }],
+  "gouki": [{
+    "name": "gohadouken",
+    "move_type": "special",
+    "air": "yes",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "shakunetsu",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "goshoryuken",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "tatsumaki",
+    "move_type": "special",
+    "air": "yes",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "hyakki",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "asura_forward",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["EXP", "EXK"]
+  }, {
+    "name": "asura_backward",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["down"],
+      ["down", "back", "button"]
+    ],
+    "buttons": ["EXP", "EXK"]
+  }, {
+    "name": "messatsu_gouhadou",
+    "move_type": "sa1",
+    "air": "yes",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "messatsu_goushoryu",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "messatsu_gourasen",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "sgs",
+    "move_type": "sgs",
+    "input": [
+      ["LP"],
+      [],
+      ["LP"],
+      ["forward"],
+      ["LK"],
+      ["HP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kkz",
+    "move_type": "kkz",
+    "input": [
+      ["down"],
+      [],
+      ["down"],
+      [],
+      ["down", "LP", "MP", "HP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["forward", "MP"]
+    ]
+  }],
+  "hugo": [{
+    "name": "moonsault_press",
+    "move_type": "special",
+    "input": [
+      ["forward","360"],
+      ["down"],
+      ["back"],
+      ["up", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "ultra_throw",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "shootdown_backbreaker",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "meat_squasher",
+    "move_type": "special",
+    "input": [
+      ["forward","360"],
+      ["down"],
+      ["back"],
+      ["up", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "giant_palm_bomber",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "monster_lariat",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "gigas_breaker",
+    "move_type": "sa1",
+    "input": [
+      ["forward","720"],
+      ["down"],
+      ["back"],
+      ["up"],
+      ["forward"],
+      ["down"],
+      ["back"],
+      ["up", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "megaton_press",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "hammer_mountain",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["MK"]
+    ]
+  }],
+  "ibuki": [{
+    "name": "kunai",
+    "move_type": "special",
+    "air": "only",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "kubiori",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "kazekiri",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "tsumuji",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "hien",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["down"],
+      ["down", "back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "raida",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "tsukijigoe",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "kasumigake",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "kasumisuzaku",
+    "move_type": "sa1",
+    "air": "only",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "yoroidooshi",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "yamishigure",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["LP"]
+    ]
+  }],
+  "ken": [{
+    "name": "hadouken",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "shoryuken",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "tatsumaki",
+    "move_type": "special",
+    "air": "yes",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "shoryu_reppa",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "shinryuuken",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "shippu",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["MK"],
+      ["back", "MK"]
+    ]
+  }],
+  "makoto": [{
+    "name": "hayate",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "fukiage",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "oroshi",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "karakusa",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "kara_karakusa_lk",
+    "move_type": "kara_special",
+    "input": [
+      ["LK"],
+      [],
+      [],
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "kara_karakusa_hk",
+    "move_type": "kara_special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back", "HK"],
+      ["back", "MK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "tsurugi",
+    "move_type": "special",
+    "air": "only",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "seichusengodanzuki",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "abaretosanami",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "tandenrenki",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["LK"]
+    ]
+  }],
+  "necro": [{
+    "name": "denji_blast",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "tornado_hook",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["down", "back"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "flying_viper",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "rising_cobra",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "snake_fang",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["down", "back"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "magnetic_storm",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "slam_dance",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "electric_snake",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["MP"],
+      ["back", "HK"]
+    ]
+  }],
+  "oro": [{
+    "name": "nichirin",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["back", "h_charge"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "oniyanma",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "v_charge"],
+      ["up", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "hitobashira",
+    "move_type": "special",
+    "air": "yes",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "niouriki",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "kara_niouriki",
+    "move_type": "kara_special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "HK"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "kishinriki",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "yagyoudama",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "tenguishi",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["HK"]
+    ]
+  }],
+  "q": [{
+    "name": "dashing_head_attack",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["back", "h_charge"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "dashing_leg_attack",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["back", "h_charge"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "high_speed_barrage",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "capture_and_deadly_blow",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "kara_capture_and_deadly_blow",
+    "move_type": "kara_special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["down"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["down", "back"],
+      ["down", "back"],
+      ["down", "back"],
+      ["down", "back"],
+      ["down", "back"],
+      ["down", "back"],
+      ["back", "MP"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "critical_combo_attack",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "deadly_double_combination",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "total_destruction",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["back", "MP"],
+      ["MP"]
+    ]
+  }],
+  "remy": [{
+    "name": "light_of_virtue",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["back", "h_charge"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP", "LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "rising_rage_flash",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "v_charge"],
+      ["up", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "cold_blue_kick",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "light_of_justice",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "supreme_rising_rage",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "blue_nocturne",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["HK"],
+      ["MP"]
+    ]
+  }],
+  "ryu": [{
+    "name": "hadouken",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "shoryuken",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "tatsumaki",
+    "move_type": "special",
+    "air": "yes",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "joudan",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["down", "back"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "shinkuu_hadouken",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "shin_shoryuken",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "denjin_hadouken",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["forward", "MP"]
+    ]
+  }],
+  "sean": [{
+    "name": "sean_tackle",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["down", "back"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "dragon_smash",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "tornado",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "ryuubikyaku",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "roll",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "hadou_burst",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "shoryu_cannon",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "hyper_tornado",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["forward", "HP"]
+    ]
+  }],
+  "shingouki": [{
+    "name": "gohadouken",
+    "move_type": "special",
+    "air": "yes",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "shakunetsu",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "goshoryuken",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP"]
+  }, {
+    "name": "tatsumaki",
+    "move_type": "special",
+    "air": "yes",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "asura_forward",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["EXP", "EXK"]
+  }, {
+    "name": "asura_backward",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["down"],
+      ["down", "back", "button"]
+    ],
+    "buttons": ["EXP", "EXK"]
+  }, {
+    "name": "messatsu_gouhadou",
+    "move_type": "sa1",
+    "air": "yes",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "messatsu_goushoryu",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "messatsu_gourasen",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "sgs",
+    "move_type": "sgs",
+    "input": [
+      ["LP"],
+      [],
+      ["LP"],
+      ["forward"],
+      ["LK"],
+      ["HP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["forward", "MP"]
+    ]
+  }],
+  "twelve": [{
+    "name": "ndl",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "axe",
+    "move_type": "special",
+    "air": "yes",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "dra",
+    "move_type": "special",
+    "air": "only",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "xndl",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "xflat",
+    "move_type": "sa2",
+    "air": "only",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "xcopy",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["MP"]
+    ]
+  }],
+  "urien": [{
+    "name": "metallic_sphere",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "chariot_tackle",
+    "move_type": "special",
+    "input": [
+      ["back"],
+      ["back", "h_charge"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "violence_kneedrop",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "v_charge"],
+      ["up", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "dangerous_headbutt",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "v_charge"],
+      ["up", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "tyrant_slaughter",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "temporal_thunder",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "aegis_reflector",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["forward", "MP"]
+    ]
+  }],
+  "yang": [{
+    "name": "tourouzan",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "senkyuutai",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "kaihou",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK"]
+  }, {
+    "name": "byakko",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "zenpou",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_zenpou_yang",
+    "move_type": "kara_special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["HK"],
+      ["back", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "raishin",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "tenshinsenkyuutai",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "seieienbu",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["HK"]
+    ]
+  }],
+  "yun": [{
+    "name": "zesshou",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "tetsuzan",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "nishoukyaku",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["down", "forward", "button"]
+    ],
+    "buttons": ["LK", "MK", "HK", "EXK"]
+  }, {
+    "name": "kobokushi",
+    "move_type": "special",
+    "input": [
+      ["down"],
+      ["down", "back"],
+      ["back", "button"]
+    ],
+    "buttons": ["LP", "MP", "HP", "EXP"]
+  }, {
+    "name": "zenpou",
+    "move_type": "special",
+    "input": [
+      ["forward"],
+      ["down", "forward"],
+      ["down"],
+      ["down", "back"],
+      ["back", "LK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_zenpou_yun",
+    "move_type": "kara_special",
+    "input": [
+      ["forward"],
+      ["down"],
+      ["LK"],
+      ["back", "HK"]
+    ],
+    "buttons": []
+  }, {
+    "name": "youhou",
+    "move_type": "sa1",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "sourairengeki",
+    "move_type": "sa2",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "geneijin",
+    "move_type": "sa3",
+    "input": [
+      ["down"],
+      ["down", "forward"],
+      ["forward"],
+      ["down"],
+      ["down", "forward"],
+      ["forward", "LP"]
+    ],
+    "buttons": []
+  }, {
+    "name": "kara_throw",
+    "move_type": "kara",
+    "input": [
+      ["button"],
+      ["LP", "LK"]
+    ],
+    "buttons": [
+      ["LK"]
+    ]
+  }]
+}

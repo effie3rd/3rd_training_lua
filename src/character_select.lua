@@ -1,22 +1,26 @@
-character_select_savestate = savestate.create("data/"..rom_name.."/savestates/character_select.fs")
-first_run = true
-character_select_start_frame = 0
-clear_buttons_until_frame = 0
-character_select_coroutines = {}
-random_select_coroutine = nil
-selecting_random_character = false
-disable_select_boss = false
-last_player_id = 1
+local gamestate = require("src/gamestate")
+local text = require("src/text")
+
+local render_text, get_text_dimensions = text.render_text, text.get_text_dimensions
+
+local character_select_savestate = savestate.create("data/"..rom_name.."/savestates/character_select.fs")
+local first_run = true
+local character_select_start_frame = 0
+local clear_buttons_until_frame = 0
+local character_select_coroutines = {}
+local selecting_random_character = false
+local disable_select_boss = false
+local last_player_id = 1
 
 -- 0 is out
 -- 1 is waiting for input release for p1
 -- 2 is selecting p1
 -- 3 is waiting for input release for p2
 -- 4 is selecting p2
-character_select_sequence_state = 0
+local character_select_sequence_state = 0
 
-character_select_loc = {{0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{1,0},{1,1},{1,2},{1,3},{1,4},{1,5},{1,6},{2,0},{2,1},{2,2},{2,3},{2,4},{2,5}}
-character_map =
+local character_select_loc = {{0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{1,0},{1,1},{1,2},{1,3},{1,4},{1,5},{1,6},{2,0},{2,1},{2,2},{2,3},{2,4},{2,5}}
+local character_map =
 {
   ["alex"]={0,1},
   ["sean"]={0,2},
@@ -41,304 +45,309 @@ character_map =
   ["shingouki"]={0,6}
 }
 
-function co_wait_x_frames(_frame_count)
-  local _start_frame = frame_number
-  while frame_number < _start_frame + _frame_count do
+local function character_select_coroutine(co, name)
+  local o = {}
+  o.coroutine = coroutine.create(co)
+  o.name = name
+
+  function o:resume(input)
+    return coroutine.resume(self.coroutine, input)
+  end
+
+  function o:status()
+    return coroutine.status(self.coroutine)
+  end
+
+  character_select_coroutines[name] = o
+  return o
+end
+
+local function co_wait_x_frames(frame_count)
+  local start_frame = gamestate.frame_number
+  while gamestate.frame_number < start_frame + frame_count do
     coroutine.yield()
   end
 end
+
+local function after_character_select_loaded()
+  clear_buttons_until_frame = gamestate.frame_number + 30
+  character_select_start_frame = gamestate.frame_number
+end
+
 --fixes a bug where fightcade loads its own savestate
 --and causes p1's SA selection to also select p2's character
-function co_delay_load_savestate(_input)
+local function co_delay_load_savestate(input)
   co_wait_x_frames(1)
   character_select_sequence_state = 1
-  table.insert(after_load_state_callback, {command = after_character_select_loaded})
+  Register_After_Load_State(after_character_select_loaded)
   savestate.load(character_select_savestate)
 end
 
-function after_character_select_loaded()
-  clear_buttons_until_frame = frame_number + 30
-  character_select_start_frame = frame_number
-end
-
-function start_character_select_sequence(_disable_select_boss)
+local function start_character_select_sequence(disable_select_boss)
   if first_run then
     character_select_coroutine(co_delay_load_savestate, "delay_load")
     first_run = false
   else
     character_select_sequence_state = 1
-    table.insert(after_load_state_callback, {command = after_character_select_loaded})
+    Register_After_Load_State(after_character_select_loaded)
     savestate.load(character_select_savestate)
   end
   last_player_id = 1
 
-  disable_select_boss = _disable_select_boss or false
+  disable_select_boss = disable_select_boss or false
 end
 
-local p1_forced_select = false
-function force_select_character(_player_id, _char, _sa, _sel_button)
-  force_character_select_coroutine(co_force_select_character, "force_p" .. _player_id, _player_id, _char, _sa, _sel_button)
+local function force_character_select_coroutine(co, name, player, char, sa, sel_button)
+  local o = {}
+  o.coroutine = coroutine.create(co)
+  o.name = name
+  o.player = player
+  o.char = char
+  o.sa = sa
+  o.sel_button = sel_button
+
+  function o:resume(input)
+    return coroutine.resume(self.coroutine, input, self.player, self.char, self.sa, self.sel_button)
+  end
+
+  function o:status()
+    return coroutine.status(self.coroutine)
+  end
+
+  character_select_coroutines[name] = o
+  return o
 end
 
-function co_force_select_character(_input, _player_id, _char, _sa, _sel_button)
-  local _col = character_map[_char][1]
-  local _row = character_map[_char][2]
+local function co_force_select_character(input, player_id, char, sa, sel_button)
+  local col = character_map[char][1]
+  local row = character_map[char][2]
 
-  local _character_select_state = memory.readbyte(addresses.players[_player_id].character_select_state)
+  local character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
 
-  if _character_select_state > 2 then
+  if character_select_state > 2 then
     return
   end
 
-  local _curr_col = -1
-  local _curr_row = -1
+  local curr_col = -1
+  local curr_row = -1
 
-  while not (_curr_col == _col and _curr_row == _row) do
-    memory.writebyte(addresses.players[_player_id].character_select_col, _col)
-    memory.writebyte(addresses.players[_player_id].character_select_row, _row)
+  while not (curr_col == col and curr_row == row) do
+    memory.writebyte(addresses.players[player_id].character_select_col, col)
+    memory.writebyte(addresses.players[player_id].character_select_row, row)
     co_wait_x_frames(1)
-    _curr_col = memory.readbyte(addresses.players[_player_id].character_select_col)
-    _curr_row = memory.readbyte(addresses.players[_player_id].character_select_row)
+    curr_col = memory.readbyte(addresses.players[player_id].character_select_col)
+    curr_row = memory.readbyte(addresses.players[player_id].character_select_row)
   end
 
-  while _character_select_state < 3 do
+  while character_select_state < 3 do
     co_wait_x_frames(2)
-    queue_input_sequence(player_objects[_player_id], {{_sel_button}})
+    queue_input_sequence(gamestate.player_objects[player_id], {{sel_button}})
     co_wait_x_frames(2)
-    _character_select_state = memory.readbyte(addresses.players[_player_id].character_select_state)
+    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
   end
 
-  while _character_select_state < 4 do
+  while character_select_state < 4 do
     co_wait_x_frames(1)
-    _character_select_state = memory.readbyte(addresses.players[_player_id].character_select_state)
+    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
   end
 
-  if _char == "shingouki" then
-    memory.writebyte(addresses.players[_player_id].character_select_id, 0x0F)
+  if char == "shingouki" then
+    memory.writebyte(addresses.players[player_id].character_select_id, 0x0F)
   end
 
-  if _sa == 2 then
-    queue_input_sequence(player_objects[_player_id], {{"down"}})
+  if sa == 2 then
+    queue_input_sequence(gamestate.player_objects[player_id], {{"down"}})
     co_wait_x_frames(20)
-  elseif _sa == 3 then
-    queue_input_sequence(player_objects[_player_id], {{"up"}})
+  elseif sa == 3 then
+    queue_input_sequence(gamestate.player_objects[player_id], {{"up"}})
     co_wait_x_frames(20)
   end
 
-  while _character_select_state < 5 do
-    queue_input_sequence(player_objects[_player_id], {{_sel_button}})
+  while character_select_state < 5 do
+    queue_input_sequence(gamestate.player_objects[player_id], {{sel_button}})
     co_wait_x_frames(2)
-    _character_select_state = memory.readbyte(addresses.players[_player_id].character_select_state)
+    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
   end
 end
 
+local p1_forced_select = false
+local p2_forced_select = false
+local function force_select_character(player_id, char, sa, sel_button)
+  force_character_select_coroutine(co_force_select_character, "force_p" .. player_id, player_id, char, sa, sel_button)
+end
 
-function select_gill()
-  if not disable_select_boss then
+
+local function co_select_gill(input)
+  local player_id = 1
+  local sel_buttons = {"LP","HK"}
+  local i = math.random(1,#sel_buttons)
+  local sel_button = sel_buttons[i]
+  local p1_character_select_state = memory.readbyte(addresses.players[1].character_select_state)
+  local p2_character_select_state = memory.readbyte(addresses.players[2].character_select_state)
+
+  if p1_character_select_state > 2 and p2_character_select_state > 2 then
+    return
+  end
+
+  local character_select_state = 0
+
+  if p1_character_select_state <= 2 then
+    player_id = 1
+    character_select_state = p1_character_select_state
+  else
+    player_id = 2
+    character_select_state = p2_character_select_state
+  end
+
+  memory.writebyte(addresses.players[player_id].character_select_col, 3)
+  memory.writebyte(addresses.players[player_id].character_select_row, 1)
+
+  while character_select_state < 3 do
+    co_wait_x_frames(2)
+    queue_input_sequence(gamestate.P1, {{sel_button}})
+    co_wait_x_frames(2)
+    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
+  end
+
+  while character_select_state < 4 do
+    co_wait_x_frames(1)
+    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
+  end
+
+  while character_select_state < 5 do
+    queue_input_sequence(gamestate.P1, {{sel_button}})
+    co_wait_x_frames(2)
+    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
+  end
+end
+
+local function select_gill()
+  if not disable_select_boss and character_select_sequence_state ~= 0 then
     if not character_select_coroutines["gill"] then
       character_select_coroutine(co_select_gill, "gill")
     end
   end
 end
 
-function co_select_gill(_input)
-  local _player_id = 1
-  local _sel_buttons = {"LP","HK"}
-  local _i = math.random(1,#_sel_buttons)
-  local _sel_button = _sel_buttons[_i]
-  local _p1_character_select_state = memory.readbyte(addresses.players[1].character_select_state)
-  local _p2_character_select_state = memory.readbyte(addresses.players[2].character_select_state)
+local function co_select_shingouki(input)
+  local player_id = 1
 
-  if _p1_character_select_state > 2 and _p2_character_select_state > 2 then
+  local sel_buttons = {"LP","HK"}
+  local i = math.random(1,#sel_buttons)
+  local sel_button = sel_buttons[i]
+  local p1_character_select_state = memory.readbyte(addresses.players[1].character_select_state)
+  local p2_character_select_state = memory.readbyte(addresses.players[2].character_select_state)
+
+  if p1_character_select_state > 2 and p2_character_select_state > 2 then
     return
   end
 
-  if _p1_character_select_state <= 2 then
-    _player_id = 1
-    _character_select_state = _p1_character_select_state
+  local character_select_state = 0
+
+  if p1_character_select_state <= 2 then
+    player_id = 1
+    character_select_state = p1_character_select_state
   else
-    _player_id = 2
-    _character_select_state = _p2_character_select_state
+    player_id = 2
+    character_select_state = p2_character_select_state
   end
 
-  memory.writebyte(addresses.players[_player_id].character_select_col, 3)
-  memory.writebyte(addresses.players[_player_id].character_select_row, 1)
+  memory.writebyte(addresses.players[player_id].character_select_col, 0)
+  memory.writebyte(addresses.players[player_id].character_select_row, 6)
 
-  while _character_select_state < 3 do
+
+  while character_select_state < 3 do
     co_wait_x_frames(2)
-    queue_input_sequence(P1, {{_sel_button}})
+    queue_input_sequence(gamestate.P1, {{sel_button}})
     co_wait_x_frames(2)
-    _character_select_state = memory.readbyte(addresses.players[_player_id].character_select_state)
+    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
   end
 
-  while _character_select_state < 4 do
+  while character_select_state < 4 do
     co_wait_x_frames(1)
-    _character_select_state = memory.readbyte(addresses.players[_player_id].character_select_state)
+    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
   end
 
-  while _character_select_state < 5 do
-    queue_input_sequence(P1, {{_sel_button}})
+  memory.writebyte(addresses.players[player_id].character_select_id, 0x0F)
+
+  while character_select_state < 5 do
+    queue_input_sequence(gamestate.P1, {{sel_button}})
     co_wait_x_frames(2)
-    _character_select_state = memory.readbyte(addresses.players[_player_id].character_select_state)
+    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
   end
 end
 
-function select_shingouki()
-  if not disable_select_boss then
+local function select_shingouki()
+  if not disable_select_boss and character_select_sequence_state ~= 0 then
     if not character_select_coroutines["shingouki"] then
       character_select_coroutine(co_select_shingouki, "shingouki")
     end
   end
 end
 
-function co_select_shingouki(_input)
-  local _player_id = 1
-
-  local _sel_buttons = {"LP","HK"}
-  local _i = math.random(1,#_sel_buttons)
-  local _sel_button = _sel_buttons[_i]
-  local _p1_character_select_state = memory.readbyte(addresses.players[1].character_select_state)
-  local _p2_character_select_state = memory.readbyte(addresses.players[2].character_select_state)
-
-  if _p1_character_select_state > 2 and _p2_character_select_state > 2 then
-    return
-  end
-
-  if _p1_character_select_state <= 2 then
-    _player_id = 1
-    _character_select_state = _p1_character_select_state
-  else
-    _player_id = 2
-    _character_select_state = _p2_character_select_state
-  end
-
-  memory.writebyte(addresses.players[_player_id].character_select_col, 0)
-  memory.writebyte(addresses.players[_player_id].character_select_row, 6)
-
-
-  while _character_select_state < 3 do
-    co_wait_x_frames(2)
-    queue_input_sequence(P1, {{_sel_button}})
-    co_wait_x_frames(2)
-    _character_select_state = memory.readbyte(addresses.players[_player_id].character_select_state)
-  end
-
-  while _character_select_state < 4 do
-    co_wait_x_frames(1)
-    _character_select_state = memory.readbyte(addresses.players[_player_id].character_select_state)
-  end
-
-  memory.writebyte(addresses.players[_player_id].character_select_id, 0x0F)
-
-  while _character_select_state < 5 do
-    queue_input_sequence(P1, {{_sel_button}})
-    co_wait_x_frames(2)
-    _character_select_state = memory.readbyte(addresses.players[_player_id].character_select_state)
-  end
-end
-
-function start_select_random_character()
-  selecting_random_character = true
-end
-
-function stop_select_random_character()
-  selecting_random_character = false
-end
-
-function select_random_character()
-  if not p1_forced_select and not character_select_coroutines["select_random"] then
-     character_select_coroutine(co_random_character, "select_random")
-  end
-end
-
-function co_random_character(_input)
+local function co_random_character(input)
 
   if not selecting_random_character then
     return
   end
 
-  local _player_id
-  local _p1_character_select_state
-  local _p2_character_select_state
+  local player_id
+  local p1_character_select_state
+  local p2_character_select_state
 
-  _p1_character_select_state = memory.readbyte(addresses.players[1].character_select_state)
-  _p2_character_select_state = memory.readbyte(addresses.players[2].character_select_state)
+  p1_character_select_state = memory.readbyte(addresses.players[1].character_select_state)
+  p2_character_select_state = memory.readbyte(addresses.players[2].character_select_state)
 
-  if _p1_character_select_state <= 2 then
-    _player_id = 1
-  elseif _p1_character_select_state >= 5 and _p2_character_select_state <= 2 then
-    _player_id = 2
+  if p1_character_select_state <= 2 then
+    player_id = 1
+  elseif p1_character_select_state >= 5 and p2_character_select_state <= 2 then
+    player_id = 2
   else
     return
   end
 
   --stop random select after p1 character is chosen
-  if last_player_id ~= _player_id then
-    last_player_id = _player_id
-    stop_select_random_character()
+  if last_player_id ~= player_id then
+    last_player_id = player_id
+    selecting_random_character = false
     return
   end
 
-  local _character_select_col = memory.readbyte(addresses.players[_player_id].character_select_col)
-  local _character_select_row = memory.readbyte(addresses.players[_player_id].character_select_row)
+  local character_select_col = memory.readbyte(addresses.players[player_id].character_select_col)
+  local character_select_row = memory.readbyte(addresses.players[player_id].character_select_row)
 
   --don't select the same character twice
   while true do
     local n = math.random(1,#character_select_loc)
 
-    local _col = character_select_loc[n][1]
-    local _row = character_select_loc[n][2]
+    local col = character_select_loc[n][1]
+    local row = character_select_loc[n][2]
 
-    if _col ~= _character_select_col or _row ~= _character_select_row then
-      memory.writebyte(addresses.players[_player_id].character_select_col, _col)
-      memory.writebyte(addresses.players[_player_id].character_select_row, _row)
+    if col ~= character_select_col or row ~= character_select_row then
+      memory.writebyte(addresses.players[player_id].character_select_col, col)
+      memory.writebyte(addresses.players[player_id].character_select_row, row)
       break
     end
   end
 end
 
-function character_select_coroutine(_co, _name)
-  local _o = {}
-  _o.coroutine = coroutine.create(_co)
-  _o.name = _name
-
-  function _o:resume(_input)
-    return coroutine.resume(self.coroutine, _input)
-  end
-
-  function _o:status()
-    return coroutine.status(self.coroutine)
-  end
-
-  character_select_coroutines[_name] = _o
-  return _o
+local function start_select_random_character()
+  selecting_random_character = true
 end
 
-function force_character_select_coroutine(_co, _name, _player, _char, _sa, _sel_button)
-  local _o = {}
-  _o.coroutine = coroutine.create(_co)
-  _o.name = _name
-  _o.player = _player
-  _o.char = _char
-  _o.sa = _sa
-  _o.sel_button = _sel_button
-
-
-  function _o:resume(_input)
-    return coroutine.resume(self.coroutine, _input, self.player, self.char, self.sa, self.sel_button)
-  end
-
-  function _o:status()
-    return coroutine.status(self.coroutine)
-  end
-
-  character_select_coroutines[_name] = _o
-  return _o
+local function stop_select_random_character()
+  selecting_random_character = false
 end
 
-local _p1_character_select_state = 0
-local _p2_character_select_state = 0
-function update_character_select(_input, _do_fast_forward)
+local function select_random_character()
+  if not p1_forced_select and not character_select_coroutines["select_random"] then
+     character_select_coroutine(co_random_character, "select_random")
+  end
+end
+
+local p1_character_select_state = 0
+local p2_character_select_state = 0
+local function update_character_select(input, do_fast_forward)
 
   if not character_select_sequence_state == 0 then
     return
@@ -348,64 +357,64 @@ function update_character_select(_input, _do_fast_forward)
   --memory.writebyte(addresses.global.character_select_timer, 0x30)
 
   if p1_forced_select then
-    make_input_empty(_input)
+    make_input_empty(input)
   end
 
-  for _k,_cs in pairs(character_select_coroutines) do
-    local _status = _cs:status()
-    if _status == "suspended" then
-      local _r, _error = _cs:resume(_input)
-      if not _r then
-        print(_error)
+  for k,cs in pairs(character_select_coroutines) do
+    local status = cs:status()
+    if status == "suspended" then
+      local r, error = cs:resume(input)
+      if not r then
+        print(error)
       end
-    elseif _status == "dead" then
-      character_select_coroutines[_k] = nil
-      if _cs.name == "force_p1" then
+    elseif status == "dead" then
+      character_select_coroutines[k] = nil
+      if cs.name == "force_p1" then
         p1_forced_select = false
-      elseif _cs.name == "force_p2" then
+      elseif cs.name == "force_p2" then
         p2_forced_select = false
       end
     end
-    if _cs.name == "force_p1" then
+    if cs.name == "force_p1" then
       p1_forced_select = true
-    elseif _cs.name == "force_p2" then
+    elseif cs.name == "force_p2" then
       p2_forced_select = true
     end
   end
 
-  _p1_character_select_state = memory.readbyte(addresses.players[1].character_select_state)
-  _p2_character_select_state = memory.readbyte(addresses.players[2].character_select_state)
+  p1_character_select_state = memory.readbyte(addresses.players[1].character_select_state)
+  p2_character_select_state = memory.readbyte(addresses.players[2].character_select_state)
 
 
   if not p1_forced_select then
-  --   print(string.format("%d, %d, %d", character_select_sequence_state, _p1_character_select_state, _p2_character_select_state))
+  --   print(string.format("%d, %d, %d", character_select_sequence_state, p1_character_select_state, p2_character_select_state))
 
-    if _p1_character_select_state > 4 and not is_in_match then
+    if p1_character_select_state > 4 and not gamestate.is_in_match then
       if character_select_sequence_state == 2 then
         character_select_sequence_state = 3
       end
 
-      --for _key, _value in pairs(_input) do
-      --  print(string.format("%s %s",_key, tostring(_value)))
+      --for key, value in pairs(input) do
+      --  print(string.format("%s %s",key, tostring(value)))
       --end
       if not p1_forced_select and not p2_forced_select then
-        swap_inputs(_input)
+        swap_inputs(input)
       end
-      --for _key, _value in pairs(_input) do
-      --  print(string.format("Swap %s %s",_key, tostring(_value)))
+      --for key, value in pairs(input) do
+      --  print(string.format("Swap %s %s",key, tostring(value)))
       --end
       --print(string.format("State %d",character_select_sequence_state))
     end
 
-    if frame_number < clear_buttons_until_frame then
-      clear_p1_buttons(_input)
+    if gamestate.frame_number < clear_buttons_until_frame then
+      clear_p1_buttons(input)
     end
 
     -- wait for all inputs to be released
     if character_select_sequence_state == 1 or character_select_sequence_state == 3 then
-      for _key, _state in pairs(_input) do
-        if _state == true then
-          make_input_empty(_input)
+      for _, state in pairs(input) do
+        if state == true then
+          make_input_empty(input)
           return
         end
       end
@@ -413,28 +422,28 @@ function update_character_select(_input, _do_fast_forward)
     end
 
     if selecting_random_character then
-      clear_directional_input(_input)
+      clear_directional_input(input)
     end
   end
 
-  if not is_in_match and training_settings.force_stage > 1 then
-    local _stage = stage_map[training_settings.force_stage]
+  if not gamestate.is_in_match and training_settings.force_stage > 1 then
+    local stage = stage_map[training_settings.force_stage]
     if training_settings.force_stage == 2 then
-      local _n = 3 + math.random(0, #stage_list - 3)
-      _stage = stage_map[_n]
+      local n = 3 + math.random(0, #stage_list - 3)
+      stage = stage_map[n]
     end
-    memory.writebyte(addresses.global.stage, _stage)
+    memory.writebyte(addresses.global.stage, stage)
   end
 
 
-  if has_match_just_started then
+  if gamestate.has_match_just_started then
     emu.speedmode("normal")
     character_select_sequence_state = 0
     selecting_random_character = false
-  elseif not is_in_match then
-    if _do_fast_forward and _p1_character_select_state > 4 and _p2_character_select_state > 4 then
+  elseif not gamestate.is_in_match then
+    if do_fast_forward and p1_character_select_state > 4 and p2_character_select_state > 4 then
       emu.speedmode("turbo")
-    elseif character_select_sequence_state == 0 and (_p1_character_select_state < 5 or _p2_character_select_state < 5) then
+    elseif character_select_sequence_state == 0 and (p1_character_select_state < 5 or p2_character_select_state < 5) then
       emu.speedmode("normal")
       character_select_sequence_state = 1
     end
@@ -445,20 +454,32 @@ end
 
 local character_select_text_display_time = 120
 local character_select_text_fade_time = 30
-function draw_character_select()
-  if _p1_character_select_state <= 2 or _p2_character_select_state <= 2 then
-    local _elapsed = frame_number - character_select_start_frame
-    if _elapsed <= character_select_text_display_time + character_select_text_fade_time then
-      local _opacity = 1
-      if _elapsed > character_select_text_display_time then
-        _opacity = 1 - ((_elapsed - character_select_text_display_time) / character_select_text_fade_time)
+local function draw_character_select()
+  if p1_character_select_state <= 2 or p2_character_select_state <= 2 then
+    local elapsed = gamestate.frame_number - character_select_start_frame
+    if elapsed <= character_select_text_display_time + character_select_text_fade_time then
+      local opacity = 1
+      if elapsed > character_select_text_display_time then
+        opacity = 1 - ((elapsed - character_select_text_display_time) / character_select_text_fade_time)
       end
-      local _w,_h = get_text_dimensions("character_select_line_1")
-      local _padding_x = 0
-      local _padding_y = 0
-      render_text(_padding_x, _padding_y, "character_select_line_1", nil, nil, nil, _opacity)
-      render_text(_padding_x, _padding_y + _h, "character_select_line_2", nil, nil, nil, _opacity)
-      render_text(_padding_x, _padding_y + _h + _h, "character_select_line_3", nil, nil, nil, _opacity)
+      local w,h = get_text_dimensions("character_select_line_1")
+      local padding_x = 0
+      local padding_y = 0
+      render_text(padding_x, padding_y, "character_select_line_1", nil, nil, nil, opacity)
+      render_text(padding_x, padding_y + h, "character_select_line_2", nil, nil, nil, opacity)
+      render_text(padding_x, padding_y + h + h, "character_select_line_3", nil, nil, nil, opacity)
     end
   end
 end
+
+return {
+  draw_character_select = draw_character_select,
+  start_character_select_sequence = start_character_select_sequence,
+  update_character_select = update_character_select,
+  select_gill = select_gill,
+  select_shingouki = select_shingouki,
+  start_select_random_character = start_select_random_character,
+  stop_select_random_character = stop_select_random_character,
+  select_random_character = select_random_character,
+  force_select_character = force_select_character
+}

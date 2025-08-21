@@ -1,13 +1,69 @@
-data_path = "data/"..rom_name.."/"
-framedata_path = data_path.."framedata/"
-frame_data_file_ext = "_framedata.json"
+local frame_data = {}
+
+local stages = {
+  [0] = {name = "gill", left = 80, right = 943},
+  [1] = {name = "alex", left = 80, right = 955},
+  [2] = {name = "ryu", left = 80, right = 939},
+  [3] = {name = "yun", left = 80, right = 951},
+  [4] = {name = "dudley", left = 80, right = 943},
+  [5] = {name = "necro", left = 80, right = 943},
+  [6] = {name = "hugo", left = 76, right = 945},
+  [7] = {name = "ibuki", left = 79, right = 943},
+  [8] = {name = "elena", left = 76, right = 935},
+  [9] = {name = "oro", left = 76, right = 945},
+  [10] = {name = "yang", left = 80, right = 951},
+  [11] = {name = "ken", left = 80, right = 955},
+  [12] = {name = "sean", left = 76, right = 945},
+  [13] = {name = "urien", left = 76, right = 951},
+  [14] = {name = "gouki", left = 80, right = 943},
+  [15] = {name = "shingouki", left = 80, right = 943},
+  [16] = {name = "chunli", left = 70, right = 951},
+  [17] = {name = "makoto", left = 84, right = 945},
+  [18] = {name = "dudley", left = 80, right = 943},
+  [19] = {name = "twelve", left = 80, right = 943},
+  [20] = {name = "remy", left = 82, right = 943}
+}
+
+local slow_jumpers =
+{
+  "alex",
+  "necro",
+  "urien",
+  "remy",
+  "twelve",
+  "oro"
+}
+
+local really_slow_jumpers =
+{
+  "q",
+  "hugo"
+}
+
+local function is_slow_jumper(str)
+  for i = 1, #slow_jumpers do
+    if str == slow_jumpers[i] then
+      return true
+    end
+  end
+  return false
+end
+
+local function is_really_slow_jumper(str)
+  for i = 1, #really_slow_jumpers do
+    if str == really_slow_jumpers[i] then
+      return true
+    end
+  end
+  return false
+end
 
 
 -- # Character specific stuff
-character_specific = {}
-for i = 1, #characters do
-  character_specific[characters[i]] = {}
-  character_specific[characters[i]].timed_sa = {false, false, false}
+local character_specific = {}
+for i = 1, #Characters do
+  character_specific[Characters[i]] = {}
+  character_specific[Characters[i]].timed_sa = {false, false, false}
 end
 -- ## Character approximate dimensions
 character_specific.alex.half_width = 45
@@ -134,126 +190,91 @@ character_specific.twelve.timed_sa[3] = true;
 character_specific.yang.timed_sa[3] = true;
 character_specific.yun.timed_sa[3] = true;
 
--- ## Frame data meta
-frame_data_meta = {}
-for _, _char in pairs(frame_data_keys) do
-  frame_data_meta[_char] = {}
-end
-framedata_meta_file_path = data_path.."framedata_meta"
-require(framedata_meta_file_path)
 
--- # Frame data
-frame_data = {}
-
-stages =
-{
-[0] = {name = "gill", left = 80, right = 943},
-[1] = {name = "alex", left = 80, right = 955},
-[2] = {name = "ryu", left = 80, right = 939},
-[3] = {name = "yun", left = 80, right = 951},
-[4] = {name = "dudley", left = 80, right = 943},
-[5] = {name = "necro", left = 80, right = 943},
-[6] = {name = "hugo", left = 76, right = 945},
-[7] = {name = "ibuki", left = 79, right = 943},
-[8] = {name = "elena", left = 76, right = 935},
-[9] = {name = "oro", left = 76, right = 945},
-[10] = {name = "yang", left = 80, right = 951},
-[11] = {name = "ken", left = 80, right = 955},
-[12] = {name = "sean", left = 76, right = 945},
-[13] = {name = "urien", left = 76, right = 951},
-[14] = {name = "gouki", left = 80, right = 943},
-[15] = {name = "shingouki", left = 80, right = 943},
-[16] = {name = "chunli", left = 70, right = 951},
-[17] = {name = "makoto", left = 84, right = 945},
-[18] = {name = "dudley", left = 80, right = 943},
-[19] = {name = "twelve", left = 80, right = 943},
-[20] = {name = "remy", left = 82, right = 943}
-}
-
-function test_collision(_defender_x, _defender_y, _defender_flip_x, _defender_boxes, _attacker_x, _attacker_y, _attacker_flip_x, _attacker_boxes, _box_type_matches, _defender_hurtbox_dilation_x, _defender_hurtbox_dilation_y, _attacker_hitbox_dilation_x, _attacker_hitbox_dilation_y)
+local function test_collision(defender_x, defender_y, defender_flip_x, defender_boxes, attacker_x, attacker_y, attacker_flip_x, attacker_boxes, box_type_matches, defender_hurtbox_dilation_x, defender_hurtbox_dilation_y, attacker_hitbox_dilation_x, attacker_hitbox_dilation_y)
 to_draw_collision = {}
-  local _debug = false
-  if (_defender_hurtbox_dilation_x == nil) then _defender_hurtbox_dilation_x = 0 end
-  if (_defender_hurtbox_dilation_y == nil) then _defender_hurtbox_dilation_y = 0 end
-  if (_attacker_hitbox_dilation_x == nil) then _attacker_hitbox_dilation_x = 0 end
-  if (_attacker_hitbox_dilation_y == nil) then _attacker_hitbox_dilation_y = 0 end
-  if (_test_throws == nil) then _test_throws = false end
-  if (_box_type_matches == nil) then _box_type_matches = {{{"vulnerability", "ext. vulnerability"}, {"attack"}}} end
+  local debug = false
+  if (defender_hurtbox_dilation_x == nil) then defender_hurtbox_dilation_x = 0 end
+  if (defender_hurtbox_dilation_y == nil) then defender_hurtbox_dilation_y = 0 end
+  if (attacker_hitbox_dilation_x == nil) then attacker_hitbox_dilation_x = 0 end
+  if (attacker_hitbox_dilation_y == nil) then attacker_hitbox_dilation_y = 0 end
+  if (test_throws == nil) then test_throws = false end
+  if (box_type_matches == nil) then box_type_matches = {{{"vulnerability", "ext. vulnerability"}, {"attack"}}} end
 
-  if (#_box_type_matches == 0 ) then return false end
-  if (#_defender_boxes == 0 ) then return false end
-  if (#_attacker_boxes == 0 ) then return false end
-  if _debug then print(string.format("   %d defender boxes, %d attacker boxes", #_defender_boxes, #_attacker_boxes)) end
-  for k = 1, #_box_type_matches do
-    local _box_type_match = _box_type_matches[k]
-    for i = 1, #_defender_boxes do
-      local _d_box = format_box(_defender_boxes[i])
+  if (#box_type_matches == 0 ) then return false end
+  if (#defender_boxes == 0 ) then return false end
+  if (#attacker_boxes == 0 ) then return false end
+  if debug then print(string.format("   %d defender boxes, %d attacker boxes", #defender_boxes, #attacker_boxes)) end
+  for k = 1, #box_type_matches do
+    local box_type_match = box_type_matches[k]
+    for i = 1, #defender_boxes do
+      local d_box = format_box(defender_boxes[i])
 
-      --print("d ".._d_box.type)
+      --print("d "..d_box.type)
 
-      local _defender_box_match = false
-      for _key, _value in ipairs(_box_type_match[1]) do
-        if _value == _d_box.type then
-          _defender_box_match = true
+      local defender_box_match = false
+      for _, value in ipairs(box_type_match[1]) do
+        if value == d_box.type then
+          defender_box_match = true
           break
         end
       end
-      if _defender_box_match then
+      if defender_box_match then
         -- compute defender box bounds
-        local _d_l
-        if _defender_flip_x == 0 then
-          _d_l = _defender_x + _d_box.left
+        local d_l
+        if defender_flip_x == 0 then
+          d_l = defender_x + d_box.left
         else
-          _d_l = _defender_x - _d_box.left - _d_box.width
+          d_l = defender_x - d_box.left - d_box.width
         end
-        local _d_r = _d_l + _d_box.width
-        local _d_b = _defender_y + _d_box.bottom
-        local _d_t = _d_b + _d_box.height
+        local d_r = d_l + d_box.width
+        local d_b = defender_y + d_box.bottom
+        local d_t = d_b + d_box.height
 
-        _d_l = _d_l - _defender_hurtbox_dilation_x
-        _d_r = _d_r + _defender_hurtbox_dilation_x
-        _d_b = _d_b - _defender_hurtbox_dilation_y
-        _d_t = _d_t + _defender_hurtbox_dilation_y
+        d_l = d_l - defender_hurtbox_dilation_x
+        d_r = d_r + defender_hurtbox_dilation_x
+        d_b = d_b - defender_hurtbox_dilation_y
+        d_t = d_t + defender_hurtbox_dilation_y
 
-        for j = 1, #_attacker_boxes do
-          local _a_box = format_box(_attacker_boxes[j])
+        for j = 1, #attacker_boxes do
+          local a_box = format_box(attacker_boxes[j])
 
-          local _attacker_box_match = false
-          for _key, _value in ipairs(_box_type_match[2]) do
-            if _value == _a_box.type then
-              _attacker_box_match = true
+          local attacker_box_match = false
+          for _, value in ipairs(box_type_match[2]) do
+            if value == a_box.type then
+              attacker_box_match = true
               break
             end
           end
 
-          if _attacker_box_match then
+          if attacker_box_match then
             -- compute attacker box bounds
-            local _a_l
-            if _attacker_flip_x == 0 then
-              _a_l = _attacker_x + _a_box.left
+            local a_l
+            if attacker_flip_x == 0 then
+              a_l = attacker_x + a_box.left
             else
-              _a_l = _attacker_x - _a_box.left - _a_box.width
+              a_l = attacker_x - a_box.left - a_box.width
             end
-            local _a_r = _a_l + _a_box.width
-            local _a_b = _attacker_y + _a_box.bottom
-            local _a_t = _a_b + _a_box.height
+            local a_r = a_l + a_box.width
+            local a_b = attacker_y + a_box.bottom
+            local a_t = a_b + a_box.height
 
-            _a_l = _a_l - _attacker_hitbox_dilation_x
-            _a_r = _a_r + _attacker_hitbox_dilation_x
-            _a_b = _a_b - _attacker_hitbox_dilation_y
-            _a_t = _a_t + _attacker_hitbox_dilation_y
-            -- table.insert(to_draw_collision, {_d_l, _d_r, _d_b, _d_t})
-            -- table.insert(to_draw_collision, {_a_l, _a_r, _a_b, _a_t})
---             print(frame_number, _defender_x, _d_box.left, _d_box.width, _d_box.bottom, _d_box.height)
+            a_l = a_l - attacker_hitbox_dilation_x
+            a_r = a_r + attacker_hitbox_dilation_x
+            a_b = a_b - attacker_hitbox_dilation_y
+            a_t = a_t + attacker_hitbox_dilation_y
+            -- table.insert(to_draw_collision, {d_l, d_r, d_b, d_t})
+            -- table.insert(to_draw_collision, {a_l, a_r, a_b, a_t})
+--             print(gamestate.frame_number, defender_x, d_box.left, d_box.width, d_box.bottom, d_box.height)
 
-            if _debug then print(string.format("   testing (%d,%d,%d,%d)(%s) against (%d,%d,%d,%d)(%s)", _d_t, _d_r, _d_b, _d_l, _d_box.type, _a_t, _a_r, _a_b, _a_l, _a_box.type)) end
+            if debug then print(string.format("   testing (%d,%d,%d,%d)(%s) against (%d,%d,%d,%d)(%s)", d_t, d_r, d_b, d_l, d_box.type, a_t, a_r, a_b, a_l, a_box.type)) end
 
             -- check collision
             if
-            (_a_l < _d_r) and
-            (_a_r > _d_l) and
-            (_a_b < _d_t) and
-            (_a_t > _d_b)
+            (a_l < d_r) and
+            (a_r > d_l) and
+            (a_b < d_t) and
+            (a_t > d_b)
             then
               return true
             end
@@ -267,88 +288,72 @@ to_draw_collision = {}
 end
 
 local max_wakeup_time = 100
-function get_wakeup_time(_char, _anim, _frame)
-  if not frame_data[_char] or not frame_data[_char][_anim] then
+local function get_wakeup_time(char, anim, frame)
+  if not frame_data[char] or not frame_data[char][anim] then
     return 0
   end
   local i = 1
-  local _wakeup_time = 0
-  local _frame_to_check = _frame + 1
-  local _frame_data = frame_data[_char][_anim]
-  local _frames = _frame_data.frames
-  local _used_next_anim = false
+  local wakeup_time = 0
+  local frame_to_check = frame + 1
+  local fdata = frame_data[char][anim]
+  local frames = fdata.frames
+  local used_next_anim = false
   while i <= max_wakeup_time do
-    if _frames then
-      _used_next_anim = false
-      if _frames[_frame_to_check].next_anim then
-        local _a = _frames[_frame_to_check].next_anim[1][1]
-        local _f = _frames[_frame_to_check].next_anim[1][2]
-        _frame_data = frame_data[_char][_a]
-        if _frame_data then
-          _frames = _frame_data.frames
-          _frame_to_check = _f + 1
-          _used_next_anim = true
+    if frames then
+      used_next_anim = false
+      if frames[frame_to_check].next_anim then
+        local a = frames[frame_to_check].next_anim[1][1]
+        local f = frames[frame_to_check].next_anim[1][2]
+        fdata = frame_data[char][a]
+        if fdata then
+          frames = fdata.frames
+          frame_to_check = f + 1
+          used_next_anim = true
         else
-          return _wakeup_time
+          return wakeup_time
         end
       end
 
-      _wakeup_time = _wakeup_time + 1
+      wakeup_time = wakeup_time + 1
 
-      if not _used_next_anim then
+      if not used_next_anim then
         i = i + 1
-        _frame_to_check = _frame_to_check + 1
+        frame_to_check = frame_to_check + 1
       end
 
-      if _frames and _frames[_frame_to_check].wakeup then
-        return _wakeup_time
+      if frames and frames[frame_to_check].wakeup then
+        return wakeup_time
       end
     end
   end
-  return _wakeup_time
+  return wakeup_time
 end
 
-function get_move_sequence_by_name(_char, _name, _button)
-  local _sequence = {}
-  for _k, _move in pairs(move_list[_char]) do
-    if _move.name == _name then
-      _sequence = deepcopy(_move.input)
-      break
-    end
-  end
-  local i = 1
-  while i <= #_sequence do
-    local j = 1
-    while j <= #_sequence[i] do
-      if _sequence[i][j] == "button" then
-        if _button == "EXP"  then
-          table.remove(_sequence[i], j)
-          table.insert(_sequence[i], j, "LP")
-          table.insert(_sequence[i], j, "MP")
-        elseif _button == "EXK"  then
-          table.remove(_sequence[i], j)
-          table.insert(_sequence[i], j, "LK")
-          table.insert(_sequence[i], j, "MK")
-        else
-          table.remove(_sequence[i], j)
-          table.insert(_sequence[i], j, _button)
-        end
-      end
-      j = j + 1
-    end
-    i = i + 1
-  end
-  return _sequence
-end
-
-function find_frame_data_by_name(_char, _name)
-  local _frame_data = frame_data[_char]
-  if _frame_data then
-    for _k, _data in pairs(_frame_data) do
-      if _data.name == _name then
-        return _k, _data
+local function find_frame_data_by_name(char, name)
+  local fdata = frame_data[char]
+  if fdata then
+    for k, data in pairs(fdata) do
+      if data.name == name then
+        return k, data
       end
     end
   end
   return nil
 end
+
+local function find_move_frame_data(char_str, animation_id)
+  if not frame_data[char_str] then return nil end
+  return frame_data[char_str][animation_id]
+end
+
+return {
+  frame_data = frame_data,
+  stages = stages,
+  character_specific = character_specific,
+  is_slow_jumper = is_slow_jumper,
+  is_really_slow_jumper = is_really_slow_jumper,
+  test_collision = test_collision,
+  get_wakeup_time = get_wakeup_time,
+  find_frame_data_by_name = find_frame_data_by_name,
+  find_move_frame_data = find_move_frame_data
+}

@@ -15,26 +15,26 @@ distance_display_reference_point =
 -- # api
 
 -- push a persistent set of hitboxes to be drawn on the screen each frame
-function print_hitboxes(_pos_x, _pos_y, _flip_x, _boxes, _filter, _dilation)
+function print_hitboxes(_pos_x, _pos_y, flip_x, boxes, filter, dilation)
   local _g = {
     type = "hitboxes",
     x = _pos_x,
     y = _pos_y,
-    flip_x = _flip_x,
-    boxes = _boxes,
-    filter = _filter,
-    dilation = _dilation
+    flip_x = flip_x,
+    boxes = boxes,
+    filter = filter,
+    dilation = dilation
   }
   table.insert(printed_geometry, _g)
 end
 
 -- push a persistent point to be drawn on the screen each frame
-function print_point(_pos_x, _pos_y, _color)
+function print_point(_pos_x, _pos_y, color)
   local _g = {
     type = "point",
     x = _pos_x,
     y = _pos_y,
-    color = _color
+    color = color
   }
   table.insert(printed_geometry, _g)
 end
@@ -58,247 +58,247 @@ function display_draw_printed_geometry()
 end
 
 
-function display_draw_life(_player_object)
-  local _x = 0
-  local _y = 20
+function display_draw_life(player_object)
+  local x = 0
+  local y = 20
 
-  local _t = string.format("%d/160", _player_object.life)
+  local _t = string.format("%d/160", player_object.life)
 
-  if _player_object.id == 1 then
-    _x = 13
-  elseif _player_object.id == 2 then
-    _x = screen_width - 11 - get_text_width(_t)
+  if player_object.id == 1 then
+    x = 13
+  elseif player_object.id == 2 then
+    x = screen_width - 11 - get_text_width(_t)
   end
 
-  gui.text(_x, _y, _t, 0xFFFB63FF)
+  gui.text(x, y, _t, 0xFFFB63FF)
 end
 
 
-function display_draw_meter(_player_object)
-  local _x = 0
-  local _y = 214
+function display_draw_meter(player_object)
+  local x = 0
+  local y = 214
 
-  local _gauge = _player_object.meter_gauge
+  local _gauge = player_object.meter_gauge
 
-  if _player_object.meter_count == _player_object.max_meter_count then
-    _gauge = _player_object.max_meter_gauge
+  if player_object.meter_count == player_object.max_meter_count then
+    _gauge = player_object.max_meter_gauge
   end
 
-  local _t = string.format("%d/%d", _gauge, _player_object.max_meter_gauge)
+  local _t = string.format("%d/%d", _gauge, player_object.max_meter_gauge)
 
-  if _player_object.id == 1 then
-    _x = 53
-  elseif _player_object.id == 2 then
-    _x = screen_width - 51 - get_text_width(_t)
+  if player_object.id == 1 then
+    x = 53
+  elseif player_object.id == 2 then
+    x = screen_width - 51 - get_text_width(_t)
   end
 
-  gui.text(_x, _y, _t, 0x00FFCEFF, 0x001433FF)
+  gui.text(x, y, _t, 0x00FFCEFF, 0x001433FF)
 end
 
 
-function display_draw_stun_gauge(_player_object)
-  local _x = 0
-  local _y = 28
+function display_draw_stun_gauge(player_object)
+  local x = 0
+  local y = 28
 
-  local _t = string.format("%d/%d", math.floor(_player_object.stun_bar), _player_object.stun_max)
+  local _t = string.format("%d/%d", math.floor(player_object.stun_bar), player_object.stun_max)
 
-  if _player_object.id == 1 then
-    _x = 167 - _player_object.stun_max + 3
-  elseif _player_object.id == 2 then
-    _x = 216 + _player_object.stun_max - get_text_width(_t) - 1
+  if player_object.id == 1 then
+    x = 167 - player_object.stun_max + 3
+  elseif player_object.id == 2 then
+    x = 216 + player_object.stun_max - get_text_width(_t) - 1
   end
 
-  gui.text(_x, _y, _t, 0xe60000FF, 0x001433FF)
+  gui.text(x, y, _t, 0xe60000FF, 0x001433FF)
 end
 
-function display_draw_bonuses(_player_object)
-  local _x = 0
-  local _y = 4
+function display_draw_bonuses(player_object)
+  local x = 0
+  local y = 4
   local _padding = 4
   local _spacing = 4
-  local _lang = lang_code[training_settings.language]
-  if _player_object.id == 1 then
-    _x = _padding
-  elseif _player_object.id == 2 then
-    _x = screen_width - _padding
+  local lang = lang_code[training_settings.language]
+  if player_object.id == 1 then
+    x = _padding
+  elseif player_object.id == 2 then
+    x = screen_width - _padding
   end
-  if _player_object.damage_bonus > 0 then
-    -- gui.text(_x, _y, _t, 0xFF7184FF, 0x392031FF)
-    local _text = {"+", _player_object.damage_bonus, "bonus_damage"}
-    local _w, _h = 0, 0
+  if player_object.damage_bonus > 0 then
+    -- gui.text(x, y, _t, 0xFF7184FF, 0x392031FF)
+    local _text = {"+", player_object.damage_bonus, "bonus_damage"}
+    local _w, h = 0, 0
     if _lang == "en" then
-      _w, _h = get_text_dimensions_multiple(_text)
+      _w, h = get_text_dimensions_multiple(_text)
     elseif _lang == "jp" then
-      _w, _h = get_text_dimensions_multiple(_text, "jp", "8")
+      _w, h = get_text_dimensions_multiple(_text, "jp", "8")
     end
-    if _player_object.id == 2 then
-      _x = _x - _w - _spacing
+    if player_object.id == 2 then
+      x = x - _w - _spacing
     end
     if _lang == "en" then
-      render_text_multiple(_x, _y, _text, "en", nil, 0xFF7184FF)
+      render_text_multiple(x, y, _text, "en", nil, 0xFF7184FF)
     elseif _lang == "jp" then
-      render_text_multiple(_x, _y, _text, "jp", "8", 0xFF7184FF)
+      render_text_multiple(x, y, _text, "jp", "8", 0xFF7184FF)
     end
-    if _player_object.id == 1 then
-      _x = _x + _w + _spacing
+    if player_object.id == 1 then
+      x = x + _w + _spacing
     end
   end
 
-  if _player_object.defense_bonus > 0 then
-    local _text = {"+", _player_object.defense_bonus, "bonus_defense"}
-    local _w, _h = 0, 0
+  if player_object.defense_bonus > 0 then
+    local _text = {"+", player_object.defense_bonus, "bonus_defense"}
+    local _w, h = 0, 0
     if _lang == "en" then
-      _w, _h = get_text_dimensions_multiple(_text)
+      _w, h = get_text_dimensions_multiple(_text)
     elseif _lang == "jp" then
-      _w, _h = get_text_dimensions_multiple(_text, "jp", "8")
+      _w, h = get_text_dimensions_multiple(_text, "jp", "8")
     end
-    if _player_object.id == 2 then
-      _x = _x - _w - _spacing
+    if player_object.id == 2 then
+      x = x - _w - _spacing
     end
     if _lang == "en" then
-      render_text_multiple(_x, _y, _text, "en", nil, 0xD6E3EFFF)
+      render_text_multiple(x, y, _text, "en", nil, 0xD6E3EFFF)
     elseif _lang == "jp" then
-      render_text_multiple(_x, _y, _text, "jp", "8", 0xD6E3EFFF)
+      render_text_multiple(x, y, _text, "jp", "8", 0xD6E3EFFF)
     end
-    if _player_object.id == 1 then
-      _x = _x + _w + _spacing
+    if player_object.id == 1 then
+      x = x + _w + _spacing
     end  
   end
 
-  if _player_object.stun_bonus > 0 then
-    local _text = {"+", _player_object.stun_bonus, "bonus_stun"}
-    local _w, _h = 0, 0
+  if player_object.stun_bonus > 0 then
+    local _text = {"+", player_object.stun_bonus, "bonus_stun"}
+    local _w, h = 0, 0
     if _lang == "en" then
-      _w, _h = get_text_dimensions_multiple(_text)
+      _w, h = get_text_dimensions_multiple(_text)
     elseif _lang == "jp" then
-      _w, _h = get_text_dimensions_multiple(_text, "jp", "8")
+      _w, h = get_text_dimensions_multiple(_text, "jp", "8")
     end
-    if _player_object.id == 2 then
-      _x = _x - _w - _spacing
+    if player_object.id == 2 then
+      x = x - _w - _spacing
     end
     if _lang == "en" then
-      render_text_multiple(_x, _y, _text, "en", nil, 0xD6E3EFFF)
+      render_text_multiple(x, y, _text, "en", nil, 0xD6E3EFFF)
     elseif _lang == "jp" then
-      render_text_multiple(_x, _y, _text, "jp", "8", 0xD6E3EFFF)
+      render_text_multiple(x, y, _text, "jp", "8", 0xD6E3EFFF)
     end
-    if _player_object.id == 1 then
-      _x = _x + _w + _spacing
+    if player_object.id == 1 then
+      x = x + _w + _spacing
     end
   end
 
 end
 
-function draw_horizontal_text_segment(_p1_x, _p2_x, _y, _text, _line_color, _edges_height)
+function draw_horizontal_text_segment(p1_x, p2_x, y, _text, line_color, edges_height)
 
-  _edges_height = _edges_height or 3
+  edges_height = edges_height or 3
   local _half_distance_str_width = get_text_width(_text) * 0.5
 
-  local _center_x = (_p1_x + _p2_x) * 0.5
-  draw_horizontal_line(math.min(_p1_x, _p2_x), _center_x - _half_distance_str_width - 3, _y, _line_color, 1)
-  draw_horizontal_line(_center_x + _half_distance_str_width + 3, math.max(_p1_x, _p2_x), _y, _line_color, 1)
-  gui.text(_center_x - _half_distance_str_width, _y - 3, _text, text_default_color, text_default_border_color)
+  local center_x = (p1_x + p2_x) * 0.5
+  draw_horizontal_line(math.min(p1_x, p2_x), center_x - _half_distance_str_width - 3, y, line_color, 1)
+  draw_horizontal_line(center_x + _half_distance_str_width + 3, math.max(p1_x, p2_x), y, line_color, 1)
+  gui.text(center_x - _half_distance_str_width, y - 3, _text, text_default_color, text_default_border_color)
 
-  if _edges_height > 0 then
-    draw_vertical_line(_p1_x, _y - _edges_height, _y + _edges_height, _line_color, 1)
-    draw_vertical_line(_p2_x, _y - _edges_height, _y + _edges_height, _line_color, 1)
+  if edges_height > 0 then
+    draw_vertical_line(p1_x, y - edges_height, y + edges_height, line_color, 1)
+    draw_vertical_line(p2_x, y - edges_height, y + edges_height, line_color, 1)
   end
 end  
 
-function display_draw_distances(_p1_object, _p2_object, _mid_distance_height, _p1_reference_point, _p2_reference_point)
+function display_draw_distances(p1_object, p2_object, mid_distance_height, p1_reference_point, p2_reference_point)
 
-  function _find_closest_box_at_height(_player_obj, _height, _box_types)
+  function find_closest_box_at_height(player_obj, _height, box_types)
 
-    local _px = _player_obj.pos_x
-    local _py = _player_obj.pos_y
+    local _px = player_obj.pos_x
+    local _py = player_obj.pos_y
 
-    local _left, _right = _px, _px
+    local left, _right = _px, _px
 
-    if _box_types == nil then
-      return false, _left, _right
+    if box_types == nil then
+      return false, left, _right
     end
 
     local _has_boxes = false
-    for __, _box in ipairs(_player_obj.boxes) do
-      _box = format_box(_box)
-      if _box_types[_box.type] then
-        local _l, _r
-        if _player_obj.flip_x == 0 then
-          _l = _px + _box.left
+    for __, box in ipairs(player_obj.boxes) do
+      box = format_box(box)
+      if box_types[box.type] then
+        local l, _r
+        if player_obj.flip_x == 0 then
+          l = _px + box.left
         else
-          _l = _px - _box.left - _box.width
+          l = _px - box.left - box.width
         end
-        local _r = _l + _box.width
-        local _b = _py + _box.bottom
-        local _t = _b + _box.height
+        local _r = l + box.width
+        local b = _py + box.bottom
+        local _t = b + box.height
 
-        if _height >= _b and _height <= _t then
+        if _height >= b and _height <= _t then
           _has_boxes = true
-          _left = math.min(_left, _l)
+          left = math.min(left, l)
           _right = math.max(_right, _r)
         end
       end
     end
 
-    return _has_boxes, _left, _right
+    return _has_boxes, left, _right
   end
 
-  function _get_screen_line_between_boxes(_box1_l, _box1_r, _box2_l, _box2_r)
+  function _get_screen_line_between_boxes(box1_l, box1_r, box2_l, box2_r)
     if not (
-      (_box1_l >= _box2_r) or
-      (_box1_r <= _box2_l)
+      (box1_l >= box2_r) or
+      (box1_r <= box2_l)
     ) then
       return false
     end
 
-    if _box1_l < _box2_l then
-      return true, game_to_screen_space_x(_box1_r), game_to_screen_space_x(_box2_l)
+    if box1_l < box2_l then
+      return true, game_to_screen_space_x(box1_r), game_to_screen_space_x(box2_l)
     else
-      return true, game_to_screen_space_x(_box2_r), game_to_screen_space_x(_box1_l)
+      return true, game_to_screen_space_x(box2_r), game_to_screen_space_x(box1_l)
     end
   end
 
-  function _display_distance(_p1_object, _p2_object, _height, _box_types, _p1_reference_point, _p2_reference_point, _color)
-    local _y = math.min(_p1_object.pos_y + _height, _p2_object.pos_y + _height)
-    local _p1_l, _p1_r, _p2_l, _p2_r
-    local _p1_result, _p2_result = false, false
-    if _p1_reference_point == 2 then
-      _p1_result, _p1_l, _p1_r = _find_closest_box_at_height(_p1_object, _y, _box_types)
+  function display_distance(p1_object, p2_object, _height, box_types, p1_reference_point, p2_reference_point, color)
+    local y = math.min(p1_object.pos_y + _height, p2_object.pos_y + _height)
+    local p1_l, p1_r, p2_l, p2_r
+    local p1_result, p2_result = false, false
+    if p1_reference_point == 2 then
+      p1_result, p1_l, p1_r = find_closest_box_at_height(p1_object, y, box_types)
     end
-    if not _p1_result then
-      _p1_l, _p1_r = _p1_object.pos_x, _p1_object.pos_x
+    if not p1_result then
+      p1_l, p1_r = p1_object.pos_x, p1_object.pos_x
     end
-    if _p2_reference_point == 2 then
-      _p2_result, _p2_l, _p2_r = _find_closest_box_at_height(_p2_object, _y, _box_types)
+    if p2_reference_point == 2 then
+      p2_result, p2_l, p2_r = find_closest_box_at_height(p2_object, y, box_types)
     end 
-    if not _p2_result then
-      _p2_l, _p2_r = _p2_object.pos_x, _p2_object.pos_x
+    if not p2_result then
+      p2_l, p2_r = p2_object.pos_x, p2_object.pos_x
     end
 
-    local _line_result, _screen_l, _screen_r = _get_screen_line_between_boxes(_p1_l, _p1_r, _p2_l, _p2_r)
+    local line_result, _screen_l, _screen_r = _get_screen_line_between_boxes(p1_l, p1_r, p2_l, p2_r)
 
-    if _line_result then
-      local _screen_y = game_to_screen_space_y(_y)
+    if line_result then
+      local _screen_y = game_to_screen_space_y(y)
       local _str = string.format("%d", math.abs(_screen_r - _screen_l))
-      draw_horizontal_text_segment(_screen_l, _screen_r, _screen_y, _str, _color)
+      draw_horizontal_text_segment(_screen_l, _screen_r, _screen_y, _str, color)
     end
   end
 
   -- throw
-  _display_distance(_p1_object, _p2_object, 2, { throwable = true }, _p1_reference_point, _p2_reference_point, 0x08CF00FF)
+  display_distance(p1_object, p2_object, 2, { throwable = true }, p1_reference_point, p2_reference_point, 0x08CF00FF)
 
   -- low and mid
   local _hurtbox_types = {}
   _hurtbox_types["vulnerability"] = true
   _hurtbox_types["ext. vulnerability"] = true
-  _display_distance(_p1_object, _p2_object, 10, _hurtbox_types, _p1_reference_point, _p2_reference_point, 0x00E7FFFF)
-  _display_distance(_p1_object, _p2_object, _mid_distance_height, _hurtbox_types, _p1_reference_point, _p2_reference_point, 0x00E7FFFF)
+  display_distance(p1_object, p2_object, 10, _hurtbox_types, p1_reference_point, p2_reference_point, 0x00E7FFFF)
+  display_distance(p1_object, p2_object, mid_distance_height, _hurtbox_types, p1_reference_point, p2_reference_point, 0x00E7FFFF)
 
   -- player positions
-  local _line_color = 0xFFFF63FF
-  local _p1_screen_x, _p1_screen_y = game_to_screen_space(_p1_object.pos_x, _p1_object.pos_y)
-  local _p2_screen_x, _p2_screen_y = game_to_screen_space(_p2_object.pos_x, _p2_object.pos_y)
-  draw_point(_p1_screen_x, _p1_screen_y, _line_color)
-  draw_point(_p2_screen_x, _p2_screen_y, _line_color)
-  gui.text(_p1_screen_x + 3, _p1_screen_y + 2, string.format("%d:%d", _p1_object.pos_x, _p1_object.pos_y), text_default_color, text_default_border_color)
-  gui.text(_p2_screen_x + 3, _p2_screen_y + 2, string.format("%d:%d", _p2_object.pos_x, _p2_object.pos_y), text_default_color, text_default_border_color)
+  local line_color = 0xFFFF63FF
+  local p1_screen_x, p1_screen_y = game_to_screen_space(p1_object.pos_x, p1_object.pos_y)
+  local p2_screen_x, p2_screen_y = game_to_screen_space(p2_object.pos_x, p2_object.pos_y)
+  draw_point(p1_screen_x, p1_screen_y, line_color)
+  draw_point(p2_screen_x, p2_screen_y, line_color)
+  gui.text(p1_screen_x + 3, p1_screen_y + 2, string.format("%d:%d", p1_object.pos_x, p1_object.pos_y), text_default_color, text_default_border_color)
+  gui.text(p2_screen_x + 3, p2_screen_y + 2, string.format("%d:%d", p2_object.pos_x, p2_object.pos_y), text_default_color, text_default_border_color)
 end

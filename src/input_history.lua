@@ -1,109 +1,111 @@
+local gamestate = require("src/gamestate")
+
 input_history_size_max = 15
 input_history = {
   {},
   {}
 }
 
-function make_input_history_entry(_prefix, _input)
-  local _up = _input[_prefix.." Up"]
-  local _down = _input[_prefix.." Down"]
-  local _left = _input[_prefix.." Left"]
-  local _right = _input[_prefix.." Right"]
-  local _direction = 5
-  if _down then
-    if _left then _direction = 1
-    elseif _right then _direction = 3
-    else _direction = 2 end
-  elseif _up then
-    if _left then _direction = 7
-    elseif _right then _direction = 9
-    else _direction = 8 end
+function make_input_history_entry(prefix, input)
+  local up = input[prefix.." Up"]
+  local down = input[prefix.." Down"]
+  local left = input[prefix.." Left"]
+  local right = input[prefix.." Right"]
+  local direction = 5
+  if down then
+    if left then direction = 1
+    elseif right then direction = 3
+    else direction = 2 end
+  elseif up then
+    if left then direction = 7
+    elseif right then direction = 9
+    else direction = 8 end
   else
-    if _left then _direction = 4
-    elseif _right then _direction = 6
-    else _direction = 5 end
+    if left then direction = 4
+    elseif right then direction = 6
+    else direction = 5 end
   end
 
   return {
-    frame = frame_number,
-    direction = _direction,
+    frame = gamestate.frame_number,
+    direction = direction,
     buttons = {
-      _input[_prefix.." Weak Punch"],
-      _input[_prefix.." Medium Punch"],
-      _input[_prefix.." Strong Punch"],
-      _input[_prefix.." Weak Kick"],
-      _input[_prefix.." Medium Kick"],
-      _input[_prefix.." Strong Kick"]
+      input[prefix.." Weak Punch"],
+      input[prefix.." Medium Punch"],
+      input[prefix.." Strong Punch"],
+      input[prefix.." Weak Kick"],
+      input[prefix.." Medium Kick"],
+      input[prefix.." Strong Kick"]
     }
   }
 end
 
-function is_input_history_entry_equal(_a, _b)
-  if (_a.direction ~= _b.direction) then return false end
-  if (_a.buttons[1] ~= _b.buttons[1]) then return false end
-  if (_a.buttons[2] ~= _b.buttons[2]) then return false end
-  if (_a.buttons[3] ~= _b.buttons[3]) then return false end
-  if (_a.buttons[4] ~= _b.buttons[4]) then return false end
-  if (_a.buttons[5] ~= _b.buttons[5]) then return false end
-  if (_a.buttons[6] ~= _b.buttons[6]) then return false end
+function is_input_history_entry_equal(a, b)
+  if (a.direction ~= b.direction) then return false end
+  if (a.buttons[1] ~= b.buttons[1]) then return false end
+  if (a.buttons[2] ~= b.buttons[2]) then return false end
+  if (a.buttons[3] ~= b.buttons[3]) then return false end
+  if (a.buttons[4] ~= b.buttons[4]) then return false end
+  if (a.buttons[5] ~= b.buttons[5]) then return false end
+  if (a.buttons[6] ~= b.buttons[6]) then return false end
   return true
 end
 
-function input_history_update(_history, _prefix, _input)
-  local _entry = make_input_history_entry(_prefix, _input)
+function input_history_update(history, prefix, input)
+  local entry = make_input_history_entry(prefix, input)
 
-  if #_history == 0 then
-    table.insert(_history, _entry)
+  if #history == 0 then
+    table.insert(history, entry)
   else
-    local _last_entry = _history[#_history]
-    if _last_entry.frame ~= frame_number and not is_input_history_entry_equal(_entry, _last_entry) then
-      table.insert(_history, _entry)
+    local last_entry = history[#history]
+    if last_entry.frame ~= gamestate.frame_number and not is_input_history_entry_equal(entry, last_entry) then
+      table.insert(history, entry)
     end
   end
 
-  while #_history > input_history_size_max do
-    table.remove(_history, 1)
+  while #history > input_history_size_max do
+    table.remove(history, 1)
   end
 end
 
-function input_history_draw(_history, _x, _y, _is_right, _style)
-  local _step_y = 10
-  local _j = 0
-  for _i = #_history, 1, -1 do
-    local _current_y = _y + _j * _step_y
-    local _entry = _history[_i]
+function input_history_draw(history, x, y, is_right, style)
+  local step_y = 10
+  local j = 0
+  for i = #history, 1, -1 do
+    local current_y = y + j * step_y
+    local entry = history[i]
 
-    local _sign = 1
-    if _is_right then
-      _sign = -1
+    local sign = 1
+    if is_right then
+      sign = -1
     end
 
-    local _controller_offset = 14 * _sign
-    draw_controller_small(_entry, _x + _controller_offset, _current_y, _is_right, _style)
+    local controller_offset = 14 * sign
+    draw_controller_small(entry, x + controller_offset, current_y, is_right, style)
 
-    local _next_frame = frame_number
-    if _i < #_history then
-      _next_frame = _history[_i + 1].frame
+    local next_frame = gamestate.frame_number
+    if i < #history then
+      next_frame = history[i + 1].frame
     end
-    local _frame_diff = _next_frame - _entry.frame
-    local _text = "-"
-    if (_frame_diff < 999) then
-      _text = string.format("%d", _frame_diff)
+    local frame_diff = next_frame - entry.frame
+    local text = "-"
+    if (frame_diff < 999) then
+      text = string.format("%d", frame_diff)
     end
 
-    local _offset = -11
-    if not _is_right then
-      _offset = 8
-      if (_frame_diff < 999) then
-        if (_frame_diff >= 100) then _offset = 0
-        elseif (_frame_diff >= 10) then _offset = 4 end
+    local offset = -11
+    if not is_right then
+      offset = 8
+      if (frame_diff < 999) then
+        if (frame_diff >= 100) then offset = 0
+        elseif (frame_diff >= 10) then offset = 4 end
       end
     end
 
-    gui.text(_x + _offset, _current_y + 1, _text, 0xd6e3efff, 0x101000ff)
+    gui.text(x + offset, current_y + 1, text, 0xd6e3efff, 0x101000ff)
 
 
-    _j = _j + 1
+    j = j + 1
   end
 end
 
