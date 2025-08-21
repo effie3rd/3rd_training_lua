@@ -192,7 +192,7 @@ character_specific.yun.timed_sa[3] = true;
 
 
 local function test_collision(defender_x, defender_y, defender_flip_x, defender_boxes, attacker_x, attacker_y, attacker_flip_x, attacker_boxes, box_type_matches, defender_hurtbox_dilation_x, defender_hurtbox_dilation_y, attacker_hitbox_dilation_x, attacker_hitbox_dilation_y)
-to_draw_collision = {}
+-- to_draw_collision = {}
   local debug = false
   if (defender_hurtbox_dilation_x == nil) then defender_hurtbox_dilation_x = 0 end
   if (defender_hurtbox_dilation_y == nil) then defender_hurtbox_dilation_y = 0 end

@@ -4,6 +4,7 @@ local move_list = movedata.move_list
 local training = require("src/training")
 local character_select = require("src/character_select")
 local colors = require("src/colors")
+local debug_settings = require("src/debug_settings")
 
 
 initialized = false
@@ -320,7 +321,7 @@ function init_menu()
   )
 
   -- debug_move_menu_item = map_menu_item("debug_move", debug_settings, "debug_move", frame_data, nil)
-  if developer_mode then
+  if debug_settings.developer_mode then
     local debug_settings_menu = {
       header = header_menu_item("debug"),
       entries = {

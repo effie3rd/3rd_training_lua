@@ -1,9 +1,9 @@
 local json = require("src/libs/dkjson")
 local gamestate = require("src/gamestate")
+local debug_settings = require("src/debug_settings")
 
 
-
-local assert_enabled = developer_mode
+local assert_enabled = debug_settings.developer_mode
 function t_assert(condition, msg)
   msg = msg or "Assertion failed"
   if assert_enabled and not condition then

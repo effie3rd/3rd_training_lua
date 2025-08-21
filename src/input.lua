@@ -248,6 +248,11 @@ function clear_p1_buttons(input)
   input["P1 Strong Kick"] = false
 end
 
+function make_counter_attack(char_str, counter_attack_settings)
+  
+end
+
+
 function make_input_sequence(char_str, counter_attack_settings)
 
   --recording

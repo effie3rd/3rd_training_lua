@@ -1,5 +1,7 @@
 local fd = require("src/framedata")
 local fdm = require("src/framedata_meta")
+local debug_settings = require("src/debug_settings")
+
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local get_wakeup_time = fd.get_wakeup_time
@@ -244,6 +246,12 @@ local function reset_player_objects()
   P2.kaiten_2_reset_addr = 0x02026013
   P2.kaiten_2_addr = 0x0202600F
   P2.kaiten_completed_360_addr = 0x02025F1F
+
+  for i, debug_vars in ipairs(debug_settings.player_debug_variables) do
+    for k, v in pairs(debug_vars) do
+      player_objects[i][k] = v
+    end
+  end
 end
 
 local function update_received_hits(self, other)
@@ -251,8 +259,7 @@ local function update_received_hits(self, other)
     self.last_received_connection_animation = other.animation
     self.last_received_connection_hit_id = math.max(other.current_hit_id, 1)
   elseif frame_number - self.last_received_connection_frame == 1 then
-    for _, proj in pairs(projectiles
-) do
+    for _, proj in pairs(projectiles) do
       if proj.emitter_id == other.id
       and (proj.previous_remaining_hits - proj.remaining_hits == 1
           or proj.previous_remaining_hits - proj.remaining_hits == -255)
@@ -265,7 +272,7 @@ local function update_received_hits(self, other)
 end
 
 local function update_player_relationships(self, other)
-  if self.posture == 0x26 and not recording_framedata then
+  if self.posture == 0x26 and not debug_settings.recording_framedata then
     self.remaining_wakeup_time = get_wakeup_time(self.char_str, self.animation, self.animation_frame)
   else
     self.remaining_wakeup_time = 0
@@ -350,7 +357,7 @@ local function read_box(obj, ptr, type)
   local bottom = memory.readwordsigned(ptr + 0x4) --debug
   local height = memory.readwordsigned(ptr + 0x6)
 
-  box = {convert_box_types[type], bottom, height, left, width}
+  local box = {convert_box_types[type], bottom, height, left, width}
 
   if left == 0 and width == 0 and bottom == 0 and height == 0 then
     return
@@ -703,7 +710,7 @@ local function read_player_vars(player_obj)
   player_obj.animation_frame = frame_number - player_obj.animation_start_frame - player_obj.animation_freeze_frames
 
   --self chain. cr. lk chains, etc
-  if not debug_settings.record_framedata then ---debug
+  if not debug_settings.recording_framedata then ---debug
     if player_obj.self_chain and player_obj.animation_frame_data then
       local hit_frames = player_obj.animation_frame_data.hit_frames
       if hit_frames and #hit_frames > 0 then
@@ -742,7 +749,7 @@ local function read_player_vars(player_obj)
   end ]]
 
     --debug
-  -- if not recording_framedata then
+  -- if not debug_settings.recording_framedata then
     player_obj.animation_frame_hash = string.sub(player_obj.animation_frame_hash, 1, 8)
                                       .. string.format("%02x", player_obj.animation_action_count)
   -- end
@@ -750,7 +757,7 @@ local function read_player_vars(player_obj)
 --[[   if player_obj.id == 1 then
     print(frame_number, player_obj.previous_input_capacity, player_obj.input_capacity, player_obj.animation_frame, player_obj.is_attacking, tostring(self_cancel))
   end ]]
-  if player_obj.animation_frame_data and not recording_framedata then
+  if player_obj.animation_frame_data and not debug_settings.recording_framedata then
     --cap animation frame. animation frame will sometimes exceed # of frames in frame data for some long looping animations i.e. air recovery
     player_obj.animation_frame = math.min(player_obj.animation_frame, #player_obj.animation_frame_data.frames - 1)
 
@@ -763,7 +770,7 @@ local function read_player_vars(player_obj)
     if player_obj.previous_remaining_freeze_frames == 0 then
       player_obj.freeze_just_began = true
     end
-    if not (player_obj.animation_frame_data and not recording_framedata --debug
+    if not (player_obj.animation_frame_data and not debug_settings.recording_framedata --debug
             and player_obj.animation_frame_data.frames
             and player_obj.animation_frame_data.frames[player_obj.animation_frame + 1]
             and player_obj.animation_frame_data.frames[player_obj.animation_frame + 1].bypass_freeze) then
@@ -786,7 +793,7 @@ local function read_player_vars(player_obj)
     player_obj.is_in_pushback = true
   end
 
-  if player_obj.animation_frame_data ~= nil and not recording_framedata then
+  if player_obj.animation_frame_data ~= nil and not debug_settings.recording_framedata then
     -- resync animation
     local frames = player_obj.animation_frame_data.frames
     local current_frame = frames[player_obj.animation_frame + 1]
@@ -1386,17 +1393,13 @@ end
 
 local function read_projectiles()
   local mAX_OBJECTS = 30
-  projectiles
- = projectiles
- or {}
+  projectiles = projectiles or {}
 
   -- flag everything as expired by default, we will reset the flag it we update the projectile
-  for id, obj in pairs(projectiles
-) do
+  for id, obj in pairs(projectiles) do
     obj.expired = true
     if obj.placeholder and obj.animation_start_frame <= frame_number then
-      projectiles
-[id] = nil
+      projectiles[id] = nil
     end
   end
 
@@ -1411,8 +1414,7 @@ local function read_projectiles()
   while obj_slot <= mAX_OBJECTS and obj_index ~= -1 do
     local base = initial + bit.lshift(obj_index, 11)
     local id = string.format("%08X", base)
-    local obj = projectiles
-[id]
+    local obj = projectiles[id]
     local is_initialization = false
     if obj == nil then
        obj = {base = base, projectile = obj_slot}
@@ -1534,14 +1536,13 @@ local function read_projectiles()
 
       obj.animation_frame = frame_number - obj.animation_start_frame - obj.animation_freeze_frames
 
-      projectiles
-[obj.id] = obj
+      projectiles[obj.id] = obj
 
       if frame_data["projectiles"] then
         obj.animation_frame_data = frame_data["projectiles"][obj.projectile_type]
       end
 
-      if obj.animation_frame_data ~= nil and not recording_framedata then
+      if obj.animation_frame_data ~= nil and not debug_settings.recording_framedata then
         if obj.animation_frame_data.frames then
           obj.animation_frame = math.min(obj.animation_frame, #obj.animation_frame_data.frames - 1)
         end
@@ -1574,12 +1575,10 @@ end
 
 local function remove_expired_projectiles()
   -- if a projectile is still expired, we remove it
-  for id, obj in pairs(projectiles
-) do
+  for id, obj in pairs(projectiles) do
     if obj.expired then
       log(player_objects[obj.emitter_id].prefix, "projectiles", string.format("projectile %s 0", id))
-      projectiles
-[id] = nil
+      projectiles[id] = nil
     end
   end
 end

@@ -408,7 +408,7 @@ local function on_gui()
     handle_input() -- main_menu.handle_input()
 
     if not IsMenuOpen then
-      -- draw_debug_gui()
+      draw_debug_gui()
     end
 
     debug.memory_display()
@@ -439,12 +439,12 @@ local function on_gui()
       if gamestate.frame_number == k then
         local x = 72
         local y = 60
-        render_text(x,y, string.format("Pos: %f,%f", data[gamestate.P1].pos_x, data[gamestate.P1].pos_y), "en", nil, "white")
-        render_text(x,y+10, string.format("Vel: %f,%f", data[gamestate.P1].velocity_x, data[gamestate.P1].velocity_y), "en", nil, "white")
-        render_text(x,y+20, string.format("Acc: %f,%f", data[gamestate.P1].acceleration_x, data[gamestate.P1].acceleration_y), "en", nil, "white")
-        render_text(x,y+30, string.format("Pos: %f,%f", data[gamestate.P2].pos_x, data[gamestate.P2].pos_y), "en", nil, "white")
-        render_text(x,y+40, string.format("Vel: %f,%f", data[gamestate.P2].velocity_x, data[gamestate.P2].velocity_y), "en", nil, "white")
-        render_text(x,y+50, string.format("Acc: %f,%f", data[gamestate.P2].acceleration_x, data[gamestate.P2].acceleration_y), "en", nil, "white")
+        render_text(x,y, string.format("Pos: %f,%f", data[gamestate.P1].pos_x, data[gamestate.P1].pos_y), "en", nil)
+        render_text(x,y+10, string.format("Vel: %f,%f", data[gamestate.P1].velocity_x, data[gamestate.P1].velocity_y), "en", nil)
+        render_text(x,y+20, string.format("Acc: %f,%f", data[gamestate.P1].acceleration_x, data[gamestate.P1].acceleration_y), "en", nil)
+        render_text(x,y+30, string.format("Pos: %f,%f", data[gamestate.P2].pos_x, data[gamestate.P2].pos_y), "en", nil)
+        render_text(x,y+40, string.format("Vel: %f,%f", data[gamestate.P2].velocity_x, data[gamestate.P2].velocity_y), "en", nil)
+        render_text(x,y+50, string.format("Acc: %f,%f", data[gamestate.P2].acceleration_x, data[gamestate.P2].acceleration_y), "en", nil)
 
       elseif k < gamestate.frame_number then
         debug_prediction[k] = nil

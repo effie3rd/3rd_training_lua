@@ -8,37 +8,6 @@ local frame_data = fd.frame_data
 local frame_data_meta = fdm.frame_data_meta
 local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text, text.render_text_multiple, text.get_text_dimensions, text.get_text_dimensions_multiple
 
-
--- debug options
-local developer_mode = true -- Unlock frame data recording options. Touch at your own risk since you may use those options to fuck up some already recorded frame data
-local assert_enabled = developer_mode or assert_enabled
-local log_enabled = developer_mode or log_enabled
-local log_categories_display =
-{
-  input =                     { history = true, print = false },
-  projectiles =               { history = true, print = false },
-  fight =                     { history = false, print = false },
-  animation =                 { history = false, print = false },
-  parry_training_FORWARD =    { history = false, print = false },
-  blocking =                  { history = true, print = false },
-  counter_attack =            { history = false, print = false },
-  block_string =              { history = true, print = false },
-  frame_advantage =           { history = false, print = false },
-} or log_categories_display
-
-gamestate.P1.debug_state_variables = false
-gamestate.P1.debug_freeze_frames = false
-gamestate.P1.debug_animation_frames = false
-gamestate.P1.debug_standing_state = false
-gamestate.P1.debug_wake_up = false
-
-gamestate.P2.debug_state_variables = false
-gamestate.P2.debug_freeze_frames = false
-gamestate.P2.debug_animation_frames = false
-gamestate.P2.debug_standing_state = false
-gamestate.P2.debug_wake_up = false
-
-
 local dump_state = {}
 local function dump_variables()
   if gamestate.is_in_match then
@@ -260,8 +229,6 @@ setmetatable(debug, {
   __index = function(_, key)
     if key == "memory_view_start" then
       return memory_view_start
-    elseif key == "developer_mode" then
-      return developer_mode
     elseif key == "start_debug" then
       return start_debug
     end
@@ -270,10 +237,8 @@ setmetatable(debug, {
   __newindex = function(_, key, value)
     if key == "memory_view_start" then
       memory_view_start = value
-    elseif key == "developer_mode" then
-      loading.developer_mode = value
     elseif key == "start_debug" then
-      loading.start_debug = value
+      start_debug = value
     else
       rawset(debug, key, value)
     end

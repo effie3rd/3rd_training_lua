@@ -4,6 +4,7 @@ local fd = require("src/framedata")
 local movedata = require("src/movedata")
 local gamestate = require("src/gamestate")
 local character_select = require("src/character_select")
+local debug_settings = require("src/debug_settings")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local test_collision, find_frame_data_by_name = fd.test_collision, fd.find_frame_data_by_name
@@ -624,13 +625,12 @@ local default_air_block_height = 26
 
 local overwrite = false
 local first_record = true
-recording_framedata = false
 
 function record_frames_hotkey()
   local keys = input.get()
   if pressing_F12 == 0 and keys.F12 then
     pressing_F12 = 1
-    recording_framedata = true
+    debug_settings.recording_framedata = true
   end
   if pressing_F12 == 1 and not keys.F12 then
     pressing_F12 = 0
@@ -638,7 +638,7 @@ function record_frames_hotkey()
 end
 
 local i_record = 4
-local i_characters = 8
+local i_characters = 11
 local end_character = 21
 local record_char_state = "start"
 local char_list = deepcopy(Characters)
@@ -646,7 +646,7 @@ table.sort(char_list)
 local last_category = 1
 
 function record_all_characters(player_obj, projectiles)
-  if recording_framedata then
+  if debug_settings.recording_framedata then
     -- emu.speedmode("turbo")
     training_settings.blocking_mode = 1
     player = player_obj
@@ -659,11 +659,11 @@ function record_all_characters(player_obj, projectiles)
         char = char_list[i_characters]
         overwrite = false
         first_record = true
-        -- frame_data[char] = {}
+        frame_data[char] = {}
         state = "start"
         setup = false
         recording = false
-        i_attack_categories = 7
+        i_attack_categories = 6
         last_category = 7
         i_recording_hit_types = 1
         received_hits = 0
@@ -700,7 +700,7 @@ function record_all_characters(player_obj, projectiles)
         i_record = i_record + 1
         -- i_characters = 99
       end
-      if i_record > 5 then
+      if i_record > 4 then
         i_record = 1
         i_characters = i_characters + 1
         record_char_state = "new_character"
@@ -710,7 +710,6 @@ function record_all_characters(player_obj, projectiles)
       end
     elseif record_char_state == "finished" then
       save_frame_data()
-      load_frame_data_co = coroutine.create(load_frame_data_async)
       loading.frame_data_loaded = false --debug
       record_char_state = "the_end"
     end
@@ -2902,7 +2901,7 @@ function record_attacks(player_obj, projectiles)
               n = 60
               current_attack.max_hits = 41
               if recording_options.hit_type == "block" then
-                n = 480
+                n = 460
               end
             end
             for i = 1, n do
@@ -4704,7 +4703,7 @@ function debugframedatagui(player_obj, projectiles)
   if gamestate.is_in_match then
     display = {}
     local p2 = gamestate.P2
---[[     debuggui("frame", gamestate.frame_number)
+    debuggui("frame", gamestate.frame_number)
     debuggui("state", state)
     debuggui("anim", player_obj.animation)
     debuggui("anim f", player_obj.animation_frame)
@@ -4724,7 +4723,7 @@ function debugframedatagui(player_obj, projectiles)
     debuggui("diff", string.format("%04f,%04f",p2.pos_x - p2.previous_pos_x, p2.pos_y - p2.previous_pos_y ))
     debuggui("vel", string.format("%04f,%04f",player_obj.velocity_x, player_obj.velocity_y))
     debuggui("vel", string.format("%04f,%04f",p2.velocity_x, p2.velocity_y))
-    debuggui("acc", string.format("%04f,%04f",player_obj.acceleration_x, player_obj.acceleration_y)) ]]
+    debuggui("acc", string.format("%04f,%04f",player_obj.acceleration_x, player_obj.acceleration_y))
     -- debuggui("recording", tostring(recording))
 
     for _, obj in pairs(projectiles) do
@@ -4764,7 +4763,7 @@ function draw_debug_gui()
   local y = 44
   gui.box(2, 2 + y, 80, 5+10*#display + y, gui_box_bg_color, gui_box_bg_color)
   for i=1,#display do
-    render_text(6,6+10*(i-1) + y, string.format("%s: %s", display[i][1], display[i][2]), "en", nil, "white")
+    render_text(6,6+10*(i-1) + y, string.format("%s: %s", display[i][1], display[i][2]), "en")
   end
 end
 
@@ -5163,11 +5162,13 @@ function end_recording(player_obj, projectiles, name)
       if recording_options.hit_type == "block"
       or recording_options.self_chain then
         for j = 1, #new_frames - 1 do
-          -- local str = "0000000000"
-          -- if fdata.frames[j] then
-          --   str = fdata.frames[j].hash
-          -- end
-          -- print(j-1, str, new_frames[j].hash)
+          local str = "0000000000"
+          if fdata.frames[j] then
+            str = fdata.frames[j].hash
+          end
+          print(j-1, str, new_frames[j].hash)
+        end
+        for j = 1, #new_frames - 1 do
           if index_of_hash(fdata.frames, new_frames[j].hash) == 0 then
             local index_of_next_frame = find_exception_position(fdata.frames, new_frames, j + 1) - 1 - 1
             if index_of_next_frame >= 0 then
@@ -5178,9 +5179,12 @@ function end_recording(player_obj, projectiles, name)
             end
           end
         end
-        if fdata.exceptions then
+
+--[[         local exceptions = find_exceptions(fdata.frames, new_frames)
+        if not deep_equal(exceptions, {}) then
+          fdata.exceptions = exceptions
           print(fdata.exceptions)
-        end
+        end ]]
       end
     end
 
@@ -6198,6 +6202,50 @@ function find_exception_position(existing, incoming, index)
     return find_exception_position(existing, incoming, index + 1) - 1
   end
   return 0
+end
+
+function get_index_of_action_count(frames, ac)
+  for i = 1, #frames do
+    if tonumber(string.sub(frames[i].hash, 9, 10)) == ac then
+      return i
+    end
+  end
+  return 0
+end
+
+function find_exceptions(existing, incoming)
+  local results = {}
+  local incoming_start_index = 1
+  local existing_start_index = 1
+  local next_action_count = tonumber(string.sub(existing[1].hash, 9, 10)) + 1
+  local i = 1
+  while i <= #incoming do
+    local incoming_end_index = get_index_of_action_count(incoming, next_action_count)
+    if incoming_end_index > 0 then
+      i = incoming_end_index
+      local existing_end_index = get_index_of_action_count(existing, next_action_count)
+      if existing_end_index > 0 then
+        local k = 0
+        for j = existing_end_index, existing_start_index, -1 do
+          if incoming_end_index - k >= incoming_start_index and incoming[incoming_end_index - k] then
+            if existing[j].hash ~= incoming[incoming_end_index - k].hash then
+              local hash = incoming[incoming_end_index - k].hash
+              print(hash, j - 1)
+              results[hash] = j - 1
+            end
+          end
+          k = k + 1
+        end
+        incoming_start_index = incoming_end_index + 1
+        existing_start_index = existing_end_index + 1
+      end
+    else
+      break
+    end
+    next_action_count = next_action_count + 1
+    i = i + 1
+  end
+  return results
 end
 
 function sequence_to_name(seq)
