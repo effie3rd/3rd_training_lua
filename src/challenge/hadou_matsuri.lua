@@ -1,5 +1,6 @@
 local fd = require("src/framedata")
 local fdm = require("src/framedata_meta")
+local draw = require("src/draw")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local frame_data_meta = fdm.frame_data_meta
@@ -195,7 +196,7 @@ function process_command_queue(player_obj, input)
   if player_obj.command_queue == nil then
     return
   end
-  if IsMenuOpen then
+  if is_open then
     return
   end
   if not gamestate.is_in_match then
@@ -427,9 +428,9 @@ end
 
 --fix hitboxes on flip looks like just a y flip
 
--- screen_width = 383
--- screen_height = 223
--- ground_offset = 23
+-- draw.SCREEN_WIDTH = 383
+-- draw.SCREEN_HEIGHT = 223
+-- draw.GROUND_OFFSET = 23
 
 
 function flip_box(obj, ptr, type)
@@ -721,8 +722,8 @@ function hadou_matsuri_run()
 process_command_queue(gamestate.P1, joypad.get())
 process_command_queue(gamestate.P2, joypad.get())
 
--- screen_x = memory.readwordsigned(0x02026CB0)
--- screen_y = memory.readwordsigned(0x02026CB4)
+-- draw.screen_x = memory.readwordsigned(0x02026CB0)
+-- draw.screen_y = memory.readwordsigned(0x02026CB4)
 -- b ={}
 -- a = {}
 -- b.mod = {}

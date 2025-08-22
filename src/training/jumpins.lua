@@ -54,7 +54,7 @@ end
 function create_jump_arc(mdata)
   local jump_arc = {}
   for i = 1, #mdata do
-    local x, y = game_to_screen_space(mdata[i].pos_x, mdata[i].pos_y)
+    local x, y = draw.game_to_screen_space(mdata[i].pos_x, mdata[i].pos_y)
     table.insert(jump_arc, {x, y})
   end
   return jump_arc

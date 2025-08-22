@@ -1,4 +1,5 @@
 local gamestate = require("src/gamestate")
+local draw = require("src/draw")
 
 attack_data = {}
 
@@ -105,12 +106,12 @@ function attack_data_update(attacker, defender)
 end
 
 function attack_data_display()
-  local text_width1 = get_text_width("damage: ")
-  local text_width2 = get_text_width("stun: ")
-  local text_width3 = get_text_width("combo: ")
-  local text_width4 = get_text_width("total damage: ")
-  local text_width5 = get_text_width("total stun: ")
-  local text_width6 = get_text_width("max combo: ")
+  local text_width1 = draw.get_text_width("damage: ")
+  local text_width2 = draw.get_text_width("stun: ")
+  local text_width3 = draw.get_text_width("combo: ")
+  local text_width4 = draw.get_text_width("total damage: ")
+  local text_width5 = draw.get_text_width("total stun: ")
+  local text_width6 = draw.get_text_width("max combo: ")
 
   local x1 = 0
   local x2 = 0
@@ -123,7 +124,7 @@ function attack_data_display()
   local x_spacing = 80
 
   if attack_data.player_id == 1 then
-    local base = screen_width - 138
+    local base = draw.SCREEN_WIDTH - 138
     x1 = base - text_width1
     x2 = base - text_width2
     x3 = base - text_width3

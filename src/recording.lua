@@ -36,34 +36,6 @@ function clear_all_slots()
   save_training_data()
 end
 
-function open_save_popup()
-  save_recording_slot_popup.selected_index = 1
-  menu_stack_push(save_recording_slot_popup)
-  save_file_name = string.gsub(training.dummy.char_str, "(.*)", string.upper).."_"
-end
-
-function open_load_popup()
-  load_recording_slot_popup.selected_index = 1
-  menu_stack_push(load_recording_slot_popup)
-
-  load_file_index = 1
-
-  local cmd = "dir /b "..string.gsub(saved_recordings_path, "/", "\\")
-  local f = io.popen(cmd)
-  if f == nil then
-    print(string.format("Error: Failed to execute command \"%s\"", cmd))
-    return
-  end
-  local str = f:read("*all")
-  load_file_list = {}
-  for line in string.gmatch(str, '([^\r\n]+)') do -- Split all lines that have ".json" in them
-    if string.find(line, ".json") ~= nil then
-      local file = line
-      table.insert(load_file_list, file)
-    end
-  end
-  load_recording_slot_popup.content[1].list = load_file_list
-end
 
 function save_recording_slot_to_file()
   if save_file_name == "" then
@@ -242,7 +214,7 @@ end
 function update_recording(input, player, dummy)
 
   local input_buffer_length = 11
-  if gamestate.is_in_match and not IsMenuOpen then
+  if gamestate.is_in_match and not is_open then
 
     -- manage input
     local input_pressed = (not swap_characters and player.input.pressed.coin) or (swap_characters and dummy.input.pressed.coin)

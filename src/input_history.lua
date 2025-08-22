@@ -1,4 +1,5 @@
 local gamestate = require("src/gamestate")
+local draw = require("src/draw")
 
 input_history_size_max = 15
 input_history = {
@@ -81,7 +82,7 @@ function input_history_draw(history, x, y, is_right, style)
     end
 
     local controller_offset = 14 * sign
-    draw_controller_small(entry, x + controller_offset, current_y, is_right, style)
+    draw.draw_controller_small(entry, x + controller_offset, current_y, is_right, style)
 
     local next_frame = gamestate.frame_number
     if i < #history then

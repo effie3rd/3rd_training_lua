@@ -25,7 +25,7 @@ function process_pending_input_sequence(player_obj, input)
   if player_obj.pending_input_sequence == nil then
     return
   end
-  if IsMenuOpen then
+  if is_open then
     return
   end
 

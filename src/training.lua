@@ -18,7 +18,7 @@ local function write_player_vars(player_obj)
   end
 
   -- LIFE
-  if gamestate.is_in_match and not IsMenuOpen then
+  if gamestate.is_in_match and not is_open then
     local life = memory.readbyte(player_obj.life_addr)
     if training_settings.life_mode == 2 then
       if player_obj.is_idle and player_obj.idle_time > training_settings.life_refill_delay then
@@ -33,7 +33,7 @@ local function write_player_vars(player_obj)
   end
 
   -- METER
-  if gamestate.is_in_match and not IsMenuOpen and not player_obj.is_in_timed_sa then
+  if gamestate.is_in_match and not is_open and not player_obj.is_in_timed_sa then
     -- If the SA is a timed SA, the gauge won't go back to 0 when it reaches max. We have to make special cases for it
     local is_timed_sa = character_specific[player_obj.char_str].timed_sa[player_obj.selected_sa]
 
@@ -107,7 +107,7 @@ local function write_player_vars(player_obj)
     memory.writebyte(player_obj.stun_bar_char_addr, 0)
     memory.writebyte(player_obj.stun_bar_mantissa_addr, 0)
   elseif training_settings.stun_mode == 3 then
-    if gamestate.is_in_match and not IsMenuOpen and player_obj.is_idle then
+    if gamestate.is_in_match and not is_open and player_obj.is_idle then
       local wanted_stun = 0
       if player_obj.id == 1 then
         wanted_stun = training_settings.p1_stun_reset_value
@@ -162,7 +162,7 @@ local function write_player_vars(player_obj)
 end
 
 local function write_game_vars()
-  freeze_game(IsMenuOpen)
+  freeze_game(is_open)
 
   set_infinite_time(training_settings.infinite_time)
 
@@ -175,6 +175,8 @@ local function update_training_state()
   write_player_vars(gamestate.P1)
   write_player_vars(gamestate.P2)
 end
+
+
 
 
 local training = {

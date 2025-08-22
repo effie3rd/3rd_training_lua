@@ -52,7 +52,8 @@ local gamestate = require("src/gamestate")
 local loading = require("src/loading")
 local training = require("src/training")
 require("src/dummy_control")
-require("src/draw")
+local images = require("src/image_tables")
+local draw = require("src/draw")
 require("src/display")
 require("src/hud")
 require("src/input")
@@ -67,6 +68,7 @@ local character_select = require("src/character_select")
 -- require("src/training/jumpins")
 require("src/record_framedata")
 local debug = require("src/debug")
+local debug_settings = require("src/debug_settings")
 
 --aliases
 local frame_data, character_specific = fd.frame_data, fd.character_specific
@@ -103,7 +105,6 @@ local function on_load_state()
   end
 
   clear_input_history()
-  clear_printed_geometry()
   emu.speedmode("normal")
 
   for key, com in ipairs(after_load_state_callback) do
@@ -193,7 +194,7 @@ local function before_frame()
     init_menu()
   end
 
-  draw_read()
+  draw.update_draw_variables()
 
   -- gamestate
   local previous_p2_char_str = gamestate.P2.char_str or ""
@@ -202,12 +203,12 @@ local function before_frame()
 
   run_commands()
 
-  debug.run_debug()
+  if debug_settings.developer_mode then
+    debug.run_debug()
+  end
 
   if initialized then --menu.initialized
-    slot_weight_item.object = recording_slots[training_settings.current_recording_slot]
-    counter_attack_delay_item.object = recording_slots[training_settings.current_recording_slot]
-    counter_attack_random_deviation_item.object = recording_slots[training_settings.current_recording_slot]
+    update_menu()
     -- load recordings according to gamestate.P2 character
     if previous_p2_char_str ~= gamestate.P2.char_str then
       restore_recordings()
@@ -233,7 +234,7 @@ local function before_frame()
 
   -- input
   local input = joypad.get()
-  if gamestate.is_in_match and not IsMenuOpen and swap_characters then
+  if gamestate.is_in_match and not is_open and swap_characters then
     swap_inputs(input)
   end
 
@@ -331,19 +332,13 @@ end
 
 local function on_gui()
 
-  character_select.draw_character_select()
+  draw.draw_character_select()
 
-  loading_bar_display(loading_bar_loaded, loading_bar_total)
+  draw.loading_bar_display(loading_bar_loaded, loading_bar_total)
 
   if loading.text_images_loaded then
 
-    if gamestate.P1.input.pressed.start then
-      clear_printed_geometry()
-    end
-
     if gamestate.is_in_match and not disable_display then
-
-      display_draw_printed_geometry()
 
       -- distances
       if training_settings.display_distances then
@@ -353,16 +348,16 @@ local function on_gui()
       -- input history
       if training_settings.display_input_history == 5 then --moving
         if gamestate.P1.pos_x < 320 then
-          input_history_draw(input_history[1], screen_width - 4, 49, true, controller_styles[training_settings.controller_style])
+          input_history_draw(input_history[1], draw.SCREEN_WIDTH - 4, 49, true, draw.controller_styles[training_settings.controller_style])
         else
-          input_history_draw(input_history[1], 4, 49, false, controller_styles[training_settings.controller_style])
+          input_history_draw(input_history[1], 4, 49, false, draw.controller_styles[training_settings.controller_style])
         end
       else
         if training_settings.display_input_history == 2 or training_settings.display_input_history == 4 then
-          input_history_draw(input_history[1], 4, 49, false, controller_styles[training_settings.controller_style])
+          input_history_draw(input_history[1], 4, 49, false, draw.controller_styles[training_settings.controller_style])
         end
         if training_settings.display_input_history == 3 or training_settings.display_input_history == 4 then
-          input_history_draw(input_history[2], screen_width - 4, 49, true, controller_styles[training_settings.controller_style])
+          input_history_draw(input_history[2], draw.SCREEN_WIDTH - 4, 49, true, draw.controller_styles[training_settings.controller_style])
         end
       end
 
@@ -371,8 +366,8 @@ local function on_gui()
         local i = joypad.get()
         local p1 = make_input_history_entry("P1", i)
         local p2 = make_input_history_entry("P2", i)
-        draw_controller_big(p1, 44, 34, controller_styles[training_settings.controller_style])
-        draw_controller_big(p2, 310, 34, controller_styles[training_settings.controller_style])
+        draw.draw_controller_big(p1, 44, 34, draw.controller_styles[training_settings.controller_style])
+        draw.draw_controller_big(p2, 310, 34, draw.controller_styles[training_settings.controller_style])
       end
 
 
@@ -384,8 +379,8 @@ local function on_gui()
   
       --debug
       for i=1,#to_draw_collision do
-        local x1, y1 = game_to_screen_space(to_draw_collision[i][1], to_draw_collision[i][3])
-        local x2, y2 = game_to_screen_space(to_draw_collision[i][2], to_draw_collision[i][4])
+        local x1, y1 = draw.game_to_screen_space(to_draw_collision[i][1], to_draw_collision[i][3])
+        local x2, y2 = draw.game_to_screen_space(to_draw_collision[i][2], to_draw_collision[i][4])
         gui.drawline(x1,y1,x2,y2,0x000000FF)
       end
 
@@ -402,12 +397,12 @@ local function on_gui()
     end
 
     if log_enabled then
-      log_draw()
+      draw.log_draw()
     end
 
     handle_input() -- main_menu.handle_input()
 
-    if not IsMenuOpen then
+    if not is_open then
       draw_debug_gui()
     end
 
@@ -429,8 +424,8 @@ local function on_gui()
     end
     local x, y = 0, 0
     for i=1,#to_draw do
-      x, y = game_to_screen_space(to_draw[i][1], to_draw[i][2])
-      gui.image(x - 4, y,img_8_dir_small, i/#to_draw)
+      x, y = draw.game_to_screen_space(to_draw[i][1], to_draw[i][2])
+      gui.image(x - 4, y, images.img_dir_small[8], i/#to_draw)
     end
 
     to_draw = {}

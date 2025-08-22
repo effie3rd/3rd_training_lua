@@ -4,6 +4,8 @@ local fdm = require("src/framedata_meta")
 local gamestate = require("src/gamestate")
 local text = require("src/text")
 local colors = require("src/colors")
+local draw = require("src/draw")
+local images = require("src/image_tables")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local frame_data_meta = fdm.frame_data_meta
@@ -21,7 +23,7 @@ local draw_kaiten_first_run = true
 local dir_2_inactive, dir_4_inactive, dir_6_inactive, dir_8_inactive
 local kaiten_images =
 {
-  active = {img_6_dir_small, img_2_dir_small, img_4_dir_small, img_8_dir_small},
+  active = {images.img_dir_small[6], images.img_dir_small[2], images.img_dir_small[4], images.img_dir_small[8]},
   inactive = {dir_6_inactive, dir_2_inactive, dir_4_inactive, dir_8_inactive}
 }
 local function draw_kaiten(x,y, dirs, flip)
@@ -73,8 +75,8 @@ function parry_gauge_display(player)
   local gauge_x_scale = 4
 
   if training_settings.charge_follow_character then
-    local px = player.pos_x - screen_x + emu.screenwidth()/2
-    local py = emu.screenheight() - (player.pos_y - screen_y) - ground_offset
+    local px = player.pos_x - draw.screen_x + emu.screenwidth()/2
+    local py = emu.screenheight() - (player.pos_y - draw.screen_y) - draw.GROUND_OFFSET
     local half_width = 23 * gauge_x_scale * 0.5
     x = px - half_width
     x = math.max(x, 4)
@@ -93,7 +95,7 @@ function parry_gauge_display(player)
     local validity_gauge_width = parry_object.max_validity * gauge_x_scale
     local cooldown_gauge_width = parry_object.max_cooldown * gauge_x_scale
 
-    x = math.min(math.max(x, x_border), screen_width - x_border - validity_gauge_width)
+    x = math.min(math.max(x, x_border), draw.SCREEN_WIDTH - x_border - validity_gauge_width)
 
     local validity_gauge_left = math.floor(x + (cooldown_gauge_width - validity_gauge_width) * 0.5)
     local validity_gauge_right = validity_gauge_left + validity_gauge_width + 1
@@ -125,8 +127,8 @@ function parry_gauge_display(player)
     gui.box(cooldown_gauge_left, y + 10, cooldown_gauge_left, y + 12, 0x00000000, gauge_outline_color)
     gui.box(validity_gauge_right, y + 11, cooldown_gauge_right - 1, y + 11, 0x00000000, gauge_outline_color)
     gui.box(cooldown_gauge_right, y + 10, cooldown_gauge_right, y + 12, 0x00000000, gauge_outline_color)
-    draw_gauge(validity_gauge_left, y + 8, validity_gauge_width, gauge_height + 1, parry_object.validity_time / parry_object.max_validity, gauge_valid_fill_color, gauge_background_color, gauge_outline_color, true)
-    draw_gauge(cooldown_gauge_left, y + 8 + gauge_height + 2, cooldown_gauge_width, gauge_height, parry_object.cooldown_time / parry_object.max_cooldown, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color, true)
+    draw.draw_gauge(validity_gauge_left, y + 8, validity_gauge_width, gauge_height + 1, parry_object.validity_time / parry_object.max_validity, gauge_valid_fill_color, gauge_background_color, gauge_outline_color, true)
+    draw.draw_gauge(cooldown_gauge_left, y + 8 + gauge_height + 2, cooldown_gauge_width, gauge_height, parry_object.cooldown_time / parry_object.max_cooldown, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color, true)
 
     gui.box(validity_gauge_left + 3 * gauge_x_scale, y + 8, validity_gauge_left + 2 + 3 * gauge_x_scale,  y + 8 + gauge_height + 2, gauge_outline_color, 0x00000000)
 
@@ -181,7 +183,7 @@ function charge_display(player)
     if training_settings.charge_follow_character then
       local offset_x = 8
 
-      x,y = game_to_screen_space(player.pos_x, player.pos_y + character_specific[player.char_str].height)
+      x,y = draw.game_to_screen_space(player.pos_x, player.pos_y + character_specific[player.char_str].height)
       x = x + offset_x
       if player.flip_x == 1 then
         x = x - (43 * gauge_x_scale + offset_x + 16)
@@ -202,7 +204,7 @@ function charge_display(player)
       local charge_gauge_width = charge_object.max_charge * gauge_x_scale
       local reset_gauge_width = charge_object.max_reset * gauge_x_scale
 
-      x = math.min(math.max(x, x_border), screen_width - x_border - charge_gauge_width)
+      x = math.min(math.max(x, x_border), draw.SCREEN_WIDTH - x_border - charge_gauge_width)
 
       local charge_gauge_left = math.floor(x + (reset_gauge_width - charge_gauge_width) * 0.5)
       local charge_gauge_right = charge_gauge_left + charge_gauge_width + 1
@@ -231,10 +233,10 @@ function charge_display(player)
 --       gui.box(reset_gauge_left, y + 10, reset_gauge_left, y + 12, 0x00000000, 0x00000077)
 --       gui.box(charge_gauge_right, y + 11, reset_gauge_right - 1, y + 11, 0x00000000, 0x00000077)
 --       gui.box(reset_gauge_right, y + 10, reset_gauge_right, y + 12, 0x00000000, 0x00000077)
-      draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1, charge_object.charge_time / charge_object.max_charge, gauge_valid_fill_color, gauge_background_color, gauge_outline_color, true)
-      draw_gauge(reset_gauge_left, y + 8 + gauge_height + 2, reset_gauge_width, gauge_height, charge_object.reset_time / charge_object.max_reset, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color, true)
+      draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1, charge_object.charge_time / charge_object.max_charge, gauge_valid_fill_color, gauge_background_color, gauge_outline_color, true)
+      draw.draw_gauge(reset_gauge_left, y + 8 + gauge_height + 2, reset_gauge_width, gauge_height, charge_object.reset_time / charge_object.max_reset, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color, true)
       if training_settings.special_training_charge_overcharge_on and charge_object.overcharge ~= 0 and charge_object.overcharge < 42 then
-        draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1, charge_object.overcharge / charge_object.max_charge, overcharge_color, gauge_background_color, gauge_outline_color, true)
+        draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1, charge_object.overcharge / charge_object.max_charge, overcharge_color, gauge_background_color, gauge_outline_color, true)
         local w = get_text_dimensions(charge_time_text, "en")
         render_text(reset_gauge_right + 4 + w, y + 7, overcharge_time_text, "en", nil, charge_text_color)
       end
@@ -254,7 +256,7 @@ function charge_display(player)
       local charge_gauge_width = 43 * gauge_x_scale
       local reset_gauge_width = 43 * gauge_x_scale
 
-      x = math.min(math.max(x, x_border), screen_width - x_border - charge_gauge_width)
+      x = math.min(math.max(x, x_border), draw.SCREEN_WIDTH - x_border - charge_gauge_width)
 
       local charge_gauge_left = math.floor(x + (reset_gauge_width - charge_gauge_width) * 0.5)
       local charge_gauge_right = charge_gauge_left + charge_gauge_width + 1
@@ -275,7 +277,7 @@ function charge_display(player)
 
       draw_kaiten(x, y + 8, kaiten_object.directions, not player.flip_input)
 
-      draw_gauge(reset_gauge_left, y + 8 + 9, reset_gauge_width, gauge_height, kaiten_object.reset_time / kaiten_object.max_reset, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color, true)
+      draw.draw_gauge(reset_gauge_left, y + 8 + 9, reset_gauge_width, gauge_height, kaiten_object.reset_time / kaiten_object.max_reset, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color, true)
 
       render_text(reset_gauge_right + 4, y + 10, validity_time_text, "en", nil)
       render_text(reset_gauge_right + 4, y + 17, reset_time_text, "en", nil)
@@ -287,31 +289,31 @@ function charge_display(player)
     function draw_legs_gauge_group(x, y, legs_object)
       local gauge_height = 3
       local width = 43 * gauge_x_scale
-      local style = controller_styles[training_settings.controller_style]
+      local style = draw.controller_styles[training_settings.controller_style]
       local tw, th = get_text_dimensions("hyakuretsu_MK")
       local margin = tw + 1
       local x_offset = margin
       render_text(x, y, "hyakuretsu_LK")
       for i = 1, legs_object.l_legs_count do
-        gui.image(x + x_offset, y, img_button_small[style][4])
+        gui.image(x + x_offset, y, images.img_button_small[style][4])
         x_offset = x_offset + 8
       end
       x_offset = margin
       render_text(x, y + 8, "hyakuretsu_MK")
       for i = 1, legs_object.m_legs_count do
-        gui.image(x + x_offset, y + 8, img_button_small[style][5])
+        gui.image(x + x_offset, y + 8, images.img_button_small[style][5])
         x_offset = x_offset + 8
       end
       x_offset = margin
       render_text(x, y + 16, "hyakuretsu_HK")
       for i = 1, legs_object.h_legs_count do
-        gui.image(x + x_offset, y + 16, img_button_small[style][6])
+        gui.image(x + x_offset, y + 16, images.img_button_small[style][6])
         x_offset = x_offset + 8
       end
       x_offset = margin
 
       if legs_object.active ~= 0xFF then
-        draw_gauge(x, y + 24, width, gauge_height + 1, legs_object.reset_time / 99, gauge_valid_fill_color, gauge_background_color, gauge_outline_color, true)
+        draw.draw_gauge(x, y + 24, width, gauge_height + 1, legs_object.reset_time / 99, gauge_valid_fill_color, gauge_background_color, gauge_outline_color, true)
       end
 
       return 8 + 5 + (gauge_height * 2)
@@ -474,7 +476,7 @@ function red_parry_miss_display(player)
     if elapsed > red_parry_miss_display_time then
       opacity = 1 - ((elapsed - red_parry_miss_display_time) / red_parry_miss_fade_time)
     end
-    local x, y = game_to_screen_space(red_parry_miss_display_x, red_parry_miss_display_y)
+    local x, y = draw.game_to_screen_space(red_parry_miss_display_x, red_parry_miss_display_y)
     render_text(x, y, red_parry_miss_display_text, "en", nil, red_parry_miss_color, opacity)
   end
 end
@@ -612,11 +614,11 @@ function attack_range_display()
       end
       for _,data in pairs(attack_range_display_data[attack_range_display_attacks[id][i]]) do
         if player.animation == attack_range_display_attacks[id][i] then
-          draw_hitboxes(player.pos_x, player.pos_y, player.flip_x, {data.box}, {["attack"]=true}, nil, 0x880000FF)
-          draw_hitboxes(player.pos_x, player.pos_y, player.flip_x, {data.box}, {["throw"]=true}, nil, 0x888800FF)
+          draw.draw_hitboxes(player.pos_x, player.pos_y, player.flip_x, {data.box}, {["attack"]=true}, nil, 0x880000FF)
+          draw.draw_hitboxes(player.pos_x, player.pos_y, player.flip_x, {data.box}, {["throw"]=true}, nil, 0x888800FF)
         else
-          draw_hitboxes(player.pos_x + sign * data.offset_x, player.pos_y + data.offset_y, player.flip_x, {data.box}, {["attack"]=true}, nil, 0x880000FF)
-          draw_hitboxes(player.pos_x + sign * data.offset_x, player.pos_y + data.offset_y, player.flip_x, {data.box}, {["throw"]=true}, nil, 0x888800FF)
+          draw.draw_hitboxes(player.pos_x + sign * data.offset_x, player.pos_y + data.offset_y, player.flip_x, {data.box}, {["attack"]=true}, nil, 0x880000FF)
+          draw.draw_hitboxes(player.pos_x + sign * data.offset_x, player.pos_y + data.offset_y, player.flip_x, {data.box}, {["throw"]=true}, nil, 0x888800FF)
         end
       end
     end
@@ -630,7 +632,7 @@ function attack_range_display()
 --           tx = farthest[3][1] - farthest[2].width / 2
 --         end
 --         ty = farthest[3][2] - farthest[2].height / 2
---         local posx, posy = game_to_screen_space(tx, ty)
+--         local posx, posy = draw.game_to_screen_space(tx, ty)
 -- print(#attack_range_display_data[attack_range_display_attacks[id][i]])
           local dist = 0
           local attack_data = attack_range_display_data[attack_range_display_attacks[id][i]]
@@ -650,7 +652,7 @@ function attack_range_display()
             else
               tx = math.min(player.pos_x - data.offset_x + sign * data.box.left + sign * data.box.width / 2 - w / 2, player.pos_x - data.offset_x + sign * data.box.left - 2 - w)
             end
-            local posx, posy = game_to_screen_space(tx, player.pos_y + data.offset_y + data.box.bottom + data.box.height / 2 + h / 2 - 1)
+            local posx, posy = draw.game_to_screen_space(tx, player.pos_y + data.offset_y + data.box.bottom + data.box.height / 2 + h / 2 - 1)
 
             render_text(posx, posy, tostring(data.distance) .. " " .. attack_range_display_attacks[id][i], "en")
           end
@@ -673,7 +675,7 @@ function frame_gauge()
   local num_units = 70
   local green = 0x00FF00FF
 
-  local x = (screen_width - num_units * unit_width) / 2
+  local x = (draw.SCREEN_WIDTH - num_units * unit_width) / 2
 --   for i = 0, num_units-1 do
 --     local color = colorscale(green, .8)
 --     gui.drawbox(x+i*unit_width,y,x+i*unit_width+unit_width,y+unit_height,0x00FF00FF,color)
@@ -744,7 +746,7 @@ function last_hit_bars()
             life_width = life_width - 2
           end
           if last_hit_history[i].player_id == 1 then
-            life_x = screen_width - 8
+            life_x = draw.SCREEN_WIDTH - 8
             stun_x = life_x - life_max_width + 1
             sign = -1
           end
@@ -798,6 +800,7 @@ function last_hit_bars()
   end
 end
 
+local blocking_direction_history = {}
 local last_dir = 1
 function update_blocking_direction(input, player, dummy)
   if (player.previous_pos_x - dummy.previous_pos_x) * (player.pos_x - dummy.pos_x) <= 0 then
@@ -829,8 +832,7 @@ end
 
 local blocking_direction_display_time = 90
 local blocking_direction_fade_time = 20
-blocking_direction_history = {}
-function blocking_direction_display(player, dummy)
+local function blocking_direction_display(player, dummy)
   local offset_y = 10
   local i = 1
   while i <= #blocking_direction_history do
@@ -840,8 +842,8 @@ function blocking_direction_display(player, dummy)
       if elapsed > blocking_direction_display_time then
         opacity = 1 - ((elapsed - blocking_direction_display_time) / blocking_direction_fade_time)
       end
-      local x, y = game_to_screen_space(dummy.pos_x, dummy.pos_y + character_specific[dummy.char_str].height)
-      gui.image(x, y - (#blocking_direction_history - i - 1) * offset_y, img_dir_small[blocking_direction_history[i].dir], opacity)
+      local x, y = draw.game_to_screen_space(dummy.pos_x, dummy.pos_y + character_specific[dummy.char_str].height)
+      gui.image(x, y - (#blocking_direction_history - i - 1) * offset_y, images.img_dir_small[blocking_direction_history[i].dir], opacity)
     else
       table.remove(blocking_direction_history, i)
     end
@@ -849,23 +851,23 @@ function blocking_direction_display(player, dummy)
   end
 end
 
-function hitboxes_display()
+local function hitboxes_display()
   -- players
   local p1_filter = {["attack"]=true, ["throw"]=true} --debug
   local p2_filter = nil
-  -- draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, fff, nil, nil, 0x90)
+  -- draw.draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, fff, nil, nil, 0x90)
 
-  draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, nil, nil, nil, 0x90)
-  draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, p1_filter, nil, nil)
-  draw_hitboxes(gamestate.P2.pos_x, gamestate.P2.pos_y, gamestate.P2.flip_x, gamestate.P2.boxes, p2_filter, nil, nil, 0x90)
+  draw.draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, nil, nil, nil, 0x90)
+  draw.draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, p1_filter, nil, nil)
+  draw.draw_hitboxes(gamestate.P2.pos_x, gamestate.P2.pos_y, gamestate.P2.flip_x, gamestate.P2.boxes, p2_filter, nil, nil, 0x90)
 
   -- projectiles
   for _, obj in pairs(gamestate.projectiles) do
-    draw_hitboxes(obj.pos_x, obj.pos_y, obj.flip_x, obj.boxes)
+    draw.draw_hitboxes(obj.pos_x, obj.pos_y, obj.flip_x, obj.boxes)
   end
 end
 
-function bonuses_display(player_object)
+local function bonuses_display(player_object)
   local x = 0
   local y = 4
   local padding = 4
@@ -874,7 +876,7 @@ function bonuses_display(player_object)
   if player_object.id == 1 then
     x = padding
   elseif player_object.id == 2 then
-    x = screen_width - padding
+    x = draw.SCREEN_WIDTH - padding
   end
   if player_object.damage_bonus > 0 then
     -- gui.text(x, y, t, 0xFF7184FF, 0x392031FF)
@@ -941,8 +943,9 @@ function bonuses_display(player_object)
   end
 end
 
+local printed_geometry = {}
 -- push a persistent set of hitboxes to be drawn on the screen each frame
-function print_hitboxes(pos_x, pos_y, flip_x, boxes, filter, dilation)
+local function print_hitboxes(pos_x, pos_y, flip_x, boxes, filter, dilation)
   local g = {
     type = "hitboxes",
     x = pos_x,
@@ -956,7 +959,7 @@ function print_hitboxes(pos_x, pos_y, flip_x, boxes, filter, dilation)
 end
 
 -- push a persistent point to be drawn on the screen each frame
-function print_point(pos_x, pos_y, color)
+local function print_point(pos_x, pos_y, color)
   local g = {
     type = "point",
     x = pos_x,
@@ -966,25 +969,22 @@ function print_point(pos_x, pos_y, color)
   table.insert(printed_geometry, g)
 end
 
-function clear_printed_geometry()
+local function clear_printed_geometry()
   printed_geometry = {}
 end
 
--- # system
-printed_geometry = {}
-
-function display_draw_printed_geometry()
+local function display_draw_printed_geometry()
   -- printed geometry
   for _, geometry in ipairs(printed_geometry) do
     if geometry.type == "hitboxes" then
-      draw_hitboxes(geometry.x, geometry.y, geometry.flip_x, geometry.boxes, geometry.filter, geometry.dilation)
+      draw.draw_hitboxes(geometry.x, geometry.y, geometry.flip_x, geometry.boxes, geometry.filter, geometry.dilation)
     elseif geometry.type == "point" then
-      draw_point(geometry.x, geometry.y, geometry.color)
+      draw.draw_point(geometry.x, geometry.y, geometry.color)
     end
   end
 end
 
-function display_draw_life(player_object)
+local function life_text_display(player_object)
   local x = 0
   local y = 20
 
@@ -993,13 +993,13 @@ function display_draw_life(player_object)
   if player_object.id == 1 then
     x = 13
   elseif player_object.id == 2 then
-    x = screen_width - 11 - get_text_width(t)
+    x = draw.SCREEN_WIDTH - 11 - draw.get_text_width(t)
   end
 
   gui.text(x, y, t, 0xFFFB63FF)
 end
 
-function display_draw_meter(player_object)
+local function meter_text_display(player_object)
   local x = 0
   local y = 214
 
@@ -1014,13 +1014,13 @@ function display_draw_meter(player_object)
   if player_object.id == 1 then
     x = 53
   elseif player_object.id == 2 then
-    x = screen_width - 51 - get_text_width(t)
+    x = draw.SCREEN_WIDTH - 51 - draw.get_text_width(t)
   end
 
   gui.text(x, y, t, 0x00FFCEFF, 0x001433FF)
 end
 
-function display_draw_stun_gauge(player_object)
+local function stun_text_display(player_object)
   local x = 0
   local y = 28
 
@@ -1029,31 +1029,15 @@ function display_draw_stun_gauge(player_object)
   if player_object.id == 1 then
     x = 167 - player_object.stun_max + 3
   elseif player_object.id == 2 then
-    x = 216 + player_object.stun_max - get_text_width(t) - 1
+    x = 216 + player_object.stun_max - draw.get_text_width(t) - 1
   end
 
   gui.text(x, y, t, 0xe60000FF, 0x001433FF)
 end
 
-function draw_horizontal_text_segment(p1_x, p2_x, y, text, line_color, edges_height)
-
-  edges_height = edges_height or 3
-  local half_distance_str_width = get_text_width(text) * 0.5
-
-  local center_x = (p1_x + p2_x) * 0.5
-  draw_horizontal_line(math.min(p1_x, p2_x), center_x - half_distance_str_width - 3, y, line_color, 1)
-  draw_horizontal_line(center_x + half_distance_str_width + 3, math.max(p1_x, p2_x), y, line_color, 1)
-  gui.text(center_x - half_distance_str_width, y - 3, text, text_default_color, text_default_border_color)
-
-  if edges_height > 0 then
-    draw_vertical_line(p1_x, y - edges_height, y + edges_height, line_color, 1)
-    draw_vertical_line(p2_x, y - edges_height, y + edges_height, line_color, 1)
-  end
-end  
-
 function display_draw_distances(p1_object, p2_object, mid_distance_height, p1_reference_point, p2_reference_point)
 
-  function find_closest_box_at_height(player_obj, height, box_types)
+  local function find_closest_box_at_height(player_obj, height, box_types)
 
     local px = player_obj.pos_x
     local py = player_obj.pos_y
@@ -1089,7 +1073,7 @@ function display_draw_distances(p1_object, p2_object, mid_distance_height, p1_re
     return has_boxes, left, right
   end
 
-  function get_screen_line_between_boxes(box1_l, box1_r, box2_l, box2_r)
+  local function get_screen_line_between_boxes(box1_l, box1_r, box2_l, box2_r)
     if not (
       (box1_l >= box2_r) or
       (box1_r <= box2_l)
@@ -1098,15 +1082,15 @@ function display_draw_distances(p1_object, p2_object, mid_distance_height, p1_re
     end
 
     if box1_l < box2_l then
-      return true, game_to_screen_space_x(box1_r), game_to_screen_space_x(box2_l)
+      return true, draw.draw.game_to_screen_space_x(box1_r), draw.draw.game_to_screen_space_x(box2_l)
     else
-      return true, game_to_screen_space_x(box2_r), game_to_screen_space_x(box1_l)
+      return true, draw.draw.game_to_screen_space_x(box2_r), draw.draw.game_to_screen_space_x(box1_l)
     end
   end
 
   local text_default_color = 0xF7FFF7FF
   local text_default_border_color = 0x000000FF
-  function display_distance(p1_object, p2_object, height, box_types, p1_reference_point, p2_reference_point, color)
+  local function display_distance(p1_object, p2_object, height, box_types, p1_reference_point, p2_reference_point, color)
     local y = math.min(p1_object.pos_y + height, p2_object.pos_y + height)
     local p1_l, p1_r, p2_l, p2_r
     local p1_result, p2_result = false, false
@@ -1126,9 +1110,9 @@ function display_draw_distances(p1_object, p2_object, mid_distance_height, p1_re
     local line_result, screen_l, screen_r = get_screen_line_between_boxes(p1_l, p1_r, p2_l, p2_r)
 
     if line_result then
-      local screen_y = game_to_screen_space_y(y)
+      local screen_y = draw.draw.game_to_screen_space_y(y)
       local str = string.format("%d", math.abs(screen_r - screen_l))
-      draw_horizontal_text_segment(screen_l, screen_r, screen_y, str, color)
+      draw.draw_horizontal_text_segment(screen_l, screen_r, screen_y, str, color)
     end
   end
 
@@ -1144,10 +1128,10 @@ function display_draw_distances(p1_object, p2_object, mid_distance_height, p1_re
 
   -- player positions
   local line_color = 0xFFFF63FF
-  local p1_screen_x, p1_screen_y = game_to_screen_space(p1_object.pos_x, p1_object.pos_y)
-  local p2_screen_x, p2_screen_y = game_to_screen_space(p2_object.pos_x, p2_object.pos_y)
-  draw_point(p1_screen_x, p1_screen_y, line_color)
-  draw_point(p2_screen_x, p2_screen_y, line_color)
+  local p1_screen_x, p1_screen_y = draw.game_to_screen_space(p1_object.pos_x, p1_object.pos_y)
+  local p2_screen_x, p2_screen_y = draw.game_to_screen_space(p2_object.pos_x, p2_object.pos_y)
+  draw.draw_point(p1_screen_x, p1_screen_y, line_color)
+  draw.draw_point(p2_screen_x, p2_screen_y, line_color)
   gui.text(p1_screen_x + 3, p1_screen_y + 2, string.format("%d:%d", p1_object.pos_x, p1_object.pos_y), text_default_color, text_default_border_color)
   gui.text(p2_screen_x + 3, p2_screen_y + 2, string.format("%d:%d", p2_object.pos_x, p2_object.pos_y), text_default_color, text_default_border_color)
 end
@@ -1169,7 +1153,7 @@ function recording_display(dummy)
     elseif lang == "jp" then
       w, h = get_text_dimensions_multiple(text, "jp", "8")
     end
-    x = screen_width - w - padding
+    x = draw.SCREEN_WIDTH - w - padding
     y = padding
     if lang == "en" then
       render_text_multiple(x, y, text)
@@ -1184,7 +1168,7 @@ function recording_display(dummy)
     elseif lang == "jp" then
       w, h = get_text_dimensions_multiple(text, "jp", "8")
     end
-    x = screen_width - w - padding
+    x = draw.SCREEN_WIDTH - w - padding
     y = padding
     if lang == "en" then
       render_text_multiple(x, y, text)
@@ -1204,7 +1188,7 @@ function recording_display(dummy)
     elseif lang == "jp" then
       w, h = get_text_dimensions_multiple(text, "jp", "8")
     end
-    x = screen_width - w - padding
+    x = draw.SCREEN_WIDTH - w - padding
     y = padding
     if lang == "en" then
       render_text_multiple(x, y, text)
@@ -1216,10 +1200,10 @@ end
 
 show_player_position = true
 function player_position_display()
-  x, y = game_to_screen_space(gamestate.P1.pos_x, gamestate.P1.pos_y)
-  gui.image(x - 4, y,img_8_dir_small)
-  x, y = game_to_screen_space(gamestate.P2.pos_x, gamestate.P2.pos_y)
-  gui.image(x - 4 , y,img_8_dir_small)
+  x, y = draw.game_to_screen_space(gamestate.P1.pos_x, gamestate.P1.pos_y)
+  gui.image(x - 4, y, images.img_dir_small[8])
+  x, y = draw.game_to_screen_space(gamestate.P2.pos_x, gamestate.P2.pos_y)
+  gui.image(x - 4 , y, images.img_dir_small[8])
 end
 
 function draw_hud(player, dummy)
@@ -1230,7 +1214,7 @@ function draw_hud(player, dummy)
   for k, boxes in pairs(to_draw_hitboxes) do
     if k >= gamestate.frame_number then
       if k - gamestate.frame_number <= 8 then
-        draw_hitboxes(unpack(boxes))
+        draw.draw_hitboxes(unpack(boxes))
       end
     else
       to_draw_hitboxes[k] = nil
@@ -1261,14 +1245,14 @@ function draw_hud(player, dummy)
     recording_display(dummy)
   end
   if training_settings.display_gauges then
-    display_draw_life(player)
-    display_draw_life(dummy)
+    life_text_display(player)
+    life_text_display(dummy)
 
-    display_draw_meter(player)
-    display_draw_meter(dummy)
+    meter_text_display(player)
+    meter_text_display(dummy)
 
-    display_draw_stun_gauge(player)
-    display_draw_stun_gauge(dummy)
+    stun_text_display(player)
+    stun_text_display(dummy)
   end
   if training_settings.display_bonuses then
     bonuses_display(player)
@@ -1277,7 +1261,7 @@ function draw_hud(player, dummy)
   if show_jumpins_display then
     jumpins_display(player)
   end
---   draw_denjin(screen_width/2 - 40, screen_height - 40)
+--   draw_denjin(draw.SCREEN_WIDTH/2 - 40, draw.SCREEN_HEIGHT - 40)
 
 end
 

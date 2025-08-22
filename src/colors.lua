@@ -1,10 +1,17 @@
 --defines colors for all ui elements and color manipulation functions
 
+--text pngs
 local text = {
   default = 0xFFFFFFFF,
   selected = 0x00c2FFFF,
   disabled = 0x909090FF,
   button_activated = 0x10FF10FF
+}
+
+--gui.text
+local gui_text = {
+  default = 0xFFFFFFFF,
+  default_border = 0x00c2FFFF
 }
 
 local gauges = {
@@ -42,6 +49,16 @@ local bonuses = {
   defense = 0xD6E3EFFF,
   stun = 0xD6E3EFFF
 }
+
+local hitboxes = {
+  vulnerability = 0x0000FFFF,
+  attack = 0xFF0000FF,
+  throwable = 0x00FF00FF,
+  throw = 0xFFFF00FF,
+  push = 0xFF00FFFF,
+  extvulnerability = 0x00FFFFFF
+}
+
 
 local gd_color = gd.createTrueColor(1, 1)
 local gd_white = gd_color:colorAllocate(255, 255, 255)
@@ -87,12 +104,14 @@ end
 
 return{
   text = text,
+  gui_text = gui_text,
   gauges = gauges,
   parry = parry,
   charge = charge,
   last_hit_bars = last_hit_bars,
   red_parry_miss = red_parry_miss,
   bouses = bonuses,
+  hitboxes = hitboxes,
   hex_to_gd_color = hex_to_gd_color,
   substitute_color = substitute_color,
   colorscale = colorscale,

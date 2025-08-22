@@ -4,23 +4,43 @@ local move_list = movedata.move_list
 local training = require("src/training")
 local character_select = require("src/character_select")
 local colors = require("src/colors")
+local draw = require("src/draw")
 local debug_settings = require("src/debug_settings")
 
 
 initialized = false
-IsMenuOpen = false
+is_open = false
+
+
+save_file_name = ""
+
+local load_file_list = {}
+local load_file_index = 1
+local save_recording_slot_popup, load_recording_slot_popup, controller_style_menu_item,
+life_refill_delay_item, p1_life_reset_value_gauge_item, p2_life_reset_value_gauge_item,
+p1_stun_reset_value_gauge_item, p2_stun_reset_value_gauge_item, stun_reset_delay_item,
+p1_meter_gauge_item, p2_meter_gauge_item, meter_refill_delay_item, slot_weight_item,
+counter_attack_delay_item, counter_attack_random_deviation_item, parry_forward_on_item,
+parry_down_on_item, parry_air_on_item, parry_antiair_on_item, charge_overcharge_on_item, charge_follow_character_item,
+blocking_item, hits_before_red_parry_item, parry_every_n_item, prefer_down_parry_item, counter_attack_item,
+counter_attack_motion_item, counter_attack_button_item, counter_attack_special_item, counter_attack_special_button_item,
+counter_attack_input_display_item, counter_attack_option_select_item, hits_before_counter_attack, change_characters_item,
+p1_distances_reference_point_item, p2_distances_reference_point_item, mid_distance_height_item, air_time_player_coloring_item,
+attack_range_display_max_item, attack_bars_show_decimal_item, language_item, play_challenge_item, select_char_challenge_item
+
+local main_menu
+
 
 function init_menu()
-  save_file_name = ""
+  
   save_recording_slot_popup = make_menu(71, 61, 312, 122, -- screen size 383,223
   {
     textfield_menu_item("file_name", _G, "save_file_name", ""),
     button_menu_item("save", save_recording_slot_to_file),
-    button_menu_item("cancel", function() menu_stack_pop(save_recording_slot_popup) end),
+    button_menu_item("cancel", function() menu_stack_pop(save_recording_slot_popup) end)
   })
 
-  load_file_list = {}
-  load_file_index = 1
+
   load_recording_slot_popup = make_menu(71, 61, 312, 122, -- screen size 383,223
   {
     list_menu_item("file", _G, "load_file_index", load_file_list),
@@ -28,7 +48,7 @@ function init_menu()
     button_menu_item("cancel", function() menu_stack_pop(load_recording_slot_popup) end),
   })
 
-  controller_style_menu_item = controller_style_item("controller_style", training_settings, "controller_style", controller_styles)
+  controller_style_menu_item = controller_style_item("controller_style", training_settings, "controller_style", draw.controller_styles)
   controller_style_menu_item.is_disabled = function()
     return not training_settings.display_input and training_settings.display_input_history == 1
   end
@@ -327,8 +347,6 @@ function init_menu()
       entries = {
         checkbox_menu_item("show_predicted_hitboxes", debug_settings, "show_predicted_hitbox"),
         checkbox_menu_item("record_frame_data", debug_settings, "record_framedata"),
-        checkbox_menu_item("record_idle_frame_data", debug_settings, "record_idle_framedata"),
-        checkbox_menu_item("record_wake-Up_data", debug_settings, "record_wakeupdata"),
         button_menu_item("save_frame_data", save_frame_data),
         map_menu_item("debug_character", debug_settings, "debug_character", _G, "frame_data")
         -- debug_move_menu_item
@@ -341,28 +359,33 @@ function init_menu()
   initialized = true
 end
 
+function open_save_popup()
+  save_recording_slot_popup.selected_index = 1
+  menu_stack_push(save_recording_slot_popup)
+  save_file_name = string.gsub(training.dummy.char_str, "(.*)", string.upper).."_"
+end
 
-counter_attack_settings =
-{
-    ca_type = 1,
-    motion = 1,
-    button = 1,
-    special = 1,
-    special_button = 1,
-    option_select = 1
-}
+function open_load_popup()
+  load_recording_slot_popup.selected_index = 1
+  menu_stack_push(load_recording_slot_popup)
 
-function update_counter_attack_settings()
-  if initialized then
-    counter_attack_settings = training_settings.counter_attack[training.dummy.char_str]
-    counter_attack_item.object = counter_attack_settings
-    counter_attack_motion_item.object = counter_attack_settings
-    counter_attack_button_item.object = counter_attack_settings
-    counter_attack_special_item.object = counter_attack_settings
-    counter_attack_special_button_item.object = counter_attack_settings
-    counter_attack_option_select_item.object = counter_attack_settings
-    counter_attack_input_display_item.object = counter_attack_settings
+  load_file_index = 1
+
+  local cmd = "dir /b "..string.gsub(saved_recordings_path, "/", "\\")
+  local f = io.popen(cmd)
+  if f == nil then
+    print(string.format("Error: Failed to execute command \"%s\"", cmd))
+    return
   end
+  local str = f:read("*all")
+  load_file_list = {}
+  for line in string.gmatch(str, '([^\r\n]+)') do -- Split all lines that have ".json" in them
+    if string.find(line, ".json") ~= nil then
+      local file = line
+      table.insert(load_file_list, file)
+    end
+  end
+  load_recording_slot_popup.content[1].list = load_file_list
 end
 
 function is_guard_jump(str)
@@ -407,6 +430,17 @@ function input_to_text(t)
   return result
 end
 
+
+counter_attack_settings =
+{
+    ca_type = 1,
+    motion = 1,
+    button = 1,
+    special = 1,
+    special_button = 1,
+    option_select = 1
+}
+
 counter_attack_type_index = 1
 
 counter_attack_button = counter_attack_button_default
@@ -414,6 +448,19 @@ counter_attack_button = counter_attack_button_default
 counter_attack_special = {}
 counter_attack_special_button = {}
 
+
+function update_counter_attack_settings()
+  if initialized then
+    counter_attack_settings = training_settings.counter_attack[training.dummy.char_str]
+    counter_attack_item.object = counter_attack_settings
+    counter_attack_motion_item.object = counter_attack_settings
+    counter_attack_button_item.object = counter_attack_settings
+    counter_attack_special_item.object = counter_attack_settings
+    counter_attack_special_button_item.object = counter_attack_settings
+    counter_attack_option_select_item.object = counter_attack_settings
+    counter_attack_input_display_item.object = counter_attack_settings
+  end
+end
 
 counter_attack_button_input = {}
 function update_counter_attack_button()
@@ -481,6 +528,12 @@ function update_counter_attack_special_button()
   end
 end
 
+function update_menu()
+  slot_weight_item.object = recording_slots[training_settings.current_recording_slot]
+  counter_attack_delay_item.object = recording_slots[training_settings.current_recording_slot]
+  counter_attack_random_deviation_item.object = recording_slots[training_settings.current_recording_slot]
+end
+
 function update_gauge_items()
   training_settings.p1_meter = math.min(training_settings.p1_meter, gamestate.P1.max_meter_count * gamestate.P1.max_meter_gauge)
   training_settings.p2_meter = math.min(training_settings.p2_meter, gamestate.P2.max_meter_count * gamestate.P2.max_meter_gauge)
@@ -502,14 +555,14 @@ function handle_input()
   if initialized then
     if gamestate.is_in_match then
       local should_toggle = gamestate.P1.input.pressed.start
-      if log_enabled then
+      if debug_settings.log_enabled then
         should_toggle = gamestate.P1.input.released.start
       end
-      should_toggle = not log_start_locked and should_toggle
+      should_toggle = not debug_settings.log_start_locked and should_toggle
 
       if should_toggle then
-        IsMenuOpen = (not IsMenuOpen)
-        if IsMenuOpen then
+        is_open = (not is_open)
+        if is_open then
           update_counter_attack_settings()
           menu_stack_push(main_menu)
         else
@@ -517,11 +570,11 @@ function handle_input()
         end
       end
     else
-      IsMenuOpen = false
+      is_open = false
       menu_stack_clear()
     end
 
-    if IsMenuOpen then
+    if is_open then
       local current_entry = menu_stack_top():current_entry()
       if current_entry ~= nil and current_entry.autofire_rate ~= nil then
         horizontal_autofire_rate = current_entry.autofire_rate

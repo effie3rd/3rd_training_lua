@@ -1,7 +1,7 @@
 local fd = require("src/framedata")
 local fdm = require("src/framedata_meta")
 local gamestate = require("src/gamestate")
-
+local prediction = require("src/prediction")
 
 local frame_data, character_specific, stages = fd.frame_data, fd.character_specific, fd.stages
 local test_collision, find_move_frame_data = fd.test_collision, fd.find_move_frame_data
@@ -13,7 +13,7 @@ function update_pose(input, player, dummy, pose)
     return
   end
 
-  if gamestate.is_in_match and not IsMenuOpen and not is_playing_input_sequence(dummy) then
+  if gamestate.is_in_match and not is_open and not is_playing_input_sequence(dummy) then
     local on_ground = gamestate.is_state_on_ground(dummy.standing_state, dummy)
     local is_waking_up = dummy.is_wakingup and dummy.remaining_wakeup_time > 0 and dummy.remaining_wakeup_time <= 3
     local wakeup_frame = dummy.standing_state == 0 and dummy.posture == 0
@@ -152,7 +152,7 @@ function update_blocking(input, player, dummy, mode, style, red_parry_hit_count,
   end ]]
 
   local frames_prediction = 3
-  predict_everything(player, dummy, frames_prediction)
+  prediction.predict_everything(player, dummy, frames_prediction)
 
 
   if dummy.received_connection then

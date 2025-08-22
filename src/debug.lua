@@ -3,6 +3,8 @@ local loading = require("src/loading")
 local text = require("src/text")
 local fd = require("src/framedata")
 local fdm = require("src/framedata_meta")
+local draw = require("src/draw")
+
 
 local frame_data = fd.frame_data
 local frame_data_meta = fdm.frame_data_meta
@@ -47,10 +49,14 @@ local function dump_state_display()
       end
       for i = 1, #dump_state[2] do
         local width = get_text_dimensions(dump_state[2][i],"en")
-        render_text(screen_width-2-width,2+8*i,dump_state[2][i],"en")
+        render_text(draw.SCREEN_WIDTH-2-width,2+8*i,dump_state[2][i],"en")
       end
     end
   end
+end
+
+local function draw_predicted_boxes()
+
 end
 
 local state = "air"
@@ -140,7 +146,6 @@ local function filter_memory_decreased()
 end
 
 local function run_debug()
-
   dump_variables()
 
 --[[   if parry_down then

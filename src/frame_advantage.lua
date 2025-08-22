@@ -1,4 +1,5 @@
 local gamestate = require("src/gamestate")
+local draw = require("src/draw")
 
 
 move_advantage = {}
@@ -146,12 +147,12 @@ function frame_advantage_display()
   local text_default_border_color = 0x000000FF
   function display_line(text, value, color)
     color = color or 0xF7FFF7FF
-    local text_width = get_text_width(text)
+    local text_width = draw.get_text_width(text)
     local x = 0
     if move_advantage.player_id == 1 then
       x = 51
     elseif move_advantage.player_id == 2 then
-      x = screen_width - 65 - text_width
+      x = draw.SCREEN_WIDTH - 65 - text_width
     end
 
     gui.text(x, y, string.format(text))

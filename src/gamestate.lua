@@ -239,7 +239,7 @@ local function reset_player_objects()
   P2.charge_4_reset_addr = 0x0202604B
   P2.charge_4_addr = 0x0202604D
   P2.charge_5_reset_addr = 0x02026067
-  P2.charge_5_addr = 0x02026069
+  P2.charge_5_addr = 0x02026069        --to here
 
   P2.kaiten_1_reset_addr = 0x2025F17
   P2.kaiten_1_addr = 0x2025F2F

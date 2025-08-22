@@ -1,5 +1,7 @@
 local gamestate = require("src/gamestate")
 local text = require("src/text")
+local draw = require("src/draw")
+local images = require("src/image_tables")
 
 local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text, text.render_text_multiple, text.get_text_dimensions, text.get_text_dimensions_multiple
 
@@ -80,7 +82,7 @@ function gauge_menu_item(name, object, property_name, unit, fill_color, gauge_ma
   return o
 end
 
-available_characters = {
+local available_characters = {
   " ",
   "A",
   "B",
@@ -460,7 +462,7 @@ function motion_list_menu_item(name, object, property_name, list, default_value,
     end
 
     local img_list = {}
-    local style = controller_styles[training_settings.controller_style]
+    local style = draw.controller_styles[training_settings.controller_style]
     local id = self.object[self.property_name]
     for i = 1, #self.list[id] do
       local dirs = {forward = false, down = false, back = false, up = false}
@@ -476,55 +478,55 @@ function motion_list_menu_item(name, object, property_name, list, default_value,
           dirs.up = true
         elseif self.list[id][i][j] == "LP" then
           added = added + 1
-          table.insert(img_list, img_button_small[style][1])
+          table.insert(img_list, images.img_button_small[style][1])
         elseif self.list[id][i][j] == "MP" then
           added = added + 1
-          table.insert(img_list, img_button_small[style][2])
+          table.insert(img_list, images.img_button_small[style][2])
         elseif self.list[id][i][j] == "HP" then
           added = added + 1
-          table.insert(img_list, img_button_small[style][3])
+          table.insert(img_list, images.img_button_small[style][3])
         elseif self.list[id][i][j] == "LK" then
           added = added + 1
-          table.insert(img_list, img_button_small[style][4])
+          table.insert(img_list, images.img_button_small[style][4])
         elseif self.list[id][i][j] == "MK" then
           added = added + 1
-          table.insert(img_list, img_button_small[style][5])
+          table.insert(img_list, images.img_button_small[style][5])
         elseif self.list[id][i][j] == "HK" then
           added = added + 1
-          table.insert(img_list, img_button_small[style][6])
+          table.insert(img_list, images.img_button_small[style][6])
         elseif self.list[id][i][j] == "EXP" then
           added = added + 2
-          table.insert(img_list, img_button_small[style][1])
-          table.insert(img_list, img_button_small[style][2])
+          table.insert(img_list, images.img_button_small[style][1])
+          table.insert(img_list, images.img_button_small[style][2])
         elseif self.list[id][i][j] == "EXK" then
           added = added + 2
-          table.insert(img_list, img_button_small[style][4])
-          table.insert(img_list, img_button_small[style][5])
+          table.insert(img_list, images.img_button_small[style][4])
+          table.insert(img_list, images.img_button_small[style][5])
         elseif self.list[id][i][j] == "PPP" then
           added = added + 3
-          table.insert(img_list, img_button_small[style][1])
-          table.insert(img_list, img_button_small[style][2])
-          table.insert(img_list, img_button_small[style][3])
+          table.insert(img_list, images.img_button_small[style][1])
+          table.insert(img_list, images.img_button_small[style][2])
+          table.insert(img_list, images.img_button_small[style][3])
         elseif self.list[id][i][j] == "KKK" then
           added = added + 3
-          table.insert(img_list, img_button_small[style][4])
-          table.insert(img_list, img_button_small[style][5])
-          table.insert(img_list, img_button_small[style][6])
+          table.insert(img_list, images.img_button_small[style][4])
+          table.insert(img_list, images.img_button_small[style][5])
+          table.insert(img_list, images.img_button_small[style][6])
         elseif self.list[id][i][j] == "h_charge" then
           added = added + 1
-          table.insert(img_list, img_hold)
+          table.insert(img_list, images.img_hold)
         elseif self.list[id][i][j] == "v_charge" then
           added = added + 1
-          table.insert(img_list, img_hold)
+          table.insert(img_list, images.img_hold)
         elseif self.list[id][i][j] == "neutral" then
           added = added + 1
-          table.insert(img_list, img_5_dir_small)
+          table.insert(img_list, images.img_dir_small[5])
         elseif self.list[id][i][j] == "maru" then
           added = added + 1
-          table.insert(img_list, img_maru)
+          table.insert(img_list, images.img_maru)
         elseif self.list[id][i][j] == "tilda" then
           added = added + 1
-          table.insert(img_list, img_tilda)
+          table.insert(img_list, images.img_tilda)
         end
       end
       local dir = 0
@@ -550,9 +552,9 @@ function motion_list_menu_item(name, object, property_name, list, default_value,
 
       if dir > 0 then
         if added > 0 then
-          table.insert(img_list, #img_list - added + 1, img_dir_small[dir])
+          table.insert(img_list, #img_list - added + 1, images.img_dir_small[dir])
         else
-          table.insert(img_list, img_dir_small[dir])
+          table.insert(img_list, images.img_dir_small[dir])
         end
       end
     end
@@ -629,7 +631,7 @@ function move_input_menu_item(name, object)
     end
 
     local img_list = {}
-    local style = controller_styles[training_settings.controller_style]
+    local style = draw.controller_styles[training_settings.controller_style]
     if counter_attack_type[self.object.ca_type] == "special_sa" then
 
       for i = 1, #counter_attack_special_inputs[self.object.special] do
@@ -646,55 +648,55 @@ function move_input_menu_item(name, object)
             dirs.up = true
           elseif counter_attack_special_inputs[self.object.special][i][j] == "LP" then
             added = added + 1
-            table.insert(img_list, img_button_small[style][1])
+            table.insert(img_list, images.img_button_small[style][1])
           elseif counter_attack_special_inputs[self.object.special][i][j] == "MP" then
             added = added + 1
-            table.insert(img_list, img_button_small[style][2])
+            table.insert(img_list, images.img_button_small[style][2])
           elseif counter_attack_special_inputs[self.object.special][i][j] == "HP" then
             added = added + 1
-            table.insert(img_list, img_button_small[style][3])
+            table.insert(img_list, images.img_button_small[style][3])
           elseif counter_attack_special_inputs[self.object.special][i][j] == "LK" then
             added = added + 1
-            table.insert(img_list, img_button_small[style][4])
+            table.insert(img_list, images.img_button_small[style][4])
           elseif counter_attack_special_inputs[self.object.special][i][j] == "MK" then
             added = added + 1
-            table.insert(img_list, img_button_small[style][5])
+            table.insert(img_list, images.img_button_small[style][5])
           elseif counter_attack_special_inputs[self.object.special][i][j] == "HK" then
             added = added + 1
-            table.insert(img_list, img_button_small[style][6])
+            table.insert(img_list, images.img_button_small[style][6])
           elseif counter_attack_special_inputs[self.object.special][i][j] == "EXP" then
             added = added + 2
-            table.insert(img_list, img_button_small[style][1])
-            table.insert(img_list, img_button_small[style][2])
+            table.insert(img_list, images.img_button_small[style][1])
+            table.insert(img_list, images.img_button_small[style][2])
           elseif counter_attack_special_inputs[self.object.special][i][j] == "EXK" then
             added = added + 2
-            table.insert(img_list, img_button_small[style][4])
-            table.insert(img_list, img_button_small[style][5])
+            table.insert(img_list, images.img_button_small[style][4])
+            table.insert(img_list, images.img_button_small[style][5])
           elseif counter_attack_special_inputs[self.object.special][i][j] == "PPP" then
             added = added + 3
-            table.insert(img_list, img_button_small[style][1])
-            table.insert(img_list, img_button_small[style][2])
-            table.insert(img_list, img_button_small[style][3])
+            table.insert(img_list, images.img_button_small[style][1])
+            table.insert(img_list, images.img_button_small[style][2])
+            table.insert(img_list, images.img_button_small[style][3])
           elseif counter_attack_special_inputs[self.object.special][i][j] == "KKK" then
             added = added + 3
-            table.insert(img_list, img_button_small[style][4])
-            table.insert(img_list, img_button_small[style][5])
-            table.insert(img_list, img_button_small[style][6])
+            table.insert(img_list, images.img_button_small[style][4])
+            table.insert(img_list, images.img_button_small[style][5])
+            table.insert(img_list, images.img_button_small[style][6])
           elseif counter_attack_special_inputs[self.object.special][i][j] == "h_charge" then
             added = added + 1
-            table.insert(img_list, img_hold)
+            table.insert(img_list, images.img_hold)
           elseif counter_attack_special_inputs[self.object.special][i][j] == "v_charge" then
             added = added + 1
-            table.insert(img_list, img_hold)
+            table.insert(img_list, images.img_hold)
           elseif counter_attack_special_inputs[self.object.special][i][j] == "neutral" then
             added = added + 1
             table.insert(img_list, img_5_dir_small)
           elseif counter_attack_special_inputs[self.object.special][i][j] == "maru" then
             added = added + 1
-            table.insert(img_list, img_maru)
+            table.insert(img_list, images.img_maru)
           elseif counter_attack_special_inputs[self.object.special][i][j] == "tilda" then
             added = added + 1
-            table.insert(img_list, img_tilda)
+            table.insert(img_list, images.img_tilda)
           elseif counter_attack_special_inputs[self.object.special][i][j] == "button" then
             added = added + 1
             table.insert(img_list, "button")
@@ -723,9 +725,9 @@ function move_input_menu_item(name, object)
 
         if dir > 0 then
           if added > 0 then
-            table.insert(img_list, #img_list - added + 1, img_dir_small[dir])
+            table.insert(img_list, #img_list - added + 1, images.img_dir_small[dir])
           else
-            table.insert(img_list, img_dir_small[dir])
+            table.insert(img_list, images.img_dir_small[dir])
           end
         end
       end
@@ -736,31 +738,31 @@ function move_input_menu_item(name, object)
           if img_list[j] == "button" then
             table.remove(img_list, j)
             if counter_attack_special_button[self.object.special_button] == "LP" then
-                table.insert(img_list, j, img_button_small[style][1])
+                table.insert(img_list, j, images.img_button_small[style][1])
               elseif counter_attack_special_button[self.object.special_button] == "MP" then
-                table.insert(img_list, j, img_button_small[style][2])
+                table.insert(img_list, j, images.img_button_small[style][2])
               elseif counter_attack_special_button[self.object.special_button] == "HP" then
-                table.insert(img_list, j, img_button_small[style][3])
+                table.insert(img_list, j, images.img_button_small[style][3])
               elseif counter_attack_special_button[self.object.special_button] == "LK" then
-                table.insert(img_list, j, img_button_small[style][4])
+                table.insert(img_list, j, images.img_button_small[style][4])
               elseif counter_attack_special_button[self.object.special_button] == "MK" then
-                table.insert(img_list, j, img_button_small[style][5])
+                table.insert(img_list, j, images.img_button_small[style][5])
               elseif counter_attack_special_button[self.object.special_button] == "HK" then
-                table.insert(img_list, j, img_button_small[style][6])
+                table.insert(img_list, j, images.img_button_small[style][6])
               elseif counter_attack_special_button[self.object.special_button] == "EXP" then
-                table.insert(img_list, j, img_button_small[style][1])
-                table.insert(img_list, j, img_button_small[style][2])
+                table.insert(img_list, j, images.img_button_small[style][1])
+                table.insert(img_list, j, images.img_button_small[style][2])
               elseif counter_attack_special_button[self.object.special_button] == "EXK" then
-                table.insert(img_list, j, img_button_small[style][4])
-                table.insert(img_list, j, img_button_small[style][5])
+                table.insert(img_list, j, images.img_button_small[style][4])
+                table.insert(img_list, j, images.img_button_small[style][5])
               elseif counter_attack_special_button[self.object.special_button] == "PPP" then
-                table.insert(img_list, j, img_button_small[style][1])
-                table.insert(img_list, j, img_button_small[style][2])
-                table.insert(img_list, j, img_button_small[style][3])
+                table.insert(img_list, j, images.img_button_small[style][1])
+                table.insert(img_list, j, images.img_button_small[style][2])
+                table.insert(img_list, j, images.img_button_small[style][3])
               elseif counter_attack_special_button[self.object.special_button] == "KKK" then
-                table.insert(img_list, j, img_button_small[style][4])
-                table.insert(img_list, j, img_button_small[style][5])
-                table.insert(img_list, j, img_button_small[style][6])
+                table.insert(img_list, j, images.img_button_small[style][4])
+                table.insert(img_list, j, images.img_button_small[style][5])
+                table.insert(img_list, j, images.img_button_small[style][6])
               end
             end
             j = j + 1
@@ -785,7 +787,7 @@ function move_input_menu_item(name, object)
               for j = 1, length do
                 table.remove(img_list, start)
               end
-              table.insert(img_list, start, img_hold)
+              table.insert(img_list, start, images.img_hold)
               i = 2
             end
             start = 0
@@ -809,7 +811,7 @@ function move_input_menu_item(name, object)
             matching = false
           end
         end
-        if img_list[i] == img_hold then
+        if img_list[i] == images.img_hold then
           if not matching then
             start = i - 1
             matching = true
@@ -872,8 +874,8 @@ function controller_style_item(name, object, property_name, list, default_value,
     if lang_code[training_settings.language] == "jp" then
       c_offset_y = 2
     end
-    local style = controller_styles[self.object[self.property_name]]
-    draw_buttons_preview_big(x + offset_x, y + c_offset_y, style)
+    local style = draw.controller_styles[self.object[self.property_name]]
+    draw.draw_buttons_preview_big(x + offset_x, y + c_offset_y, style)
     offset_x = offset_x + 21
     render_text(x + offset_x, y, tostring(self.list[self.object[self.property_name]]), nil, nil, color)
   end
@@ -1632,10 +1634,10 @@ function multitab_menu_draw(menu)
       scroll_arrow_y_pos = menu_y + (y_offset - menu_item_spacing - h) + h / 2 - 1
     end
     if scroll_up then
-      gui.image(menu.left + x_padding / 2 - 2, menu_y + h / 2 - 2, scroll_up_arrow)
+      gui.image(menu.left + x_padding / 2 - 2, menu_y + h / 2 - 2, images.scroll_up_arrow)
     end
     if scroll_down then
-      gui.image(menu.left + x_padding / 2 - 2, scroll_arrow_y_pos, scroll_down_arrow)
+      gui.image(menu.left + x_padding / 2 - 2, scroll_arrow_y_pos, images.scroll_down_arrow)
     end
   end
 
