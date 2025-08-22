@@ -3,7 +3,6 @@ local gamestate = require("src/gamestate")
 local training = require("src/training")
 
 
-
 saved_recordings_path = "saved/recordings/"
 
 recording_slot_count = 16
@@ -249,7 +248,7 @@ end
 function update_recording(input, player, dummy)
 
   local input_buffer_length = 11
-  if gamestate.is_in_match and not is_open then
+  if gamestate.is_in_match then
 
     -- manage input
     local input_pressed = (not swap_characters and player.input.pressed.coin) or (swap_characters and dummy.input.pressed.coin)

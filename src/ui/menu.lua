@@ -1,17 +1,20 @@
 local gamestate = require("src/gamestate")
 local movedata = require("src.modules.movedata")
 local recording = require("src.control.recording")
-local move_list = movedata.move_list
 local training = require("src/training")
 local character_select = require("src.control.character_select")
 local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
 local settings = require("src/settings")
 local debug_settings = require("src/debug_settings")
+require("src.ui.menu_tables")
+require("src.ui.menu_items")
 
 
-initialized = false
-is_open = false
+local move_list = movedata.move_list
+
+local initialized = false
+local is_open = false
 
 
 save_file_name = ""
@@ -31,8 +34,18 @@ attack_range_display_max_item, attack_bars_show_decimal_item, language_item, pla
 
 local main_menu
 
+counter_attack_settings =
+{
+    ca_type = 1,
+    motion = 1,
+    button = 1,
+    special = 1,
+    special_button = 1,
+    option_select = 1
+}
+local counter_attack_button = counter_attack_button_default
 
-function init_menu()
+local function init_menu()
   
   save_recording_slot_popup = make_menu(71, 61, 312, 122, -- screen size 383,223
   {
@@ -419,19 +432,10 @@ function input_to_text(t)
 end
 
 
-counter_attack_settings =
-{
-    ca_type = 1,
-    motion = 1,
-    button = 1,
-    special = 1,
-    special_button = 1,
-    option_select = 1
-}
+
 
 counter_attack_type_index = 1
 
-counter_attack_button = counter_attack_button_default
 
 counter_attack_special = {}
 counter_attack_special_button = {}
@@ -593,3 +597,29 @@ function handle_input()
     end
   end
 end
+
+local menu_module = {
+  init_menu = init_menu
+}
+
+setmetatable(menu_module, {
+  __index = function(_, key)
+    if key == "initialized" then
+      return initialized
+    elseif key == "is_open" then
+      return is_open
+    end
+  end,
+
+  __newindex = function(_, key, value)
+    if key == "initialized" then
+      initialized = value
+    elseif key == "is_open" then
+      is_open = value
+    else
+      rawset(menu_module, key, value)
+    end
+  end
+})
+
+return menu_module

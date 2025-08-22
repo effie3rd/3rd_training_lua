@@ -9,6 +9,8 @@ local character_specific = fd.character_specific
 local player = gamestate.P1
 local dummy = gamestate.P2
 
+local freeze_game = false
+
 local char_str = dummy.char_str
 -- local counter_attack_settings = settings.training.counter_attack[char_str]
 
@@ -21,7 +23,7 @@ local function write_player_vars(player_obj)
   end
 
   -- LIFE
-  if gamestate.is_in_match and not is_open then
+  if gamestate.is_in_match and not freeze_game then
     local life = memory.readbyte(player_obj.life_addr)
     if settings.training.life_mode == 2 then
       if player_obj.is_idle and player_obj.idle_time > settings.training.life_refill_delay then
@@ -36,7 +38,7 @@ local function write_player_vars(player_obj)
   end
 
   -- METER
-  if gamestate.is_in_match and not is_open and not player_obj.is_in_timed_sa then
+  if gamestate.is_in_match and not freeze_game and not player_obj.is_in_timed_sa then
     -- If the SA is a timed SA, the gauge won't go back to 0 when it reaches max. We have to make special cases for it
     local is_timed_sa = character_specific[player_obj.char_str].timed_sa[player_obj.selected_sa]
 
@@ -110,7 +112,7 @@ local function write_player_vars(player_obj)
     memory.writebyte(player_obj.stun_bar_char_addr, 0)
     memory.writebyte(player_obj.stun_bar_mantissa_addr, 0)
   elseif settings.training.stun_mode == 3 then
-    if gamestate.is_in_match and not is_open and player_obj.is_idle then
+    if gamestate.is_in_match and not freeze_game and player_obj.is_idle then
       local wanted_stun = 0
       if player_obj.id == 1 then
         wanted_stun = settings.training.p1_stun_reset_value
@@ -165,7 +167,7 @@ local function write_player_vars(player_obj)
 end
 
 local function write_game_vars()
-  freeze_game(is_open)
+  set_freeze_game(freeze_game)
 
   set_infinite_time(settings.training.infinite_time)
 
@@ -180,8 +182,6 @@ local function update_training_state()
 end
 
 
-
-
 local training = {
   update_training_state = update_training_state
 }
@@ -192,6 +192,8 @@ setmetatable(training, {
       return player
     elseif key == "dummy" then
       return dummy
+    elseif key == "freeze_game" then
+      return freeze_game
     end
   end,
 
@@ -200,6 +202,8 @@ setmetatable(training, {
       player = value
     elseif key == "dummy" then
       dummy = value
+    elseif key == "freeze_game" then
+      freeze_game = value
     else
       rawset(training, key, value)
     end

@@ -1,6 +1,7 @@
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
 local draw = require("src.ui.draw")
+local menu = require("src.ui.menu")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local frame_data_meta = fdm.frame_data_meta
@@ -196,7 +197,7 @@ function process_command_queue(player_obj, input)
   if player_obj.command_queue == nil then
     return
   end
-  if is_open then
+  if menu.is_open then
     return
   end
   if not gamestate.is_in_match then

@@ -123,7 +123,7 @@ function reset_parry_cooldowns(player)
   memory.writebyte(player.parry_antiair_cooldown_time_addr, 0)
 end
 
-function freeze_game(yes)
+function set_freeze_game(yes)
   if yes then
     memory.writebyte(0x0201136F, 0xFF)
   else

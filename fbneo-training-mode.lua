@@ -59,9 +59,7 @@ require("src/display")
 require("src.ui.hud")
 require("src.control.input")
 require("src.modules.prediction")
-require("src.ui.menu_tables")
-require("src.ui.menu_items")
-require("src.ui.menu")
+local menu = require("src.ui.menu")
 require("src.ui.input_history")
 require("src.modules.attack_data")
 require("src.modules.frame_advantage")
@@ -188,8 +186,8 @@ local function before_frame()
   if not loading.text_images_loaded or not loading.frame_data_loaded then
     local number_loaded = loading.load_all()
     loading_bar_loaded = loading_bar_loaded + number_loaded
-  elseif loading.text_images_loaded and not initialized then
-    init_menu()
+  elseif loading.text_images_loaded and not menu.initialized then
+    menu.init_menu()
   end
 
   draw.update_draw_variables()
@@ -205,7 +203,7 @@ local function before_frame()
     debug.run_debug()
   end
 
-  if initialized then --menu.initialized
+  if menu.initialized then
     update_menu()
     -- load recordings according to gamestate.P2 character
     if previous_p2_char_str ~= gamestate.P2.char_str then
@@ -228,11 +226,12 @@ local function before_frame()
     end
   end
 
+  training.freeze_game = menu.is_open
   training.update_training_state()
 
   -- input
   local input = joypad.get()
-  if gamestate.is_in_match and not is_open and swap_characters then
+  if gamestate.is_in_match and not menu.is_open and swap_characters then
     swap_inputs(input)
   end
 
@@ -295,11 +294,15 @@ local function before_frame()
     update_counter_attack(input, training.player, training.dummy, counter_attack_settings, settings.training.hits_before_counter_attack_count)
 
     -- recording
-    update_recording(input, training.player, training.dummy)
+    if not menu.is_open then
+      update_recording(input, training.player, training.dummy)
+    end
   end
 
-  process_pending_input_sequence(gamestate.P1, input)
-  process_pending_input_sequence(gamestate.P2, input)
+  if not menu.is_open then
+    process_pending_input_sequence(gamestate.P1, input)
+    process_pending_input_sequence(gamestate.P2, input)
+  end
 
   if gamestate.is_in_match then
     input_history_update(input_history[1], "P1", input)
@@ -400,7 +403,7 @@ local function on_gui()
 
     handle_input() -- main_menu.handle_input()
 
-    if not is_open then
+    if not menu.is_open then
       draw_debug_gui()
     end
 
