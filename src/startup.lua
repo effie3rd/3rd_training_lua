@@ -1,7 +1,6 @@
 game_name = "Street Fighter III 3rd Strike (Japan 990512)"
 script_version = "v1.0"
 fc_version = "2.1.45"
-saved_path = "saved/"
 rom_name = emu.romname()
 is_4rd_strike = false
 

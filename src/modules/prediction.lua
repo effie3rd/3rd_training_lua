@@ -1,5 +1,5 @@
-local fd = require("src/framedata")
-local fdm = require("src/framedata_meta")
+local fd = require("src.modules.framedata")
+local fdm = require("src.modules.framedata_meta")
 local gamestate = require("src/gamestate")
 
 local frame_data, character_specific, stages = fd.frame_data, fd.character_specific, fd.stages

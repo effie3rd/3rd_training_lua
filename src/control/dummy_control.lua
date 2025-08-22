@@ -1,7 +1,8 @@
-local fd = require("src/framedata")
-local fdm = require("src/framedata_meta")
+local settings = require("src/settings")
+local fd = require("src.modules.framedata")
+local fdm = require("src.modules.framedata_meta")
 local gamestate = require("src/gamestate")
-local prediction = require("src/prediction")
+local prediction = require("src.modules.prediction")
 
 local frame_data, character_specific, stages = fd.frame_data, fd.character_specific, fd.stages
 local test_collision, find_move_frame_data = fd.test_collision, fd.find_move_frame_data
@@ -64,7 +65,7 @@ function update_blocking(input, player, dummy, mode, style, red_parry_hit_count,
           parry_type = "parry_antiair"
         end
       end
-      local parry_low = hit_type == 2 or (training_settings.prefer_down_parry and hit_type == 1 and dummy.pos_y <= 8)
+      local parry_low = hit_type == 2 or (settings.training.prefer_down_parry and hit_type == 1 and dummy.pos_y <= 8)
       if parry_low then
         parry_type = "parry_down"
       end
@@ -232,7 +233,7 @@ function update_blocking(input, player, dummy, mode, style, red_parry_hit_count,
       end
 
       if hit_type > blocking_queue[expected_attack_delta].hit_type then
-        if training_settings.prefer_down_parry and blocking_queue[expected_attack_delta].hit_type == 1 then
+        if settings.training.prefer_down_parry and blocking_queue[expected_attack_delta].hit_type == 1 then
           blocking_queue[expected_attack_delta].hit_type = 2
         else
           blocking_queue[expected_attack_delta].hit_type = hit_type
@@ -476,10 +477,10 @@ function update_counter_attack(input, attacker, defender, counter_attack_setting
 
   function handle_recording()
     if counter_attack_settings.ca_type == 5 and defender.id == 2 then
-      local slot_index = training_settings.current_recording_slot
-      if training_settings.replay_mode == 2 or training_settings.replay_mode == 5 then
+      local slot_index = settings.training.current_recording_slot
+      if settings.training.replay_mode == 2 or settings.training.replay_mode == 5 then
         slot_index = find_random_recording_slot()
-      elseif training_settings.replay_mode == 3 or training_settings.replay_mode == 6 then
+      elseif settings.training.replay_mode == 3 or settings.training.replay_mode == 6 then
         slot_index = go_to_next_ordered_slot()
       end
       if slot_index < 0 then
@@ -620,7 +621,7 @@ function update_counter_attack(input, attacker, defender, counter_attack_setting
 
   if defender.counter.sequence then
     if defender.counter.air_recovery then
-      local frames_before_landing = predict_frames_before_landing(defender)
+      local frames_before_landing = prediction.predict_frames_before_landing(defender)
       print(frames_before_landing)
       if frames_before_landing > 0 then
         defender.counter.attack_frame = gamestate.frame_number + frames_before_landing + 2
@@ -662,7 +663,7 @@ function update_counter_attack(input, attacker, defender, counter_attack_setting
     end
   elseif counter_attack_settings.ca_type == 5 and defender.counter.recording_slot > 0 then
     if defender.counter.attack_frame <= (gamestate.frame_number + 1) then
-      if training_settings.replay_mode == 2 or training_settings.replay_mode == 3 or training_settings.replay_mode == 5 or training_settings.replay_mode == 6 then
+      if settings.training.replay_mode == 2 or settings.training.replay_mode == 3 or settings.training.replay_mode == 5 or settings.training.replay_mode == 6 then
         override_replay_slot = defender.counter.recording_slot
       end
       if debug then

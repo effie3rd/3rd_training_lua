@@ -1,9 +1,9 @@
 local gamestate = require("src/gamestate")
 local loading = require("src/loading")
-local text = require("src/text")
-local fd = require("src/framedata")
-local fdm = require("src/framedata_meta")
-local draw = require("src/draw")
+local text = require("src.ui.text")
+local fd = require("src.modules.framedata")
+local fdm = require("src.modules.framedata_meta")
+local draw = require("src.ui.draw")
 
 
 local frame_data = fd.frame_data

@@ -1,4 +1,4 @@
-local fd = require("src/framedata")
+local fd = require("src.modules.framedata")
 local stages = fd.stages
 
 pose = {
@@ -228,15 +228,8 @@ gauge_refill_mode = {"off", "refill_max", "reset_value", "infinite" }
 display_attack_bars_mode =
 {
   "menu_off",
-  "1_line",
-  "2_lines"
-}
-
-special_training_mode = {
-  "none",
-  "parry",
-  "charge",
-  "Hyakuretsu Kyaku (Chun Li)"
+  "menu_1_line",
+  "menu_2_lines"
 }
 
 language = {
@@ -247,6 +240,15 @@ language = {
 lang_code = {
   "en",
   "jp"
+}
+
+special_training_mode = 
+{
+  "training_defense",
+  "training_footsies",
+  "training_jumpins",
+  "training_geneijin",
+  "training_unblockables"
 }
 
 challenge_mode = {
@@ -277,3 +279,4 @@ distance_display_reference_point =
   "origin",
   "hurtbox"
 }
+

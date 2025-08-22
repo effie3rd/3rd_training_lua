@@ -4,7 +4,7 @@ local text = require("src.ui.text")
 local images = require("src.ui.image_tables")
 
 local render_text, get_text_dimensions = text.render_text, text.get_text_dimensions
-local character_select = require("src/character_select")
+local character_select = require("src.control.character_select")
 
 local SCREEN_WIDTH = 383
 local SCREEN_HEIGHT = 223

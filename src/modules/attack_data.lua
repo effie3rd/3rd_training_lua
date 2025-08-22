@@ -1,5 +1,5 @@
 local gamestate = require("src/gamestate")
-local draw = require("src/draw")
+local draw = require("src.ui.draw")
 
 attack_data = {}
 

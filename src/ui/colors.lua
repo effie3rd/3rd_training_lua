@@ -110,7 +110,7 @@ return{
   charge = charge,
   last_hit_bars = last_hit_bars,
   red_parry_miss = red_parry_miss,
-  bouses = bonuses,
+  bonuses = bonuses,
   hitboxes = hitboxes,
   hex_to_gd_color = hex_to_gd_color,
   substitute_color = substitute_color,

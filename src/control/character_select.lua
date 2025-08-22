@@ -1,3 +1,4 @@
+local settings = require("src/settings")
 local gamestate = require("src/gamestate")
 
 local character_select_savestate = savestate.create("data/"..rom_name.."/savestates/character_select.fs")
@@ -423,9 +424,9 @@ local function update_character_select(input, do_fast_forward)
     end
   end
 
-  if not gamestate.is_in_match and training_settings.force_stage > 1 then
-    local stage = stage_map[training_settings.force_stage]
-    if training_settings.force_stage == 2 then
+  if not gamestate.is_in_match and settings.training.force_stage > 1 then
+    local stage = stage_map[settings.training.force_stage]
+    if settings.training.force_stage == 2 then
       local n = 3 + math.random(0, #stage_list - 3)
       stage = stage_map[n]
     end

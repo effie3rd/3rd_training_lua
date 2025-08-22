@@ -1,4 +1,4 @@
-require("src/startup")
+require("src.startup")
 
 print("-----------------------------")
 print("  3rd_training.lua - "..script_version.."")
@@ -42,33 +42,33 @@ print("")
 require("src/tools")
 local timer = perf_timer:new()
 require("src/memory_addresses")
-require("src/write_memory")
-require("src/recording")
-require("src/settings")
-local fd = require("src/framedata")
-local fdm = require("src/framedata_meta")
-local text = require("src/text")
+require("src.control.write_memory")
+local settings = require("src/settings")
+local debug_settings = require("src/debug_settings")
+local recording = require("src.control.recording")
+local fd = require("src.modules.framedata")
+local fdm = require("src.modules.framedata_meta")
+local text = require("src.ui.text")
 local gamestate = require("src/gamestate")
 local loading = require("src/loading")
 local training = require("src/training")
-require("src/dummy_control")
-local images = require("src/image_tables")
-local draw = require("src/draw")
+require("src.control.dummy_control")
+local images = require("src.ui.image_tables")
+local draw = require("src.ui.draw")
 require("src/display")
-require("src/hud")
-require("src/input")
-require("src/prediction")
-require("src/menu_tables")
-require("src/menu_items")
-require("src/menu")
-require("src/input_history")
-require("src/attack_data")
-require("src/frame_advantage")
-local character_select = require("src/character_select")
+require("src.ui.hud")
+require("src.control.input")
+require("src.modules.prediction")
+require("src.ui.menu_tables")
+require("src.ui.menu_items")
+require("src.ui.menu")
+require("src.ui.input_history")
+require("src.modules.attack_data")
+require("src.modules.frame_advantage")
+local character_select = require("src.control.character_select")
 -- require("src/training/jumpins")
-require("src/record_framedata")
+require("src.modules.record_framedata")
 local debug = require("src/debug")
-local debug_settings = require("src/debug_settings")
 
 --aliases
 local frame_data, character_specific = fd.frame_data, fd.character_specific
@@ -94,12 +94,12 @@ local function on_load_state()
 
   gamestate.gamestate_read()
 
-  restore_recordings()
+  recording.restore_recordings()
 
   -- reset recording states in a useful way
   if current_recording_state == 3 then
     set_recording_state({}, 2)
-  elseif current_recording_state == 4 and (training_settings.replay_mode == 4 or training_settings.replay_mode == 5 or training_settings.replay_mode == 6) then
+  elseif current_recording_state == 4 and (settings.training.replay_mode == 4 or settings.training.replay_mode == 5 or settings.training.replay_mode == 6) then
     set_recording_state({}, 1)
     set_recording_state({}, 4)
   end
@@ -114,8 +114,6 @@ local function on_load_state()
 end
 
 local function on_start()
-  load_training_data()
-
   emu.speedmode("normal")
 
   character_select.start_character_select_sequence()
@@ -211,7 +209,7 @@ local function before_frame()
     update_menu()
     -- load recordings according to gamestate.P2 character
     if previous_p2_char_str ~= gamestate.P2.char_str then
-      restore_recordings()
+      recording.restore_recordings()
     end
     --update character specific settings on training.dummy change
     if previous_dummy_char_str ~= training.dummy.char_str then
@@ -238,7 +236,7 @@ local function before_frame()
     swap_inputs(input)
   end
 
-  character_select.update_character_select(input, training_settings.fast_forward_intro)
+  character_select.update_character_select(input, settings.training.fast_forward_intro)
 
   if not gamestate.is_in_match then
     if gamestate.P1.input.pressed.start then
@@ -261,7 +259,7 @@ local function before_frame()
 
   --challenge
 --[[   if is_in_challenge then
-    if training_settings.challenge_current_mode == 1 then
+    if settings.training.challenge_current_mode == 1 then
       hadou_matsuri_run()
       if gamestate.is_in_match then
         input = hm_input --for input display
@@ -269,7 +267,7 @@ local function before_frame()
     end
   end ]]
 
-  if loading.frame_data_loaded and gamestate.is_in_match and not debug_settings.record_framedata then
+  if loading.frame_data_loaded and gamestate.is_in_match and not debug_settings.recording_framedata then
     -- attack data
     attack_data_update(training.player, training.dummy)
 
@@ -277,24 +275,24 @@ local function before_frame()
     frame_advantage_update(training.player, training.dummy)
 
     -- blocking
-    update_blocking(input, training.player, training.dummy, training_settings.blocking_mode, training_settings.blocking_style, training_settings.red_parry_hit_count, training_settings.parry_every_n_count)
+    update_blocking(input, training.player, training.dummy, settings.training.blocking_mode, settings.training.blocking_style, settings.training.red_parry_hit_count, settings.training.parry_every_n_count)
 
     update_blocking_direction(input, training.player, training.dummy)
 
     -- pose
-    update_pose(input, training.player, training.dummy, training_settings.pose)
+    update_pose(input, training.player, training.dummy, settings.training.pose)
 
     -- mash stun
-    update_mash_stun(input, training.player, training.dummy, training_settings.mash_stun_mode)
+    update_mash_stun(input, training.player, training.dummy, settings.training.mash_stun_mode)
 
     -- fast wake-up
-    update_fast_wake_up(input, training.player, training.dummy, training_settings.fast_wakeup_mode)
+    update_fast_wake_up(input, training.player, training.dummy, settings.training.fast_wakeup_mode)
 
     -- tech throws
-    update_tech_throws(input, training.player, training.dummy, training_settings.tech_throws_mode)
+    update_tech_throws(input, training.player, training.dummy, settings.training.tech_throws_mode)
 
     -- counter attack
-    update_counter_attack(input, training.player, training.dummy, counter_attack_settings, training_settings.hits_before_counter_attack_count)
+    update_counter_attack(input, training.player, training.dummy, counter_attack_settings, settings.training.hits_before_counter_attack_count)
 
     -- recording
     update_recording(input, training.player, training.dummy)
@@ -341,33 +339,33 @@ local function on_gui()
     if gamestate.is_in_match and not disable_display then
 
       -- distances
-      if training_settings.display_distances then
-        display_draw_distances(gamestate.P1, gamestate.P2, training_settings.mid_distance_height, training_settings.p1_distances_reference_point, training_settings.p2_distances_reference_point)
+      if settings.training.display_distances then
+        display_draw_distances(gamestate.P1, gamestate.P2, settings.training.mid_distance_height, settings.training.p1_distances_reference_point, settings.training.p2_distances_reference_point)
       end
 
       -- input history
-      if training_settings.display_input_history == 5 then --moving
+      if settings.training.display_input_history == 5 then --moving
         if gamestate.P1.pos_x < 320 then
-          input_history_draw(input_history[1], draw.SCREEN_WIDTH - 4, 49, true, draw.controller_styles[training_settings.controller_style])
+          input_history_draw(input_history[1], draw.SCREEN_WIDTH - 4, 49, true, draw.controller_styles[settings.training.controller_style])
         else
-          input_history_draw(input_history[1], 4, 49, false, draw.controller_styles[training_settings.controller_style])
+          input_history_draw(input_history[1], 4, 49, false, draw.controller_styles[settings.training.controller_style])
         end
       else
-        if training_settings.display_input_history == 2 or training_settings.display_input_history == 4 then
-          input_history_draw(input_history[1], 4, 49, false, draw.controller_styles[training_settings.controller_style])
+        if settings.training.display_input_history == 2 or settings.training.display_input_history == 4 then
+          input_history_draw(input_history[1], 4, 49, false, draw.controller_styles[settings.training.controller_style])
         end
-        if training_settings.display_input_history == 3 or training_settings.display_input_history == 4 then
-          input_history_draw(input_history[2], draw.SCREEN_WIDTH - 4, 49, true, draw.controller_styles[training_settings.controller_style])
+        if settings.training.display_input_history == 3 or settings.training.display_input_history == 4 then
+          input_history_draw(input_history[2], draw.SCREEN_WIDTH - 4, 49, true, draw.controller_styles[settings.training.controller_style])
         end
       end
 
       -- controllers
-      if training_settings.display_input then
+      if settings.training.display_input then
         local i = joypad.get()
         local p1 = make_input_history_entry("P1", i)
         local p2 = make_input_history_entry("P2", i)
-        draw.draw_controller_big(p1, 44, 34, draw.controller_styles[training_settings.controller_style])
-        draw.draw_controller_big(p2, 310, 34, draw.controller_styles[training_settings.controller_style])
+        draw.draw_controller_big(p1, 44, 34, draw.controller_styles[settings.training.controller_style])
+        draw.draw_controller_big(p2, 310, 34, draw.controller_styles[settings.training.controller_style])
       end
 
 
@@ -386,12 +384,12 @@ local function on_gui()
 
       -- attack data
       -- do not show if special training not following character is on, otherwise it will overlap
-      if training_settings.display_attack_data and (training_settings.special_training_current_mode == 1 or training_settings.charge_follow_character) then
+      if settings.training.display_attack_data and (settings.training.special_training_current_mode == 1 or settings.training.charge_follow_character) then
         attack_data_display()
       end
 
       -- move advantage
-      if training_settings.display_frame_advantage then
+      if settings.training.display_frame_advantage then
         frame_advantage_display()
       end
     end

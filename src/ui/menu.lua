@@ -1,10 +1,12 @@
 local gamestate = require("src/gamestate")
-local movedata = require("src/movedata")
+local movedata = require("src.modules.movedata")
+local recording = require("src.control.recording")
 local move_list = movedata.move_list
 local training = require("src/training")
-local character_select = require("src/character_select")
+local character_select = require("src.control.character_select")
 local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
+local settings = require("src/settings")
 local debug_settings = require("src/debug_settings")
 
 
@@ -20,8 +22,7 @@ local save_recording_slot_popup, load_recording_slot_popup, controller_style_men
 life_refill_delay_item, p1_life_reset_value_gauge_item, p2_life_reset_value_gauge_item,
 p1_stun_reset_value_gauge_item, p2_stun_reset_value_gauge_item, stun_reset_delay_item,
 p1_meter_gauge_item, p2_meter_gauge_item, meter_refill_delay_item, slot_weight_item,
-counter_attack_delay_item, counter_attack_random_deviation_item, parry_forward_on_item,
-parry_down_on_item, parry_air_on_item, parry_antiair_on_item, charge_overcharge_on_item, charge_follow_character_item,
+counter_attack_delay_item, counter_attack_random_deviation_item, charge_overcharge_on_item, charge_follow_character_item,
 blocking_item, hits_before_red_parry_item, parry_every_n_item, prefer_down_parry_item, counter_attack_item,
 counter_attack_motion_item, counter_attack_button_item, counter_attack_special_item, counter_attack_special_button_item,
 counter_attack_input_display_item, counter_attack_option_select_item, hits_before_counter_attack, change_characters_item,
@@ -48,86 +49,77 @@ function init_menu()
     button_menu_item("cancel", function() menu_stack_pop(load_recording_slot_popup) end),
   })
 
-  controller_style_menu_item = controller_style_item("controller_style", training_settings, "controller_style", draw.controller_styles)
+  controller_style_menu_item = controller_style_item("controller_style", settings.training, "controller_style", draw.controller_styles)
   controller_style_menu_item.is_disabled = function()
-    return not training_settings.display_input and training_settings.display_input_history == 1
+    return not settings.training.display_input and settings.training.display_input_history == 1
   end
 
 
-  life_refill_delay_item = integer_menu_item("life_refill_delay", training_settings, "life_refill_delay", 1, 100, false, 20)
+  life_refill_delay_item = integer_menu_item("life_refill_delay", settings.training, "life_refill_delay", 1, 100, false, 20)
   life_refill_delay_item.is_disabled = function()
-    return training_settings.life_mode ~= 2
+    return settings.training.life_mode ~= 2
   end
 
-  p1_life_reset_value_gauge_item = gauge_menu_item("p1_life_reset_value", training_settings, "p1_life_reset_value", 160, colors.gauges.life)
-  p2_life_reset_value_gauge_item = gauge_menu_item("p2_life_reset_value", training_settings, "p2_life_reset_value", 160, colors.gauges.life)
+  p1_life_reset_value_gauge_item = gauge_menu_item("p1_life_reset_value", settings.training, "p1_life_reset_value", 160, colors.gauges.life)
+  p2_life_reset_value_gauge_item = gauge_menu_item("p2_life_reset_value", settings.training, "p2_life_reset_value", 160, colors.gauges.life)
 
-  p1_stun_reset_value_gauge_item = gauge_menu_item("p1_stun_reset_value", training_settings, "p1_stun_reset_value", 64, colors.gauges.stun)
-  p2_stun_reset_value_gauge_item = gauge_menu_item("p2_stun_reset_value", training_settings, "p2_stun_reset_value", 64, colors.gauges.stun)
+  p1_stun_reset_value_gauge_item = gauge_menu_item("p1_stun_reset_value", settings.training, "p1_stun_reset_value", 64, colors.gauges.stun)
+  p2_stun_reset_value_gauge_item = gauge_menu_item("p2_stun_reset_value", settings.training, "p2_stun_reset_value", 64, colors.gauges.stun)
   p1_stun_reset_value_gauge_item.unit = 1
   p2_stun_reset_value_gauge_item.unit = 1
-  stun_reset_delay_item = integer_menu_item("stun_reset_delay", training_settings, "stun_reset_delay", 1, 100, false, 20)
+  stun_reset_delay_item = integer_menu_item("stun_reset_delay", settings.training, "stun_reset_delay", 1, 100, false, 20)
   p1_stun_reset_value_gauge_item.is_disabled = function()
-    return training_settings.stun_mode ~= 3
+    return settings.training.stun_mode ~= 3
   end
   p2_stun_reset_value_gauge_item.is_disabled = p1_stun_reset_value_gauge_item.is_disabled
   stun_reset_delay_item.is_disabled = p1_stun_reset_value_gauge_item.is_disabled
 
-  p1_meter_gauge_item = gauge_menu_item("p1_meter_reset_value", training_settings, "p1_meter_reset_value", 2, colors.gauges.meter)
-  p2_meter_gauge_item = gauge_menu_item("p2_meter_reset_value", training_settings, "p2_meter_reset_value", 2, colors.gauges.meter)
-  meter_refill_delay_item = integer_menu_item("meter_refill_delay", training_settings, "meter_refill_delay", 1, 100, false, 20)
+  p1_meter_gauge_item = gauge_menu_item("p1_meter_reset_value", settings.training, "p1_meter_reset_value", 2, colors.gauges.meter)
+  p2_meter_gauge_item = gauge_menu_item("p2_meter_reset_value", settings.training, "p2_meter_reset_value", 2, colors.gauges.meter)
+  meter_refill_delay_item = integer_menu_item("meter_refill_delay", settings.training, "meter_refill_delay", 1, 100, false, 20)
 
   p1_meter_gauge_item.is_disabled = function()
-    return training_settings.meter_mode ~= 2
+    return settings.training.meter_mode ~= 2
   end
   p2_meter_gauge_item.is_disabled = p1_meter_gauge_item.is_disabled
   meter_refill_delay_item.is_disabled = p1_meter_gauge_item.is_disabled
 
 
-  slot_weight_item = integer_menu_item("weight", recording_slots[training_settings.current_recording_slot], "weight", 0, 100, false, 1)
-  counter_attack_delay_item = integer_menu_item("counter_attack_delay", recording_slots[training_settings.current_recording_slot], "delay", -40, 40, false, 0)
-  counter_attack_random_deviation_item = integer_menu_item("counter_attack_max_random_deviation", recording_slots[training_settings.current_recording_slot], "random_deviation", -600, 600, false, 0, 1)
+  slot_weight_item = integer_menu_item("weight", recording_slots[settings.training.current_recording_slot], "weight", 0, 100, false, 1)
+  counter_attack_delay_item = integer_menu_item("counter_attack_delay", recording_slots[settings.training.current_recording_slot], "delay", -40, 40, false, 0)
+  counter_attack_random_deviation_item = integer_menu_item("counter_attack_max_random_deviation", recording_slots[settings.training.current_recording_slot], "random_deviation", -600, 600, false, 0, 1)
 
-  parry_forward_on_item = checkbox_menu_item("forward_parry_helper", training_settings, "special_training_parry_forward_on")
-  parry_forward_on_item.is_disabled = function() return training_settings.special_training_current_mode ~= 2 end
-  parry_down_on_item = checkbox_menu_item("down_parry_helper", training_settings, "special_training_parry_down_on")
-  parry_down_on_item.is_disabled = parry_forward_on_item.is_disabled
-  parry_air_on_item = checkbox_menu_item("air_parry_helper", training_settings, "special_training_parry_air_on")
-  parry_air_on_item.is_disabled = parry_forward_on_item.is_disabled
-  parry_antiair_on_item = checkbox_menu_item("anti-air_parry_helper", training_settings, "special_training_parry_antiair_on")
-  parry_antiair_on_item.is_disabled = parry_forward_on_item.is_disabled
-
-  charge_overcharge_on_item = checkbox_menu_item("display_overcharge", training_settings, "special_training_charge_overcharge_on")
+  charge_overcharge_on_item = checkbox_menu_item("display_overcharge", settings.training, "charge_overcharge_on")
   charge_overcharge_on_item.indent = true
   charge_overcharge_on_item.is_disabled = function()
-  return not training_settings.display_charge
+  return not settings.training.display_charge
   end
 
-  charge_follow_character_item = checkbox_menu_item("follow_character", training_settings, "charge_follow_character")
+  charge_follow_character_item = checkbox_menu_item("follow_character", settings.training, "charge_follow_character")
   charge_follow_character_item.indent = true
   charge_follow_character_item.is_disabled = function()
-  return not training_settings.display_charge
+  return not settings.training.display_charge
   end
 
-  blocking_item = list_menu_item("blocking", training_settings, "blocking_mode", blocking_mode)
+  blocking_item = list_menu_item("blocking", settings.training, "blocking_mode", blocking_mode)
   blocking_item.indent = true
 
-  hits_before_red_parry_item = hits_before_menu_item("hits_before_rp_prefix", "hits_before_rp_suffix", training_settings, "red_parry_hit_count", 0, 20, true, 1)
+  hits_before_red_parry_item = hits_before_menu_item("hits_before_rp_prefix", "hits_before_rp_suffix", settings.training, "red_parry_hit_count", 0, 20, true, 1)
   hits_before_red_parry_item.indent = true
   hits_before_red_parry_item.is_disabled = function()
-    return training_settings.blocking_style ~= 3
+    return settings.training.blocking_style ~= 3
   end
 
-  parry_every_n_item = hits_before_menu_item("parry_every_prefix", "parry_every_suffix", training_settings, "parry_every_n_count", 0, 10, true, 1)
+  parry_every_n_item = hits_before_menu_item("parry_every_prefix", "parry_every_suffix", settings.training, "parry_every_n_count", 0, 10, true, 1)
   parry_every_n_item.indent = true
   parry_every_n_item.is_disabled = function()
-    return training_settings.blocking_style ~= 3
+    return settings.training.blocking_style ~= 3
   end
 
-  prefer_down_parry_item = checkbox_menu_item("prefer_down_parry", training_settings, "prefer_down_parry")
+  prefer_down_parry_item = checkbox_menu_item("prefer_down_parry", settings.training, "prefer_down_parry")
   prefer_down_parry_item.indent = true
   prefer_down_parry_item.is_disabled = function()
-    return not (training_settings.blocking_style == 2 or training_settings.blocking_style == 3)
+    return not (settings.training.blocking_style == 2 or settings.training.blocking_style == 3)
   end
   counter_attack_item = list_menu_item("counterattack", counter_attack_settings, "ca_type", counter_attack_type, 1, update_counter_attack_special)
 
@@ -167,7 +159,7 @@ function init_menu()
     return counter_attack_settings.ca_type ~= 4
   end
 
-  hits_before_counter_attack = hits_before_menu_item("hits_before_ca_prefix", "hits_before_ca_suffix", training_settings, "hits_before_counter_attack_count", 0, 20, true)
+  hits_before_counter_attack = hits_before_menu_item("hits_before_ca_prefix", "hits_before_ca_suffix", settings.training, "hits_before_counter_attack_count", 0, 20, true)
   hits_before_counter_attack.indent = true
   hits_before_counter_attack.is_disabled = function()
     return counter_attack_settings.ca_type == 1
@@ -179,39 +171,39 @@ function init_menu()
     return rom_name ~= "sfiii3nr1"
   end
 
-  p1_distances_reference_point_item = list_menu_item("p1_distance_reference_point", training_settings, "p1_distances_reference_point", distance_display_reference_point)
+  p1_distances_reference_point_item = list_menu_item("p1_distance_reference_point", settings.training, "p1_distances_reference_point", distance_display_reference_point)
   p1_distances_reference_point_item.is_disabled = function()
-    return not training_settings.display_distances
+    return not settings.training.display_distances
   end
 
-  p2_distances_reference_point_item = list_menu_item("p2_distance_reference_point", training_settings, "p2_distances_reference_point", distance_display_reference_point)
+  p2_distances_reference_point_item = list_menu_item("p2_distance_reference_point", settings.training, "p2_distances_reference_point", distance_display_reference_point)
   p2_distances_reference_point_item.is_disabled = function()
-    return not training_settings.display_distances
+    return not settings.training.display_distances
   end
-  mid_distance_height_item = integer_menu_item("mid_distance_height", training_settings, "mid_distance_height", 0, 200, false, 10)
+  mid_distance_height_item = integer_menu_item("mid_distance_height", settings.training, "mid_distance_height", 0, 200, false, 10)
   mid_distance_height_item.is_disabled = function()
-    return not training_settings.display_distances
+    return not settings.training.display_distances
   end
 
-  air_time_player_coloring_item = checkbox_menu_item("display_air_time_player_coloring", training_settings, "display_air_time_player_coloring")
+  air_time_player_coloring_item = checkbox_menu_item("display_air_time_player_coloring", settings.training, "display_air_time_player_coloring")
   air_time_player_coloring_item.indent = true
   air_time_player_coloring_item.is_disabled = function()
-  return not training_settings.display_air_time
+  return not settings.training.display_air_time
   end
 
-  attack_range_display_max_item = integer_menu_item("attack_range_max_attacks", training_settings, "attack_range_display_max_attacks", 1, 3, true, 1)
+  attack_range_display_max_item = integer_menu_item("attack_range_max_attacks", settings.training, "attack_range_display_max_attacks", 1, 3, true, 1)
   attack_range_display_max_item.indent = true
   attack_range_display_max_item.is_disabled = function()
-    return training_settings.display_attack_range == 1
+    return settings.training.display_attack_range == 1
   end
-  attack_bars_show_decimal_item = checkbox_menu_item("show_decimal", training_settings, "attack_bars_show_decimal")
+  attack_bars_show_decimal_item = checkbox_menu_item("show_decimal", settings.training, "attack_bars_show_decimal")
   attack_bars_show_decimal_item.indent = true
   attack_bars_show_decimal_item.is_disabled = function()
-  return not (training_settings.display_attack_bars > 1)
+  return not (settings.training.display_attack_bars > 1)
   end
 
 
-  language_item = list_menu_item("language", training_settings, "language", language, 1, update_dimensions)
+  language_item = list_menu_item("language", settings.training, "language", language, 1, update_dimensions)
 
   play_challenge_item = button_menu_item("play", play_challenge)
   select_char_challenge_item = button_menu_item("Select Character (Current: Gill)", select_character_hadou_matsuri)
@@ -223,8 +215,8 @@ function init_menu()
       {
         header = header_menu_item("dummy"),
         entries = {
-          list_menu_item("pose", training_settings, "pose", pose),
-          list_menu_item("blocking_style", training_settings, "blocking_style", blocking_style),
+          list_menu_item("pose", settings.training, "pose", pose),
+          list_menu_item("blocking_style", settings.training, "blocking_style", blocking_style),
           blocking_item,
           hits_before_red_parry_item,
           parry_every_n_item,
@@ -236,18 +228,18 @@ function init_menu()
           counter_attack_special_button_item,
           counter_attack_option_select_item,
           hits_before_counter_attack,
-          list_menu_item("mash_stun", training_settings, "mash_stun_mode", mash_stun_mode, 1),
-          list_menu_item("tech_throws", training_settings, "tech_throws_mode", tech_throws_mode),
-          list_menu_item("quick_stand", training_settings, "fast_wakeup_mode", quick_stand),
+          list_menu_item("mash_stun", settings.training, "mash_stun_mode", mash_stun_mode, 1),
+          list_menu_item("tech_throws", settings.training, "tech_throws_mode", tech_throws_mode),
+          list_menu_item("quick_stand", settings.training, "fast_wakeup_mode", quick_stand),
         }
       },
       {
         header = header_menu_item("recording"),
         entries = {
-          checkbox_menu_item("auto_crop_first_frames", training_settings, "auto_crop_recording_start"),
-          checkbox_menu_item("auto_crop_last_frames", training_settings, "auto_crop_recording_end"),
-          list_menu_item("replay_mode", training_settings, "replay_mode", slot_replay_mode),
-          integer_menu_item("menu_slot", training_settings, "current_recording_slot", 1, recording_slot_count, true, 1, 10, update_current_recording_slot_frames),
+          checkbox_menu_item("auto_crop_first_frames", settings.training, "auto_crop_recording_start"),
+          checkbox_menu_item("auto_crop_last_frames", settings.training, "auto_crop_recording_end"),
+          list_menu_item("replay_mode", settings.training, "replay_mode", slot_replay_mode),
+          integer_menu_item("menu_slot", settings.training, "current_recording_slot", 1, recording_slot_count, true, 1, 10, update_current_recording_slot_frames),
                                 frame_number_item(current_recording_slot_frames, true),
           slot_weight_item,
           counter_attack_delay_item,
@@ -261,28 +253,28 @@ function init_menu()
       {
         header = header_menu_item("display"),
         entries = {
-          checkbox_menu_item("display_controllers", training_settings, "display_input"),
+          checkbox_menu_item("display_controllers", settings.training, "display_input"),
           controller_style_menu_item,
-          list_menu_item("display_input_history", training_settings, "display_input_history", display_input_history_mode, 1),
-          checkbox_menu_item("display_gauge_numbers", training_settings, "display_gauges", false),
-          checkbox_menu_item("display_bonuses", training_settings, "display_bonuses", true),
-          checkbox_menu_item("display_attack_info", training_settings, "display_attack_data"),
-          list_menu_item("display_attack_bars", training_settings, "display_attack_bars", display_attack_bars_mode, 3),
+          list_menu_item("display_input_history", settings.training, "display_input_history", display_input_history_mode, 1),
+          checkbox_menu_item("display_gauge_numbers", settings.training, "display_gauges", false),
+          checkbox_menu_item("display_bonuses", settings.training, "display_bonuses", true),
+          checkbox_menu_item("display_attack_info", settings.training, "display_attack_data"),
+          list_menu_item("display_attack_bars", settings.training, "display_attack_bars", display_attack_bars_mode, 3),
           attack_bars_show_decimal_item,
-          checkbox_menu_item("display_frame_advantage", training_settings, "display_frame_advantage"),
-          checkbox_menu_item("display_hitboxes", training_settings, "display_hitboxes"),
-          checkbox_menu_item("display_distances", training_settings, "display_distances"),
+          checkbox_menu_item("display_frame_advantage", settings.training, "display_frame_advantage"),
+          checkbox_menu_item("display_hitboxes", settings.training, "display_hitboxes"),
+          checkbox_menu_item("display_distances", settings.training, "display_distances"),
           mid_distance_height_item,
           p1_distances_reference_point_item,
           p2_distances_reference_point_item,
-          checkbox_menu_item("display_air_time", training_settings, "display_air_time"),
+          checkbox_menu_item("display_air_time", settings.training, "display_air_time"),
           air_time_player_coloring_item,
-          checkbox_menu_item("display_charge", training_settings, "display_charge"),
+          checkbox_menu_item("display_charge", settings.training, "display_charge"),
           charge_follow_character_item,
           charge_overcharge_on_item,
-          checkbox_menu_item("display_parry", training_settings, "display_parry"),
-          checkbox_menu_item("display_red_parry_miss", training_settings, "display_red_parry_miss"),
-          list_menu_item("attack_range_display", training_settings, "display_attack_range", player_options_list),
+          checkbox_menu_item("display_parry", settings.training, "display_parry"),
+          checkbox_menu_item("display_red_parry_miss", settings.training, "display_red_parry_miss"),
+          list_menu_item("attack_range_display", settings.training, "display_attack_range", player_options_list),
           attack_range_display_max_item,
           language_item
         }
@@ -291,52 +283,48 @@ function init_menu()
         header = header_menu_item("rules"),
         entries = {
           change_characters_item,
-          list_menu_item("force_stage", training_settings, "force_stage", stage_list, 1),
-          checkbox_menu_item("infinite_time", training_settings, "infinite_time"),
-          list_menu_item("life_refill_mode", training_settings, "life_mode", gauge_refill_mode),
+          list_menu_item("force_stage", settings.training, "force_stage", stage_list, 1),
+          checkbox_menu_item("infinite_time", settings.training, "infinite_time"),
+          list_menu_item("life_refill_mode", settings.training, "life_mode", gauge_refill_mode),
           p1_life_reset_value_gauge_item,
           p2_life_reset_value_gauge_item,
           life_refill_delay_item,
-          list_menu_item("stun_mode", training_settings, "stun_mode", gauge_refill_mode),
+          list_menu_item("stun_mode", settings.training, "stun_mode", gauge_refill_mode),
           p1_stun_reset_value_gauge_item,
           p2_stun_reset_value_gauge_item,
           stun_reset_delay_item,
-          list_menu_item("meter_refill_mode", training_settings, "meter_mode", gauge_refill_mode),
+          list_menu_item("meter_refill_mode", settings.training, "meter_mode", gauge_refill_mode),
           p1_meter_gauge_item,
           p2_meter_gauge_item,
           meter_refill_delay_item,
-          checkbox_menu_item("infinite_super_art_time", training_settings, "infinite_sa_time"),
-          integer_menu_item("music_volume", training_settings, "music_volume", 0, 10, false, 10),
-          checkbox_menu_item("speed_up_game_intro", training_settings, "fast_forward_intro"),
-          list_menu_item("cheat_parrying", training_settings, "cheat_parrying", player_options_list),
-          checkbox_menu_item("universal_cancel", training_settings, "universal_cancel"),
-          checkbox_menu_item("infinite_projectiles", training_settings, "infinite_projectiles"),
-          checkbox_menu_item("infinite_juggle", training_settings, "infinite_juggle")
+          checkbox_menu_item("infinite_super_art_time", settings.training, "infinite_sa_time"),
+          integer_menu_item("music_volume", settings.training, "music_volume", 0, 10, false, 10),
+          checkbox_menu_item("speed_up_game_intro", settings.training, "fast_forward_intro"),
+          list_menu_item("cheat_parrying", settings.training, "cheat_parrying", player_options_list),
+          checkbox_menu_item("universal_cancel", settings.training, "universal_cancel"),
+          checkbox_menu_item("infinite_projectiles", settings.training, "infinite_projectiles"),
+          checkbox_menu_item("infinite_juggle", settings.training, "infinite_juggle")
         }
       },
       {
         header = header_menu_item("training"),
         entries = {
-          list_menu_item("mode", training_settings, "special_training_current_mode", special_training_mode),
-          checkbox_menu_item("follow_character", training_settings, "charge_follow_character"),
-          parry_forward_on_item,
-          parry_down_on_item,
-          parry_air_on_item,
-          parry_antiair_on_item,
-          charge_overcharge_on_item
+          list_menu_item("mode", settings.training, "special_training_mode", special_training_mode),
+
         }
       },
         {
           header = header_menu_item("challenge"),
           entries = {
-            list_menu_item("challenge", training_settings, "challenge_current_mode", challenge_mode),
+            list_menu_item("challenge", settings.training, "challenge_current_mode", challenge_mode),
                                 play_challenge_item,
                                 select_char_challenge_item
           }
         }
     },
     function ()
-      save_training_data()
+      recording.backup_recordings()
+      settings.save_training_data()
     end
   )
 
@@ -451,7 +439,7 @@ counter_attack_special_button = {}
 
 function update_counter_attack_settings()
   if initialized then
-    counter_attack_settings = training_settings.counter_attack[training.dummy.char_str]
+    counter_attack_settings = settings.training.counter_attack[training.dummy.char_str]
     counter_attack_item.object = counter_attack_settings
     counter_attack_motion_item.object = counter_attack_settings
     counter_attack_button_item.object = counter_attack_settings
@@ -512,7 +500,7 @@ function update_counter_attack_special()
 end
 
 function update_counter_attack_special_button()
-  local move = counter_attack_special[training_settings.counter_attack[training.dummy.char_str].special]
+  local move = counter_attack_special[settings.training.counter_attack[training.dummy.char_str].special]
   for i = 1, #move_list[training.dummy.char_str] do
     if move_list[training.dummy.char_str][i].name == move then
       counter_attack_special_button_item.list = move_list[training.dummy.char_str][i].buttons
@@ -529,20 +517,20 @@ function update_counter_attack_special_button()
 end
 
 function update_menu()
-  slot_weight_item.object = recording_slots[training_settings.current_recording_slot]
-  counter_attack_delay_item.object = recording_slots[training_settings.current_recording_slot]
-  counter_attack_random_deviation_item.object = recording_slots[training_settings.current_recording_slot]
+  slot_weight_item.object = recording_slots[settings.training.current_recording_slot]
+  counter_attack_delay_item.object = recording_slots[settings.training.current_recording_slot]
+  counter_attack_random_deviation_item.object = recording_slots[settings.training.current_recording_slot]
 end
 
 function update_gauge_items()
-  training_settings.p1_meter = math.min(training_settings.p1_meter, gamestate.P1.max_meter_count * gamestate.P1.max_meter_gauge)
-  training_settings.p2_meter = math.min(training_settings.p2_meter, gamestate.P2.max_meter_count * gamestate.P2.max_meter_gauge)
+  settings.training.p1_meter_reset_value = math.min(settings.training.p1_meter_reset_value, gamestate.P1.max_meter_count * gamestate.P1.max_meter_gauge)
+  settings.training.p2_meter_reset_value = math.min(settings.training.p2_meter_reset_value, gamestate.P2.max_meter_count * gamestate.P2.max_meter_gauge)
   p1_meter_gauge_item.gauge_max = gamestate.P1.max_meter_gauge * gamestate.P1.max_meter_count
   p1_meter_gauge_item.subdivision_count = gamestate.P1.max_meter_count
   p2_meter_gauge_item.gauge_max = gamestate.P2.max_meter_gauge * gamestate.P2.max_meter_count
   p2_meter_gauge_item.subdivision_count = gamestate.P2.max_meter_count
-  training_settings.p1_stun_reset_value = math.min(training_settings.p1_stun_reset_value, gamestate.P1.stun_max)
-  training_settings.p2_stun_reset_value = math.min(training_settings.p2_stun_reset_value, gamestate.P2.stun_max)
+  settings.training.p1_stun_reset_value = math.min(settings.training.p1_stun_reset_value, gamestate.P1.stun_max)
+  settings.training.p2_stun_reset_value = math.min(settings.training.p2_stun_reset_value, gamestate.P2.stun_max)
   p1_stun_reset_value_gauge_item.gauge_max = gamestate.P1.stun_max
   p2_stun_reset_value_gauge_item.gauge_max = gamestate.P2.stun_max
 end

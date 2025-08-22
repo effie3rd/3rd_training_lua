@@ -1,5 +1,5 @@
-local fd = require("src/framedata")
-local fdm = require("src/framedata_meta")
+local fd = require("src.modules.framedata")
+local fdm = require("src.modules.framedata_meta")
 local debug_settings = require("src/debug_settings")
 
 

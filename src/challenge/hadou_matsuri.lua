@@ -1,6 +1,6 @@
-local fd = require("src/framedata")
-local fdm = require("src/framedata_meta")
-local draw = require("src/draw")
+local fd = require("src.modules.framedata")
+local fdm = require("src.modules.framedata_meta")
+local draw = require("src.ui.draw")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local frame_data_meta = fdm.frame_data_meta

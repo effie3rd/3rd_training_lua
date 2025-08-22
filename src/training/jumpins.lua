@@ -1,6 +1,6 @@
-local text = require("src/text")
-local fd = require("src/framedata")
-local movedata = require("src/movedata")
+local text = require("src.ui.text")
+local fd = require("src.modules.framedata")
+local movedata = require("src.modules.movedata")
 local gamestate = require("src/gamestate")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific

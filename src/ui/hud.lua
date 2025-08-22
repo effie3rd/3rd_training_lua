@@ -1,6 +1,7 @@
 --in-match drawing
-local fd = require("src/framedata")
-local fdm = require("src/framedata_meta")
+local settings = require("src/settings")
+local fd = require("src.modules.framedata")
+local fdm = require("src.modules.framedata_meta")
 local gamestate = require("src/gamestate")
 local text = require("src.ui.text")
 local colors = require("src.ui.colors")
@@ -74,7 +75,7 @@ function parry_gauge_display(player)
   local flip_gauge = false
   local gauge_x_scale = 4
 
-  if training_settings.charge_follow_character then
+  if settings.training.charge_follow_character then
     local px = player.pos_x - draw.screen_x + emu.screenwidth()/2
     local py = emu.screenheight() - (player.pos_y - draw.screen_y) - draw.GROUND_OFFSET
     local half_width = 23 * gauge_x_scale * 0.5
@@ -147,19 +148,19 @@ function parry_gauge_display(player)
   local parry_array = {
     {
       object = player.parry_forward,
-      enabled = training_settings.special_training_parry_forward_on
+      enabled = settings.training.special_training_parry_forward_on
     },
     {
       object = player.parry_down,
-      enabled = training_settings.special_training_parry_down_on
+      enabled = settings.training.special_training_parry_down_on
     },
     {
       object = player.parry_air,
-      enabled = training_settings.special_training_parry_air_on
+      enabled = settings.training.special_training_parry_air_on
     },
     {
       object = player.parry_antiair,
-      enabled = training_settings.special_training_parry_antiair_on
+      enabled = settings.training.special_training_parry_antiair_on
     }
   }
 
@@ -173,14 +174,14 @@ end
 
 function charge_display(player)
     local x = 272 --96
-    if training_settings.special_training_charge_overcharge_on then
+    if settings.training.charge_overcharge_on then
       x = 264
     end
     local y = 46
     local flip_gauge = false
     local gauge_x_scale = 2
 
-    if training_settings.charge_follow_character then
+    if settings.training.charge_follow_character then
       local offset_x = 8
 
       x,y = draw.game_to_screen_space(player.pos_x, player.pos_y + character_specific[player.char_str].height)
@@ -225,7 +226,7 @@ function charge_display(player)
       reset_time_text = string.format("%d", charge_object.reset_time)
 
       local name_y_offset = 0
-      if lang_code[training_settings.language] == "jp" then
+      if lang_code[settings.training.language] == "jp" then
         name_y_offset = -1
       end
       render_text(x + 1, y + name_y_offset, charge_object.name)
@@ -235,12 +236,12 @@ function charge_display(player)
 --       gui.box(reset_gauge_right, y + 10, reset_gauge_right, y + 12, 0x00000000, 0x00000077)
       draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1, charge_object.charge_time / charge_object.max_charge, gauge_valid_fill_color, gauge_background_color, gauge_outline_color, true)
       draw.draw_gauge(reset_gauge_left, y + 8 + gauge_height + 2, reset_gauge_width, gauge_height, charge_object.reset_time / charge_object.max_reset, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color, true)
-      if training_settings.special_training_charge_overcharge_on and charge_object.overcharge ~= 0 and charge_object.overcharge < 42 then
+      if settings.training.charge_overcharge_on and charge_object.overcharge ~= 0 and charge_object.overcharge < 42 then
         draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1, charge_object.overcharge / charge_object.max_charge, overcharge_color, gauge_background_color, gauge_outline_color, true)
         local w = get_text_dimensions(charge_time_text, "en")
         render_text(reset_gauge_right + 4 + w, y + 7, overcharge_time_text, "en", nil, charge_text_color)
       end
-      if training_settings.special_training_charge_overcharge_on and charge_object.overcharge == 0 and charge_object.last_overcharge > 0 and charge_object.last_overcharge < 42 then
+      if settings.training.charge_overcharge_on and charge_object.overcharge == 0 and charge_object.last_overcharge > 0 and charge_object.last_overcharge < 42 then
         local w = get_text_dimensions(charge_time_text, "en")
         render_text(reset_gauge_right + 4 + w, y + 7, last_overcharge_time_text, "en", nil, charge_text_color)
       end
@@ -270,7 +271,7 @@ function charge_display(player)
       local charge_text_color = text.default_color
 
       local name_y_offset = 0
-      if lang_code[training_settings.language] == "jp" then
+      if lang_code[settings.training.language] == "jp" then
         name_y_offset = -1
       end
       render_text(x + 1, y + name_y_offset, kaiten_object.name)
@@ -289,7 +290,7 @@ function charge_display(player)
     function draw_legs_gauge_group(x, y, legs_object)
       local gauge_height = 3
       local width = 43 * gauge_x_scale
-      local style = draw.controller_styles[training_settings.controller_style]
+      local style = draw.controller_styles[settings.training.controller_style]
       local tw, th = get_text_dimensions("hyakuretsu_MK")
       local margin = tw + 1
       local x_offset = margin
@@ -533,11 +534,11 @@ function attack_range_display()
     return false
   end
   local players = {}
-  if training_settings.display_attack_range == 2 then
+  if settings.training.display_attack_range == 2 then
     players = {gamestate.P1}
-  elseif training_settings.display_attack_range == 3 then
+  elseif settings.training.display_attack_range == 3 then
     players = {gamestate.P2}
-  elseif training_settings.display_attack_range == 4 then
+  elseif settings.training.display_attack_range == 4 then
     players = {gamestate.P1, gamestate.P2}
   end
 
@@ -553,7 +554,7 @@ function attack_range_display()
         end
       end
     end
-    while #attack_range_display_attacks[id] > training_settings.attack_range_display_max_attacks do
+    while #attack_range_display_attacks[id] > settings.training.attack_range_display_max_attacks do
       table.remove(attack_range_display_attacks[id], 1)
     end
 
@@ -622,7 +623,7 @@ function attack_range_display()
         end
       end
     end
-    if training_settings.attack_range_display_show_numbers then
+    if settings.training.attack_range_display_show_numbers then
       for i = 1, #attack_range_display_attacks[id] do
         if attack_range_display_data[attack_range_display_attacks[id][i]] then
 --         local tx,ty = 0
@@ -705,10 +706,10 @@ local last_hit_history = nil
 local last_hit_history_size = 2
 
 function last_hit_bars()
-  if training_settings.display_attack_bars > 1 then
-    if training_settings.display_attack_bars == 2 then
+  if settings.training.display_attack_bars > 1 then
+    if settings.training.display_attack_bars == 2 then
       last_hit_history_size = 1
-    elseif training_settings.display_attack_bars == 3 then
+    elseif settings.training.display_attack_bars == 3 then
       last_hit_history_size = 2
     end
     local life_x = 8
@@ -776,7 +777,7 @@ function last_hit_bars()
             gui.drawline(stun_x-sign*stun_offset, stun_y+(i-1)*stun_height, stun_x-sign*stun_offset-sign*stun_width - 1,stun_y+(i-1)*stun_height,stun_color)
             gui.drawline(stun_x-sign*stun_offset, stun_y+(i-1)*stun_height, stun_x-sign*stun_offset,stun_y+(i-1)*stun_height-1,stun_color)
             gui.drawline(stun_x-sign*stun_offset-sign*stun_width - 1, stun_y+(i-1)*stun_height, stun_x-sign*stun_offset-sign*stun_width - 1,stun_y+(i-1)*stun_height-1,stun_color)
-            if training_settings.attack_bars_show_decimal then
+            if settings.training.attack_bars_show_decimal then
               text_width = get_text_dimensions(string.format("%.2f", last_hit_history[i].total_stun), "en")
               text_pos_x = stun_x-sign*stun_offset-sign*stun_width - 1 - 2 * sign
               if last_hit_history[i].player_id == 2 then
@@ -805,7 +806,7 @@ local last_dir = 1
 function update_blocking_direction(input, player, dummy)
   if (player.previous_pos_x - dummy.previous_pos_x) * (player.pos_x - dummy.pos_x) <= 0 then
   end
-  if dummy.received_connection and training_settings.blocking_mode > 1 then
+  if dummy.received_connection and settings.training.blocking_mode > 1 then
     table.insert(blocking_direction_history, {start_frame=gamestate.frame_number, dir=last_dir})
   end
   if dummy.blocking.last_blocked_frame == gamestate.frame_number then
@@ -872,7 +873,7 @@ local function bonuses_display(player_object)
   local y = 4
   local padding = 4
   local spacing = 4
-  local lang = lang_code[training_settings.language]
+  local lang = lang_code[settings.training.language]
   if player_object.id == 1 then
     x = padding
   elseif player_object.id == 2 then
@@ -1138,15 +1139,15 @@ end
 
 function recording_display(dummy)
   local current_recording_size = 0
-  if (recording_slots[training_settings.current_recording_slot].inputs) then
-    current_recording_size = #recording_slots[training_settings.current_recording_slot].inputs
+  if (recording_slots[settings.training.current_recording_slot].inputs) then
+    current_recording_size = #recording_slots[settings.training.current_recording_slot].inputs
   end
   local x = 0
   local y = 4
   local padding = 4
-  local lang = lang_code[training_settings.language]
+  local lang = lang_code[settings.training.language]
   if current_recording_state == 2 then
-    local text = {"hud_slot", " ", training_settings.current_recording_slot, ": ", "hud_wait_for_recording", " ", current_recording_size}
+    local text = {"hud_slot", " ", settings.training.current_recording_slot, ": ", "hud_wait_for_recording", " ", current_recording_size}
     local w, h = 0, 0
     if lang == "en" then
       w, h = get_text_dimensions_multiple(text)
@@ -1161,7 +1162,7 @@ function recording_display(dummy)
       render_text_multiple(x, y, text, "jp", "8")
     end
   elseif current_recording_state == 3 then
-    local text = {"hud_slot", " ", training_settings.current_recording_slot, ": ", "hud_recording", "... (", current_recording_size, ")"}
+    local text = {"hud_slot", " ", settings.training.current_recording_slot, ": ", "hud_recording", "... (", current_recording_size, ")"}
     local w, h = 0, 0
     if lang == "en" then
       w, h = get_text_dimensions_multiple(text)
@@ -1177,7 +1178,7 @@ function recording_display(dummy)
     end
   elseif current_recording_state == 4 and dummy.pending_input_sequence and dummy.pending_input_sequence.sequence then
     local text = {""}
-    if training_settings.replay_mode == 1 or training_settings.replay_mode == 4 then
+    if settings.training.replay_mode == 1 or settings.training.replay_mode == 4 then
       text = {"hud_playing", " (", dummy.pending_input_sequence.current_frame, "/", #dummy.pending_input_sequence.sequence, ")"}
     else
       text = {"hud_playing"}
@@ -1207,7 +1208,7 @@ function player_position_display()
 end
 
 function draw_hud(player, dummy)
-  if training_settings.display_attack_range ~= 1 then
+  if settings.training.display_attack_range ~= 1 then
     attack_range_display()
   end
 
@@ -1221,20 +1222,20 @@ function draw_hud(player, dummy)
     end
   end
 
-  if training_settings.display_hitboxes then
+  if settings.training.display_hitboxes then
     hitboxes_display()
   end
   last_hit_bars()
   red_parry_miss_display(player)
   blocking_direction_display(player, dummy)
-  if training_settings.display_parry then
+  if settings.training.display_parry then
     parry_gauge_display(player.other)
   end
-  if training_settings.display_charge then
+  if settings.training.display_charge then
     charge_display(player)
     -- charge_display(gamestate.P2)
   end
-  if training_settings.display_air_time then
+  if settings.training.display_air_time then
     air_time_display(player, dummy)
   end
   player_coloring_display()
@@ -1244,7 +1245,7 @@ function draw_hud(player, dummy)
   if current_recording_state ~= 1 then
     recording_display(dummy)
   end
-  if training_settings.display_gauges then
+  if settings.training.display_gauges then
     life_text_display(player)
     life_text_display(dummy)
 
@@ -1254,7 +1255,7 @@ function draw_hud(player, dummy)
     stun_text_display(player)
     stun_text_display(dummy)
   end
-  if training_settings.display_bonuses then
+  if settings.training.display_bonuses then
     bonuses_display(player)
     bonuses_display(dummy)
   end

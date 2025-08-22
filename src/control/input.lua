@@ -1,4 +1,5 @@
-local fd = require("src/framedata")
+local settings = require("src/settings")
+local fd = require("src.modules.framedata")
 local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_slow_jumper
 
 function queue_input_sequence(player_obj, sequence, offset, allow_blocking)
@@ -463,8 +464,8 @@ function queue_input_from_json(player, file)
   if not recording then
     print(string.format("Error: Failed to load recording from \"%s\"", path))
   else
-    recording_slots[training_settings.current_recording_slot].inputs = recording
-    print(string.format("Loaded \"%s\" to slot %d", path, training_settings.current_recording_slot))
+    recording_slots[settings.training.current_recording_slot].inputs = recording
+    print(string.format("Loaded \"%s\" to slot %d", path, settings.training.current_recording_slot))
   end
   queue_input_sequence(player, recording_slots[1].inputs)
 end

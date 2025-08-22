@@ -1,3 +1,4 @@
+local settings = require("src/settings")
 local gamestate = require("src/gamestate")
 local text = require("src.ui.text")
 local draw = require("src.ui.draw")
@@ -40,7 +41,7 @@ function gauge_menu_item(name, object, property_name, unit, fill_color, gauge_ma
 
     local box_width = self.gauge_max / self.unit
     local box_top = y + (h - 4) / 2
-    if lang_code[training_settings.language] == "jp" then
+    if lang_code[settings.training.language] == "jp" then
       box_top = box_top + 1
     end
     local box_left = x + offset
@@ -457,12 +458,12 @@ function motion_list_menu_item(name, object, property_name, list, default_value,
     local w, _ = get_text_dimensions_multiple({self.name, ":  "})
     offset_x = offset_x + w
 
-    if lang_code[training_settings.language] == "jp" then
+    if lang_code[settings.training.language] == "jp" then
       offset_y = 2
     end
 
     local img_list = {}
-    local style = draw.controller_styles[training_settings.controller_style]
+    local style = draw.controller_styles[settings.training.controller_style]
     local id = self.object[self.property_name]
     for i = 1, #self.list[id] do
       local dirs = {forward = false, down = false, back = false, up = false}
@@ -623,7 +624,7 @@ function move_input_menu_item(name, object)
 
     local offset_x = 6
     local offset_y = -1
-    if lang_code[training_settings.language] == "jp" then
+    if lang_code[settings.training.language] == "jp" then
       offset_y = 2
     end
     if self.indent then
@@ -631,7 +632,7 @@ function move_input_menu_item(name, object)
     end
 
     local img_list = {}
-    local style = draw.controller_styles[training_settings.controller_style]
+    local style = draw.controller_styles[settings.training.controller_style]
     if counter_attack_type[self.object.ca_type] == "special_sa" then
 
       for i = 1, #counter_attack_special_inputs[self.object.special] do
@@ -871,7 +872,7 @@ function controller_style_item(name, object, property_name, list, default_value,
 
     offset_x = offset_x + w
     local c_offset_y = -2
-    if lang_code[training_settings.language] == "jp" then
+    if lang_code[settings.training.language] == "jp" then
       c_offset_y = 2
     end
     local style = draw.controller_styles[self.object[self.property_name]]
@@ -1036,7 +1037,7 @@ function hits_before_menu_item(name, suffix, object, property_name, min, max, lo
     end
     local w, h = 0
 
-    if localization[self.name][lang_code[training_settings.language]] ~= "" then
+    if localization[self.name][lang_code[settings.training.language]] ~= "" then
       render_text(x + offset_x, y, self.name, nil, nil, color)
       w, h = get_text_dimensions(self.name)
       offset_x = offset_x + w + 1
@@ -1046,7 +1047,7 @@ function hits_before_menu_item(name, suffix, object, property_name, min, max, lo
     offset_x = offset_x + w + 1
 
     local hits_text = "hits"
-    if lang_code[training_settings.language] == "en" then
+    if lang_code[settings.training.language] == "en" then
       if self.object[self.property_name] == 1 then
         hits_text = "hit"
       end
@@ -1284,7 +1285,7 @@ function make_multitab_menu(left, top, right, bottom, content, on_toggle_entry, 
   m.main_menu_selected_index = 1
   m.sub_menu_selected_index = 1
   m.max_entries = 15
-  if lang_code[training_settings.language] == "jp" then
+  if lang_code[settings.training.language] == "jp" then
     m.max_entries = 11
   end
 
@@ -1327,7 +1328,7 @@ end
 function multitab_menu_update(menu, input)
 
   menu.max_entries = 15
-  if lang_code[training_settings.language] == "jp" then
+  if lang_code[settings.training.language] == "jp" then
     menu.max_entries = 11
   end
 
@@ -1592,7 +1593,7 @@ function multitab_menu_draw(menu)
 
   local scroll_down = false
   local menu_item_spacing = 2
-  if lang_code[training_settings.language] == "jp" then
+  if lang_code[settings.training.language] == "jp" then
     menu_item_spacing = 1
   end
   local y_offset = 0
@@ -1602,7 +1603,7 @@ function multitab_menu_draw(menu)
     if i >= menu.content[menu.main_menu_selected_index].topmost_entry and (menu.content[menu.main_menu_selected_index].entries[i].is_disabled == nil or not menu.content[menu.main_menu_selected_index].entries[i].is_disabled()) then
       if menu.content[menu.main_menu_selected_index].entries[i].inline and (i - 1) >= 1 then
         local x_offset = menu.content[menu.main_menu_selected_index].entries[i - 1].width + 8
-        if lang_code[training_settings.language] == "jp" then
+        if lang_code[settings.training.language] == "jp" then
           x_offset = x_offset + 2
         end
         local y_adj = -1 * (menu.content[menu.main_menu_selected_index].entries[i - 1].height + menu_item_spacing)
@@ -1630,7 +1631,7 @@ function multitab_menu_draw(menu)
     render_text(menu.right - w - x_padding, legend_y + legend_y_padding, "legend_hp_scroll", nil, nil, text.disabled_color)
 
     local scroll_arrow_y_pos =  menu_y + (y_offset - menu_item_spacing - h) + h / 2 - 2
-    if lang_code[training_settings.language] == "jp" then
+    if lang_code[settings.training.language] == "jp" then
       scroll_arrow_y_pos = menu_y + (y_offset - menu_item_spacing - h) + h / 2 - 1
     end
     if scroll_up then
@@ -1819,7 +1820,7 @@ function footer_menu_item(name)
 
   function o:draw(x, y, state)
     local color = text.disabled_color
-    render_text(x, y, self.name, lang_code[training_settings.language], nil, color)
+    render_text(x, y, self.name, lang_code[settings.training.language], nil, color)
   end
 
   function o:calc_dimensions()
@@ -1865,17 +1866,17 @@ function frame_number_item(obj, inline)
 
   function o:draw(x, y)
     local color = text.disabled_color
-    if lang_code[training_settings.language] == "en" then
+    if lang_code[settings.training.language] == "en" then
       render_text_multiple(x, y, {self.obj[1], " ", "frames"}, nil, nil, color)
-    elseif lang_code[training_settings.language] == "jp" then
+    elseif lang_code[settings.training.language] == "jp" then
       render_text_multiple(x, y + 3, {self.obj[1], " ", "frames"}, "jp", "8", color)
     end
   end
 
   function o:calc_dimensions()
-    if lang_code[training_settings.language] == "en" then
+    if lang_code[settings.training.language] == "en" then
       self.width, self.height = get_text_dimensions_multiple({self.obj[1], " ", "frames"})
-    elseif lang_code[training_settings.language] == "jp" then
+    elseif lang_code[settings.training.language] == "jp" then
       self.width, self.height = get_text_dimensions_multiple({self.obj[1], " ", "frames"}, "jp", "8")
 --       print(self.width, self.height)
     end

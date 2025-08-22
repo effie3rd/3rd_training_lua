@@ -419,10 +419,6 @@
     "en": "Quick Stand",
     "jp": "クイック"
   },
-  "menu_random": {
-    "en": "random",
-    "jp": "ランダム"
-  },
   "legend_mp_reset": {
     "en": "MP: Reset",
     "jp_8": "中P: リセット"
@@ -489,7 +485,7 @@
     "en": "repeat ordered",
     "jp": "順序繰り返し"
   },
-  "slot": {
+  "menu_slot": {
     "en": "Slot",
     "jp": "スロット"
   },
@@ -536,6 +532,14 @@
   "display_attack_bars": {
     "en": "Display Attack Bars",
     "jp": "攻撃棒表示"
+  },
+  "menu_1_line": {
+    "en": "1 line",
+    "jp": "1行"
+  },
+  "menu_2_lines": {
+    "en": "2 lines",
+    "jp": "2行"
   },
   "show_decimal": {
     "en": "Show Decimal",
@@ -731,11 +735,15 @@
   },
   "character_select_line_2": {
     "en": "[ALT+2] Gill   [Alt+3] Shin Gouki",
-    "jp_8": "「Alt+2」ギル　「Alt+3」真豪鬼"
+    "jp_8": "「Alt+2」ギル 「Alt+3」真豪鬼"
   },
   "character_select_line_3": {
     "en": "[Hold Start] Random",
     "jp_8": "「Start押しっぱなし」ランダム"
+  },
+  "menu_follow_character": {
+    "en": "follow character",
+    "jp_8": "キャラついて行く "
   },
   "charge_slash_elbow": {
     "en": "Slash Elbow",

@@ -1,3 +1,4 @@
+local settings = require("src/settings")
 local gamestate = require("src/gamestate")
 local training = require("src/training")
 
@@ -24,16 +25,16 @@ recording_states =
 }
 
 function clear_slot()
-  recording_slots[training_settings.current_recording_slot] = make_recording_slot()
-  save_training_data()
+  recording_slots[settings.training.current_recording_slot] = make_recording_slot()
+  settings.save_training_data()
 end
 
 function clear_all_slots()
   for i = 1, recording_slot_count do
     recording_slots[i] = make_recording_slot()
   end
-  training_settings.current_recording_slot = 1
-  save_training_data()
+  settings.training.current_recording_slot = 1
+  settings.save_training_data()
 end
 
 
@@ -44,10 +45,10 @@ function save_recording_slot_to_file()
   end
 
   local path = string.format("%s%s.json",saved_recordings_path, save_file_name)
-  if not write_object_to_json_file(recording_slots[training_settings.current_recording_slot].inputs, path) then
+  if not write_object_to_json_file(recording_slots[settings.training.current_recording_slot].inputs, path) then
     print(string.format("Error: Failed to save recording to \"%s\"", path))
   else
-    print(string.format("Saved slot %d to \"%s\"", training_settings.current_recording_slot, path))
+    print(string.format("Saved slot %d to \"%s\"", settings.training.current_recording_slot, path))
   end
 
   menu_stack_pop(save_recording_slot_popup)
@@ -64,27 +65,61 @@ function load_recording_slot_from_file()
   if not recording then
     print(string.format("Error: Failed to load recording from \"%s\"", path))
   else
-    recording_slots[training_settings.current_recording_slot].inputs = recording
-    print(string.format("Loaded \"%s\" to slot %d", path, training_settings.current_recording_slot))
+    recording_slots[settings.training.current_recording_slot].inputs = recording
+    print(string.format("Loaded \"%s\" to slot %d", path, settings.training.current_recording_slot))
   end
-  save_training_data()
+  settings.save_training_data()
 
   menu_stack_pop(load_recording_slot_popup)
 end
 
+local function backup_recordings()
+  -- Init base table
+  if settings.training.recordings == nil then
+    settings.training.recordings = {}
+  end
+  for _, value in ipairs(Characters) do
+    if settings.training.recordings[value] == nil then
+      settings.training.recordings[value] = {}
+      for i = 1, #recording_slots do
+        table.insert(settings.training.recordings[value], make_recording_slot())
+      end
+    end
+  end
+
+  if training.dummy.char_str ~= "" then
+    settings.training.recordings[training.dummy.char_str] = recording_slots
+  end
+end
+
+local function restore_recordings()
+  local char = gamestate.P2.char_str
+  if char and char ~= "" then
+    local recording_count = #recording_slots
+    if settings.training.recordings then
+      recording_slots = settings.training.recordings[char] or {}
+    end
+      local missing_slots = recording_count - #recording_slots
+    for i = 1, missing_slots do
+        table.insert(recording_slots, make_recording_slot())
+    end
+  end
+  update_current_recording_slot_frames()
+end
+
 function update_current_recording_slot_frames()
-  current_recording_slot_frames[1] = #recording_slots[training_settings.current_recording_slot].inputs
+  current_recording_slot_frames[1] = #recording_slots[settings.training.current_recording_slot].inputs
 end
 
 function can_play_recording()
-  if training_settings.replay_mode == 2 or training_settings.replay_mode == 3 or training_settings.replay_mode == 5 or training_settings.replay_mode == 6 then
+  if settings.training.replay_mode == 2 or settings.training.replay_mode == 3 or settings.training.replay_mode == 5 or settings.training.replay_mode == 6 then
     for i, value in ipairs(recording_slots) do
       if #value.inputs > 0 then
         return true
       end
     end
   else
-    return recording_slots[training_settings.current_recording_slot].inputs ~= nil and #recording_slots[training_settings.current_recording_slot].inputs > 0
+    return recording_slots[settings.training.current_recording_slot].inputs ~= nil and #recording_slots[settings.training.current_recording_slot].inputs > 0
   end
   return false
 end
@@ -148,7 +183,7 @@ function set_recording_state(input, state)
   elseif current_recording_state == 3 then
     local first_input = 1
     local last_input = 1
-    for i, value in ipairs(recording_slots[training_settings.current_recording_slot].inputs) do
+    for i, value in ipairs(recording_slots[settings.training.current_recording_slot].inputs) do
       if #value > 0 then
         last_input = i
       elseif first_input == i then
@@ -158,21 +193,21 @@ function set_recording_state(input, state)
 
     last_input = math.max(current_recording_last_idle_frame, last_input)
 
-    if not training_settings.auto_crop_recording_start then
+    if not settings.training.auto_crop_recording_start then
       first_input = 1
     end
 
-    if not training_settings.auto_crop_recording_end or last_input ~= current_recording_last_idle_frame then
-      last_input = #recording_slots[training_settings.current_recording_slot].inputs
+    if not settings.training.auto_crop_recording_end or last_input ~= current_recording_last_idle_frame then
+      last_input = #recording_slots[settings.training.current_recording_slot].inputs
     end
 
     local cropped_sequence = {}
     for i = first_input, last_input do
-      table.insert(cropped_sequence, recording_slots[training_settings.current_recording_slot].inputs[i])
+      table.insert(cropped_sequence, recording_slots[settings.training.current_recording_slot].inputs[i])
     end
-    recording_slots[training_settings.current_recording_slot].inputs = cropped_sequence
+    recording_slots[settings.training.current_recording_slot].inputs = cropped_sequence
 
-    save_training_data()
+    settings.save_training_data()
 
     swap_characters = false
   elseif current_recording_state == 4 then
@@ -190,18 +225,18 @@ function set_recording_state(input, state)
     current_recording_last_idle_frame = -1
     swap_characters = true
     make_input_empty(input)
-    recording_slots[training_settings.current_recording_slot].inputs = {}
+    recording_slots[settings.training.current_recording_slot].inputs = {}
   elseif current_recording_state == 4 then
     local replay_slot = -1
     if override_replay_slot > 0 then
       replay_slot = override_replay_slot
     else
-      if training_settings.replay_mode == 2 or training_settings.replay_mode == 5 then
+      if settings.training.replay_mode == 2 or settings.training.replay_mode == 5 then
         replay_slot = find_random_recording_slot()
-      elseif training_settings.replay_mode == 3 or training_settings.replay_mode == 6 then
+      elseif settings.training.replay_mode == 3 or settings.training.replay_mode == 6 then
         replay_slot = go_to_next_ordered_slot()
       else
-        replay_slot = training_settings.current_recording_slot
+        replay_slot = settings.training.current_recording_slot
       end
     end
 
@@ -272,16 +307,16 @@ function update_recording(input, player, dummy)
         end
       end
 
-      table.insert(recording_slots[training_settings.current_recording_slot].inputs, frame)
+      table.insert(recording_slots[settings.training.current_recording_slot].inputs, frame)
 
       if player.idle_time == 1 then
-        current_recording_last_idle_frame = #recording_slots[training_settings.current_recording_slot].inputs - 1
+        current_recording_last_idle_frame = #recording_slots[settings.training.current_recording_slot].inputs - 1
       end
 
     elseif current_recording_state == 4 then
       if training.dummy.pending_input_sequence == nil then
         set_recording_state(input, 1)
-        if can_play_recording() and (training_settings.replay_mode == 4 or training_settings.replay_mode == 5 or training_settings.replay_mode == 6) then
+        if can_play_recording() and (settings.training.replay_mode == 4 or settings.training.replay_mode == 5 or settings.training.replay_mode == 6) then
           set_recording_state(input, 4)
         end
       end
@@ -337,3 +372,32 @@ recording_slots_names = {}
 for i = 1, #recording_slots do
   table.insert(recording_slots_names, "slot "..i)
 end
+
+local recording = {
+  backup_recordings = backup_recordings,
+  restore_recordings = restore_recordings
+}
+
+setmetatable(recording, {
+  __index = function(_, key)
+    if key == "training" then
+      return settings.training
+    elseif key == "screen_y" then
+      return screen_y
+    elseif key == "screen_scale" then
+      return screen_scale
+    end
+  end,
+
+  __newindex = function(_, key, value)
+    if key == "settings" then
+      settings = value
+    elseif key == "frame_data_loaded" then
+      frame_data_loaded = value
+    else
+      rawset(recording, key, value)
+    end
+  end
+})
+
+return recording

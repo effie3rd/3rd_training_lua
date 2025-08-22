@@ -1,8 +1,8 @@
 --for loading big stuff like framedata and images
 local tools = require("src/tools")
-local colors = require("src/colors")
-local text = require("src/text")
-local fd = require("src/framedata")
+local colors = require("src.ui.colors")
+local text = require("src.ui.text")
+local fd = require("src.modules.framedata")
 local gamestate = require("src/gamestate")
 
 local image_map = text.image_map

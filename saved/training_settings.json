@@ -1,5 +1,4 @@
 {
-  "special_training_parry_forward_on":true,
   "counter_attack_button":1,
   "red_parry_hit_count":1,
   "p2_distances_reference_point":2,
@@ -13,7 +12,6 @@
   "music_volume":0,
   "meter_mode":3,
   "current_recording_slot":1,
-  "special_training_parry_air_on":true,
   "display_p1_input_history":true,
   "display_distances":false,
   "stun_reset_delay":20,
@@ -24,7 +22,6 @@
   "p2_stun_reset_value":56,
   "p1_meter_reset_value":0,
   "p2_meter_reset_value":0,
-
   "stun_mode":1,
   "replay_mode":1,
   "recordings":{
@@ -850,6 +847,14 @@
       }]
   },
   "counter_attack":{
+    "gill":{
+      "ca_type": 1,
+      "motion": 1,
+      "button": 1,
+      "special": 1,
+      "special_button": 1,
+      "option_select": 1
+    },
     "alex":{
       "ca_type": 1,
       "motion": 1,
@@ -962,14 +967,14 @@
       "special_button": 1,
       "option_select": 1
     },
-    "gill":{
+    "shingouki":{
       "ca_type": 1,
       "motion": 1,
       "button": 1,
       "special": 1,
       "special_button": 1,
       "option_select": 1
-    },
+    },    
     "chunli":{
       "ca_type": 1,
       "motion": 1,
@@ -1009,26 +1014,9 @@
       "special": 1,
       "special_button": 1,
       "option_select": 1
-    },
-    "gill":{
-      "ca_type": 1,
-      "motion": 1,
-      "button": 1,
-      "special": 1,
-      "special_button": 1,
-      "option_select": 1
-    },
-    "shingouki":{
-      "ca_type": 1,
-      "motion": 1,
-      "button": 1,
-      "special": 1,
-      "special_button": 1,
-      "option_select": 1
     }
   },
   "counter_attack_type_index":1,
-  "special_training_parry_down_on":true,
   "display_p1_input_history_dynamic":false,
   "auto_crop_recording_end":false,
   "parry_every_n_count":1,
@@ -1036,16 +1024,15 @@
   "fast_wakeup_mode":1,
   "prefer_down_parry":false,
   "life_refill_delay":5,
-  "special_training_charge_overcharge_on":false,
+  "charge_overcharge_on":false,
+  "special_training_mode": 1,
   "infinite_time":true,
   "meter_refill_delay":20,
   "p1_distances_reference_point":1,
-  "special_training_parry_antiair_on":true,
   "tech_throws_mode":1,
   "display_input":true,
   "hits_before_counter_attack_count":0,
   "charge_follow_character":false,
-  "special_training_current_mode":1,
   "display_attack_data":false,
   "display_attack_bars":3,
   "attack_bars_show_decimal":false,

@@ -1,5 +1,6 @@
 require("gd")
 local utf8 = require("src.libs.utf8")
+local settings = require("src/settings")
 local colors = require("src.ui.colors")
 
 local image_map = {}
@@ -42,7 +43,7 @@ end
 local function render_text(x, y, str, lang, size, color, opacity)
   local offset = 0
   str = tostring(str)
-  lang = lang or lang_code[training_settings.language]
+  lang = lang or lang_code[settings.training.language]
   color = color or default_color
   opacity = opacity or 1
   for _, v in utf8.codes(str) do
@@ -99,7 +100,7 @@ local function get_text_dimensions(str, lang, size)
   local w = 0
   local h = 0
   str = tostring(str)
-  lang = lang or lang_code[training_settings.language]
+  lang = lang or lang_code[settings.training.language]
   for _, v in utf8.codes(str) do
     local code = utf8.codepoint(v)
     --char is jp

@@ -1,9 +1,10 @@
 local loading = require("src/loading")
-local text = require("src/text")
-local fd = require("src/framedata")
-local movedata = require("src/movedata")
+local text = require("src.ui.text")
+local fd = require("src.modules.framedata")
+local movedata = require("src.modules.movedata")
 local gamestate = require("src/gamestate")
-local character_select = require("src/character_select")
+local character_select = require("src.control.character_select")
+local settings = require("src/settings")
 local debug_settings = require("src/debug_settings")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
@@ -648,7 +649,7 @@ local last_category = 1
 function record_all_characters(player_obj, projectiles)
   if debug_settings.recording_framedata then
     -- emu.speedmode("turbo")
-    training_settings.blocking_mode = 1
+    settings.training.blocking_mode = 1
     player = player_obj
     dummy = player_obj.other
     if record_char_state == "start" then
@@ -678,7 +679,7 @@ function record_all_characters(player_obj, projectiles)
         record_char_state = "finished"
       end
     elseif record_char_state == "recording" then
-      debug_settings.record_framedata = true
+      debug_settings.recording_framedata = true
 
       if i_record == 1 then
         record_idle(player)
@@ -696,7 +697,7 @@ function record_all_characters(player_obj, projectiles)
         state = "start"
         setup = false
         recording = false
-        debug_settings.record_framedata = false
+        debug_settings.recording_framedata = false
         i_record = i_record + 1
         -- i_characters = 99
       end
@@ -735,7 +736,7 @@ function record_idle(player_obj)
     print(name)
   end
 
-  if gamestate.is_in_match and debug_settings.record_framedata then
+  if gamestate.is_in_match and debug_settings.recording_framedata then
     if i_record_idle_states <= #record_idle_states then
       local name = record_idle_states[i_record_idle_states]
       if name == "standing" then
@@ -826,7 +827,7 @@ local name = ""
 function record_movement(player_obj)
   local player = player_obj
   local dummy = player_obj.other
-  if gamestate.is_in_match and debug_settings.record_framedata then
+  if gamestate.is_in_match and debug_settings.recording_framedata then
     if player.action == 0 or player.action == 7 then
       if recording then
         if player.has_animation_just_changed then
@@ -1083,7 +1084,7 @@ local previous_posture = 0
 function record_wakeups(player_obj)
   local player = player_obj
   local dummy = player_obj.other
-  if gamestate.is_in_match and debug_settings.record_framedata then
+  if gamestate.is_in_match and debug_settings.recording_framedata then
 
     if not setup and state == "start" then
       setup = true
@@ -1422,7 +1423,7 @@ end
 
 
 function record_attacks(player_obj, projectiles)
-  if gamestate.is_in_match and debug_settings.record_framedata then
+  if gamestate.is_in_match and debug_settings.recording_framedata then
     player = player_obj
     dummy = player_obj.other
 
@@ -3743,7 +3744,7 @@ function record_attacks(player_obj, projectiles)
             end
             current_attack.max_hits = 0
             dummy_offset_x = 90
-            training_settings.life_mode = 1
+            settings.training.life_mode = 1
             Queue_Command(gamestate.frame_number + 11, {command=memory.writebyte, args={player.life_addr, 0}})
             queue_input_sequence(dummy, {{"HP"}})
           elseif current_attack.move_type == "sa2" then
