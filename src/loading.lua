@@ -19,7 +19,7 @@ local frame_data_file_list = read_object_from_json_file(framedata_path .. "file_
 local frame_data_keys = copytable(Characters)
 table.insert(frame_data_keys, "projectiles")
 
-
+--cache default, selected, and disabled colors. everything is recolored in real time
 local function load_text_images(filepath)
   local map = read_object_from_json_file(filepath)
   if map then

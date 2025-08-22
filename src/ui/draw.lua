@@ -245,60 +245,6 @@ local function draw_horizontal_text_segment(p1_x, p2_x, y, text, line_color, edg
   end
 end
 
-local log_last_displayed_frame = 0
-local function log_draw()
-  local log = log_filtered
-  local log_default_color = 0xF7FFF7FF
-
-  if #log == 0 then return end
-
-  local line_background = { 0x333333CC, 0x555555CC }
-  local separator_color = 0xAAAAAAFF
-  local width = emu.screenwidth() - 10
-  local height = emu.screenheight() - 10
-  local x_start = 5
-  local y_start = 5
-  local line_height = 8
-  local current_line = 0
-  local columns_start = { 0, 20, 100 }
-  local box_size = 6
-  local box_margin = 2
-  gui.box(x_start, y_start , x_start + width, y_start, 0x00000000, separator_color)
-  for i = 0, log_line_count_max do
-    local frame_index = #log - (i + log_line_offset)
-    if frame_index < 1 then
-      break
-    end
-    local frame = log[frame_index]
-    local events = {{}, {}, {}}
-    for j, event in ipairs(frame.events) do
-      if log_categories_display[event.category] and log_categories_display[event.category].history then
-        table.insert(events[log_sections[event.section]], event)
-      end
-    end
-
-    local y = y_start + current_line * line_height
-    gui.box(x_start, y, x_start + width, y + line_height, line_background[(i % 2) + 1], 0x00000000)
-    for section_i = 1, 3 do
-      local box_x = x_start + columns_start[section_i]
-      local box_y = y + 1
-      for j, event in ipairs(events[section_i]) do
-        gui.box(box_x, box_y, box_x + box_size, box_y + box_size, event.color, 0x00000000)
-        gui.box(box_x + 1, box_y + 1, box_x + box_size - 1, box_y + box_size - 1, 0x00000000, 0x00000022)
-        gui.text(box_x + box_size + box_margin, box_y, event.name, log_default_color, 0x00000000)
-        box_x = box_x + box_size + box_margin + get_text_width(event.name) + box_margin
-      end
-    end
-
-    if frame_index > 1 then
-      local frame_diff = frame.frame - log[frame_index - 1].frame
-      gui.text(x_start + 2, y + 1, string.format("%d", frame_diff), log_default_color, 0x00000000)
-    end
-    gui.box(x_start, y + line_height, x_start + width, y + line_height, 0x00000000, separator_color)
-    current_line = current_line + 1
-    log_last_displayed_frame = frame_index
-  end
-end
 
 local load_frame_data_bar_fade_time = 40
 local load_frame_data_bar_fade_start = 0
@@ -322,7 +268,7 @@ local function loading_bar_display(loaded, total)
   local opacity = 0xDD
   if load_frame_data_bar_fading then
     opacity = 0xDD * (1 - load_frame_data_bar_elapsed / load_frame_data_bar_fade_time)
-    fill_color = tonumber(string.format("0xFFFFFF%02x", opacity))
+    fill_color = 0xFFFFFF00 + opacity
   end
   draw_gauge(x, y, width, height, loaded / total, fill_color, 0x00000000, 0x00000000, false)
   if loaded >= total and not load_frame_data_bar_fading then
@@ -368,7 +314,6 @@ local draw = {
   draw_controller_small = draw_controller_small,
   draw_gauge = draw_gauge,
   draw_horizontal_text_segment = draw_horizontal_text_segment,
-  log_draw = log_draw,
   loading_bar_display = loading_bar_display,
   draw_character_select = draw_character_select
 }

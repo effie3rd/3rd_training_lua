@@ -1,17 +1,18 @@
 local settings = require("src/settings")
 local gamestate = require("src/gamestate")
 local training = require("src/training")
+local inp = require("src.control.input")
 
+local make_input_empty, interpret_input = inp.make_input_empty, inp.interpret_input
 
 saved_recordings_path = "saved/recordings/"
 
 recording_slot_count = 16
-swap_characters = false
+
 -- 1: Default Mode, 2: Wait for recording, 3: Recording, 4: Replaying
 current_recording_state = 1
 last_ordered_recording_slot = 0
 current_recording_last_idle_frame = -1
-last_coin_input_frame = -1
 override_replay_slot = -1
 current_recording_slot_frames = {}
 
@@ -36,41 +37,6 @@ function clear_all_slots()
   settings.save_training_data()
 end
 
-
-function save_recording_slot_to_file()
-  if save_file_name == "" then
-    print(string.format("Error: Can't save to empty file name"))
-    return
-  end
-
-  local path = string.format("%s%s.json",saved_recordings_path, save_file_name)
-  if not write_object_to_json_file(recording_slots[settings.training.current_recording_slot].inputs, path) then
-    print(string.format("Error: Failed to save recording to \"%s\"", path))
-  else
-    print(string.format("Saved slot %d to \"%s\"", settings.training.current_recording_slot, path))
-  end
-
-  menu_stack_pop(save_recording_slot_popup)
-end
-
-function load_recording_slot_from_file()
-  if #load_file_list == 0 or load_file_list[load_file_index] == nil then
-    print(string.format("Error: Can't load from empty file name"))
-    return
-  end
-
-  local path = string.format("%s%s",saved_recordings_path, load_file_list[load_file_index])
-  local recording = read_object_from_json_file(path)
-  if not recording then
-    print(string.format("Error: Failed to load recording from \"%s\"", path))
-  else
-    recording_slots[settings.training.current_recording_slot].inputs = recording
-    print(string.format("Loaded \"%s\" to slot %d", path, settings.training.current_recording_slot))
-  end
-  settings.save_training_data()
-
-  menu_stack_pop(load_recording_slot_popup)
-end
 
 local function backup_recordings()
   -- Init base table
@@ -178,7 +144,7 @@ function set_recording_state(input, state)
   -- exit states
   if current_recording_state == 1 then
   elseif current_recording_state == 2 then
-    swap_characters = false
+    training.swap_characters = false
   elseif current_recording_state == 3 then
     local first_input = 1
     local last_input = 1
@@ -208,7 +174,7 @@ function set_recording_state(input, state)
 
     settings.save_training_data()
 
-    swap_characters = false
+    training.swap_characters = false
   elseif current_recording_state == 4 then
     clear_input_sequence(training.dummy)
   end
@@ -218,11 +184,11 @@ function set_recording_state(input, state)
   -- enter states
   if current_recording_state == 1 then
   elseif current_recording_state == 2 then
-    swap_characters = true
+    training.swap_characters = true
     make_input_empty(input)
   elseif current_recording_state == 3 then
     current_recording_last_idle_frame = -1
-    swap_characters = true
+    training.swap_characters = true
     make_input_empty(input)
     recording_slots[settings.training.current_recording_slot].inputs = {}
   elseif current_recording_state == 4 then
@@ -245,33 +211,44 @@ function set_recording_state(input, state)
   end
 end
 
-function update_recording(input, player, dummy)
+local function stick_input_to_sequence_input(player_obj, input)
+  if input == "Up" then return "up" end
+  if input == "Down" then return "down" end
+  if input == "Weak Punch" then return "LP" end
+  if input == "Medium Punch" then return "MP" end
+  if input == "Strong Punch" then return "HP" end
+  if input == "Weak Kick" then return "LK" end
+  if input == "Medium Kick" then return "MK" end
+  if input == "Strong Kick" then return "HK" end
 
-  local input_buffer_length = 11
-  if gamestate.is_in_match then
-
-    -- manage input
-    local input_pressed = (not swap_characters and player.input.pressed.coin) or (swap_characters and dummy.input.pressed.coin)
-    if input_pressed then
-      if gamestate.frame_number < (last_coin_input_frame + input_buffer_length) then
-        last_coin_input_frame = -1
-
-        -- double tap
-        if current_recording_state == 2 or current_recording_state == 3 then
-          set_recording_state(input, 1)
-        else
-          set_recording_state(input, 2)
-        end
-
-      else
-        last_coin_input_frame = gamestate.frame_number
-      end
+  if input == "Left" then
+    if player_obj.flip_input then
+      return "back"
+    else
+      return "forward"
     end
+  end
 
-    if last_coin_input_frame > 0 and gamestate.frame_number >= last_coin_input_frame + input_buffer_length then
-      last_coin_input_frame = -1
+  if input == "Right" then
+    if player_obj.flip_input then
+      return "forward"
+    else
+      return "back"
+    end
+  end
+  return ""
+end
 
-      -- single tap
+function update_recording(input, player, dummy)
+  if gamestate.is_in_match then
+    local motion = interpret_input(training.player, training.dummy)
+    if motion == "double_tap" then
+      if current_recording_state == 2 or current_recording_state == 3 then
+        set_recording_state(input, 1)
+      else
+        set_recording_state(input, 2)
+      end
+    elseif motion == "single_tap" then
       if current_recording_state == 1 then
         if can_play_recording() then
           set_recording_state(input, 4)
@@ -283,9 +260,7 @@ function update_recording(input, player, dummy)
       elseif current_recording_state == 4 then
         set_recording_state(input, 1)
       end
-
     end
-
     -- tick states
     if current_recording_state == 1 then
     elseif current_recording_state == 2 then
@@ -325,33 +300,7 @@ function update_recording(input, player, dummy)
   previous_recording_state = current_recording_state
 end
 
-function stick_input_to_sequence_input(player_obj, input)
-  if input == "Up" then return "up" end
-  if input == "Down" then return "down" end
-  if input == "Weak Punch" then return "LP" end
-  if input == "Medium Punch" then return "MP" end
-  if input == "Strong Punch" then return "HP" end
-  if input == "Weak Kick" then return "LK" end
-  if input == "Medium Kick" then return "MK" end
-  if input == "Strong Kick" then return "HK" end
 
-  if input == "Left" then
-    if player_obj.flip_input then
-      return "back"
-    else
-      return "forward"
-    end
-  end
-
-  if input == "Right" then
-    if player_obj.flip_input then
-      return "forward"
-    else
-      return "back"
-    end
-  end
-  return ""
-end
 
 function make_recording_slot()
   return {
@@ -376,27 +325,5 @@ local recording = {
   backup_recordings = backup_recordings,
   restore_recordings = restore_recordings
 }
-
-setmetatable(recording, {
-  __index = function(_, key)
-    if key == "training" then
-      return settings.training
-    elseif key == "screen_y" then
-      return screen_y
-    elseif key == "screen_scale" then
-      return screen_scale
-    end
-  end,
-
-  __newindex = function(_, key, value)
-    if key == "settings" then
-      settings = value
-    elseif key == "frame_data_loaded" then
-      frame_data_loaded = value
-    else
-      rawset(recording, key, value)
-    end
-  end
-})
 
 return recording

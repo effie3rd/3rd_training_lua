@@ -1,14 +1,15 @@
-local fd = require("src.modules.framedata")
-local stages = fd.stages
+local sd = require("src.modules.stagedata")
 
-pose = {
+local stage_list = sd.menu_stages
+
+local pose = {
   "standing",
   "crouching",
   "jumping",
   "highjumping",
 }
 
-stick_gesture = {
+local stick_gesture = {
   "none",
   "QCF",
   "QCB",
@@ -42,7 +43,7 @@ if is_4rd_strike then
   table.insert(stick_gesture, "Demon Armageddon") -- Gouki SA3
 end
 
-button_gesture =
+local button_gesture =
 {
   "none",
   "recording",
@@ -59,21 +60,21 @@ button_gesture =
   "HP+HK",
 }
 
-quick_stand =
+local quick_stand_mode =
 {
   "menu_off",
   "menu_on",
   "menu_random",
 }
 
-blocking_style =
+local blocking_style =
 {
   "block",
   "parry",
   "red_parry",
 }
 
-blocking_mode =
+local blocking_mode =
 {
   "menu_off",
   "menu_on",
@@ -81,7 +82,7 @@ blocking_mode =
   "menu_random",
 }
 
-counter_attack_type =
+local counter_attack_type =
 {
   "none",
   "normal_attack",
@@ -90,7 +91,7 @@ counter_attack_type =
   "recording"
 }
 
-counter_attack_motion =
+local counter_attack_motion =
 {
   "dir_5",
   "dir_6",
@@ -109,7 +110,7 @@ counter_attack_motion =
   "kara_throw"
 }
 
-counter_attack_motion_input =
+local counter_attack_motion_input =
 {
   {{"neutral"}},
   {{"forward"}},
@@ -128,7 +129,7 @@ counter_attack_motion_input =
   {{"maru"},{"tilda"},{"LP","LK"}}
 }
 
-counter_attack_button_default =
+local counter_attack_button_default =
 {
   "none",
   "LP",
@@ -141,7 +142,7 @@ counter_attack_button_default =
   "MP+MK",
   "HP+HK"
 }
-counter_attack_option_select =
+local counter_attack_option_select =
 {
   "guard_jump_back",
   "guard_jump_neutral",
@@ -155,94 +156,67 @@ counter_attack_option_select =
   "mae_shita"
 }
 
-guard_jumps =
-{
-  "guard_jump_back",
-  "guard_jump_neutral",
-  "guard_jump_forward",
-  "guard_jump_back_air_parry",
-  "guard_jump_neutral_air_parry",
-  "guard_jump_forward_air_parry"
-}
 
-mash_stun_mode =
+local mash_stun_mode =
 {
   "menu_off",
   "menu_fastest",
   "menu_realistic",
 }
-tech_throws_mode =
+local tech_throws_mode =
 {
   "menu_on",
   "menu_off",
   "menu_random",
 }
 
-hit_type =
+local hit_type =
 {
   "normal",
   "low",
   "overhead",
 }
 
-life_mode =
+local life_mode =
 {
   "no_refill",
   "refill",
   "infinite"
 }
 
-meter_mode =
+local meter_mode =
 {
   "no_refill",
   "refill",
   "infinite"
 }
 
-stun_mode =
+local stun_mode =
 {
   "normal",
   "no_stun",
   "delayed_reset"
 }
 
-standing_state =
-{
-  "knockeddown",
-  "standing",
-  "crouched",
-  "airborne",
-}
+local player_options = {"off","P1","P2","P1+P2"}
 
-players = {
-  "Player 1",
-  "Player 2",
-}
+local display_input_history_mode = {"off","P1","P2","P1+P2","moving"}
 
-player_options_list = {"off","P1","P2","P1+P2"}
+local gauge_refill_mode = {"off", "refill_max", "reset_value", "infinite" }
 
-display_input_history_mode = {"off","P1","P2","P1+P2","moving"}
-
-gauge_refill_mode = {"off", "refill_max", "reset_value", "infinite" }
-
-display_attack_bars_mode =
+local display_attack_bars_mode =
 {
   "menu_off",
   "menu_1_line",
   "menu_2_lines"
 }
 
-language = {
+local language = {
   "english",
   "japanese"
 }
 
-lang_code = {
-  "en",
-  "jp"
-}
-
-special_training_mode = 
+local special_training_mode = 
 {
   "training_defense",
   "training_footsies",
@@ -251,21 +225,11 @@ special_training_mode =
   "training_unblockables"
 }
 
-challenge_mode = {
+local challenge_mode = {
   "hadou_festival"
 }
 
-stage_map = {}
-stage_list = {"menu_off","menu_random"}
-for i = 0, 20 do
-  local name = "menu_" .. stages[i].name
-  if not table_contains_deep(stage_list, name) then
-    table.insert(stage_list, name)
-    stage_map[#stage_list] = i
-  end
-end
-
-slot_replay_mode = {
+local slot_replay_mode = {
   "replay_normal",
   "replay_random",
   "replay_ordered",
@@ -274,9 +238,38 @@ slot_replay_mode = {
   "replay_repeat_ordered"
 }
 
-distance_display_reference_point =
+local distance_display_reference_point =
 {
   "origin",
   "hurtbox"
 }
 
+return {
+  stage_list = stage_list,
+  pose = pose,
+  stick_gesture = stick_gesture,
+  button_gesture = button_gesture,
+  quick_stand_mode = quick_stand_mode,
+  blocking_style = blocking_style,
+  blocking_mode = blocking_mode,
+  counter_attack_type = counter_attack_type,
+  counter_attack_motion = counter_attack_motion,
+  counter_attack_motion_input = counter_attack_motion_input,
+  counter_attack_button_default = counter_attack_button_default,
+  counter_attack_option_select = counter_attack_option_select,
+  mash_stun_mode = mash_stun_mode,
+  tech_throws_mode = tech_throws_mode,
+  hit_type = hit_type,
+  life_mode = life_mode,
+  meter_mode = meter_mode,
+  stun_mode = stun_mode,
+  player_options = player_options,
+  display_input_history_mode = display_input_history_mode,
+  gauge_refill_mode = gauge_refill_mode,
+  display_attack_bars_mode = display_attack_bars_mode,
+  language = language,
+  special_training_mode = special_training_mode,
+  challenge_mode = challenge_mode,
+  slot_replay_mode = slot_replay_mode,
+  distance_display_reference_point = distance_display_reference_point
+}

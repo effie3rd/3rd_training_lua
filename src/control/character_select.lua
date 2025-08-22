@@ -1,5 +1,9 @@
 local settings = require("src/settings")
 local gamestate = require("src/gamestate")
+local sd = require("src.modules.stagedata")
+local inp = require("src.control.input")
+
+local swap_inputs, make_input_empty, clear_directional_input, clear_p1_buttons = inp.swap_inputs, inp.make_input_empty, inp.clear_directional_input, inp.clear_p1_buttons 
 
 local character_select_savestate = savestate.create("data/"..rom_name.."/savestates/character_select.fs")
 local first_run = true
@@ -425,10 +429,10 @@ local function update_character_select(input, do_fast_forward)
   end
 
   if not gamestate.is_in_match and settings.training.force_stage > 1 then
-    local stage = stage_map[settings.training.force_stage]
+    local stage = sd.menu_to_stage_map[settings.training.force_stage]
     if settings.training.force_stage == 2 then
-      local n = 3 + math.random(0, #stage_list - 3)
-      stage = stage_map[n]
+      local n = 3 + math.random(0, sd.n_stages - 1)
+      stage = sd.menu_to_stage_map[n]
     end
     memory.writebyte(addresses.global.stage, stage)
   end

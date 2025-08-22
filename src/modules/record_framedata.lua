@@ -5,14 +5,16 @@ local movedata = require("src.modules.movedata")
 local gamestate = require("src/gamestate")
 local character_select = require("src.control.character_select")
 local settings = require("src/settings")
+local mem = require("src.control.write_memory")
 local debug_settings = require("src/debug_settings")
+local json = require("src/libs/dkjson")
+
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local test_collision, find_frame_data_by_name = fd.test_collision, fd.find_frame_data_by_name
 local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_slow_jumper
 local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text, text.render_text_multiple, text.get_text_dimensions, text.get_text_dimensions_multiple
 local move_list, get_move_sequence_by_name = movedata.move_list, movedata.get_move_sequence_by_name
-
 local frame_data_keys = copytable(Characters)
 table.insert(frame_data_keys, "projectiles")
 
@@ -731,8 +733,8 @@ function record_idle(player_obj)
   function start_recording_idle(name)
     new_recording(player, {}, name)
     record_idle_start_frame = gamestate.frame_number
-    write_pos(player, 440, 0)
-    write_pos(dummy, 540, 0)
+    mem.write_pos(player, 440, 0)
+    mem.write_pos(dummy, 540, 0)
     print(name)
   end
 
@@ -749,7 +751,7 @@ function record_idle(player_obj)
         else
           queue_input_sequence(player, {{"down"}})
           if player.action == 7 then
-            clear_motion_data(player)
+            mem.clear_motion_data(player)
             setup = true
           end
         end
@@ -763,7 +765,7 @@ function record_idle(player_obj)
           queue_input_sequence(player, {{"down"}})
         else
           if player.action == 0 then
-            clear_motion_data(player)
+            mem.clear_motion_data(player)
             setup = true
           end
         end
@@ -776,7 +778,7 @@ function record_idle(player_obj)
         else
           queue_input_sequence(player, {{"down"}})
           if player.action == 7 then
-            clear_motion_data(player)
+            mem.clear_motion_data(player)
             setup = true
           end
         end
@@ -789,7 +791,7 @@ function record_idle(player_obj)
           queue_input_sequence(player, {{"down"}})
         else
           if player.action == 0 then
-            clear_motion_data(player)
+            mem.clear_motion_data(player)
             setup = true
           end
         end
@@ -991,7 +993,7 @@ function record_movement(player_obj)
           for i = 1, 100 do
             table.insert(sequence, {"down"})
           end
-          Queue_Command(gamestate.frame_number + 8, {command = clear_motion_data, args = {player}})
+          Queue_Command(gamestate.frame_number + 8, {command = mem.clear_motion_data, args = {player}})
         elseif name == "jump_forward" then
           is_jump = true
           sequence = {{"up","forward"},{"up","forward"},{"up","forward"},{},{},{},{}}
@@ -1023,45 +1025,45 @@ function record_movement(player_obj)
           queue_input_sequence(dummy, {{"MK"}})
           for i = 1, 30 do
             table.insert(sequence, {"back"})
-            Queue_Command(gamestate.frame_number + i, {command = clear_motion_data, args = {player}})
+            Queue_Command(gamestate.frame_number + i, {command = mem.clear_motion_data, args = {player}})
           end
         elseif name == "block_low" then
           recording_options.ignore_movement = true
           queue_input_sequence(dummy, {{"down","MK"}})
           for i = 1, 30 do
             table.insert(sequence, {"down","back"})
-            Queue_Command(gamestate.frame_number + i, {command = clear_motion_data, args = {player}})
+            Queue_Command(gamestate.frame_number + i, {command = mem.clear_motion_data, args = {player}})
           end
         elseif name == "parry_high" then
           queue_input_sequence(dummy, {{"MK"}})
           Queue_Command(gamestate.frame_number + 1, {command = queue_input_sequence, args = {player, {{"forward"}}}})
-          Queue_Command(gamestate.frame_number + 2, {command = clear_motion_data, args = {player}})
+          Queue_Command(gamestate.frame_number + 2, {command = mem.clear_motion_data, args = {player}})
           --24 25
         elseif name == "parry_low" then
           queue_input_sequence(dummy, {{"down","MK"}})
           Queue_Command(gamestate.frame_number + 1, {command = queue_input_sequence, args = {player, {{"down"}}}})
-          Queue_Command(gamestate.frame_number + 2, {command = clear_motion_data, args = {player}})
+          Queue_Command(gamestate.frame_number + 2, {command = mem.clear_motion_data, args = {player}})
           --26
         elseif name == "parry_air" then
           m_dummy_reset_pos_offset = {100, 40}
           queue_input_sequence(dummy, {{"up"},{"up"},{},{},{},{},{"HK"}})
           queue_input_sequence(player, {{"up"}})
           Queue_Command(gamestate.frame_number + 14, {command = queue_input_sequence, args = {player, {{"forward"}}}})
-          Queue_Command(gamestate.frame_number + 15, {command = clear_motion_data, args = {player}})
-          -- Queue_Command(gamestate.frame_number + 80, {command = write_pos, args = {player, player.pos_x, 0}})
+          Queue_Command(gamestate.frame_number + 15, {command = mem.clear_motion_data, args = {player}})
+          -- Queue_Command(gamestate.frame_number + 80, {command = mem.write_pos, args = {player, player.pos_x, 0}})
           Queue_Command(gamestate.frame_number + 80, {command = land_player, args = {player}})
           --27
         end
         if is_jump then
           -- recording_options.infinite_loop = true
-          Queue_Command(gamestate.frame_number + clear_jump_after, {command = clear_motion_data, args = {player}})
+          Queue_Command(gamestate.frame_number + clear_jump_after, {command = mem.clear_motion_data, args = {player}})
           Queue_Command(gamestate.frame_number + clear_jump_after, {command = function() recording_options.ignore_motion = true end})
           Queue_Command(gamestate.frame_number + clear_jump_after + 100, {command = land_player, args = {player}})
         end
 
-        write_pos(player, m_player_reset_pos[1], m_player_reset_pos[2])
-        write_pos(dummy, player.pos_x + m_dummy_reset_pos_offset[1], player.pos_y + m_dummy_reset_pos_offset[2])
-        fix_screen_pos(player, dummy)
+        mem.write_pos(player, m_player_reset_pos[1], m_player_reset_pos[2])
+        mem.write_pos(dummy, player.pos_x + m_dummy_reset_pos_offset[1], player.pos_y + m_dummy_reset_pos_offset[2])
+        mem.fix_screen_pos(player, dummy)
         queue_input_sequence(player, sequence)
         print(name)
       else
@@ -1072,7 +1074,7 @@ function record_movement(player_obj)
     end
     if setup then
       if not allow_dummy_movement then
-        write_pos(dummy, player.pos_x + m_dummy_reset_pos_offset[1], player.pos_y + m_dummy_reset_pos_offset[2])
+        mem.write_pos(dummy, player.pos_x + m_dummy_reset_pos_offset[1], player.pos_y + m_dummy_reset_pos_offset[2])
       end
       record_framedata(player, {}, name)
     end
@@ -1120,11 +1122,11 @@ function record_wakeups(player_obj)
         elseif current_attack.name == "kubiori" then
           name = "wakeup_quick_reverse"
         end
-        write_pos(player, current_attack.reset_pos_x, 0)
-        write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
+        mem.write_pos(player, current_attack.reset_pos_x, 0)
+        mem.write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
         memory.writebyte(dummy.stun_bar_char_addr, 0)
         memory.writebyte(dummy.life_addr, 160)
-        fix_screen_pos(player, dummy)
+        mem.fix_screen_pos(player, dummy)
         queue_input_sequence(dummy, current_attack.sequence)
 
         state = "wait_for_knockdown"
@@ -1153,7 +1155,7 @@ function record_wakeups(player_obj)
     else
       if state == "wait_for_knockdown" then
         if player.posture == 0x26 then
-          clear_motion_data(player)
+          mem.clear_motion_data(player)
           new_recording(player, {}, name)
           state = "recording"
         end
@@ -1205,7 +1207,7 @@ local n_no_data = 0
 function record_landing()
   local player = gamestate.P1
   if state == "start" and not setup and gamestate.has_match_just_started then
-    make_invulnerable(player.other, true)
+    mem.make_invulnerable(player.other, true)
 
     landing_categories = {
       {name = "empty_jumps", list = empty_jumps},
@@ -1230,7 +1232,7 @@ function record_landing()
         i_landings = 1
         i_landing_categories = 1
         current_landing_category = {}
-        make_invulnerable(dummy, false)
+        mem.make_invulnerable(dummy, false)
         return
       end
       i_landing_categories = i_landing_categories + 1
@@ -1353,9 +1355,9 @@ landing_ss = savestate.create("data/"..rom_name.."/savestates/landing.fs")
 
 function setup_landing_state(player, sequence, jump_offset)
   queue_input_sequence(player, sequence)
-  write_pos(player, 400, 0)
-  Queue_Command(gamestate.frame_number + jump_offset - 1 - 1, {command = clear_motion_data, args={player}})
-  Queue_Command(gamestate.frame_number + jump_offset - 1 - 1, {command = write_pos, args={player, 400, 100}})
+  mem.write_pos(player, 400, 0)
+  Queue_Command(gamestate.frame_number + jump_offset - 1 - 1, {command = mem.clear_motion_data, args={player}})
+  Queue_Command(gamestate.frame_number + jump_offset - 1 - 1, {command = mem.write_pos, args={player, 400, 100}})
   Queue_Command(gamestate.frame_number + jump_offset - 1, {command = savestate.save, args={landing_ss}})
   Queue_Command(gamestate.frame_number + _jump_offset - 1, {command = function() print("save ss", gamestate.frame_number) end})
   Queue_Command(gamestate.frame_number + _jump_offset, {command = function() state = "setup_landing" end})
@@ -1369,13 +1371,13 @@ end
 
 
 function landing_write_player_pos_y(y)
-  clear_motion_data(gamestate.P1)
-  write_pos_y(gamestate.P1, y)
+  mem.clear_motion_data(gamestate.P1)
+  mem.write_pos_y(gamestate.P1, y)
 end
 
 function landing_reset_player_pos()
-  clear_motion_data(gamestate.P1)
-  write_pos(gamestate.P1, 400, 100)
+  mem.clear_motion_data(gamestate.P1)
+  mem.write_pos(gamestate.P1, 400, 100)
 end
 
 function landing_queue_guess()
@@ -1390,7 +1392,7 @@ end
 
 function landing_queue_write_pos(val)
   local delta = landing_recording.act_frame_number - gamestate.frame_number
-  Queue_Command(delta, {command = write_pos, args={gamestate.P1, val}})
+  Queue_Command(delta, {command = mem.write_pos, args={gamestate.P1, val}})
 end
 
 function queue_landing_move(sequence)
@@ -1695,7 +1697,7 @@ function record_attacks(player_obj, projectiles)
           received_hits = 0
           block_until = 0
           block_max_hits = 0
-          make_invulnerable(dummy, false)
+          mem.make_invulnerable(dummy, false)
           return
         end
         if i_recording_hit_types < #recording_hit_types then
@@ -1772,13 +1774,13 @@ function record_attacks(player_obj, projectiles)
             end
           elseif current_attack.name == "d_MK_air" and recording_options.hit_type == "block" then
             current_attack.offset_x = -30
-            Queue_Command(gamestate.frame_number + #sequence, {command = write_pos, args={dummy, current_attack.reset_pos_x + 5, 0}})
+            Queue_Command(gamestate.frame_number + #sequence, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 5, 0}})
           elseif current_attack.name == "d_HP_air" and recording_options.hit_type == "block" then
-            Queue_Command(gamestate.frame_number + #sequence+10, {command = write_pos_y, args={player, 40}})
+            Queue_Command(gamestate.frame_number + #sequence+10, {command = mem.write_pos_y, args={player, 40}})
           end
         elseif player.char_str == "hugo" then
           if current_attack.name == "d_HP_air" and recording_options.hit_type == "block" then
-            Queue_Command(gamestate.frame_number + #sequence + 8, {command = write_pos, args={dummy, current_attack.reset_pos_x + 20, 0}})
+            Queue_Command(gamestate.frame_number + #sequence + 8, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 20, 0}})
           end
         elseif player.char_str == "ken" then
           if current_attack.name == "MK_hold" then
@@ -1807,7 +1809,7 @@ function record_attacks(player_obj, projectiles)
           end
         elseif player.char_str == "yang" or player.char_str == "yun" then
           if current_attack.name == "raigeki_LK" and recording_options.hit_type == "block" then
-            Queue_Command(gamestate.frame_number + #sequence + 20, {command = write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
+            Queue_Command(gamestate.frame_number + #sequence + 20, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
           end
         end
         if current_attack.max_hits == 0 and recording_options.hit_type == "block" then
@@ -1855,7 +1857,7 @@ function record_attacks(player_obj, projectiles)
         end
         if player.char_str == "elena" then
           if button == "LP" and recording_options.hit_type == "block" then
-            Queue_Command(gamestate.frame_number + #sequence + 10, {command = write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
+            Queue_Command(gamestate.frame_number + #sequence + 10, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
           elseif button == "HK" then
             current_attack.max_hits = 2
           end
@@ -1871,7 +1873,7 @@ function record_attacks(player_obj, projectiles)
         end
         if player.char_str == "oro" then
           if (button == "LK" or button == "MK") and recording_options.hit_type == "block" then
-            Queue_Command(gamestate.frame_number + #sequence + 10, {command = write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
+            Queue_Command(gamestate.frame_number + #sequence + 10, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
           elseif button == "HP" and not (current_attack.jump_dir == "neutral") then
             current_attack.offset_x = -12
             current_attack.max_hits = 2
@@ -1894,12 +1896,12 @@ function record_attacks(player_obj, projectiles)
           if button == "MP" or button == "MK" then
             current_attack.player_offset_y = -14
           elseif button == "HK" then
-            Queue_Command(gamestate.frame_number + #sequence + 10, {command = write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
+            Queue_Command(gamestate.frame_number + #sequence + 10, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
           end
         end
         if player.char_str == "yang" or player.char_str == "yun" then
           if button == "LP" then
-            Queue_Command(gamestate.frame_number + #sequence + 10, {command = write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
+            Queue_Command(gamestate.frame_number + #sequence + 10, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 30, 0}})
           end
         end
       elseif current_attack_category.name == "target_combos" then
@@ -1962,8 +1964,8 @@ function record_attacks(player_obj, projectiles)
 
         local player_offset_y = current_attack.player_offset_y or 0
 
-        make_invulnerable(dummy, false)
-        clear_motion_data(player)
+        mem.make_invulnerable(dummy, false)
+        mem.clear_motion_data(player)
 
         if current_attack.air then
           recording_options.air = true
@@ -1979,12 +1981,12 @@ function record_attacks(player_obj, projectiles)
 
           queue_input_sequence(player, sequence)
           Queue_Command(gamestate.frame_number + current_attack.attack_start_frame + 100, {command = land_player, args={player}})
-          Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = clear_motion_data, args={player}})
-          Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = write_pos, args={player, current_attack.reset_pos_x, default_air_block_height + player_offset_y}})
-          write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
+          Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = mem.clear_motion_data, args={player}})
+          Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = mem.write_pos, args={player, current_attack.reset_pos_x, default_air_block_height + player_offset_y}})
+          mem.write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
         else
-          write_pos(player, current_attack.reset_pos_x, 0)
-          write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
+          mem.write_pos(player, current_attack.reset_pos_x, 0)
+          mem.write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
 --               Queue_Command(gamestate.frame_number + 2, {command = queue_input_sequence, args={current_attack.sequence[1]}})
           queue_input_sequence(player, {current_attack.sequence[1]})
         end
@@ -2473,7 +2475,7 @@ function record_attacks(player_obj, projectiles)
             block_max_hits = 1
             current_attack.hits_appear_after_block = true
             dummy_offset_x = 70
-            Queue_Command(gamestate.frame_number + 2, {command = write_pos, args={dummy, player.pos_x + 250, 0}})
+            Queue_Command(gamestate.frame_number + 2, {command = mem.write_pos, args={dummy, player.pos_x + 250, 0}})
           end
         end
 
@@ -2536,7 +2538,7 @@ function record_attacks(player_obj, projectiles)
               current_attack.land_after = 120
             end
             if recording_options.hit_type == "block" then
-              Queue_Command(gamestate.frame_number + 10, {command = clear_motion_data, args={player}})
+              Queue_Command(gamestate.frame_number + 10, {command = mem.clear_motion_data, args={player}})
             end
           end
 
@@ -2737,10 +2739,10 @@ function record_attacks(player_obj, projectiles)
               if recording_options.hit_type == "miss" then
                 dummy_offset_x = 100
               end
-              Queue_Command(gamestate.frame_number + 15, {command = write_pos, args={dummy, current_attack.reset_pos_x + 250, 0}})
+              Queue_Command(gamestate.frame_number + 15, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 250, 0}})
             elseif button == "EXK" then
               dummy_offset_x = 80
-              Queue_Command(gamestate.frame_number + 15, {command = write_pos, args={dummy, current_attack.reset_pos_x + 100, 0}})
+              Queue_Command(gamestate.frame_number + 15, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 100, 0}})
             end
           end
           if base_name == "tsukijigoe" or base_name == "kasumigake" then
@@ -2790,7 +2792,7 @@ function record_attacks(player_obj, projectiles)
           end
           if base_name == "tatsumaki_air" then
             if recording_options.hit_type == "block" then
-              Queue_Command(gamestate.frame_number + 10, {command = clear_motion_data, args={player}})
+              Queue_Command(gamestate.frame_number + 10, {command = mem.clear_motion_data, args={player}})
             end
             if button == "LK" then
               current_attack.player_offset_y = -20
@@ -2862,13 +2864,13 @@ function record_attacks(player_obj, projectiles)
             dummy_offset_x = 100
             if recording_options.hit_type == "block" then
               if button == "LP" then
-                Queue_Command(gamestate.frame_number + 10, {command = write_pos, args={dummy, current_attack.reset_pos_x + 3, 0}})
+                Queue_Command(gamestate.frame_number + 10, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 3, 0}})
               elseif button == "MP" then
-                Queue_Command(gamestate.frame_number + 13, {command = write_pos, args={dummy, current_attack.reset_pos_x + 3, 0}})
+                Queue_Command(gamestate.frame_number + 13, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 3, 0}})
               elseif button == "HP" then
-                Queue_Command(gamestate.frame_number + 17, {command = write_pos, args={dummy, current_attack.reset_pos_x + 3, 0}})
+                Queue_Command(gamestate.frame_number + 17, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 3, 0}})
               elseif button == "EXP" then
-                Queue_Command(gamestate.frame_number + 14, {command = write_pos, args={dummy, current_attack.reset_pos_x + 73, 0}})
+                Queue_Command(gamestate.frame_number + 14, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 73, 0}})
               end
             end
           end
@@ -2982,11 +2984,11 @@ function record_attacks(player_obj, projectiles)
 
             if button == "LK" then
             elseif button == "MK" then
-              Queue_Command(gamestate.frame_number + 5, {command = write_pos, args={dummy, current_attack.reset_pos_x + 160, 0}})
+              Queue_Command(gamestate.frame_number + 5, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 160, 0}})
             elseif button == "HK" then
-              Queue_Command(gamestate.frame_number + 5, {command = write_pos, args={dummy, current_attack.reset_pos_x + 200, 0}})
+              Queue_Command(gamestate.frame_number + 5, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 200, 0}})
             elseif button == "EXK" then
-              Queue_Command(gamestate.frame_number + 5, {command = write_pos, args={dummy, current_attack.reset_pos_x + 200, 0}})
+              Queue_Command(gamestate.frame_number + 5, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 200, 0}})
               current_attack.max_hits = 3
             end
             local n = 20
@@ -3011,7 +3013,7 @@ function record_attacks(player_obj, projectiles)
 
             if recording_options.hit_type == "block" then
               dummy_offset_x = 35
-              Queue_Command(gamestate.frame_number + 10, {command = clear_motion_data, args={player}})
+              Queue_Command(gamestate.frame_number + 10, {command = mem.clear_motion_data, args={player}})
             end
             local n = 20
             for i = 1, n do
@@ -3135,7 +3137,7 @@ function record_attacks(player_obj, projectiles)
           end
           if base_name == "tatsumaki_air" then
             if recording_options.hit_type == "block" then
-              Queue_Command(gamestate.frame_number + 10, {command = clear_motion_data, args={player}})
+              Queue_Command(gamestate.frame_number + 10, {command = mem.clear_motion_data, args={player}})
             end
             if button == "LK" then
               current_attack.player_offset_y = -20
@@ -3275,7 +3277,7 @@ function record_attacks(player_obj, projectiles)
               current_attack.land_after = 150
             end
             if recording_options.hit_type == "block" then
-              Queue_Command(gamestate.frame_number + 10, {command = clear_motion_data, args={player}})
+              Queue_Command(gamestate.frame_number + 10, {command = mem.clear_motion_data, args={player}})
             end
           end
           if base_name == "asura_forward" or base_name == "asura_backward" then
@@ -3295,8 +3297,8 @@ function record_attacks(player_obj, projectiles)
               dummy_offset_x = 150
             elseif button == "HP" then
               dummy_offset_x = 210
-              Queue_Command(gamestate.frame_number + 10, {command = write_pos, args={player, current_attack.reset_pos_x - 80, 0}})
-              Queue_Command(gamestate.frame_number + 10, {command = set_screen_pos, args={current_attack.reset_pos_x, 0}})
+              Queue_Command(gamestate.frame_number + 10, {command = mem.write_pos, args={player, current_attack.reset_pos_x - 80, 0}})
+              Queue_Command(gamestate.frame_number + 10, {command = mem.set_screen_pos, args={current_attack.reset_pos_x, 0}})
             elseif button == "EXP" then
               dummy_offset_x = 190
               current_attack.max_hits = 2
@@ -3348,7 +3350,7 @@ function record_attacks(player_obj, projectiles)
             current_attack.player_offset_y = -20
             current_attack.land_after = 150
             if recording_options.hit_type == "block" then
-              Queue_Command(gamestate.frame_number + 10, {command = clear_motion_data, args={player}})
+              Queue_Command(gamestate.frame_number + 10, {command = mem.clear_motion_data, args={player}})
             end
           end
           if base_name == "dra" then
@@ -3611,7 +3613,7 @@ function record_attacks(player_obj, projectiles)
             else
               current_attack.max_hits = 1
               if recording_options.hit_type == "block" then
-                Queue_Command(gamestate.frame_number + 38, {command = write_pos, args={dummy, current_attack.reset_pos_x + 150, 0}})
+                Queue_Command(gamestate.frame_number + 38, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 150, 0}})
               end
             end
           end
@@ -3866,11 +3868,11 @@ function record_attacks(player_obj, projectiles)
             --   return
             -- end
             if button == "LK" then
-              Queue_Command(gamestate.frame_number + 15, {command = write_pos, args={dummy, current_attack.reset_pos_x - 40, 0}})
+              Queue_Command(gamestate.frame_number + 15, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x - 40, 0}})
             elseif button == "MK" then
-              Queue_Command(gamestate.frame_number + 15, {command = write_pos, args={dummy, current_attack.reset_pos_x, 0}})
+              Queue_Command(gamestate.frame_number + 15, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x, 0}})
             elseif button == "HK" then
-              Queue_Command(gamestate.frame_number + 15, {command = write_pos, args={dummy, current_attack.reset_pos_x + 50, 0}})
+              Queue_Command(gamestate.frame_number + 15, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + 50, 0}})
             end
           elseif current_attack.move_type == "sa3" then
             current_attack.max_hits = 0
@@ -4144,7 +4146,7 @@ function record_attacks(player_obj, projectiles)
         recording = false
         setup = false
         state = "off"
-        make_invulnerable(dummy, false)
+        mem.make_invulnerable(dummy, false)
         return
       end
 
@@ -4276,45 +4278,45 @@ function record_attacks(player_obj, projectiles)
             recording_options.infinite_loop = true
             if recording_options.hit_type == "miss" then
               dummy_offset_x = 200
-              write_pos(player, 150, 300)
-              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 300)
+              mem.write_pos(player, 150, 300)
+              mem.write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 300)
               block_max_hits = 0
             else
               dummy_offset_x = 350
-              write_pos(player, 150, 200)
-              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
-              Queue_Command(gamestate.frame_number + 50, {command = write_pos, args={dummy, current_attack.reset_pos_x + dummy_offset_x, 0}})
+              mem.write_pos(player, 150, 200)
+              mem.write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
+              Queue_Command(gamestate.frame_number + 50, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + dummy_offset_x, 0}})
               dummy_offset_x = 100
             end
-            Queue_Command(gamestate.frame_number + #current_attack.sequence, {command = clear_motion_data, args={player}})
+            Queue_Command(gamestate.frame_number + #current_attack.sequence, {command = mem.clear_motion_data, args={player}})
           elseif current_attack.name == "drill_MK" then
             recording_options.infinite_loop = true
             if recording_options.hit_type == "miss" then
               dummy_offset_x = 150
-              write_pos(player, 150, 300)
-              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 300)
+              mem.write_pos(player, 150, 300)
+              mem.write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 300)
               block_max_hits = 0
             else
               dummy_offset_x = 200
-              write_pos(player, 150, 200)
-              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
+              mem.write_pos(player, 150, 200)
+              mem.write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
               dummy_offset_x = 100
             end
-            Queue_Command(gamestate.frame_number + #current_attack.sequence, {command = clear_motion_data, args={player}})
+            Queue_Command(gamestate.frame_number + #current_attack.sequence, {command = mem.clear_motion_data, args={player}})
           elseif current_attack.name == "drill_HK" then
             recording_options.infinite_loop = true
             if recording_options.hit_type == "miss" then
               dummy_offset_x = 150
-              write_pos(player, 150, 300)
-              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 300)
+              mem.write_pos(player, 150, 300)
+              mem.write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 300)
               block_max_hits = 0
             else
               dummy_offset_x = 0
-              write_pos(player, 150, 200)
-              Queue_Command(gamestate.frame_number + 1, {command = write_pos, args={dummy, current_attack.reset_pos_x + dummy_offset_x, 0}})
+              mem.write_pos(player, 150, 200)
+              Queue_Command(gamestate.frame_number + 1, {command = mem.write_pos, args={dummy, current_attack.reset_pos_x + dummy_offset_x, 0}})
               dummy_offset_x = 100
             end
-            Queue_Command(gamestate.frame_number + #current_attack.sequence, {command = clear_motion_data, args={player}})
+            Queue_Command(gamestate.frame_number + #current_attack.sequence, {command = mem.clear_motion_data, args={player}})
           else
             if current_attack.land_after then
               if current_attack.land_after > 0 then
@@ -4323,35 +4325,35 @@ function record_attacks(player_obj, projectiles)
             else
               Queue_Command(gamestate.frame_number + #current_attack.sequence + 100, {command = land_player, args={player}})
             end
-            Queue_Command(gamestate.frame_number + #current_attack.sequence, {command = clear_motion_data, args={player}})
+            Queue_Command(gamestate.frame_number + #current_attack.sequence, {command = mem.clear_motion_data, args={player}})
 
             if recording_options.hit_type == "miss" then
-              write_pos(player, current_attack.reset_pos_x, 0)
-              Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = write_pos, args={player, current_attack.reset_pos_x, default_air_miss_height + current_attack.player_offset_y}})
-              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 200)
+              mem.write_pos(player, current_attack.reset_pos_x, 0)
+              Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = mem.write_pos, args={player, current_attack.reset_pos_x, default_air_miss_height + current_attack.player_offset_y}})
+              mem.write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 200)
             else
-              write_pos(player, current_attack.reset_pos_x, 0)
-              Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = write_pos, args={player, current_attack.reset_pos_x, default_air_block_height + current_attack.player_offset_y}})
-              write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
+              mem.write_pos(player, current_attack.reset_pos_x, 0)
+              Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = mem.write_pos, args={player, current_attack.reset_pos_x, default_air_block_height + current_attack.player_offset_y}})
+              mem.write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, 0)
             end
           end
         else
           current_attack.attack_start_frame = current_attack.attack_start_frame or #current_attack.sequence
-          write_pos(player, current_attack.reset_pos_x, 0)
-          write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, player.pos_y + dummy_offset_y)
+          mem.write_pos(player, current_attack.reset_pos_x, 0)
+          mem.write_pos(dummy, current_attack.reset_pos_x + dummy_offset_x, player.pos_y + dummy_offset_y)
           queue_input_sequence(player, current_attack.sequence)
-          Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = clear_motion_data, args={player}})
+          Queue_Command(gamestate.frame_number + current_attack.attack_start_frame, {command = mem.clear_motion_data, args={player}})
         end
 
         if current_attack.self_chain then
-          make_invulnerable(dummy, false)
+          mem.make_invulnerable(dummy, false)
           recording_options.self_chain = true
         end
 
         memory.writebyte(dummy.stun_bar_char_addr, 0)
         memory.writebyte(dummy.life_addr, 160)
-        clear_motion_data(player)
-        fix_screen_pos(player, dummy)
+        mem.clear_motion_data(player)
+        mem.fix_screen_pos(player, dummy)
         print(name)
 
         if overwrite and first_record then
@@ -4399,11 +4401,11 @@ function record_attacks(player_obj, projectiles)
         or current_attack.hits_appear_after_block
         or current_attack.hits_appear_after_hit
         or current_attack.hits_appear_after_parry) then
-          make_invulnerable(dummy, true)
-          write_pos(dummy, player.pos_x + dummy_offset_x, player.pos_y + dummy_offset_y)
+          mem.make_invulnerable(dummy, true)
+          mem.write_pos(dummy, player.pos_x + dummy_offset_x, player.pos_y + dummy_offset_y)
         else
           if received_hits < block_until then
-            make_invulnerable(dummy, false)
+            mem.make_invulnerable(dummy, false)
             if current_attack.hits_appear_after_parry then
               memory.writebyte(dummy.parry_forward_validity_time_addr, 0xA)
               memory.writebyte(dummy.parry_down_validity_time_addr, 0xA)
@@ -4411,8 +4413,8 @@ function record_attacks(player_obj, projectiles)
               memory.writebyte(dummy.parry_antiair_validity_time_addr, 0x5)            
             end
           else
-            make_invulnerable(dummy, true)
-            write_pos(dummy, player.pos_x + dummy_offset_x, player.pos_y + dummy_offset_y)
+            mem.make_invulnerable(dummy, true)
+            mem.write_pos(dummy, player.pos_x + dummy_offset_x, player.pos_y + dummy_offset_y)
           end
         end
 
@@ -4421,7 +4423,7 @@ function record_attacks(player_obj, projectiles)
         end
       elseif recording_options.hit_type == "block" then
         if not (recording_options.target_combo or current_attack.self_chain) then
-          make_invulnerable(dummy, false)
+          mem.make_invulnerable(dummy, false)
           if state == "new_recording" then
             received_hits = 0
             state = "recording"
@@ -4438,7 +4440,7 @@ function record_attacks(player_obj, projectiles)
               if not current_projectile then
                 current_projectile = obj
                 if current_attack.projectile_offset then
-                  write_pos(obj, obj.pos_x + current_attack.projectile_offset[1], obj.pos_y + current_attack.projectile_offset[2])
+                  mem.write_pos(obj, obj.pos_x + current_attack.projectile_offset[1], obj.pos_y + current_attack.projectile_offset[2])
                 end
               end
               if current_attack.home_projectiles then
@@ -4447,10 +4449,10 @@ function record_attacks(player_obj, projectiles)
                 local dist = math.sqrt(dx*dx + dy*dy)
                 local vx =  dx / dist * 16
                 local vy =  dy / dist * 16
-                write_velocity(obj, vx, vy)
+                mem.write_velocity(obj, vx, vy)
               end
               if obj ~= current_projectile then
-                set_freeze(obj, 2)
+                mem.set_freeze(obj, 2)
               end
             end
             if current_projectile then
@@ -4463,10 +4465,10 @@ function record_attacks(player_obj, projectiles)
             if freeze_player_for_projectile then
               if player.animation == "d17c" then --gill meteor swarm
                 if current_projectile then
-                  set_freeze(player, 255)
+                  mem.set_freeze(player, 255)
                 end
               else
-                set_freeze(player, 2)
+                mem.set_freeze(player, 2)
               end
             end
             recording_options.is_projectile = true
@@ -4501,7 +4503,7 @@ function record_attacks(player_obj, projectiles)
             if tc_hit_index <= #current_attack.sequence then
               if recording_options.hit_type == "miss" then
                 tc_hit_index = tc_hit_index + 1
-                set_freeze(player, 1)
+                mem.set_freeze(player, 1)
                 local delay = 0
                 if current_attack.delay then
                   delay = current_attack.delay[tc_hit_index]
@@ -4516,7 +4518,7 @@ function record_attacks(player_obj, projectiles)
           if current_attack.delay then
             delay = current_attack.delay[1]
           end
-          set_freeze(player, 1)
+          mem.set_freeze(player, 1)
           player.animation_action_count = 0
           Queue_Command(gamestate.frame_number + 1 + delay, {command = queue_input_sequence, args={player, current_attack.sequence}})
         end
@@ -4534,9 +4536,9 @@ function record_attacks(player_obj, projectiles)
         if not current_attack.is_projectile then
           if unfreeze_player then
             if player.animation == "dadc" then
-              set_freeze(player, 0xFF)
+              mem.set_freeze(player, 0xFF)
             else
-              set_freeze(player, 1)
+              mem.set_freeze(player, 1)
             end
             unfreeze_player = false
           end
@@ -4561,7 +4563,7 @@ function record_attacks(player_obj, projectiles)
           end
         else
           if current_projectile then
-            set_freeze(current_projectile, 1)
+            mem.set_freeze(current_projectile, 1)
           end
         end
         state = "recording"
@@ -4569,12 +4571,12 @@ function record_attacks(player_obj, projectiles)
       if player.previous_remaining_freeze_frames > 0
       and player.remaining_freeze_frames - player.previous_remaining_freeze_frames == 1
       then
-        set_freeze(player, 0xFF)
+        mem.set_freeze(player, 0xFF)
         if player.animation == "d17c" then
-          set_freeze(player, 1)
+          mem.set_freeze(player, 1)
         end
-        -- set_freeze(player, 127)
-        -- Queue_Command(gamestate.frame_number + 2, {command = set_freeze, args={player, 1}})
+        -- mem.set_freeze(player, 127)
+        -- Queue_Command(gamestate.frame_number + 2, {command = mem.set_freeze, args={player, 1}})
       end
       if received_hits < block_until then
         if block_pattern then
@@ -4602,18 +4604,18 @@ function record_attacks(player_obj, projectiles)
             or player.animation == "af98"
             or (player.animation == "b518" and player.action_count < 2)
             then
-              set_freeze(player, 0xFF)
+              mem.set_freeze(player, 0xFF)
               Queue_Command(gamestate.frame_number + 1, {command = function() self_freeze = 0xFF end})
             else
-              Queue_Command(gamestate.frame_number + 1, {command = set_freeze, args={player, math.min(2, self_freeze)}})
+              Queue_Command(gamestate.frame_number + 1, {command = mem.set_freeze, args={player, math.min(2, self_freeze)}})
             end
           else
             recording_self_freeze = false
-            set_freeze(player, math.min(2, self_freeze))
+            mem.set_freeze(player, math.min(2, self_freeze))
           end
         else
           if current_projectile then
-            set_freeze(current_projectile, 2)
+            mem.set_freeze(current_projectile, 2)
           end
         end
         if dummy.freeze_just_began then
@@ -4622,12 +4624,12 @@ function record_attacks(player_obj, projectiles)
           recording_opponent_freeze = false
 
           if dummy.remaining_freeze_frames > 0 and unfreeze_dummy then
-            set_freeze(dummy, 1)
+            mem.set_freeze(dummy, 1)
             unfreeze_dummy = false
           end
 
           if dummy.remaining_freeze_frames - dummy.previous_remaining_freeze_frames == 1 then
-            set_freeze(dummy, 0xFF)
+            mem.set_freeze(dummy, 0xFF)
           end
 
           if dummy.freeze_just_ended then
@@ -4643,8 +4645,8 @@ function record_attacks(player_obj, projectiles)
       if begin_recording_pushback and dummy.movement_type == 0 then
         begin_recording_pushback = false
         recording_pushback = false
-        write_pos(dummy, player.pos_x + dummy_offset_x, 0)
-        fix_screen_pos(player, dummy)
+        mem.write_pos(dummy, player.pos_x + dummy_offset_x, 0)
+        mem.fix_screen_pos(player, dummy)
         unfreeze_player = true
         state = "resume_attack"
       end
@@ -4659,7 +4661,7 @@ function record_attacks(player_obj, projectiles)
     end
 
     if not current_attack.do_not_fix_screen then
-      fix_screen_pos(player, dummy)
+      mem.fix_screen_pos(player, dummy)
     end
 
     if current_attack.queue_track_projectile
@@ -4674,15 +4676,15 @@ function record_attacks(player_obj, projectiles)
         end
       end
       if current_projectile then
-        fix_screen_pos(current_projectile, current_projectile)
+        mem.fix_screen_pos(current_projectile, current_projectile)
         if current_projectile.pos_y > 100 and current_projectile.pos_y < 280 then
-          write_pos_y(player, current_projectile.pos_y)
-          write_pos_y(dummy, current_projectile.pos_y)
+          mem.write_pos_y(player, current_projectile.pos_y)
+          mem.write_pos_y(dummy, current_projectile.pos_y)
           queue_input_sequence(player, {{"up"}})
           queue_input_sequence(dummy, {{"up"}})
         else
-          write_pos_y(player, 0)
-          write_pos_y(dummy, 0)
+          mem.write_pos_y(player, 0)
+          mem.write_pos_y(dummy, 0)
         end
       end
     end
@@ -4776,12 +4778,12 @@ end
 
 function block_high(player_obj)
   queue_input_sequence(player_obj, {{"back"}})
-  clear_motion_data(player_obj)
+  mem.clear_motion_data(player_obj)
 end
 
 function block_low(player_obj)
   queue_input_sequence(player_obj, {{"down","back"}})
-  clear_motion_data(player_obj)
+  mem.clear_motion_data(player_obj)
 end
 
 function is_hit_frame(frame)
@@ -4861,6 +4863,9 @@ function calculate_ranges(list, predicate)
 
   return ranges
 end
+
+local data_path = "data/"..rom_name.."/"
+local framedata_path = data_path.."framedata/"
 
 function span_frame_data()
   local decode_times = {}
@@ -5451,7 +5456,7 @@ function record_framedata(player_obj, projectiles, name)
       or (recording_options.recording_movement and frame == 0 and not player.is_attacking and player.standing_state == 1 and player.standing_state == 3)
       then
         --recovery animation (landing, after dash, etc)
-        clear_motion_data(player)
+        mem.clear_motion_data(player)
         additional_props.uses_velocity = false
         additional_props.landing_frame = true
       end

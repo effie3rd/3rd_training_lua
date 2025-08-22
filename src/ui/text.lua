@@ -10,6 +10,8 @@ local selected_color = colors.text.selected
 local disabled_color = colors.text.disabled
 local button_activated_color = colors.text.button_activated
 
+local lang_code = {"en", "jp"}
+
 local function draw_text(x, y, str, lang, size, color, opacity)
   if size and string.sub(str, 1, 3) == "utf" then
     lang = lang .. "_" .. size

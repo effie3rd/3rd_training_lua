@@ -1,29 +1,5 @@
 local frame_data = {}
 
-local stages = {
-  [0] = {name = "gill", left = 80, right = 943},
-  [1] = {name = "alex", left = 80, right = 955},
-  [2] = {name = "ryu", left = 80, right = 939},
-  [3] = {name = "yun", left = 80, right = 951},
-  [4] = {name = "dudley", left = 80, right = 943},
-  [5] = {name = "necro", left = 80, right = 943},
-  [6] = {name = "hugo", left = 76, right = 945},
-  [7] = {name = "ibuki", left = 79, right = 943},
-  [8] = {name = "elena", left = 76, right = 935},
-  [9] = {name = "oro", left = 76, right = 945},
-  [10] = {name = "yang", left = 80, right = 951},
-  [11] = {name = "ken", left = 80, right = 955},
-  [12] = {name = "sean", left = 76, right = 945},
-  [13] = {name = "urien", left = 76, right = 951},
-  [14] = {name = "gouki", left = 80, right = 943},
-  [15] = {name = "shingouki", left = 80, right = 943},
-  [16] = {name = "chunli", left = 70, right = 951},
-  [17] = {name = "makoto", left = 84, right = 945},
-  [18] = {name = "dudley", left = 80, right = 943},
-  [19] = {name = "twelve", left = 80, right = 943},
-  [20] = {name = "remy", left = 82, right = 943}
-}
-
 local slow_jumpers =
 {
   "alex",
@@ -198,7 +174,6 @@ local function test_collision(defender_x, defender_y, defender_flip_x, defender_
   if (defender_hurtbox_dilation_y == nil) then defender_hurtbox_dilation_y = 0 end
   if (attacker_hitbox_dilation_x == nil) then attacker_hitbox_dilation_x = 0 end
   if (attacker_hitbox_dilation_y == nil) then attacker_hitbox_dilation_y = 0 end
-  if (test_throws == nil) then test_throws = false end
   if (box_type_matches == nil) then box_type_matches = {{{"vulnerability", "ext. vulnerability"}, {"attack"}}} end
 
   if (#box_type_matches == 0 ) then return false end
@@ -348,7 +323,6 @@ end
 
 return {
   frame_data = frame_data,
-  stages = stages,
   character_specific = character_specific,
   is_slow_jumper = is_slow_jumper,
   is_really_slow_jumper = is_really_slow_jumper,

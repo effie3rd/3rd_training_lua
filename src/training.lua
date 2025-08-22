@@ -2,6 +2,7 @@
 local fd = require("src.modules.framedata")
 local gamestate = require("src/gamestate")
 local settings = require("src/settings")
+local mem = require("src.control.write_memory")
 
 local character_specific = fd.character_specific
 
@@ -9,10 +10,10 @@ local character_specific = fd.character_specific
 local player = gamestate.P1
 local dummy = gamestate.P2
 
+local swap_characters = false
+
 local freeze_game = false
 
-local char_str = dummy.char_str
--- local counter_attack_settings = settings.training.counter_attack[char_str]
 
 local function write_player_vars(player_obj)
   local wanted_meter = 0
@@ -161,17 +162,17 @@ local function write_player_vars(player_obj)
   end
   for _, player in pairs(gamestate.player_objects) do
     if player.blocking.cheat_parrying then
-      enable_cheat_parrying(player)
+      mem.enable_cheat_parrying(player)
     end
   end
 end
 
 local function write_game_vars()
-  set_freeze_game(freeze_game)
+  mem.set_freeze_game(freeze_game)
 
-  set_infinite_time(settings.training.infinite_time)
+  mem.set_infinite_time(settings.training.infinite_time)
 
-  set_music_volume(settings.training.music_volume)
+  mem.set_music_volume(settings.training.music_volume)
 end
 
 local function update_training_state()
@@ -180,6 +181,12 @@ local function update_training_state()
   write_player_vars(gamestate.P1)
   write_player_vars(gamestate.P2)
 end
+
+
+
+local counter_attack_settings = settings.training.counter_attack[dummy.char_str]
+local counter_attack = {}
+
 
 
 local training = {
@@ -194,6 +201,8 @@ setmetatable(training, {
       return dummy
     elseif key == "freeze_game" then
       return freeze_game
+    elseif key == "swap_characters" then
+      return swap_characters
     end
   end,
 
@@ -204,6 +213,8 @@ setmetatable(training, {
       dummy = value
     elseif key == "freeze_game" then
       freeze_game = value
+    elseif key == "swap_characters" then
+      swap_characters = value
     else
       rawset(training, key, value)
     end

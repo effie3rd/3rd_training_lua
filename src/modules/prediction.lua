@@ -1,8 +1,10 @@
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
+local sd = require("src.modules.stagedata")
 local gamestate = require("src/gamestate")
 
-local frame_data, character_specific, stages = fd.frame_data, fd.character_specific, fd.stages
+local frame_data, character_specific = fd.frame_data, fd.character_specific
+local stages = sd.stages
 local test_collision, find_move_frame_data = fd.test_collision, fd.find_move_frame_data
 local frame_data_meta = fdm.frame_data_meta
 
@@ -373,7 +375,7 @@ local function predict_player_movement(p1, p1_motion_data, p1_line, p2, p2_motio
     if (previous_frame_data and previous_frame_data.uses_velocity)
     or mdata[index - 1].pos_y > 0 then
       --first frame of every air move ignores velocity
-      if not (mdata[index - 1].frame == 0 and previous_frame_data.air) then
+      if not (mdata[index - 1].frame == 0 and previous_frame_data and previous_frame_data.air) then
         should_apply_velocity = true
       end
     end

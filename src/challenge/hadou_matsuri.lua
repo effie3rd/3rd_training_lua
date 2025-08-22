@@ -1,7 +1,10 @@
+---@diagnostic disable: lowercase-global
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
 local draw = require("src.ui.draw")
 local menu = require("src.ui.menu")
+local gamestate = require("src/gamestate")
+local character_select = require("src.control.character_select")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local frame_data_meta = fdm.frame_data_meta
@@ -86,7 +89,7 @@ function freeze(obj, t)
   memory.writebyte(obj.base + 0x45, t)
 end
 
-function unfreeze()
+function unfreeze(player)
     memory.writebyte(player.base + 0x45, 0) --allow p2 to move during super freeze
 end
 
@@ -327,11 +330,11 @@ function overlap_hadou(obj, distance, speed, n)
     print("mod")
     velx = (air_hadou_startup * n * base_lp_air_hadou_vel_x - distance) / speed
     vely = -1 * (air_hadou_startup * n* -1 * base_lp_air_hadou_vel_y - distance) / speed
-    set_velocity_x(obj, velx, 0)
-    set_velocity_y(obj, vely, 0)
+    write_velocity_x(obj, velx, 0)
+    write_velocity_y(obj, vely, 0)
   else
-    set_velocity_x(obj, base_lp_air_hadou_vel_x, 0)
-    set_velocity_y(obj, base_lp_air_hadou_vel_y, 0)
+    write_velocity_x(obj, base_lp_air_hadou_vel_x, 0)
+    write_velocity_y(obj, base_lp_air_hadou_vel_y, 0)
   end
 end
 
@@ -365,15 +368,15 @@ function queue_volley(player_obj, delay, n, speed, version)
     end
 
 
-    queue_func(player_obj, delay + i * speed + 1 + #motion_hadou_lp - 1, {func=set_velocity_x, args={player_obj, 0, 0}})
-    queue_func(player_obj, delay + i * speed + 1 + #motion_hadou_lp - 1, {func=set_velocity_y, args={player_obj, 0, 0}})
-    queue_func(player_obj, delay + i * speed + 1 + #motion_hadou_lp - 1, {func=set_acceleration_x, args={player_obj, 0, 0}})
+    queue_func(player_obj, delay + i * speed + 1 + #motion_hadou_lp - 1, {func=write_velocity_x, args={player_obj, 0, 0}})
+    queue_func(player_obj, delay + i * speed + 1 + #motion_hadou_lp - 1, {func=write_velocity_y, args={player_obj, 0, 0}})
+    queue_func(player_obj, delay + i * speed + 1 + #motion_hadou_lp - 1, {func=write_acceleration_x, args={player_obj, 0, 0}})
     if i < n - 1 then
-      queue_func(player_obj, delay + i * speed + 1 + #motion_hadou_lp - 1, {func=set_acceleration_y, args={player_obj, 0, 0}})
+      queue_func(player_obj, delay + i * speed + 1 + #motion_hadou_lp - 1, {func=write_acceleration_y, args={player_obj, 0, 0}})
     else
-      queue_func(player_obj, delay + (i + 1) * speed + 1 + #motion_hadou_lp - 1, {func=set_velocity_x, args={player_obj, 8, 0}})
-      queue_func(player_obj, delay + (i + 1) * speed + 1 + #motion_hadou_lp - 1, {func=set_velocity_y, args={player_obj, 10, 0}})
-      queue_func(player_obj, delay + (i + 1) * speed + 1 + #motion_hadou_lp - 1, {func=set_acceleration_y, args={player_obj, base_gravity, base_gravity_mantissa}})
+      queue_func(player_obj, delay + (i + 1) * speed + 1 + #motion_hadou_lp - 1, {func=write_velocity_x, args={player_obj, 8, 0}})
+      queue_func(player_obj, delay + (i + 1) * speed + 1 + #motion_hadou_lp - 1, {func=write_velocity_y, args={player_obj, 10, 0}})
+      queue_func(player_obj, delay + (i + 1) * speed + 1 + #motion_hadou_lp - 1, {func=write_acceleration_y, args={player_obj, base_gravity, base_gravity_mantissa}})
     end
   end
 
@@ -597,8 +600,8 @@ function hadou_matsuri_run()
         local neg_x_vel_mantissa = 1 - gamestate.P2.velocity_x_mantissa
 --         local neg_x_accel_char = - gamestate.P2.acceleration_x_char - 1
 --         local neg_x_accel_mantissa = 1 - gamestate.P2.acceleration_x_mantissa
-        set_velocity_x(gamestate.P2, neg_x_vel_char, neg_x_vel_mantissa)
---         set_acceleration_x({gamestate.P2, neg_x_accel_char, neg_x_accel_mantissa})
+        -- write_velocity_x(gamestate.P2, neg_x_vel_char, neg_x_vel_mantissa)
+--         write_acceleration_x({gamestate.P2, neg_x_accel_char, neg_x_accel_mantissa})
       end
     elseif gamestate.P2.pos_x - gamestate.P1.pos_x > character_specific[gamestate.P1.char_str].half_width then
       if not (gamestate.P2.previous_pos_x - gamestate.P1.previous_pos_x > character_specific[gamestate.P1.char_str].half_width) then
@@ -606,17 +609,17 @@ function hadou_matsuri_run()
         memory.writebyte(gamestate.P2.base + 0x0A, 0)
         local neg_x_vel_char = - gamestate.P2.velocity_x_char - 1
         local neg_x_vel_mantissa = 1 - gamestate.P2.velocity_x_mantissa
-        set_velocity_x(gamestate.P2, neg_x_vel_char, neg_x_vel_mantissa)
+        -- write_velocity_x(gamestate.P2, neg_x_vel_char, neg_x_vel_mantissa)
       end
     end
 --     if gamestate.P1.pos_y < 25 then
 --       v = math.floor(gamestate.P1.velocity_y)
---       set_velocity(gamestate.P1,0,0,v+4,0)
+--       write_velocity(gamestate.P1,0,0,v+4,0)
 --     end
   end
   if gamestate.P2.pos_y >= 500 then
     memory.writeword(gamestate.P2.base + 0x68, 0)
-    set_velocity(gamestate.P2,0,0,0,0)
+    write_velocity(gamestate.P2,0,0)
   end
 
   if gamestate.P1.has_just_parried and gamestate.P1.parry_forward.success then
@@ -644,7 +647,7 @@ function hadou_matsuri_run()
       print(obj.id, obj.lifetime)
 --       if
 --       gamestate.P1_Current_search_adr = obj.base
---       set_velocity(obj, 0, 0, 0, 0)
+--       write_velocity(obj, 0, 0, 0, 0)
 --       set_acceleration(obj, 0, 0, 0, 0)
 --           memory.writeword(obj.base + 0x202, 0x8ce8) --pyrokinesis
 --           memory.writebyte(obj.base + 0x91, 37)
@@ -710,7 +713,7 @@ function hadou_matsuri_run()
 --     memory.writebyte(gamestate.P2.parry_forward_cooldown_time_addr,0x0)
     queue_input(gamestate.P2, 0, {{"LP","LK"}})
 --     queue_func(gamestate.P2, 10, funcs["set_acceleration"], {gamestate.P2, 4, 0})
-    queue_func(gamestate.P2, 30, {func=set_velocity_x, args={gamestate.P2, 13, 0}})
+    queue_func(gamestate.P2, 30, {func=write_velocity_x, args={gamestate.P2, 13, 0}})
 --     queue_func(gamestate.P2, 20, funcs["animation_cancel"], {gamestate.P2})
 --     queue_input(gamestate.P2, 20, {{"HP","HK"}})
 --     queue_func(gamestate.P2, 4, funcs["animation_cancel"], {gamestate.P2})
@@ -733,14 +736,4 @@ process_command_queue(gamestate.P2, joypad.get())
 -- d= {12, unpack(c)}
 --   print(d)
 
-end
-
-function debug_hadou_gui()
-for _, obj in pairs(gamestate.projectiles) do
-  if bit.tohex(memory.readword(obj.base + 0x202), 4) ~= "0000" then
-    if obj.emitter_id == 2 then
-      gui.text(textx+98,texty-4, string.format("Proj Vel: %d, %d", obj.velocity_x, obj.velocity_y))
-    end
-  end
-end
 end

@@ -1,4 +1,6 @@
 local settings = require("src/settings")
+local gamestate = require("src/gamestate")
+local training = require("src/training")
 local fd = require("src.modules.framedata")
 local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_slow_jumper
 
@@ -216,24 +218,6 @@ function clear_directional_input(input)
   input["P2 Right"] = false
 end
 
-function clear_p1_input(input)
-  if input == nil then
-    return
-  end
-
-  input["P1 Up"] = false
-  input["P1 Down"] = false
-  input["P1 Left"] = false
-  input["P1 Right"] = false
-  input["P1 Weak Punch"] = false
-  input["P1 Medium Punch"] = false
-  input["P1 Strong Punch"] = false
-  input["P1 Weak Kick"] = false
-  input["P1 Medium Kick"] = false
-  input["P1 Strong Kick"] = false
-  input["P1 Start"] = false
-end
-
 function clear_p1_buttons(input)
   if input == nil then
     return
@@ -245,11 +229,6 @@ function clear_p1_buttons(input)
   input["P1 Medium Kick"] = false
   input["P1 Strong Kick"] = false
 end
-
-function make_counter_attack(char_str, counter_attack_settings)
-  
-end
-
 
 function make_input_sequence(char_str, counter_attack_settings)
 
@@ -368,26 +347,26 @@ function make_input_sequence(char_str, counter_attack_settings)
       end
       i = i + 1
     end
-    if counter_attack_special[counter_attack_settings.special] == "hyakuretsukyaku" then
+    if counter_attack_special_names[counter_attack_settings.special] == "hyakuretsukyaku" then
       if button == "EXK"  then
         sequence = {{"legs_" .. button, "LK", "MK"}}
       else
         sequence = {{"legs_" .. button, button}}
       end
     end
-    if counter_attack_special[counter_attack_settings.special] == "kara_capture_and_deadly_blow" then
+    if counter_attack_special_names[counter_attack_settings.special] == "kara_capture_and_deadly_blow" then
       offset = 1
-    elseif counter_attack_special[counter_attack_settings.special] == "kara_karakusa_lk" then
+    elseif counter_attack_special_names[counter_attack_settings.special] == "kara_karakusa_lk" then
       offset = 7
-    elseif counter_attack_special[counter_attack_settings.special] == "kara_karakusa_hk" then
+    elseif counter_attack_special_names[counter_attack_settings.special] == "kara_karakusa_hk" then
       offset = 1
-    elseif counter_attack_special[counter_attack_settings.special] == "kara_zenpou_yang" then
+    elseif counter_attack_special_names[counter_attack_settings.special] == "kara_zenpou_yang" then
       offset = 1
-    elseif counter_attack_special[counter_attack_settings.special] == "kara_zenpou_yun" then
+    elseif counter_attack_special_names[counter_attack_settings.special] == "kara_zenpou_yun" then
       offset = 1
-    elseif counter_attack_special[counter_attack_settings.special] == "kara_power_bomb" then
+    elseif counter_attack_special_names[counter_attack_settings.special] == "kara_power_bomb" then
       offset = 1
-    elseif counter_attack_special[counter_attack_settings.special] == "kara_niouriki" then
+    elseif counter_attack_special_names[counter_attack_settings.special] == "kara_niouriki" then
       offset = 1
     end
   elseif counter_attack_settings.ca_type == 4 then
@@ -436,8 +415,8 @@ function make_input_sequence(char_str, counter_attack_settings)
 end
 
 -- swap inputs
-function swap_inputs(out_input_table)
-  function swap(input)
+local function swap_inputs(out_input_table)
+  local function swap(input)
     local carry = out_input_table["P1 "..input]
     out_input_table["P1 "..input] = out_input_table["P2 "..input]
     out_input_table["P2 "..input] = carry
@@ -453,6 +432,25 @@ function swap_inputs(out_input_table)
   swap("Weak Kick")
   swap("Medium Kick")
   swap("Strong Kick")
+end
+
+local last_coin_input_frame = -1
+local input_buffer_length = 12
+local function interpret_input(player, dummy)
+  local input_pressed = (not training.swap_characters and player.input.pressed.coin) or (training.swap_characters and dummy.input.pressed.coin)
+  if input_pressed then
+    if gamestate.frame_number - last_coin_input_frame < input_buffer_length then
+      last_coin_input_frame = -1
+        return "double_tap"
+    else
+      last_coin_input_frame = gamestate.frame_number
+    end
+  end
+  if last_coin_input_frame > 0 and gamestate.frame_number - last_coin_input_frame >= input_buffer_length then
+    last_coin_input_frame = -1
+    return "single_tap"
+  end
+  return "none"
 end
 
 function queue_input_from_json(player, file)
@@ -505,3 +503,11 @@ function log_input(players)
     end
   end
 end
+
+return {
+  swap_inputs = swap_inputs,
+  interpret_input = interpret_input,
+  make_input_empty = make_input_empty,
+  clear_directional_input = clear_directional_input,
+  clear_p1_buttons = clear_p1_buttons,
+}

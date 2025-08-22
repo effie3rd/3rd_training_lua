@@ -1,13 +1,13 @@
 local gamestate = require("src/gamestate")
 local draw = require("src.ui.draw")
 
-input_history_size_max = 15
-input_history = {
+local input_history_size_max = 15
+local input_history = {
   {},
   {}
 }
 
-function make_input_history_entry(prefix, input)
+local function make_input_history_entry(prefix, input)
   local up = input[prefix.." Up"]
   local down = input[prefix.." Down"]
   local left = input[prefix.." Left"]
@@ -41,7 +41,7 @@ function make_input_history_entry(prefix, input)
   }
 end
 
-function is_input_history_entry_equal(a, b)
+local function is_input_history_entry_equal(a, b)
   if (a.direction ~= b.direction) then return false end
   if (a.buttons[1] ~= b.buttons[1]) then return false end
   if (a.buttons[2] ~= b.buttons[2]) then return false end
@@ -52,7 +52,9 @@ function is_input_history_entry_equal(a, b)
   return true
 end
 
-function input_history_update(history, prefix, input)
+local function input_history_update(player, input)
+  local history = input_history[player.id]
+  local prefix = player.prefix
   local entry = make_input_history_entry(prefix, input)
 
   if #history == 0 then
@@ -69,7 +71,8 @@ function input_history_update(history, prefix, input)
   end
 end
 
-function input_history_draw(history, x, y, is_right, style)
+local function input_history_draw(player, x, y, is_right, style)
+  local history = input_history[player.id]
   local step_y = 10
   local j = 0
   for i = #history, 1, -1 do
@@ -110,7 +113,14 @@ function input_history_draw(history, x, y, is_right, style)
   end
 end
 
-function clear_input_history()
+local function clear_input_history()
   input_history[1] = {}
   input_history[2] = {}
 end
+
+return {
+  make_input_history_entry = make_input_history_entry,
+  input_history_update = input_history_update,
+  input_history_draw = input_history_draw,
+  clear_input_history = clear_input_history
+}

@@ -7,7 +7,7 @@ local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
 local settings = require("src/settings")
 local debug_settings = require("src/debug_settings")
-require("src.ui.menu_tables")
+local menu_tables = require("src.ui.menu_tables")
 require("src.ui.menu_items")
 
 
@@ -43,17 +43,72 @@ counter_attack_settings =
     special_button = 1,
     option_select = 1
 }
-local counter_attack_button = counter_attack_button_default
+
+local counter_attack_object = {
+    ca_type = 1,
+    motion = 1,
+    name = "",
+    special = 1,
+    special_button = 1,
+    option_select = 1,
+    input = {},
+    button = {}
+}
+
+counter_attack_type = menu_tables.counter_attack_type
+counter_attack_motion_input = menu_tables.counter_attack_motion_input
+counter_attack_button = menu_tables.counter_attack_button_default
+counter_attack_special_names = {}
+counter_attack_special_button = {}
+counter_attack_option_select = menu_tables.counter_attack_option_select
+
+
+local function play_challenge()
+end
+
+
+local function save_recording_slot_to_file()
+  if save_file_name == "" then
+    print(string.format("Error: Can't save to empty file name"))
+    return
+  end
+
+  local path = string.format("%s%s.json",saved_recordings_path, save_file_name)
+  if not write_object_to_json_file(recording_slots[settings.training.current_recording_slot].inputs, path) then
+    print(string.format("Error: Failed to save recording to \"%s\"", path))
+  else
+    print(string.format("Saved slot %d to \"%s\"", settings.training.current_recording_slot, path))
+  end
+
+  menu_stack_pop(save_recording_slot_popup)
+end
+
+local function load_recording_slot_from_file()
+  if #load_file_list == 0 or load_file_list[load_file_index] == nil then
+    print(string.format("Error: Can't load from empty file name"))
+    return
+  end
+
+  local path = string.format("%s%s",saved_recordings_path, load_file_list[load_file_index])
+  local recording = read_object_from_json_file(path)
+  if not recording then
+    print(string.format("Error: Failed to load recording from \"%s\"", path))
+  else
+    recording_slots[settings.training.current_recording_slot].inputs = recording
+    print(string.format("Loaded \"%s\" to slot %d", path, settings.training.current_recording_slot))
+  end
+  settings.save_training_data()
+
+  menu_stack_pop(load_recording_slot_popup)
+end
 
 local function init_menu()
-  
   save_recording_slot_popup = make_menu(71, 61, 312, 122, -- screen size 383,223
   {
-    textfield_menu_item("file_name", _G, "save_file_name", ""),
-    button_menu_item("save", save_recording_slot_to_file),
-    button_menu_item("cancel", function() menu_stack_pop(save_recording_slot_popup) end)
+  textfield_menu_item("file_name", _G, "save_file_name", ""),
+  button_menu_item("save", save_recording_slot_to_file),
+  button_menu_item("cancel", function() menu_stack_pop(save_recording_slot_popup) end)
   })
-
 
   load_recording_slot_popup = make_menu(71, 61, 312, 122, -- screen size 383,223
   {
@@ -114,7 +169,7 @@ local function init_menu()
   return not settings.training.display_charge
   end
 
-  blocking_item = list_menu_item("blocking", settings.training, "blocking_mode", blocking_mode)
+  blocking_item = list_menu_item("blocking", settings.training, "blocking_mode", menu_tables.blocking_mode)
   blocking_item.indent = true
 
   hits_before_red_parry_item = hits_before_menu_item("hits_before_rp_prefix", "hits_before_rp_suffix", settings.training, "red_parry_hit_count", 0, 20, true, 1)
@@ -148,7 +203,7 @@ local function init_menu()
     return counter_attack_settings.ca_type ~= 2
   end
 
-  counter_attack_special_item = list_menu_item("counter_attack_special", counter_attack_settings, "special", counter_attack_special, 1, update_counter_attack_special)
+  counter_attack_special_item = list_menu_item("counter_attack_special", counter_attack_settings, "special", counter_attack_special_names, 1, update_counter_attack_special)
   counter_attack_special_item.indent = true
   counter_attack_special_item.is_disabled = function()
     return counter_attack_settings.ca_type ~= 3
@@ -184,12 +239,12 @@ local function init_menu()
     return rom_name ~= "sfiii3nr1"
   end
 
-  p1_distances_reference_point_item = list_menu_item("p1_distance_reference_point", settings.training, "p1_distances_reference_point", distance_display_reference_point)
+  p1_distances_reference_point_item = list_menu_item("p1_distance_reference_point", settings.training, "p1_distances_reference_point", menu_tables.distance_display_reference_point)
   p1_distances_reference_point_item.is_disabled = function()
     return not settings.training.display_distances
   end
 
-  p2_distances_reference_point_item = list_menu_item("p2_distance_reference_point", settings.training, "p2_distances_reference_point", distance_display_reference_point)
+  p2_distances_reference_point_item = list_menu_item("p2_distance_reference_point", settings.training, "p2_distances_reference_point", menu_tables.distance_display_reference_point)
   p2_distances_reference_point_item.is_disabled = function()
     return not settings.training.display_distances
   end
@@ -216,7 +271,7 @@ local function init_menu()
   end
 
 
-  language_item = list_menu_item("language", settings.training, "language", language, 1, update_dimensions)
+  language_item = list_menu_item("language", settings.training, "language", menu_tables.language, 1, update_dimensions)
 
   play_challenge_item = button_menu_item("play", play_challenge)
   select_char_challenge_item = button_menu_item("Select Character (Current: Gill)", select_character_hadou_matsuri)
@@ -228,8 +283,8 @@ local function init_menu()
       {
         header = header_menu_item("dummy"),
         entries = {
-          list_menu_item("pose", settings.training, "pose", pose),
-          list_menu_item("blocking_style", settings.training, "blocking_style", blocking_style),
+          list_menu_item("pose", settings.training, "pose", menu_tables.pose),
+          list_menu_item("blocking_style", settings.training, "blocking_style", menu_tables.blocking_style),
           blocking_item,
           hits_before_red_parry_item,
           parry_every_n_item,
@@ -241,9 +296,9 @@ local function init_menu()
           counter_attack_special_button_item,
           counter_attack_option_select_item,
           hits_before_counter_attack,
-          list_menu_item("mash_stun", settings.training, "mash_stun_mode", mash_stun_mode, 1),
-          list_menu_item("tech_throws", settings.training, "tech_throws_mode", tech_throws_mode),
-          list_menu_item("quick_stand", settings.training, "fast_wakeup_mode", quick_stand),
+          list_menu_item("mash_stun", settings.training, "mash_stun_mode", menu_tables.mash_stun_mode, 1),
+          list_menu_item("tech_throws", settings.training, "tech_throws_mode", menu_tables.tech_throws_mode),
+          list_menu_item("quick_stand", settings.training, "fast_wakeup_mode", menu_tables.quick_stand_mode),
         }
       },
       {
@@ -251,7 +306,7 @@ local function init_menu()
         entries = {
           checkbox_menu_item("auto_crop_first_frames", settings.training, "auto_crop_recording_start"),
           checkbox_menu_item("auto_crop_last_frames", settings.training, "auto_crop_recording_end"),
-          list_menu_item("replay_mode", settings.training, "replay_mode", slot_replay_mode),
+          list_menu_item("replay_mode", settings.training, "replay_mode", menu_tables.slot_replay_mode),
           integer_menu_item("menu_slot", settings.training, "current_recording_slot", 1, recording_slot_count, true, 1, 10, update_current_recording_slot_frames),
                                 frame_number_item(current_recording_slot_frames, true),
           slot_weight_item,
@@ -268,11 +323,11 @@ local function init_menu()
         entries = {
           checkbox_menu_item("display_controllers", settings.training, "display_input"),
           controller_style_menu_item,
-          list_menu_item("display_input_history", settings.training, "display_input_history", display_input_history_mode, 1),
+          list_menu_item("display_input_history", settings.training, "display_input_history", menu_tables.display_input_history_mode, 1),
           checkbox_menu_item("display_gauge_numbers", settings.training, "display_gauges", false),
           checkbox_menu_item("display_bonuses", settings.training, "display_bonuses", true),
           checkbox_menu_item("display_attack_info", settings.training, "display_attack_data"),
-          list_menu_item("display_attack_bars", settings.training, "display_attack_bars", display_attack_bars_mode, 3),
+          list_menu_item("display_attack_bars", settings.training, "display_attack_bars", menu_tables.display_attack_bars_mode, 3),
           attack_bars_show_decimal_item,
           checkbox_menu_item("display_frame_advantage", settings.training, "display_frame_advantage"),
           checkbox_menu_item("display_hitboxes", settings.training, "display_hitboxes"),
@@ -287,7 +342,7 @@ local function init_menu()
           charge_overcharge_on_item,
           checkbox_menu_item("display_parry", settings.training, "display_parry"),
           checkbox_menu_item("display_red_parry_miss", settings.training, "display_red_parry_miss"),
-          list_menu_item("attack_range_display", settings.training, "display_attack_range", player_options_list),
+          list_menu_item("attack_range_display", settings.training, "display_attack_range", menu_tables.player_options),
           attack_range_display_max_item,
           language_item
         }
@@ -296,24 +351,24 @@ local function init_menu()
         header = header_menu_item("rules"),
         entries = {
           change_characters_item,
-          list_menu_item("force_stage", settings.training, "force_stage", stage_list, 1),
+          list_menu_item("force_stage", settings.training, "force_stage", menu_tables.stage_list, 1),
           checkbox_menu_item("infinite_time", settings.training, "infinite_time"),
-          list_menu_item("life_refill_mode", settings.training, "life_mode", gauge_refill_mode),
+          list_menu_item("life_refill_mode", settings.training, "life_mode", menu_tables.gauge_refill_mode),
           p1_life_reset_value_gauge_item,
           p2_life_reset_value_gauge_item,
           life_refill_delay_item,
-          list_menu_item("stun_mode", settings.training, "stun_mode", gauge_refill_mode),
+          list_menu_item("stun_mode", settings.training, "stun_mode", menu_tables.gauge_refill_mode),
           p1_stun_reset_value_gauge_item,
           p2_stun_reset_value_gauge_item,
           stun_reset_delay_item,
-          list_menu_item("meter_refill_mode", settings.training, "meter_mode", gauge_refill_mode),
+          list_menu_item("meter_refill_mode", settings.training, "meter_mode", menu_tables.gauge_refill_mode),
           p1_meter_gauge_item,
           p2_meter_gauge_item,
           meter_refill_delay_item,
           checkbox_menu_item("infinite_super_art_time", settings.training, "infinite_sa_time"),
           integer_menu_item("music_volume", settings.training, "music_volume", 0, 10, false, 10),
           checkbox_menu_item("speed_up_game_intro", settings.training, "fast_forward_intro"),
-          list_menu_item("cheat_parrying", settings.training, "cheat_parrying", player_options_list),
+          list_menu_item("cheat_parrying", settings.training, "cheat_parrying", menu_tables.player_options),
           checkbox_menu_item("universal_cancel", settings.training, "universal_cancel"),
           checkbox_menu_item("infinite_projectiles", settings.training, "infinite_projectiles"),
           checkbox_menu_item("infinite_juggle", settings.training, "infinite_juggle")
@@ -322,14 +377,14 @@ local function init_menu()
       {
         header = header_menu_item("training"),
         entries = {
-          list_menu_item("mode", settings.training, "special_training_mode", special_training_mode),
+          list_menu_item("mode", settings.training, "special_training_mode", menu_tables.special_training_mode),
 
         }
       },
         {
           header = header_menu_item("challenge"),
           entries = {
-            list_menu_item("challenge", settings.training, "challenge_current_mode", challenge_mode),
+            list_menu_item("challenge", settings.training, "challenge_current_mode", menu_tables.challenge_mode),
                                 play_challenge_item,
                                 select_char_challenge_item
           }
@@ -389,74 +444,23 @@ function open_load_popup()
   load_recording_slot_popup.content[1].list = load_file_list
 end
 
-function is_guard_jump(str)
-  for i = 1, #guard_jumps do
-    if str == guard_jumps[i] then
-      return true
-    end
-  end
-  return false
+
+local function update_counter_attack_settings()
+  counter_attack_settings = settings.training.counter_attack[training.dummy.char_str]
+  counter_attack_item.object = counter_attack_settings
+  counter_attack_motion_item.object = counter_attack_settings
+  counter_attack_button_item.object = counter_attack_settings
+  counter_attack_special_item.object = counter_attack_settings
+  counter_attack_special_button_item.object = counter_attack_settings
+  counter_attack_option_select_item.object = counter_attack_settings
+  counter_attack_input_display_item.object = counter_attack_settings
 end
 
+ counter_attack_button_input = {}
+ counter_attack_special_inputs = {}
+ counter_attack_special_types = {}
 
-function input_to_text(t)
-  local result = {}
-  for i = 1, #t do
-    local text = ""
-    for j = 1, #t[i] do
-      if t[i][j] == "down" then
-        text = text .. "Dummy"
-      elseif t[i][j] == "up" then
-        text = text .. "U"
-      elseif t[i][j] == "forward" then
-        text = text .. "F"
-      elseif t[i][j] == "back" then
-        text = text .. "B"
-      end
-    end
-    if text ~= "" then
-      text = text .. "+"
-    end
-    for j = 1, #t[i] do
-      if t[i][j] == "LP" or t[i][j] == "MP" or t[i][j] == "HP"
-      or t[i][j] == "LK" or t[i][j] == "MK" or t[i][j] == "HK" then
-         text = text .. t[i][j]
-        if j + 1 <= #t[i] then
-          text = text .. "+"
-        end
-      end
-    end
-    table.insert(result, text)
-  end
-  return result
-end
-
-
-
-
-counter_attack_type_index = 1
-
-
-counter_attack_special = {}
-counter_attack_special_button = {}
-
-
-function update_counter_attack_settings()
-  if initialized then
-    counter_attack_settings = settings.training.counter_attack[training.dummy.char_str]
-    counter_attack_item.object = counter_attack_settings
-    counter_attack_motion_item.object = counter_attack_settings
-    counter_attack_button_item.object = counter_attack_settings
-    counter_attack_special_item.object = counter_attack_settings
-    counter_attack_special_button_item.object = counter_attack_settings
-    counter_attack_option_select_item.object = counter_attack_settings
-    counter_attack_input_display_item.object = counter_attack_settings
-  end
-end
-
-counter_attack_button_input = {}
-function update_counter_attack_button()
-  --kara throw if initialized then
+local function update_counter_attack_button()
   if counter_attack_settings.motion == 15 then
     for i = 1, #move_list[training.dummy.char_str] do
       if move_list[training.dummy.char_str][i].move_type == "kara" then
@@ -466,7 +470,7 @@ function update_counter_attack_button()
       end
     end
   else
-    counter_attack_button = counter_attack_button_default
+    counter_attack_button = menu_tables.counter_attack_button_default
   end
   counter_attack_button_item.list = counter_attack_button
   if counter_attack_settings.button > #counter_attack_button then
@@ -477,9 +481,25 @@ function update_counter_attack_button()
   end
 end
 
-counter_attack_special_inputs = {}
-counter_attack_special_types = {}
-function update_counter_attack_special()
+
+local function update_counter_attack_special_button()
+  local move = counter_attack_special_names[settings.training.counter_attack[training.dummy.char_str].special]
+  for i = 1, #move_list[training.dummy.char_str] do
+    if move_list[training.dummy.char_str][i].name == move then
+      counter_attack_special_button_item.list = move_list[training.dummy.char_str][i].buttons
+      counter_attack_special_button = move_list[training.dummy.char_str][i].buttons
+      break
+    end
+  end
+  if counter_attack_settings.special_button > #counter_attack_special_button then
+    counter_attack_settings.special_button = #counter_attack_special_button
+    if #counter_attack_special_button == 0 then
+      counter_attack_settings.special_button = 1
+    end
+  end
+end
+
+local function update_counter_attack_special()
   local list = {}
   counter_attack_special_inputs = {}
   counter_attack_special_types = {}
@@ -497,26 +517,17 @@ function update_counter_attack_special()
   end
 
   counter_attack_special_item.list = list
-  counter_attack_special = list
+  counter_attack_special_names = list
   update_counter_attack_special_button()
 --   update_counter_attack_button()
   update_dimensions()
 end
 
-function update_counter_attack_special_button()
-  local move = counter_attack_special[settings.training.counter_attack[training.dummy.char_str].special]
-  for i = 1, #move_list[training.dummy.char_str] do
-    if move_list[training.dummy.char_str][i].name == move then
-      counter_attack_special_button_item.list = move_list[training.dummy.char_str][i].buttons
-      counter_attack_special_button = move_list[training.dummy.char_str][i].buttons
-      break
-    end
-  end
-  if counter_attack_settings.special_button > #counter_attack_special_button then
-    counter_attack_settings.special_button = #counter_attack_special_button
-    if #counter_attack_special_button == 0 then
-      counter_attack_settings.special_button = 1
-    end
+local function update_counter_attack_items()
+  if initialized then
+    update_counter_attack_settings()
+    update_counter_attack_button()
+    update_counter_attack_special()
   end
 end
 
@@ -526,7 +537,7 @@ function update_menu()
   counter_attack_random_deviation_item.object = recording_slots[settings.training.current_recording_slot]
 end
 
-function update_gauge_items()
+local function update_gauge_items()
   settings.training.p1_meter_reset_value = math.min(settings.training.p1_meter_reset_value, gamestate.P1.max_meter_count * gamestate.P1.max_meter_gauge)
   settings.training.p2_meter_reset_value = math.min(settings.training.p2_meter_reset_value, gamestate.P2.max_meter_count * gamestate.P2.max_meter_gauge)
   p1_meter_gauge_item.gauge_max = gamestate.P1.max_meter_gauge * gamestate.P1.max_meter_count
@@ -543,7 +554,7 @@ end
 
 local horizontal_autofire_rate = 4
 local vertical_autofire_rate = 4
-function handle_input()
+local function handle_input()
   if initialized then
     if gamestate.is_in_match then
       local should_toggle = gamestate.P1.input.pressed.start
@@ -599,7 +610,10 @@ function handle_input()
 end
 
 local menu_module = {
-  init_menu = init_menu
+  init_menu = init_menu,
+  update_gauge_items = update_gauge_items,
+  update_counter_attack_items = update_counter_attack_items,
+  handle_input = handle_input
 }
 
 setmetatable(menu_module, {

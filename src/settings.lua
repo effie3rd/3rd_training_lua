@@ -41,12 +41,12 @@ end
 
 load_training_data()
 
-local training_module = {
+local settings_module = {
   load_training_data = load_training_data,
   save_training_data = save_training_data
 }
 
-setmetatable(training_module, {
+setmetatable(settings_module, {
   __index = function(_, key)
     if key == "training" then
       return training
@@ -57,9 +57,9 @@ setmetatable(training_module, {
     if key == "training" then
       training = value
     else
-      rawset(training_module, key, value)
+      rawset(settings_module, key, value)
     end
   end
 })
 
-return training_module
+return settings_module

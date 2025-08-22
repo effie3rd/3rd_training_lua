@@ -4,8 +4,9 @@ local fdm = require("src.modules.framedata_meta")
 local gamestate = require("src/gamestate")
 local prediction = require("src.modules.prediction")
 local menu = require("src.ui.menu")
+local mem = require("src.control.write_memory")
 
-local frame_data, character_specific, stages = fd.frame_data, fd.character_specific, fd.stages
+local frame_data, character_specific = fd.frame_data, fd.character_specific
 local test_collision, find_move_frame_data = fd.test_collision, fd.find_move_frame_data
 local frame_data_meta = fdm.frame_data_meta
 
@@ -330,7 +331,7 @@ function update_blocking(input, player, dummy, mode, style, red_parry_hit_count,
         --parrying 1f startup supers after screen darkening is impossible...
         --so we cheat! has the added benefit of not messing up parry inputs after screen darkening
         if player.superfreeze_decount > 0 then
-          enable_cheat_parrying(player)
+          mem.enable_cheat_parrying(player)
         end
       end
 
@@ -464,9 +465,27 @@ function get_stun_reduction_value(sequence)
   return total + #sequence + math.floor(n_kicks / 3)
 end
 
+local guard_jumps =
+{
+  "guard_jump_back",
+  "guard_jump_neutral",
+  "guard_jump_forward",
+  "guard_jump_back_air_parry",
+  "guard_jump_neutral_air_parry",
+  "guard_jump_forward_air_parry"
+}
+
+local function is_guard_jump(str)
+  for i = 1, #guard_jumps do
+    if str == guard_jumps[i] then
+      return true
+    end
+  end
+  return false
+end
+
 local wakeup_queued = false
 function update_counter_attack(input, attacker, defender, counter_attack_settings, hits_before)
-
   local debug = false
 
   if not gamestate.is_in_match then return end
@@ -521,12 +540,12 @@ function update_counter_attack(input, attacker, defender, counter_attack_setting
       defender.counter.sequence, defender.counter.offset = make_input_sequence(defender.char_str, counter_attack_settings)
       if counter_attack_special_types[counter_attack_settings.special] == "kara_special" then
         defender.counter.offset = defender.counter.offset + 1
-        if counter_attack_special[counter_attack_settings.special] == "kara_karakusa_lk" then
+        if counter_attack_special_names[counter_attack_settings.special] == "kara_karakusa_lk" then
           for i = 1, 8 do
             table.insert(defender.counter.sequence, 2, {})
           end
         end
-      elseif counter_attack_special[counter_attack_settings.special] == "sgs" then
+      elseif counter_attack_special_names[counter_attack_settings.special] == "sgs" then
         defender.counter.offset = defender.counter.offset + 4
       end
       defender.counter.ref_time = -1

@@ -3,6 +3,7 @@ local settings = require("src/settings")
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
 local gamestate = require("src/gamestate")
+local attack_data = require("src.modules.attack_data")
 local text = require("src.ui.text")
 local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
@@ -20,6 +21,8 @@ local red_parry_miss_color =  colors.red_parry_miss
 local stun_color = colors.last_hit_bars.stun
 local life_color = colors.last_hit_bars.life
 
+local lang_code = {"en", "jp"}
+
 local draw_kaiten_first_run = true
 local dir_2_inactive, dir_4_inactive, dir_6_inactive, dir_8_inactive
 local kaiten_images =
@@ -27,7 +30,7 @@ local kaiten_images =
   active = {images.img_dir_small[6], images.img_dir_small[2], images.img_dir_small[4], images.img_dir_small[8]},
   inactive = {dir_6_inactive, dir_2_inactive, dir_4_inactive, dir_8_inactive}
 }
-local function draw_kaiten(x,y, dirs, flip)
+local function draw_kaiten(x, y, dirs, flip)
   if draw_kaiten_first_run then
     dir_2_inactive = gd.createFromPng("images/controller/2_dir_s_inactive.png"):gdStr()
     dir_4_inactive = gd.createFromPng("images/controller/4_dir_s_inactive.png"):gdStr()
@@ -69,9 +72,9 @@ local function draw_kaiten(x,y, dirs, flip)
   end
 end
 
-function parry_gauge_display(player)
-  local x = 235 --96
-  local y = 40
+local function parry_gauge_display(player)
+  local pos_x = 235 --96
+  local pos_y = 40
   local flip_gauge = false
   local gauge_x_scale = 4
 
@@ -79,16 +82,16 @@ function parry_gauge_display(player)
     local px = player.pos_x - draw.screen_x + emu.screenwidth()/2
     local py = emu.screenheight() - (player.pos_y - draw.screen_y) - draw.GROUND_OFFSET
     local half_width = 23 * gauge_x_scale * 0.5
-    x = px - half_width
-    x = math.max(x, 4)
-    x = math.min(x, emu.screenwidth() - (half_width * 2.0 + 14))
-    y = py - 100
+    pos_x = px - half_width
+    pos_x = math.max(pos_x, 4)
+    pos_x = math.min(pos_x, emu.screenwidth() - (half_width * 2.0 + 14))
+    pos_x = py - 100
   end
 
   local y_offset = 0
   local group_y_margin = 6
 
-  function draw_parry_gauge_group(x, y, parry_object)
+  local function draw_parry_gauge_group(x, y, parry_object)
     local gauge_height = 4
 
     local x_border = 8
@@ -167,198 +170,194 @@ function parry_gauge_display(player)
   for _, parry in ipairs(parry_array) do
 
     if parry.enabled then
-      y_offset = y_offset + group_y_margin + draw_parry_gauge_group(x, y + y_offset, parry.object)
+      y_offset = y_offset + group_y_margin + draw_parry_gauge_group(pos_x, pos_y + y_offset, parry.object)
     end
   end
 end
 
-function charge_display(player)
-    local x = 272 --96
-    if settings.training.charge_overcharge_on then
-      x = 264
+local function charge_display(player)
+  local pos_x = 272 --96
+  if settings.training.charge_overcharge_on then
+    pos_x = 264
+  end
+  local pos_y = 46
+  local flip_gauge = false
+  local gauge_x_scale = 2
+
+  if settings.training.charge_follow_character then
+    local offset_x = 8
+
+    pos_x,pos_y = draw.game_to_screen_space(player.pos_x, player.pos_y + character_specific[player.char_str].height)
+    pos_x = pos_x + offset_x
+    if player.flip_x == 1 then
+      pos_x = pos_x - (43 * gauge_x_scale + offset_x + 16)
     end
-    local y = 46
-    local flip_gauge = false
-    local gauge_x_scale = 2
+    pos_y = pos_y
+  end
 
-    if settings.training.charge_follow_character then
-      local offset_x = 8
+  local y_offset = 0
+  local x_offset = 0
+  local group_y_margin = 6
+  local group_x_margin = 12
+  local gauge_height = 3
+  local overcharge_color = colors.charge.overcharge
+  local x_border = 16
 
-      x,y = draw.game_to_screen_space(player.pos_x, player.pos_y + character_specific[player.char_str].height)
-      x = x + offset_x
-      if player.flip_x == 1 then
-        x = x - (43 * gauge_x_scale + offset_x + 16)
-      end
-      y = y
+  local function draw_charge_gauge_group(x, y, charge_object)
+    local charge_gauge_width = charge_object.max_charge * gauge_x_scale
+    local reset_gauge_width = charge_object.max_reset * gauge_x_scale
+
+    x = math.min(math.max(x, x_border), draw.SCREEN_WIDTH - x_border - charge_gauge_width)
+
+    local charge_gauge_left = math.floor(x + (reset_gauge_width - charge_gauge_width) * 0.5)
+    local charge_gauge_right = charge_gauge_left + charge_gauge_width + 1
+    local reset_gauge_left = x
+    local reset_gauge_right = reset_gauge_left + reset_gauge_width + 1
+    local charge_time_text = string.format("%d", charge_object.charge_time)
+    local reset_time_text = string.format("%d", charge_object.reset_time)
+    local charge_text_color = colors.charge.text_validity
+    if charge_object.max_charge - charge_object.charge_time == charge_object.max_charge then
+      charge_text_color = colors.charge.text_success
+    else
+      charge_text_color = colors.charge.text_failure
     end
 
-    local y_offset = 0
-    local x_offset = 0
-    local group_y_margin = 6
-    local group_x_margin = 12
-    local gauge_height = 3
-    local overcharge_color = colors.charge.overcharge
-    local x_border = 16
+    charge_time_text = string.format("%d", charge_object.max_charge - charge_object.charge_time)
+    local overcharge_time_text = string.format("[%d]", charge_object.overcharge)
+    local last_overcharge_time_text = string.format("[%d]", charge_object.last_overcharge)
+    reset_time_text = string.format("%d", charge_object.reset_time)
 
-    function draw_charge_gauge_group(x, y, charge_object)
-
-      local charge_gauge_width = charge_object.max_charge * gauge_x_scale
-      local reset_gauge_width = charge_object.max_reset * gauge_x_scale
-
-      x = math.min(math.max(x, x_border), draw.SCREEN_WIDTH - x_border - charge_gauge_width)
-
-      local charge_gauge_left = math.floor(x + (reset_gauge_width - charge_gauge_width) * 0.5)
-      local charge_gauge_right = charge_gauge_left + charge_gauge_width + 1
-      local reset_gauge_left = x
-      local reset_gauge_right = reset_gauge_left + reset_gauge_width + 1
-      local charge_time_text = string.format("%d", charge_object.charge_time)
-      local reset_time_text = string.format("%d", charge_object.reset_time)
-      local charge_text_color = colors.charge.text_validity
-      if charge_object.max_charge - charge_object.charge_time == charge_object.max_charge then
-        charge_text_color = colors.charge.text_success
-      else
-        charge_text_color = colors.charge.text_failure
-      end
-
-      charge_time_text = string.format("%d", charge_object.max_charge - charge_object.charge_time)
-      overcharge_time_text = string.format("[%d]", charge_object.overcharge)
-      last_overcharge_time_text = string.format("[%d]", charge_object.last_overcharge)
-      reset_time_text = string.format("%d", charge_object.reset_time)
-
-      local name_y_offset = 0
-      if lang_code[settings.training.language] == "jp" then
-        name_y_offset = -1
-      end
-      render_text(x + 1, y + name_y_offset, charge_object.name)
+    local name_y_offset = 0
+    if lang_code[settings.training.language] == "jp" then
+      name_y_offset = -1
+    end
+    render_text(x + 1, y + name_y_offset, charge_object.name)
 --       gui.box(reset_gauge_left + 1, y + 11, charge_gauge_left, y + 11, 0x00000000, 0x00000077)
 --       gui.box(reset_gauge_left, y + 10, reset_gauge_left, y + 12, 0x00000000, 0x00000077)
 --       gui.box(charge_gauge_right, y + 11, reset_gauge_right - 1, y + 11, 0x00000000, 0x00000077)
 --       gui.box(reset_gauge_right, y + 10, reset_gauge_right, y + 12, 0x00000000, 0x00000077)
-      draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1, charge_object.charge_time / charge_object.max_charge, gauge_valid_fill_color, gauge_background_color, gauge_outline_color, true)
-      draw.draw_gauge(reset_gauge_left, y + 8 + gauge_height + 2, reset_gauge_width, gauge_height, charge_object.reset_time / charge_object.max_reset, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color, true)
-      if settings.training.charge_overcharge_on and charge_object.overcharge ~= 0 and charge_object.overcharge < 42 then
-        draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1, charge_object.overcharge / charge_object.max_charge, overcharge_color, gauge_background_color, gauge_outline_color, true)
-        local w = get_text_dimensions(charge_time_text, "en")
-        render_text(reset_gauge_right + 4 + w, y + 7, overcharge_time_text, "en", nil, charge_text_color)
-      end
-      if settings.training.charge_overcharge_on and charge_object.overcharge == 0 and charge_object.last_overcharge > 0 and charge_object.last_overcharge < 42 then
-        local w = get_text_dimensions(charge_time_text, "en")
-        render_text(reset_gauge_right + 4 + w, y + 7, last_overcharge_time_text, "en", nil, charge_text_color)
-      end
-
-      render_text(reset_gauge_right + 4, y + 7, charge_time_text, "en", nil, charge_text_color)
-      render_text(reset_gauge_right + 4, y + 13, reset_time_text, "en", nil)
-
-      return 8 + 5 + (gauge_height * 2)
+    draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1, charge_object.charge_time / charge_object.max_charge, gauge_valid_fill_color, gauge_background_color, gauge_outline_color, true)
+    draw.draw_gauge(reset_gauge_left, y + 8 + gauge_height + 2, reset_gauge_width, gauge_height, charge_object.reset_time / charge_object.max_reset, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color, true)
+    if settings.training.charge_overcharge_on and charge_object.overcharge ~= 0 and charge_object.overcharge < 42 then
+      draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1, charge_object.overcharge / charge_object.max_charge, overcharge_color, gauge_background_color, gauge_outline_color, true)
+      local w = get_text_dimensions(charge_time_text, "en")
+      render_text(reset_gauge_right + 4 + w, y + 7, overcharge_time_text, "en", nil, charge_text_color)
+    end
+    if settings.training.charge_overcharge_on and charge_object.overcharge == 0 and charge_object.last_overcharge > 0 and charge_object.last_overcharge < 42 then
+      local w = get_text_dimensions(charge_time_text, "en")
+      render_text(reset_gauge_right + 4 + w, y + 7, last_overcharge_time_text, "en", nil, charge_text_color)
     end
 
-    function draw_kaiten_gauge_group(x, y, kaiten_object)
+    render_text(reset_gauge_right + 4, y + 7, charge_time_text, "en", nil, charge_text_color)
+    render_text(reset_gauge_right + 4, y + 13, reset_time_text, "en", nil)
 
-      local charge_gauge_width = 43 * gauge_x_scale
-      local reset_gauge_width = 43 * gauge_x_scale
+    return 8 + 5 + (gauge_height * 2)
+  end
 
-      x = math.min(math.max(x, x_border), draw.SCREEN_WIDTH - x_border - charge_gauge_width)
+  local function draw_kaiten_gauge_group(x, y, kaiten_object)
+    local charge_gauge_width = 43 * gauge_x_scale
+    local reset_gauge_width = 43 * gauge_x_scale
 
-      local charge_gauge_left = math.floor(x + (reset_gauge_width - charge_gauge_width) * 0.5)
-      local charge_gauge_right = charge_gauge_left + charge_gauge_width + 1
-      local reset_gauge_left = x
-      local reset_gauge_right = reset_gauge_left + reset_gauge_width + 1
-      local validity_time_text = ""
-      if kaiten_object.validity_time > 0 then
-        validity_time_text = string.format("%d", kaiten_object.validity_time)
-      end
-      local reset_time_text = string.format("%d", kaiten_object.reset_time)
-      local charge_text_color = text.default_color
+    x = math.min(math.max(x, x_border), draw.SCREEN_WIDTH - x_border - charge_gauge_width)
 
-      local name_y_offset = 0
-      if lang_code[settings.training.language] == "jp" then
-        name_y_offset = -1
-      end
-      render_text(x + 1, y + name_y_offset, kaiten_object.name)
+    local charge_gauge_left = math.floor(x + (reset_gauge_width - charge_gauge_width) * 0.5)
+    local charge_gauge_right = charge_gauge_left + charge_gauge_width + 1
+    local reset_gauge_left = x
+    local reset_gauge_right = reset_gauge_left + reset_gauge_width + 1
+    local validity_time_text = ""
+    if kaiten_object.validity_time > 0 then
+      validity_time_text = string.format("%d", kaiten_object.validity_time)
+    end
+    local reset_time_text = string.format("%d", kaiten_object.reset_time)
+    local charge_text_color = text.default_color
 
-      draw_kaiten(x, y + 8, kaiten_object.directions, not player.flip_input)
+    local name_y_offset = 0
+    if lang_code[settings.training.language] == "jp" then
+      name_y_offset = -1
+    end
+    render_text(x + 1, y + name_y_offset, kaiten_object.name)
 
-      draw.draw_gauge(reset_gauge_left, y + 8 + 9, reset_gauge_width, gauge_height, kaiten_object.reset_time / kaiten_object.max_reset, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color, true)
+    draw_kaiten(x, y + 8, kaiten_object.directions, not player.flip_input)
 
-      render_text(reset_gauge_right + 4, y + 10, validity_time_text, "en", nil)
-      render_text(reset_gauge_right + 4, y + 17, reset_time_text, "en", nil)
+    draw.draw_gauge(reset_gauge_left, y + 8 + 9, reset_gauge_width, gauge_height, kaiten_object.reset_time / kaiten_object.max_reset, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color, true)
 
-      return 8 + 5 + 9 + gauge_height
+    render_text(reset_gauge_right + 4, y + 10, validity_time_text, "en", nil)
+    render_text(reset_gauge_right + 4, y + 17, reset_time_text, "en", nil)
+
+    return 8 + 5 + 9 + gauge_height
+  end
+
+
+  local function draw_legs_gauge_group(x, y, legs_object)
+    local gauge_height = 3
+    local width = 43 * gauge_x_scale
+    local style = draw.controller_styles[settings.training.controller_style]
+    local tw, th = get_text_dimensions("hyakuretsu_MK")
+    local margin = tw + 1
+    local x_offset = margin
+    render_text(x, y, "hyakuretsu_LK")
+    for i = 1, legs_object.l_legs_count do
+      gui.image(x + x_offset, y, images.img_button_small[style][4])
+      x_offset = x_offset + 8
+    end
+    x_offset = margin
+    render_text(x, y + 8, "hyakuretsu_MK")
+    for i = 1, legs_object.m_legs_count do
+      gui.image(x + x_offset, y + 8, images.img_button_small[style][5])
+      x_offset = x_offset + 8
+    end
+    x_offset = margin
+    render_text(x, y + 16, "hyakuretsu_HK")
+    for i = 1, legs_object.h_legs_count do
+      gui.image(x + x_offset, y + 16, images.img_button_small[style][6])
+      x_offset = x_offset + 8
+    end
+    x_offset = margin
+
+    if legs_object.active ~= 0xFF then
+      draw.draw_gauge(x, y + 24, width, gauge_height + 1, legs_object.reset_time / 99, gauge_valid_fill_color, gauge_background_color, gauge_outline_color, true)
     end
 
+    return 8 + 5 + (gauge_height * 2)
+  end
 
-    function draw_legs_gauge_group(x, y, legs_object)
-      local gauge_height = 3
-      local width = 43 * gauge_x_scale
-      local style = draw.controller_styles[settings.training.controller_style]
-      local tw, th = get_text_dimensions("hyakuretsu_MK")
-      local margin = tw + 1
-      local x_offset = margin
-      render_text(x, y, "hyakuretsu_LK")
-      for i = 1, legs_object.l_legs_count do
-        gui.image(x + x_offset, y, images.img_button_small[style][4])
-        x_offset = x_offset + 8
-      end
-      x_offset = margin
-      render_text(x, y + 8, "hyakuretsu_MK")
-      for i = 1, legs_object.m_legs_count do
-        gui.image(x + x_offset, y + 8, images.img_button_small[style][5])
-        x_offset = x_offset + 8
-      end
-      x_offset = margin
-      render_text(x, y + 16, "hyakuretsu_HK")
-      for i = 1, legs_object.h_legs_count do
-        gui.image(x + x_offset, y + 16, images.img_button_small[style][6])
-        x_offset = x_offset + 8
-      end
-      x_offset = margin
-
-      if legs_object.active ~= 0xFF then
-        draw.draw_gauge(x, y + 24, width, gauge_height + 1, legs_object.reset_time / 99, gauge_valid_fill_color, gauge_background_color, gauge_outline_color, true)
-      end
-
-      return 8 + 5 + (gauge_height * 2)
-    end
-
-    local charge_array = {
-      {
-        object = player.charge_1,
-        enabled = player.charge_1.enabled
-      },
-      {
-        object = player.charge_2,
-        enabled = player.charge_2.enabled
-      },
-      {
-        object = player.charge_3,
-        enabled = player.charge_3.enabled
-      }
+  local charge_array = {
+    {
+      object = player.charge_1,
+      enabled = player.charge_1.enabled
+    },
+    {
+      object = player.charge_2,
+      enabled = player.charge_2.enabled
+    },
+    {
+      object = player.charge_3,
+      enabled = player.charge_3.enabled
     }
+  }
 
-    for _, charge in ipairs(charge_array) do
-      if charge.enabled then
-        y_offset = y_offset + group_y_margin + draw_charge_gauge_group(x, y + y_offset, charge.object)
+  for _, charge in ipairs(charge_array) do
+    if charge.enabled then
+      y_offset = y_offset + group_y_margin + draw_charge_gauge_group(pos_x, pos_y + y_offset, charge.object)
+    end
+  end
+
+  if player.char_str == "hugo"
+  or (player.char_str == "alex" and player.selected_sa == 1) then
+    for _, kaiten in ipairs(player.kaiten) do
+      if kaiten.enabled then
+        y_offset = y_offset + group_y_margin + draw_kaiten_gauge_group(pos_x, pos_y + y_offset, kaiten)
       end
     end
+  end
 
-    if player.char_str == "hugo"
-    or (player.char_str == "alex" and player.selected_sa == 1) then
-      for _, kaiten in ipairs(player.kaiten) do
-        if kaiten.enabled then
-          y_offset = y_offset + group_y_margin + draw_kaiten_gauge_group(x, y + y_offset, kaiten)
-        end
-      end
-    end
-
-    if player.legs_state.enabled then
-      draw_legs_gauge_group(x, y + y_offset, player.legs_state)
-    end
-
-
+  if player.legs_state.enabled then
+    draw_legs_gauge_group(pos_x, pos_y + y_offset, player.legs_state)
+  end
 end
 
 local player_default_color = 0x4200
-function color_player(player, color)
+local function color_player(player, color)
   if color == "default" then
     memory.writeword(player.base + 616, player_default_color)
   else
@@ -368,7 +367,7 @@ end
 
 local air_combo_expired_color = 0x2013
 local air_time_bar_max_width = 121
-function air_time_display(player, dummy)
+local function air_time_display(player, dummy)
   local player = gamestate.P1
   local dummy = gamestate.P2
   local offset_x = 225
@@ -395,9 +394,7 @@ function air_time_display(player, dummy)
   end
 end
 
-local fuzz = 0x0000
-thes = true
-function player_coloring_display()
+-- local function player_coloring_display()
 --   player = player
 --   if thes then
 --   memory.writeword(player.base + 616, 0x2011)
@@ -420,7 +417,7 @@ function player_coloring_display()
 --     memory.writeword(player.base + 616, 0x2000) --p1
 --     memory.writeword(dummy.base + 616, 0x2010) --p2
 --   end
-end
+-- end
 
 
 local red_parry_display_start_frame = 0
@@ -432,13 +429,13 @@ local red_parry_miss_display_text = ""
 local red_parry_miss_display_time = 60
 local red_parry_miss_fade_time = 20
 
-function red_parry_miss_display_reset()
+local function red_parry_miss_display_reset()
   last_blocked_frame = 0
   red_parry_display_start_frame = 0
   watch_parry_object = {false, false}
 end
 
-function red_parry_miss_display(player)
+local function red_parry_miss_display(player)
   if player.has_just_blocked then
       last_blocked_frame = gamestate.frame_number
   end
@@ -482,11 +479,11 @@ function red_parry_miss_display(player)
   end
 end
 
-function draw_denjin(offsetX, offsetY)
-  denjinTimer = memory.readbyte(0x02068D27)
-  denjin = memory.readbyte(0x02068D2D)
-  barColor = 0x00000000
-  denjinLv = 0
+local function draw_denjin(offsetX, offsetY)
+  local denjinTimer = memory.readbyte(0x02068D27)
+  local denjin = memory.readbyte(0x02068D2D)
+  local barColor = 0x00000000
+  local denjinLv = 0
   if denjin == 3 then
     denjinLv = 1
     barColor = 0x0080FFFF
@@ -515,17 +512,17 @@ gui.drawbox(offsetX,offsetY,offsetX+denjinTimer,offsetY+4,barColor,0x000000FF)
 end
 
 
-attack_range_display_attacks = {{},{}}
-attack_range_display_data = {}
+local attack_range_display_attacks = {{},{}}
+local attack_range_display_data = {}
 
-function attack_range_display_reset()
+local function attack_range_display_reset()
   attack_range_display_attacks = {{},{}}
   attack_range_display_data = {}
 end
 
 --needs to be rewritten due to framedata changes
-function attack_range_display()
-  function already_in_list(table, item)
+local function attack_range_display()
+  local function already_in_list(table, item)
     for k,v in pairs(table) do
       if v == item then
         return true
@@ -705,7 +702,7 @@ end ]]
 local last_hit_history = nil
 local last_hit_history_size = 2
 
-function last_hit_bars()
+local function last_hit_bars()
   if settings.training.display_attack_bars > 1 then
     if settings.training.display_attack_bars == 2 then
       last_hit_history_size = 1
@@ -722,19 +719,19 @@ function last_hit_bars()
 
     local sign = 1
 
-    if attack_data then
+    if attack_data.data then
       if last_hit_history then
-        if attack_data.id == last_hit_history[1].id then
+        if attack_data.data.id == last_hit_history[1].id then
 
-          last_hit_history[1] = deepcopy(attack_data)
+          last_hit_history[1] = deepcopy(attack_data.data)
         else
-          table.insert(last_hit_history, 1, deepcopy(attack_data))
+          table.insert(last_hit_history, 1, deepcopy(attack_data.data))
           while #last_hit_history > last_hit_history_size do
             table.remove(last_hit_history, #last_hit_history)
           end
         end
       else
-        last_hit_history = {deepcopy(attack_data)}
+        last_hit_history = {deepcopy(attack_data.data)}
       end
     end
     if last_hit_history then
@@ -801,9 +798,68 @@ function last_hit_bars()
   end
 end
 
+local function attack_data_display()
+  local text_width1 = draw.get_text_width("damage: ")
+  local text_width2 = draw.get_text_width("stun: ")
+  local text_width3 = draw.get_text_width("combo: ")
+  local text_width4 = draw.get_text_width("total damage: ")
+  local text_width5 = draw.get_text_width("total stun: ")
+  local text_width6 = draw.get_text_width("max combo: ")
+
+  local x1 = 0
+  local x2 = 0
+  local x3 = 0
+  local x4 = 0
+  local x5 = 0
+  local x6 = 0
+  local y = 49
+
+  local x_spacing = 80
+
+  local data = attack_data.data
+
+  if data.player_id == 1 then
+    local base = draw.SCREEN_WIDTH - 138
+    x1 = base - text_width1
+    x2 = base - text_width2
+    x3 = base - text_width3
+    local base2 = base + x_spacing
+    x4 = base2 - text_width4
+    x5 = base2 - text_width5
+    x6 = base2 - text_width6
+  elseif data.player_id == 2 then
+    local base = 82
+    x1 = base - text_width1
+    x2 = base - text_width2
+    x3 = base - text_width3
+    local base2 = base + x_spacing
+    x4 = base2 - text_width4
+    x5 = base2 - text_width5
+    x6 = base2 - text_width6
+  end
+
+  gui.text(x1, y, string.format("damage: "))
+  gui.text(x1 + text_width1, y, string.format("%d", data.damage))
+
+  gui.text(x2, y + 10, string.format("stun: "))
+  gui.text(x2 + text_width2, y + 10, string.format("%d", data.stun))
+
+  gui.text(x3, y + 20, string.format("combo: "))
+  gui.text(x3 + text_width3, y + 20, string.format("%d", data.combo))
+
+  gui.text(x4, y, string.format("total damage: "))
+  gui.text(x4 + text_width4, y, string.format("%d", data.total_damage))
+
+  gui.text(x5, y + 10, string.format("total stun: "))
+  gui.text(x5 + text_width5, y + 10, string.format("%d", data.total_stun))
+
+  gui.text(x6, y + 20, string.format("max combo: "))
+  gui.text(x6 + text_width6, y + 20, string.format("%d", data.max_combo))
+end
+
 local blocking_direction_history = {}
 local last_dir = 1
-function update_blocking_direction(input, player, dummy)
+local function update_blocking_direction(input, player, dummy)
   if (player.previous_pos_x - dummy.previous_pos_x) * (player.pos_x - dummy.pos_x) <= 0 then
   end
   if dummy.received_connection and settings.training.blocking_mode > 1 then
@@ -1036,7 +1092,7 @@ local function stun_text_display(player_object)
   gui.text(x, y, t, 0xe60000FF, 0x001433FF)
 end
 
-function display_draw_distances(p1_object, p2_object, mid_distance_height, p1_reference_point, p2_reference_point)
+local function display_draw_distances(p1_object, p2_object, mid_distance_height, p1_reference_point, p2_reference_point)
 
   local function find_closest_box_at_height(player_obj, height, box_types)
 
@@ -1137,7 +1193,7 @@ function display_draw_distances(p1_object, p2_object, mid_distance_height, p1_re
   gui.text(p2_screen_x + 3, p2_screen_y + 2, string.format("%d:%d", p2_object.pos_x, p2_object.pos_y), text_default_color, text_default_border_color)
 end
 
-function recording_display(dummy)
+local function recording_display(dummy)
   local current_recording_size = 0
   if (recording_slots[settings.training.current_recording_slot].inputs) then
     current_recording_size = #recording_slots[settings.training.current_recording_slot].inputs
@@ -1199,15 +1255,15 @@ function recording_display(dummy)
   end
 end
 
-show_player_position = true
-function player_position_display()
-  x, y = draw.game_to_screen_space(gamestate.P1.pos_x, gamestate.P1.pos_y)
+local show_player_position = true
+local function player_position_display()
+  local x, y = draw.game_to_screen_space(gamestate.P1.pos_x, gamestate.P1.pos_y)
   gui.image(x - 4, y, images.img_dir_small[8])
   x, y = draw.game_to_screen_space(gamestate.P2.pos_x, gamestate.P2.pos_y)
   gui.image(x - 4 , y, images.img_dir_small[8])
 end
 
-function draw_hud(player, dummy)
+local function draw_hud(player, dummy)
   if settings.training.display_attack_range ~= 1 then
     attack_range_display()
   end
@@ -1225,7 +1281,12 @@ function draw_hud(player, dummy)
   if settings.training.display_hitboxes then
     hitboxes_display()
   end
+
   last_hit_bars()
+
+  if settings.training.display_attack_data then
+    attack_data_display()
+  end
   red_parry_miss_display(player)
   blocking_direction_display(player, dummy)
   if settings.training.display_parry then
@@ -1238,7 +1299,6 @@ function draw_hud(player, dummy)
   if settings.training.display_air_time then
     air_time_display(player, dummy)
   end
-  player_coloring_display()
   if show_player_position then
     player_position_display()
   end
@@ -1259,9 +1319,20 @@ function draw_hud(player, dummy)
     bonuses_display(player)
     bonuses_display(dummy)
   end
+  if settings.training.display_distances then
+    display_draw_distances(gamestate.P1, gamestate.P2, settings.training.mid_distance_height, settings.training.p1_distances_reference_point, settings.training.p2_distances_reference_point)
+  end
+
   if show_jumpins_display then
     jumpins_display(player)
   end
 --   draw_denjin(draw.SCREEN_WIDTH/2 - 40, draw.SCREEN_HEIGHT - 40)
 
 end
+
+return {
+  draw_hud = draw_hud,
+  attack_range_display_reset = attack_range_display_reset,
+  update_blocking_direction = update_blocking_direction,
+  red_parry_miss_display_reset = red_parry_miss_display_reset
+}

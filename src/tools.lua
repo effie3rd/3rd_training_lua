@@ -1,5 +1,4 @@
 local json = require("src/libs/dkjson")
-local gamestate = require("src/gamestate")
 local debug_settings = require("src/debug_settings")
 
 
@@ -183,122 +182,6 @@ function write_object_to_json_file(object, file_path, indent)
   return true
 end
 
--- log
-local log_enabled = false
-local log_categories_display = {}
-
-local logs = {}
-local log_sections = {
-  global = 1,
-  P1 = 2,
-  P2 = 3,
-}
-local log_categories = {}
-local log_recording_on = false
-local log_category_count = 0
-local current_entry = 1
-local log_size_max = 80
-local log_line_count_max = 25
-local log_line_offset = 0
-
-function log(section_name, category_name, event_name)
-  if not log_enabled then return end
-
-  if log_categories_display[category_name] and log_categories_display[category_name].print then
-    print(string.format("%d - [%s][%s] %s", gamestate.frame_number, section_name, category_name, event_name))
-  end
-
-  if not log_recording_on then return end
-
-  event_name = event_name or ""
-  category_name = category_name or ""
-  section_name = section_name or "global"
-  if log_sections[section_name] == nil then section_name = "global" end
-
-  if not log_categories_display[category_name] or not log_categories_display[category_name].history then return end
-
-  -- Add category if it does not exists
-  if log_categories[category_name] == nil then
-    log_categories[category_name] = log_category_count
-    log_category_count = log_category_count + 1
-  end
-
-  -- Insert frame if it does not exists
-  if #logs == 0 or logs[#logs].frame ~= gamestate.frame_number then
-    table.insert(logs, {
-      frame = gamestate.frame_number,
-      events = {}
-    })
-  end
-
-  -- Remove overflowing logs frame
-  while #logs > log_size_max do
-    table.remove(logs, 1)
-  end
-
-  local current_frame = logs[#logs]
-  table.insert(current_frame.events, {
-    name = event_name,
-    section = section_name,
-    category = category_name,
-    color = string_to_color(event_name)
-  })
-end
-
-local log_filtered = {}
-local log_start_locked = false
-function log_update(player)
-  log_filtered = {}
-  if not log_enabled then return end
-
-  -- compute filtered logs
-  for i = 1, #logs do
-    local frame = logs[i]
-    local filtered_frame = { frame = frame.frame, events = {}}
-    for j, event in ipairs(frame.events) do
-      if log_categories_display[event.category] and log_categories_display[event.category].history then
-        table.insert(filtered_frame.events, event)
-      end
-    end
-
-    if #filtered_frame.events > 0 then
-      table.insert(log_filtered, filtered_frame)
-    end
-  end
-
-  -- process input
-  if player.input.down.start then
-    if player.input.pressed.HP then
-      log_start_locked = true
-      log_recording_on = not log_recording_on
-      if log_recording_on then
-        log_line_offset = 0
-      end
-    end
-    if player.input.pressed.HK then
-      log_start_locked = true
-      log_line_offset = 0
-      logs = {}
-    end
-
-    if check_input_down_autofire(player, "up", 4) then
-      log_start_locked = true
-      log_line_offset = log_line_offset - 1
-      log_line_offset = math.max(log_line_offset, 0)
-    end
-    if check_input_down_autofire(player, "down", 4) then
-      log_start_locked = true
-      log_line_offset = log_line_offset + 1
-      log_line_offset = math.min(log_line_offset, math.max(#log_filtered - log_line_count_max - 1, 0))
-    end
-  end
-
-  if not player.input.down.start and not player.input.released.start then
-    log_start_locked = false
-  end
-end
-
-
 function print_memory_line(addr)
   addr = addr - addr % 0x10
 
@@ -320,24 +203,6 @@ function print_memory_line(addr)
     memory.readbyte(addr + 0xE),
     memory.readbyte(addr + 0xF)
   ))
-end
-
-function log_state(obj, names)
-  local str = ""
-  for i, name in ipairs(names) do
-    if i > 0 then
-      str = str..", "
-    end
-    str = str..name..":"
-    local value = obj[name]
-    local type = type(value)
-    if type == "boolean" then
-      str = str..string.format("%d", to_bit(value))
-    elseif type == "number" then
-      str = str..string.format("%d", value)
-    end
-  end
-  print(str)
 end
 
 function deep_equal(a, b, visited)
@@ -467,4 +332,36 @@ function get_boxes(boxes, types)
     end
   end
   return res
+end
+
+function input_to_text(t)
+  local result = {}
+  for i = 1, #t do
+    local text = ""
+    for j = 1, #t[i] do
+      if t[i][j] == "down" then
+        text = text .. "Dummy"
+      elseif t[i][j] == "up" then
+        text = text .. "U"
+      elseif t[i][j] == "forward" then
+        text = text .. "F"
+      elseif t[i][j] == "back" then
+        text = text .. "B"
+      end
+    end
+    if text ~= "" then
+      text = text .. "+"
+    end
+    for j = 1, #t[i] do
+      if t[i][j] == "LP" or t[i][j] == "MP" or t[i][j] == "HP"
+      or t[i][j] == "LK" or t[i][j] == "MK" or t[i][j] == "HK" then
+         text = text .. t[i][j]
+        if j + 1 <= #t[i] then
+          text = text .. "+"
+        end
+      end
+    end
+    table.insert(result, text)
+  end
+  return result
 end

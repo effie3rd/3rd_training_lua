@@ -17,6 +17,8 @@ local button_activated_color = text.button_activated_color
 local gui_box_bg_color = 0x1F1F1FF0
 local gui_box_outline_color = 0xBBBBBBF0
 
+local lang_code = {"en", "jp"}
+
 function gauge_menu_item(name, object, property_name, unit, fill_color, gauge_max, subdivision_count)
   local o = {}
   o.name = name
@@ -610,6 +612,16 @@ function motion_list_menu_item(name, object, property_name, list, default_value,
   return o
 end
 
+--debug delete
+local counter_attack_type =
+{
+  "none",
+  "normal_attack",
+  "special_sa",
+  "option_select",
+  "recording"
+}
+
 function move_input_menu_item(name, object)
   local o = {}
   o.name = name
@@ -630,9 +642,9 @@ function move_input_menu_item(name, object)
     if self.indent then
       offset_x = 8
     end
-
     local img_list = {}
     local style = draw.controller_styles[settings.training.controller_style]
+
     if counter_attack_type[self.object.ca_type] == "special_sa" then
 
       for i = 1, #counter_attack_special_inputs[self.object.special] do
@@ -691,7 +703,7 @@ function move_input_menu_item(name, object)
             table.insert(img_list, images.img_hold)
           elseif counter_attack_special_inputs[self.object.special][i][j] == "neutral" then
             added = added + 1
-            table.insert(img_list, img_5_dir_small)
+            table.insert(img_list, images.img_dir_small[5])
           elseif counter_attack_special_inputs[self.object.special][i][j] == "maru" then
             added = added + 1
             table.insert(img_list, images.img_maru)
@@ -949,7 +961,7 @@ function integer_menu_item(name, object, property_name, min, max, loop, default_
       color = text.selected_color
     end
     local offset_x = 0
-    local w, h = 0
+    local w, h = 0, 0
     if self.indent then
       offset_x = 8
     end
@@ -1035,7 +1047,7 @@ function hits_before_menu_item(name, suffix, object, property_name, min, max, lo
     if self.indent then
       offset_x = 8
     end
-    local w, h = 0
+    local w, h = 0, 0
 
     if localization[self.name][lang_code[settings.training.language]] ~= "" then
       render_text(x + offset_x, y, self.name, nil, nil, color)

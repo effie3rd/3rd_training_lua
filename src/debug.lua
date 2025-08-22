@@ -4,6 +4,7 @@ local text = require("src.ui.text")
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
 local draw = require("src.ui.draw")
+local settings = require("src/settings")
 
 
 local frame_data = fd.frame_data
@@ -58,6 +59,205 @@ end
 local function draw_predicted_boxes()
 
 end
+
+
+
+
+-- log
+local log_enabled = false
+local log_categories_display = {}
+
+local logs = {}
+local log_sections = {
+  global = 1,
+  P1 = 2,
+  P2 = 3,
+}
+local log_categories = {}
+local log_recording_on = false
+local log_category_count = 0
+local current_entry = 1
+local log_size_max = 80
+local log_line_count_max = 25
+local log_line_offset = 0
+
+local log_filtered = {}
+local log_start_locked = false
+function log_update(player)
+  log_filtered = {}
+  if not log_enabled then return end
+
+  -- compute filtered logs
+  for i = 1, #logs do
+    local frame = logs[i]
+    local filtered_frame = { frame = frame.frame, events = {}}
+    for j, event in ipairs(frame.events) do
+      if log_categories_display[event.category] and log_categories_display[event.category].history then
+        table.insert(filtered_frame.events, event)
+      end
+    end
+
+    if #filtered_frame.events > 0 then
+      table.insert(log_filtered, filtered_frame)
+    end
+  end
+
+  -- process input
+  if player.input.down.start then
+    if player.input.pressed.HP then
+      log_start_locked = true
+      log_recording_on = not log_recording_on
+      if log_recording_on then
+        log_line_offset = 0
+      end
+    end
+    if player.input.pressed.HK then
+      log_start_locked = true
+      log_line_offset = 0
+      logs = {}
+    end
+
+    if check_input_down_autofire(player, "up", 4) then
+      log_start_locked = true
+      log_line_offset = log_line_offset - 1
+      log_line_offset = math.max(log_line_offset, 0)
+    end
+    if check_input_down_autofire(player, "down", 4) then
+      log_start_locked = true
+      log_line_offset = log_line_offset + 1
+      log_line_offset = math.min(log_line_offset, math.max(#log_filtered - log_line_count_max - 1, 0))
+    end
+  end
+
+  if not player.input.down.start and not player.input.released.start then
+    log_start_locked = false
+  end
+end
+
+function log(section_name, category_name, event_name)
+  if not log_enabled then return end
+
+  if log_categories_display[category_name] and log_categories_display[category_name].print then
+    print(string.format("%d - [%s][%s] %s", gamestate.frame_number, section_name, category_name, event_name))
+  end
+
+  if not log_recording_on then return end
+
+  event_name = event_name or ""
+  category_name = category_name or ""
+  section_name = section_name or "global"
+  if log_sections[section_name] == nil then section_name = "global" end
+
+  if not log_categories_display[category_name] or not log_categories_display[category_name].history then return end
+
+  -- Add category if it does not exists
+  if log_categories[category_name] == nil then
+    log_categories[category_name] = log_category_count
+    log_category_count = log_category_count + 1
+  end
+
+  -- Insert frame if it does not exists
+  if #logs == 0 or logs[#logs].frame ~= gamestate.frame_number then
+    table.insert(logs, {
+      frame = gamestate.frame_number,
+      events = {}
+    })
+  end
+
+  -- Remove overflowing logs frame
+  while #logs > log_size_max do
+    table.remove(logs, 1)
+  end
+
+  local current_frame = logs[#logs]
+  table.insert(current_frame.events, {
+    name = event_name,
+    section = section_name,
+    category = category_name,
+    color = string_to_color(event_name)
+  })
+end
+
+local log_last_displayed_frame = 0
+local function log_draw()
+  local log = log_filtered
+  local log_default_color = 0xF7FFF7FF
+
+  if #log == 0 then return end
+
+  local line_background = { 0x333333CC, 0x555555CC }
+  local separator_color = 0xAAAAAAFF
+  local width = emu.screenwidth() - 10
+  local height = emu.screenheight() - 10
+  local x_start = 5
+  local y_start = 5
+  local line_height = 8
+  local current_line = 0
+  local columns_start = { 0, 20, 100 }
+  local box_size = 6
+  local box_margin = 2
+  gui.box(x_start, y_start , x_start + width, y_start, 0x00000000, separator_color)
+  for i = 0, log_line_count_max do
+    local frame_index = #log - (i + log_line_offset)
+    if frame_index < 1 then
+      break
+    end
+    local frame = log[frame_index]
+    local events = {{}, {}, {}}
+    for j, event in ipairs(frame.events) do
+      if log_categories_display[event.category] and log_categories_display[event.category].history then
+        table.insert(events[log_sections[event.section]], event)
+      end
+    end
+
+    local y = y_start + current_line * line_height
+    gui.box(x_start, y, x_start + width, y + line_height, line_background[(i % 2) + 1], 0x00000000)
+    for section_i = 1, 3 do
+      local box_x = x_start + columns_start[section_i]
+      local box_y = y + 1
+      for j, event in ipairs(events[section_i]) do
+        gui.box(box_x, box_y, box_x + box_size, box_y + box_size, event.color, 0x00000000)
+        gui.box(box_x + 1, box_y + 1, box_x + box_size - 1, box_y + box_size - 1, 0x00000000, 0x00000022)
+        gui.text(box_x + box_size + box_margin, box_y, event.name, log_default_color, 0x00000000)
+        box_x = box_x + box_size + box_margin + draw.get_text_width(event.name) + box_margin
+      end
+    end
+
+    if frame_index > 1 then
+      local frame_diff = frame.frame - log[frame_index - 1].frame
+      gui.text(x_start + 2, y + 1, string.format("%d", frame_diff), log_default_color, 0x00000000)
+    end
+    gui.box(x_start, y + line_height, x_start + width, y + line_height, 0x00000000, separator_color)
+    current_line = current_line + 1
+    log_last_displayed_frame = frame_index
+  end
+end
+
+function log_state(obj, names)
+  local str = ""
+  for i, name in ipairs(names) do
+    if i > 0 then
+      str = str..", "
+    end
+    str = str..name..":"
+    local value = obj[name]
+    local type = type(value)
+    if type == "boolean" then
+      str = str..string.format("%d", to_bit(value))
+    elseif type == "number" then
+      str = str..string.format("%d", value)
+    end
+  end
+  print(str)
+end
+
+
+
+
+
+
+
+
 
 local state = "air"
 local start_debug = false
@@ -213,8 +413,8 @@ local function run_debug()
   end
 end
 
-local function debug_things()
-  for k,v in pairs(gamestate.P1) do
+local function debug_things(q)
+  for k,v in pairs(q) do
     print (k, type(k))
   end
 end
@@ -227,7 +427,8 @@ local debug =  {
   memory_display = memory_display,
   memory_view_display = memory_view_display,
   run_debug = run_debug,
-  debug_things = debug_things
+  debug_things = debug_things,
+  log_draw = log_draw
 }
 
 setmetatable(debug, {
