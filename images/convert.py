@@ -26,7 +26,7 @@ for color,color_code in colors.items():
         ucode = ord(char)
         key = f"utf_{ucode}"
         size = "5"
-        filename = f"{key}en_{size}_{color}"
+        filename = f"{key}_en_{size}_{color}"
         subprocess.Popen(["bash", "./text_to_image.sh",char,filename,size,color_code,"en"], cwd=cwd)
         data.setdefault(key, {})
         data[key]["en"] = base_path + filename + ".png"
@@ -150,8 +150,8 @@ for loc_file in loc_files:
                         to_stitch.append({"processes":processes, "command":command, "files":part_file_names.copy()})
 
                     data.setdefault(key, {})
-                    data[key].setdefault(lang, {})
-                    data[key][lang] = base_path + outfile + ".png"
+                    data[key].setdefault(lang_code, {})
+                    data[key][lang_code] = base_path + outfile + ".png"
                 elif lang_code == "jp_8":
                     size = "8"
                     lang = "jp"
@@ -176,6 +176,7 @@ for loc_file in loc_files:
                     data.setdefault(key, {})
                     data[key].setdefault(lang, {})
                     data[key][lang] = base_path + filename + ".png"
+
 
 #stitch
 while len(to_stitch) > 0:

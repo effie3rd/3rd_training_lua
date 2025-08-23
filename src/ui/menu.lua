@@ -25,8 +25,8 @@ local save_recording_slot_popup, load_recording_slot_popup, controller_style_men
 life_refill_delay_item, p1_life_reset_value_gauge_item, p2_life_reset_value_gauge_item,
 p1_stun_reset_value_gauge_item, p2_stun_reset_value_gauge_item, stun_reset_delay_item,
 p1_meter_gauge_item, p2_meter_gauge_item, meter_refill_delay_item, slot_weight_item,
-counter_attack_delay_item, counter_attack_random_deviation_item, charge_overcharge_on_item, charge_follow_character_item,
-blocking_item, hits_before_red_parry_item, parry_every_n_item, prefer_down_parry_item, counter_attack_item,
+counter_attack_delay_item, recording_delay_item, recording_random_deviation_item, charge_overcharge_on_item, charge_follow_player_item,
+parry_follow_player_item, blocking_item, hits_before_red_parry_item, parry_every_n_item, prefer_down_parry_item, counter_attack_item,
 counter_attack_motion_item, counter_attack_button_item, counter_attack_special_item, counter_attack_special_button_item,
 counter_attack_input_display_item, counter_attack_option_select_item, hits_before_counter_attack, change_characters_item,
 p1_distances_reference_point_item, p2_distances_reference_point_item, mid_distance_height_item, air_time_player_coloring_item,
@@ -102,6 +102,111 @@ local function load_recording_slot_from_file()
   menu_stack_pop(load_recording_slot_popup)
 end
 
+local function update_menu()
+  slot_weight_item.object = recording_slots[settings.training.current_recording_slot]
+  counter_attack_delay_item.object = recording_slots[settings.training.current_recording_slot]
+  recording_random_deviation_item.object = recording_slots[settings.training.current_recording_slot]
+end
+
+local function update_gauge_items()
+  settings.training.p1_meter_reset_value = math.min(settings.training.p1_meter_reset_value, gamestate.P1.max_meter_count * gamestate.P1.max_meter_gauge)
+  settings.training.p2_meter_reset_value = math.min(settings.training.p2_meter_reset_value, gamestate.P2.max_meter_count * gamestate.P2.max_meter_gauge)
+  p1_meter_gauge_item.gauge_max = gamestate.P1.max_meter_gauge * gamestate.P1.max_meter_count
+  p1_meter_gauge_item.subdivision_count = gamestate.P1.max_meter_count
+  p2_meter_gauge_item.gauge_max = gamestate.P2.max_meter_gauge * gamestate.P2.max_meter_count
+  p2_meter_gauge_item.subdivision_count = gamestate.P2.max_meter_count
+  settings.training.p1_stun_reset_value = math.min(settings.training.p1_stun_reset_value, gamestate.P1.stun_max)
+  settings.training.p2_stun_reset_value = math.min(settings.training.p2_stun_reset_value, gamestate.P2.stun_max)
+  p1_stun_reset_value_gauge_item.gauge_max = gamestate.P1.stun_max
+  p2_stun_reset_value_gauge_item.gauge_max = gamestate.P2.stun_max
+end
+
+local function update_counter_attack_settings()
+  counter_attack_settings = settings.training.counter_attack[training.dummy.char_str]
+  counter_attack_item.object = counter_attack_settings
+  counter_attack_motion_item.object = counter_attack_settings
+  counter_attack_button_item.object = counter_attack_settings
+  counter_attack_special_item.object = counter_attack_settings
+  counter_attack_special_button_item.object = counter_attack_settings
+  counter_attack_option_select_item.object = counter_attack_settings
+  counter_attack_input_display_item.object = counter_attack_settings
+end
+
+ counter_attack_button_input = {}
+ counter_attack_special_inputs = {}
+ counter_attack_special_types = {}
+
+local function update_counter_attack_button()
+  if counter_attack_settings.motion == 15 then
+    for i = 1, #move_list[training.dummy.char_str] do
+      if move_list[training.dummy.char_str][i].move_type == "kara" then
+          counter_attack_button_input = move_list[training.dummy.char_str][i].buttons
+          counter_attack_button = input_to_text(counter_attack_button_input)
+          break
+      end
+    end
+  else
+    counter_attack_button = menu_tables.counter_attack_button_default
+  end
+  counter_attack_button_item.list = counter_attack_button
+  if counter_attack_settings.button > #counter_attack_button then
+    counter_attack_settings.button = #counter_attack_button
+    if #counter_attack_button == 0 then
+      counter_attack_settings.button = 1
+    end
+  end
+end
+
+local function update_counter_attack_special_button()
+  local move = counter_attack_special_names[settings.training.counter_attack[training.dummy.char_str].special]
+  for i = 1, #move_list[training.dummy.char_str] do
+    if move_list[training.dummy.char_str][i].name == move then
+      counter_attack_special_button_item.list = move_list[training.dummy.char_str][i].buttons
+      counter_attack_special_button = move_list[training.dummy.char_str][i].buttons
+      break
+    end
+  end
+  if counter_attack_settings.special_button > #counter_attack_special_button then
+    counter_attack_settings.special_button = #counter_attack_special_button
+    if #counter_attack_special_button == 0 then
+      counter_attack_settings.special_button = 1
+    end
+  end
+end
+
+local function update_counter_attack_special()
+  local list = {}
+  counter_attack_special_inputs = {}
+  counter_attack_special_types = {}
+  local sa_str = "sa" .. training.dummy.selected_sa
+  for i = 1, #move_list[training.dummy.char_str] do
+    if move_list[training.dummy.char_str][i].move_type == "special" or move_list[training.dummy.char_str][i].move_type == "kara_special" or move_list[training.dummy.char_str][i].move_type == sa_str
+    or (training.dummy.char_str == "gouki" and (move_list[training.dummy.char_str][i].name == "sgs" or move_list[training.dummy.char_str][i].name== "kkz"))
+    or (training.dummy.char_str == "shingouki" and move_list[training.dummy.char_str][i].name == "sgs")
+    or (training.dummy.char_str == "gill" and (move_list[training.dummy.char_str][i].name == "meteor_strike" or move_list[training.dummy.char_str][i].name == "seraphic_wing"))
+    then
+      table.insert(list, move_list[training.dummy.char_str][i].name)
+      table.insert(counter_attack_special_inputs, move_list[training.dummy.char_str][i].input)
+      table.insert(counter_attack_special_types, move_list[training.dummy.char_str][i].move_type)
+    end
+  end
+
+  counter_attack_special_item.list = list
+  counter_attack_special_names = list
+  update_counter_attack_special_button()
+--   update_counter_attack_button()
+  update_dimensions()
+end
+
+local function update_counter_attack_items()
+  if initialized then
+    update_counter_attack_settings()
+    update_counter_attack_button()
+    update_counter_attack_special()
+  end
+end
+
+
 local function init_menu()
   save_recording_slot_popup = make_menu(71, 61, 312, 122, -- screen size 383,223
   {
@@ -153,9 +258,9 @@ local function init_menu()
   meter_refill_delay_item.is_disabled = p1_meter_gauge_item.is_disabled
 
 
-  slot_weight_item = integer_menu_item("weight", recording_slots[settings.training.current_recording_slot], "weight", 0, 100, false, 1)
-  counter_attack_delay_item = integer_menu_item("counter_attack_delay", recording_slots[settings.training.current_recording_slot], "delay", -40, 40, false, 0)
-  counter_attack_random_deviation_item = integer_menu_item("counter_attack_max_random_deviation", recording_slots[settings.training.current_recording_slot], "random_deviation", -600, 600, false, 0, 1)
+  slot_weight_item = integer_menu_item("slot_weight", recording_slots[settings.training.current_recording_slot], "weight", 0, 100, false, 1)
+  recording_delay_item = integer_menu_item("replay_delay", recording_slots[settings.training.current_recording_slot], "delay", -40, 40, false, 0)
+  recording_random_deviation_item = integer_menu_item("replay_max_random_deviation", recording_slots[settings.training.current_recording_slot], "random_deviation", -600, 600, false, 0, 1)
 
   charge_overcharge_on_item = checkbox_menu_item("display_overcharge", settings.training, "charge_overcharge_on")
   charge_overcharge_on_item.indent = true
@@ -163,10 +268,16 @@ local function init_menu()
   return not settings.training.display_charge
   end
 
-  charge_follow_character_item = checkbox_menu_item("follow_character", settings.training, "charge_follow_character")
-  charge_follow_character_item.indent = true
-  charge_follow_character_item.is_disabled = function()
+  charge_follow_player_item = checkbox_menu_item("menu_follow_player", settings.training, "charge_follow_player")
+  charge_follow_player_item.indent = true
+  charge_follow_player_item.is_disabled = function()
   return not settings.training.display_charge
+  end
+
+  parry_follow_player_item = checkbox_menu_item("menu_follow_player", settings.training, "parry_follow_player")
+  parry_follow_player_item.indent = true
+  parry_follow_player_item.is_disabled = function()
+  return not settings.training.display_parry
   end
 
   blocking_item = list_menu_item("blocking", settings.training, "blocking_mode", menu_tables.blocking_mode)
@@ -215,7 +326,7 @@ local function init_menu()
     return counter_attack_settings.ca_type ~= 3 or #counter_attack_special_button == 0
   end
 
-  counter_attack_input_display_item = move_input_menu_item("hello", counter_attack_settings)
+  counter_attack_input_display_item = move_input_menu_item("move_input", counter_attack_settings)
   counter_attack_input_display_item.inline = true
   counter_attack_input_display_item.is_disabled = function()
     return not (counter_attack_settings.ca_type == 3 or counter_attack_settings.ca_type == 4)
@@ -230,6 +341,12 @@ local function init_menu()
   hits_before_counter_attack = hits_before_menu_item("hits_before_ca_prefix", "hits_before_ca_suffix", settings.training, "hits_before_counter_attack_count", 0, 20, true)
   hits_before_counter_attack.indent = true
   hits_before_counter_attack.is_disabled = function()
+    return counter_attack_settings.ca_type == 1
+  end
+
+  counter_attack_delay_item = integer_menu_item("counter_attack_delay", settings.training, "mid_distance_height", -40, 40, false, 0)
+  counter_attack_delay_item.indent = true
+  counter_attack_delay_item.is_disabled = function()
     return counter_attack_settings.ca_type == 1
   end
 
@@ -296,6 +413,7 @@ local function init_menu()
           counter_attack_special_button_item,
           counter_attack_option_select_item,
           hits_before_counter_attack,
+          counter_attack_delay_item,
           list_menu_item("mash_stun", settings.training, "mash_stun_mode", menu_tables.mash_stun_mode, 1),
           list_menu_item("tech_throws", settings.training, "tech_throws_mode", menu_tables.tech_throws_mode),
           list_menu_item("quick_stand", settings.training, "fast_wakeup_mode", menu_tables.quick_stand_mode),
@@ -310,8 +428,8 @@ local function init_menu()
           integer_menu_item("menu_slot", settings.training, "current_recording_slot", 1, recording_slot_count, true, 1, 10, update_current_recording_slot_frames),
                                 frame_number_item(current_recording_slot_frames, true),
           slot_weight_item,
-          counter_attack_delay_item,
-          counter_attack_random_deviation_item,
+          recording_delay_item,
+          recording_random_deviation_item,
           button_menu_item("clear_slot", clear_slot),
           button_menu_item("clear_all_slots", clear_all_slots),
           button_menu_item("save_slot_to_file", open_save_popup),
@@ -338,9 +456,10 @@ local function init_menu()
           checkbox_menu_item("display_air_time", settings.training, "display_air_time"),
           air_time_player_coloring_item,
           checkbox_menu_item("display_charge", settings.training, "display_charge"),
-          charge_follow_character_item,
+          charge_follow_player_item,
           charge_overcharge_on_item,
           checkbox_menu_item("display_parry", settings.training, "display_parry"),
+          parry_follow_player_item,
           checkbox_menu_item("display_red_parry_miss", settings.training, "display_red_parry_miss"),
           list_menu_item("attack_range_display", settings.training, "display_attack_range", menu_tables.player_options),
           attack_range_display_max_item,
@@ -445,113 +564,6 @@ function open_load_popup()
 end
 
 
-local function update_counter_attack_settings()
-  counter_attack_settings = settings.training.counter_attack[training.dummy.char_str]
-  counter_attack_item.object = counter_attack_settings
-  counter_attack_motion_item.object = counter_attack_settings
-  counter_attack_button_item.object = counter_attack_settings
-  counter_attack_special_item.object = counter_attack_settings
-  counter_attack_special_button_item.object = counter_attack_settings
-  counter_attack_option_select_item.object = counter_attack_settings
-  counter_attack_input_display_item.object = counter_attack_settings
-end
-
- counter_attack_button_input = {}
- counter_attack_special_inputs = {}
- counter_attack_special_types = {}
-
-local function update_counter_attack_button()
-  if counter_attack_settings.motion == 15 then
-    for i = 1, #move_list[training.dummy.char_str] do
-      if move_list[training.dummy.char_str][i].move_type == "kara" then
-          counter_attack_button_input = move_list[training.dummy.char_str][i].buttons
-          counter_attack_button = input_to_text(counter_attack_button_input)
-          break
-      end
-    end
-  else
-    counter_attack_button = menu_tables.counter_attack_button_default
-  end
-  counter_attack_button_item.list = counter_attack_button
-  if counter_attack_settings.button > #counter_attack_button then
-    counter_attack_settings.button = #counter_attack_button
-    if #counter_attack_button == 0 then
-      counter_attack_settings.button = 1
-    end
-  end
-end
-
-
-local function update_counter_attack_special_button()
-  local move = counter_attack_special_names[settings.training.counter_attack[training.dummy.char_str].special]
-  for i = 1, #move_list[training.dummy.char_str] do
-    if move_list[training.dummy.char_str][i].name == move then
-      counter_attack_special_button_item.list = move_list[training.dummy.char_str][i].buttons
-      counter_attack_special_button = move_list[training.dummy.char_str][i].buttons
-      break
-    end
-  end
-  if counter_attack_settings.special_button > #counter_attack_special_button then
-    counter_attack_settings.special_button = #counter_attack_special_button
-    if #counter_attack_special_button == 0 then
-      counter_attack_settings.special_button = 1
-    end
-  end
-end
-
-local function update_counter_attack_special()
-  local list = {}
-  counter_attack_special_inputs = {}
-  counter_attack_special_types = {}
-  local sa_str = "sa" .. training.dummy.selected_sa
-  for i = 1, #move_list[training.dummy.char_str] do
-    if move_list[training.dummy.char_str][i].move_type == "special" or move_list[training.dummy.char_str][i].move_type == "kara_special" or move_list[training.dummy.char_str][i].move_type == sa_str
-    or (training.dummy.char_str == "gouki" and (move_list[training.dummy.char_str][i].name == "sgs" or move_list[training.dummy.char_str][i].name== "kkz"))
-    or (training.dummy.char_str == "shingouki" and move_list[training.dummy.char_str][i].name == "sgs")
-    or (training.dummy.char_str == "gill" and (move_list[training.dummy.char_str][i].name == "meteor_strike" or move_list[training.dummy.char_str][i].name == "seraphic_wing"))
-    then
-      table.insert(list, move_list[training.dummy.char_str][i].name)
-      table.insert(counter_attack_special_inputs, move_list[training.dummy.char_str][i].input)
-      table.insert(counter_attack_special_types, move_list[training.dummy.char_str][i].move_type)
-    end
-  end
-
-  counter_attack_special_item.list = list
-  counter_attack_special_names = list
-  update_counter_attack_special_button()
---   update_counter_attack_button()
-  update_dimensions()
-end
-
-local function update_counter_attack_items()
-  if initialized then
-    update_counter_attack_settings()
-    update_counter_attack_button()
-    update_counter_attack_special()
-  end
-end
-
-function update_menu()
-  slot_weight_item.object = recording_slots[settings.training.current_recording_slot]
-  counter_attack_delay_item.object = recording_slots[settings.training.current_recording_slot]
-  counter_attack_random_deviation_item.object = recording_slots[settings.training.current_recording_slot]
-end
-
-local function update_gauge_items()
-  settings.training.p1_meter_reset_value = math.min(settings.training.p1_meter_reset_value, gamestate.P1.max_meter_count * gamestate.P1.max_meter_gauge)
-  settings.training.p2_meter_reset_value = math.min(settings.training.p2_meter_reset_value, gamestate.P2.max_meter_count * gamestate.P2.max_meter_gauge)
-  p1_meter_gauge_item.gauge_max = gamestate.P1.max_meter_gauge * gamestate.P1.max_meter_count
-  p1_meter_gauge_item.subdivision_count = gamestate.P1.max_meter_count
-  p2_meter_gauge_item.gauge_max = gamestate.P2.max_meter_gauge * gamestate.P2.max_meter_count
-  p2_meter_gauge_item.subdivision_count = gamestate.P2.max_meter_count
-  settings.training.p1_stun_reset_value = math.min(settings.training.p1_stun_reset_value, gamestate.P1.stun_max)
-  settings.training.p2_stun_reset_value = math.min(settings.training.p2_stun_reset_value, gamestate.P2.stun_max)
-  p1_stun_reset_value_gauge_item.gauge_max = gamestate.P1.stun_max
-  p2_stun_reset_value_gauge_item.gauge_max = gamestate.P2.stun_max
-end
-
-
-
 local horizontal_autofire_rate = 4
 local vertical_autofire_rate = 4
 local function handle_input()
@@ -611,6 +623,7 @@ end
 
 local menu_module = {
   init_menu = init_menu,
+  update_menu = update_menu,
   update_gauge_items = update_gauge_items,
   update_counter_attack_items = update_counter_attack_items,
   handle_input = handle_input

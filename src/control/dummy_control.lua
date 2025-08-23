@@ -10,6 +10,9 @@ local frame_data, character_specific = fd.frame_data, fd.character_specific
 local test_collision, find_move_frame_data = fd.test_collision, fd.find_move_frame_data
 local frame_data_meta = fdm.frame_data_meta
 
+
+--refactor to make this settings file agnostic
+
 function update_pose(input, player, dummy, pose)
   if current_recording_state == 4 -- Replaying
   or dummy.blocking.is_blocking then
@@ -45,7 +48,7 @@ function update_blocking(input, player, dummy, mode, style, red_parry_hit_count,
 
   player.cooldown = player.cooldown or 0
 
-  function block_attack(hit_type, block_type, delta, reverse, force_block)
+  local function block_attack(hit_type, block_type, delta, reverse, force_block)
     local p2_forward = bool_xor(dummy.flip_input, reverse)
     local p2_back = not bool_xor(dummy.flip_input, reverse)
     if block_type == 1 and dummy.pos_y <= 8 then --no air blocking!

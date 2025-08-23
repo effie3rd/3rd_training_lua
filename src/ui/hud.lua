@@ -78,7 +78,7 @@ local function parry_gauge_display(player)
   local flip_gauge = false
   local gauge_x_scale = 4
 
-  if settings.training.charge_follow_character then
+  if settings.training.parry_follow_player then
     local px = player.pos_x - draw.screen_x + emu.screenwidth()/2
     local py = emu.screenheight() - (player.pos_y - draw.screen_y) - draw.GROUND_OFFSET
     local half_width = 23 * gauge_x_scale * 0.5
@@ -151,24 +151,35 @@ local function parry_gauge_display(player)
   local parry_array = {
     {
       object = player.parry_forward,
-      enabled = settings.training.special_training_parry_forward_on
+      enabled = true
     },
     {
       object = player.parry_down,
-      enabled = settings.training.special_training_parry_down_on
+      enabled = true
     },
     {
       object = player.parry_air,
-      enabled = settings.training.special_training_parry_air_on
+      enabled = true
     },
     {
       object = player.parry_antiair,
-      enabled = settings.training.special_training_parry_antiair_on
+      enabled = true
     }
   }
 
-  for _, parry in ipairs(parry_array) do
+  if settings.training.display_parry_compact then
+    local parry_display_timeout = 60
+    for _, parry in ipairs(parry_array) do
+      parry.enabled = false
+      if parry.object.success ~= nil
+      and gamestate.frame_number - parry.object.last_attempt_frame < parry_display_timeout
+      then
+        parry.enabled = true
+      end
+    end
+  end
 
+  for _, parry in ipairs(parry_array) do
     if parry.enabled then
       y_offset = y_offset + group_y_margin + draw_parry_gauge_group(pos_x, pos_y + y_offset, parry.object)
     end
@@ -184,7 +195,7 @@ local function charge_display(player)
   local flip_gauge = false
   local gauge_x_scale = 2
 
-  if settings.training.charge_follow_character then
+  if settings.training.charge_follow_player then
     local offset_x = 8
 
     pos_x,pos_y = draw.game_to_screen_space(player.pos_x, player.pos_y + character_specific[player.char_str].height)
@@ -1139,9 +1150,9 @@ local function display_draw_distances(p1_object, p2_object, mid_distance_height,
     end
 
     if box1_l < box2_l then
-      return true, draw.draw.game_to_screen_space_x(box1_r), draw.draw.game_to_screen_space_x(box2_l)
+      return true, draw.game_to_screen_space_x(box1_r), draw.game_to_screen_space_x(box2_l)
     else
-      return true, draw.draw.game_to_screen_space_x(box2_r), draw.draw.game_to_screen_space_x(box1_l)
+      return true, draw.game_to_screen_space_x(box2_r), draw.game_to_screen_space_x(box1_l)
     end
   end
 
@@ -1167,7 +1178,7 @@ local function display_draw_distances(p1_object, p2_object, mid_distance_height,
     local line_result, screen_l, screen_r = get_screen_line_between_boxes(p1_l, p1_r, p2_l, p2_r)
 
     if line_result then
-      local screen_y = draw.draw.game_to_screen_space_y(y)
+      local screen_y = draw.game_to_screen_space_y(y)
       local str = string.format("%d", math.abs(screen_r - screen_l))
       draw.draw_horizontal_text_segment(screen_l, screen_r, screen_y, str, color)
     end
@@ -1283,14 +1294,14 @@ local function draw_hud(player, dummy)
   end
 
   last_hit_bars()
+  red_parry_miss_display(player)
+  blocking_direction_display(player, dummy)
 
   if settings.training.display_attack_data then
     attack_data_display()
   end
-  red_parry_miss_display(player)
-  blocking_direction_display(player, dummy)
   if settings.training.display_parry then
-    parry_gauge_display(player.other)
+    parry_gauge_display(player.other) --debug
   end
   if settings.training.display_charge then
     charge_display(player)
@@ -1327,7 +1338,6 @@ local function draw_hud(player, dummy)
     jumpins_display(player)
   end
 --   draw_denjin(draw.SCREEN_WIDTH/2 - 40, draw.SCREEN_HEIGHT - 40)
-
 end
 
 return {

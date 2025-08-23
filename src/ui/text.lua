@@ -107,7 +107,7 @@ local function get_text_dimensions(str, lang, size)
     local code = utf8.codepoint(v)
     --char is jp
     if code >= 12288 and code <= 40879 then
-      local w, h = get_text_dimensions_jp(str, lang, size)
+      w, h = get_text_dimensions_jp(str, lang, size)
       return w, h
     end
   end

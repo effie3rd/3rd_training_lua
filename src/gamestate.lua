@@ -1134,8 +1134,8 @@ local function read_player_vars(player_obj)
   player_obj.parry_antiair = player_obj.parry_antiair or { name = "anti_air", max_validity = 5, max_cooldown = 18 }
 
   local function read_parry_state(parry_object, validity_addr, cooldown_addr)
-    -- read data
-    parry_object.last_hit_or_block_frame =  parry_object.last_hit_or_block_frame or 0
+    parry_object.last_hit_or_block_frame = parry_object.last_hit_or_block_frame or 0
+    parry_object.last_attempt_frame = parry_object.last_attempt_frame or 0
     if player_obj.has_just_blocked or player_obj.has_just_been_hit then
       parry_object.last_hit_or_block_frame = frame_number
     end
@@ -1154,31 +1154,48 @@ local function read_player_vars(player_obj)
 
     -- check success/miss
     if parry_object.armed then
-      if player_obj.has_just_parried then
-        -- right
-        parry_object.delta = frame_number - parry_object.last_validity_start_frame
-        parry_object.success = true
-        parry_object.armed = false
-        parry_object.last_hit_or_block_frame = 0
-        log(player_obj.prefix, "parry_training_"..parry_object.name, "success")
-      elseif parry_object.last_validity_start_frame == frame_number - 1 and (frame_number - parry_object.last_hit_or_block_frame) < 20 then
-        local delta = parry_object.last_hit_or_block_frame - frame_number + 1
-        if parry_object.delta == nil or math.abs(parry_object.delta) > math.abs(delta) then
-          parry_object.delta = delta
-          parry_object.success = false
+      local player_airborne = player_obj.standing_state == 3
+      local opponent_airborne = player_obj.other.standing_state == 3
+      local parry_type = "ground"
+
+      if player_airborne then
+        parry_type = "air"
+      elseif opponent_airborne then
+        parry_type = "anti_air"
+      end
+
+      if parry_type == "ground" and (parry_object.name == "forward" or parry_object.name == "down")
+      or parry_type == "air" and parry_object.name == "air"
+      or parry_type == "anti_air" and parry_object.name == "anti_air"
+      then
+        if player_obj.has_just_parried then
+          -- right
+          parry_object.delta = frame_number - parry_object.last_validity_start_frame
+          parry_object.success = true
+          parry_object.armed = false
+          parry_object.last_hit_or_block_frame = 0
+          parry_object.last_attempt_frame = frame_number
+          log(player_obj.prefix, "parry_training_"..parry_object.name, "success")
+        elseif parry_object.last_validity_start_frame == frame_number - 1 and (frame_number - parry_object.last_hit_or_block_frame) < 20 then
+          local delta = parry_object.last_hit_or_block_frame - frame_number + 1
+          if parry_object.delta == nil or math.abs(parry_object.delta) > math.abs(delta) then
+            parry_object.delta = delta
+            parry_object.success = false
+            parry_object.last_attempt_frame = frame_number
+          end
+          log(player_obj.prefix, "parry_training_"..parry_object.name, "late")
+        elseif player_obj.has_just_blocked or player_obj.has_just_been_hit then
+          local delta = frame_number - parry_object.last_validity_start_frame
+          if parry_object.delta == nil or math.abs(parry_object.delta) > math.abs(delta) then
+            parry_object.delta = delta
+            parry_object.success = false
+            parry_object.last_attempt_frame = frame_number
+          end
+          log(player_obj.prefix, "parry_training_"..parry_object.name, "early")
         end
-        log(player_obj.prefix, "parry_training_"..parry_object.name, "late")
-      elseif player_obj.has_just_blocked or player_obj.has_just_been_hit then
-        local delta = frame_number - parry_object.last_validity_start_frame
-        if parry_object.delta == nil or math.abs(parry_object.delta) > math.abs(delta) then
-          parry_object.delta = delta
-          parry_object.success = false
-        end
-        log(player_obj.prefix, "parry_training_"..parry_object.name, "early")
       end
     end
     if frame_number - parry_object.last_validity_start_frame > 30 and parry_object.armed then
-
       parry_object.armed = false
       parry_object.last_hit_or_block_frame = 0
       log(player_obj.prefix, "parry_training_"..parry_object.name, "reset")

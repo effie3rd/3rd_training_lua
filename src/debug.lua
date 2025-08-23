@@ -4,8 +4,10 @@ local text = require("src.ui.text")
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
 local draw = require("src.ui.draw")
+local images = require("src.ui.image_tables")
+local menu = require("src.ui.menu")
 local settings = require("src/settings")
-
+local record_framedata = require("src.modules.record_framedata")
 
 local frame_data = fd.frame_data
 local frame_data_meta = fdm.frame_data_meta
@@ -56,10 +58,74 @@ local function dump_state_display()
   end
 end
 
-local function draw_predicted_boxes()
-
+local display = {}
+local function debuggui(name, var)
+  if name and var then
+    table.insert(display, {name, var})
+  end
 end
 
+local function debug_update_framedata(player, projectiles)
+  if gamestate.is_in_match then
+    local p2 = gamestate.P2
+
+    display = {}
+    debuggui("frame", gamestate.frame_number)
+    debuggui("state", record_framedata.state)
+    debuggui("anim", player.animation)
+    debuggui("anim f", player.animation_frame)
+    debuggui("hash", player.animation_frame_hash)
+    debuggui("freeze", player.remaining_freeze_frames)
+    debuggui("sfreeze", player.superfreeze_decount)
+    debuggui("action #", player.action_count)
+    debuggui("action #", player.animation_action_count)
+    debuggui("conn action #", player.connected_action_count)
+    debuggui("hit id", player.current_hit_id)
+    -- debuggui("attacking", tostring(player.is_attacking))
+    -- debuggui("wakeup", player.remaining_wakeup_time)
+    -- debuggui("wakeup2", p2.remaining_wakeup_time)
+    debuggui("pos", string.format("%04f,%04f",player.pos_x, player.pos_y))
+    debuggui("pos", string.format("%04f,%04f",p2.pos_x, p2.pos_y))
+    debuggui("diff", string.format("%04f,%04f",player.pos_x - player.previous_pos_x, player.pos_y - player.previous_pos_y ))
+    debuggui("diff", string.format("%04f,%04f",p2.pos_x - p2.previous_pos_x, p2.pos_y - p2.previous_pos_y ))
+    debuggui("vel", string.format("%04f,%04f",player.velocity_x, player.velocity_y))
+    debuggui("vel", string.format("%04f,%04f",p2.velocity_x, p2.velocity_y))
+    debuggui("acc", string.format("%04f,%04f",player.acceleration_x, player.acceleration_y))
+    -- debuggui("recording", tostring(recording))
+
+    for _, obj in pairs(projectiles) do
+      if obj.emitter_id == player.id and obj.alive then
+        -- debuggui("s_type", obj.projectile_start_type)
+        debuggui("type", obj.projectile_type)
+        -- debuggui("emitter", obj.emitter_id)
+
+--         debuggui("xy", tostring(obj.pos_x) .. ", " .. tostring(obj.pos_y))
+--         debuggui("frame", obj.animation_frame)
+        debuggui("freeze", obj.remaining_freeze_frames)
+--         if frame_data["projectiles"] and frame_data["projectiles"][obj.projectile_start_type] and frame_data["projectiles"][obj.projectile_start_type].frames[obj.animation_frame+1] then
+--           if obj.animation_frame_hash ~= frame_data["projectiles"][obj.projectile_start_type].frames[obj.animation_frame+1].hash then
+--             debuggui("desync!", obj.animation_frame_hash)
+--           end
+--         end
+        debuggui("vx", obj.velocity_x)
+        debuggui("vy", obj.velocity_y)
+        debuggui("hits", obj.remaining_hits)
+        debuggui("cd", obj.cooldown)
+
+--         debuggui("rem", string.format("%x", obj.remaining_lifetime))
+      end
+    end
+  end
+end
+
+local function debug_framedata_display()
+  local gui_box_bg_color = 0x1F1F1FF0
+  local y = 44
+  gui.box(2, 2 + y, 80, 5+10*#display + y, gui_box_bg_color, gui_box_bg_color)
+  for i=1,#display do
+    render_text(6,6+10*(i-1) + y, string.format("%s: %s", display[i][1], display[i][2]), "en")
+  end
+end
 
 
 
@@ -347,6 +413,12 @@ end
 
 local function run_debug()
   dump_variables()
+  debug_update_framedata(gamestate.P1, gamestate.projectiles)
+
+  if gamestate.frame_number % 2000 == 0 then
+    collectgarbage()
+    print("GC memory:", collectgarbage("count"))
+  end
 
 --[[   if parry_down then
           memory.writebyte(gamestate.P2.parry_down_validity_time_addr, 2)
@@ -413,20 +485,55 @@ local function run_debug()
   end
 end
 
-local function debug_things(q)
-  for k,v in pairs(q) do
-    print (k, type(k))
+local function draw_debug()
+  if not menu.is_open then
+    -- memory_display()
+    -- memory_view_display()
+    -- debug_framedata_display()
+    dump_state_display()
   end
+
+  if gamestate.projectiles then
+    for _,obj in pairs(gamestate.projectiles) do
+      table.insert(to_draw, {obj.pos_x, obj.pos_y})
+    end
+  end
+  local x, y = 0, 0
+  for i=1,#to_draw do
+    x, y = draw.game_to_screen_space(to_draw[i][1], to_draw[i][2])
+    gui.image(x - 4, y, images.img_dir_small[8], i/#to_draw)
+  end
+
+  to_draw = {}
+
+--[[     for k, data in pairs(debug_prediction) do
+      if gamestate.frame_number == k then
+        local x = 72
+        local y = 60
+        render_text(x,y, string.format("Pos: %f,%f", data[gamestate.P1].pos_x, data[gamestate.P1].pos_y), "en", nil)
+        render_text(x,y+10, string.format("Vel: %f,%f", data[gamestate.P1].velocity_x, data[gamestate.P1].velocity_y), "en", nil)
+        render_text(x,y+20, string.format("Acc: %f,%f", data[gamestate.P1].acceleration_x, data[gamestate.P1].acceleration_y), "en", nil)
+        render_text(x,y+30, string.format("Pos: %f,%f", data[gamestate.P2].pos_x, data[gamestate.P2].pos_y), "en", nil)
+        render_text(x,y+40, string.format("Vel: %f,%f", data[gamestate.P2].velocity_x, data[gamestate.P2].velocity_y), "en", nil)
+        render_text(x,y+50, string.format("Acc: %f,%f", data[gamestate.P2].acceleration_x, data[gamestate.P2].acceleration_y), "en", nil)
+
+      elseif k < gamestate.frame_number then
+        debug_prediction[k] = nil
+      end
+    end ]]
+end
+
+local function debug_things()
+  print(settings.training.display_parry)
+  print(settings.training.display_charge)
 end
 
 local debug =  {
-  dump_state_display = dump_state_display,
   init_scan_memory = init_scan_memory,
   filter_memory_increased = filter_memory_increased,
   filter_memory_decreased = filter_memory_decreased,
-  memory_display = memory_display,
-  memory_view_display = memory_view_display,
   run_debug = run_debug,
+  draw_debug = draw_debug,
   debug_things = debug_things,
   log_draw = log_draw
 }

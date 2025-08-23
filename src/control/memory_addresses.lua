@@ -1,3 +1,5 @@
+--todo: move player memory addresses here instead of attaching everything to the player object
+
 addresses = {
   global = {
     -- [byte][read/write] hex value is the decimal display

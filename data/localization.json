@@ -87,17 +87,17 @@
     "en": "Refill delay",
     "jp": "回復遅延"
   },
-  "weight": {
-    "en": "Weight",
-    "jp": "重さ"
+  "slot_weight": {
+    "en": "Slot weight",
+    "jp": "ソロット重さ"
   },
-  "counter_attack_delay": {
-    "en": "Counterattack delay",
-    "jp": "反撃遅延"
+  "replay_delay": {
+    "en": "Replay delay",
+    "jp": "再生遅延"
   },
-  "counter_attack_max_random_deviation": {
-    "en": "Counterattack max random deviation",
-    "jp": "反撃最大限偏差値"
+  "replay_max_random_deviation": {
+    "en": "Replay max random deviation",
+    "jp": "再生最大限ランダム偏差値"
   },
   "display_overcharge": {
     "en": "Display Overcharge",
@@ -142,6 +142,10 @@
   "hits_before_ca_suffix": {
     "en": "Before Counterattack",
     "jp": "段目以降"
+  },
+  "counter_attack_delay": {
+    "en": "Counterattack delay",
+    "jp": "反撃遅延"
   },
   "character_select": {
     "en": "Character Select",
@@ -239,6 +243,14 @@
     "en": "P2 reference point",
     "jp": "P2基点"
   },
+  "distance_origin": {
+    "en": "Origin",
+    "jp": "原点"
+  },
+  "distance_hurtbox": {
+    "en": "Hurtbox",
+    "jp": "喰らい判定"
+  },
   "display_attack_info": {
     "en": "Display Attack Info",
     "jp": "攻撃情報表示"
@@ -249,6 +261,10 @@
   },
   "display_parry": {
     "en": "Display Parry",
+    "jp": "ブロ表示"
+  },
+  "display_parry_compact": {
+    "en": "Compact display",
     "jp": "ブロ表示"
   },
   "display_red_parry_miss": {
@@ -693,7 +709,7 @@
     "en": "Infinite Juggle",
     "jp": "無限空中コンボ"
   },
-  "follow_player": {
+  "menu_follow_player": {
     "en": "Follow Player",
     "jp": "プレイヤー付ける"
   },
@@ -740,10 +756,6 @@
   "character_select_line_3": {
     "en": "[Hold Start] Random",
     "jp_8": "「Start押しっぱなし」ランダム"
-  },
-  "menu_follow_character": {
-    "en": "follow character",
-    "jp_8": "キャラついて行く "
   },
   "charge_slash_elbow": {
     "en": "Slash Elbow",

@@ -137,7 +137,7 @@ local function hotkey4() --debug
 end
 
 local function hotkey5() --debug
-  debug.debug_things(settings.training.counter_attack)
+  debug.debug_things()
 end
 
 local function hotkey6() --debug
@@ -204,7 +204,7 @@ local function before_frame()
   end
 
   if menu.initialized then
-    update_menu()
+    menu.update_menu()
     -- load recordings according to gamestate.P2 character
     if previous_p2_char_str ~= gamestate.P2.char_str then
       recording.restore_recordings()
@@ -309,10 +309,7 @@ local function before_frame()
     frame_advantage_reset()
   end
 
-  -- log_input(gamestate.player_objects)
-
-  previous_input = input
-
+  inp.previous_input = input
 
   if not (gamestate.is_in_match and is_in_challenge) then
     joypad.set(input)
@@ -320,9 +317,9 @@ local function before_frame()
 
   record_frames_hotkey()
 
-  update_framedata_recording(gamestate.P1, gamestate.projectiles)
-
-  debugframedatagui(gamestate.P1, gamestate.projectiles)
+  if debug_settings.recording_framedata then
+    update_framedata_recording(gamestate.P1, gamestate.projectiles)
+  end
 
   log_update(gamestate.P1)
 end
@@ -363,20 +360,9 @@ local function on_gui()
       end
 
 
-
-
       hud.draw_hud(training.player, training.dummy)
 
 
-  
-      --debug
-      for i=1,#to_draw_collision do
-        local x1, y1 = draw.game_to_screen_space(to_draw_collision[i][1], to_draw_collision[i][3])
-        local x2, y2 = draw.game_to_screen_space(to_draw_collision[i][2], to_draw_collision[i][4])
-        gui.drawline(x1,y1,x2,y2,0x000000FF)
-      end
-
-      -- move advantage
       if settings.training.display_frame_advantage then
         frame_advantage_display()
       end
@@ -386,51 +372,11 @@ local function on_gui()
       debug.log_draw()
     end
 
+    if debug_settings.developer_mode then
+      debug.draw_debug()
+    end
+
     menu.handle_input()
-
-    if not menu.is_open then
-      draw_debug_gui()
-    end
-
-    debug.memory_display()
-
-    -- debug.memory_view_display()
-    -- debug.dump_state_display()
-
-    --debug
-    if gamestate.frame_number % 2000 == 0 then
-      collectgarbage()
-      print("GC memory:", collectgarbage("count"))
-    end
-
-    if gamestate.projectiles then
-      for _,obj in pairs(gamestate.projectiles) do
-        table.insert(to_draw, {obj.pos_x, obj.pos_y})
-      end
-    end
-    local x, y = 0, 0
-    for i=1,#to_draw do
-      x, y = draw.game_to_screen_space(to_draw[i][1], to_draw[i][2])
-      gui.image(x - 4, y, images.img_dir_small[8], i/#to_draw)
-    end
-
-    to_draw = {}
-
---[[     for k, data in pairs(debug_prediction) do
-      if gamestate.frame_number == k then
-        local x = 72
-        local y = 60
-        render_text(x,y, string.format("Pos: %f,%f", data[gamestate.P1].pos_x, data[gamestate.P1].pos_y), "en", nil)
-        render_text(x,y+10, string.format("Vel: %f,%f", data[gamestate.P1].velocity_x, data[gamestate.P1].velocity_y), "en", nil)
-        render_text(x,y+20, string.format("Acc: %f,%f", data[gamestate.P1].acceleration_x, data[gamestate.P1].acceleration_y), "en", nil)
-        render_text(x,y+30, string.format("Pos: %f,%f", data[gamestate.P2].pos_x, data[gamestate.P2].pos_y), "en", nil)
-        render_text(x,y+40, string.format("Vel: %f,%f", data[gamestate.P2].velocity_x, data[gamestate.P2].velocity_y), "en", nil)
-        render_text(x,y+50, string.format("Acc: %f,%f", data[gamestate.P2].acceleration_x, data[gamestate.P2].acceleration_y), "en", nil)
-
-      elseif k < gamestate.frame_number then
-        debug_prediction[k] = nil
-      end
-    end ]]
 
     gui.box(0,0,0,0,0,0) -- if we don't draw something, what we drawed from last frame won't be cleared
   end

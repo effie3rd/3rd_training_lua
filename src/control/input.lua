@@ -4,6 +4,8 @@ local training = require("src/training")
 local fd = require("src.modules.framedata")
 local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_slow_jumper
 
+local previous_input = nil
+
 function queue_input_sequence(player_obj, sequence, offset, allow_blocking)
   offset = offset or 0
 
@@ -403,12 +405,14 @@ function make_input_sequence(char_str, counter_attack_settings)
       end
     elseif option_select == "crouch_tech" then
       sequence = {{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back","LP","LK"},{"down","back","LP","LK"}}
-    elseif option_select == "block_throw" then
+    elseif option_select == "block_late_tech" then
       sequence = {{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"back","LP","LK"},{"back","LP","LK"}}
     elseif option_select == "shita_mae" then
       sequence = {{"down"},{},{},{},{},{},{},{},{},{},{},{"forward"},{},{},{},{},{},{},{},{},{},{}}
-      elseif option_select == "mae_shita" then
-        sequence = {{"forward"},{},{},{},{},{},{},{},{},{},{},{"down"},{},{},{},{},{},{},{},{},{},{}}
+    elseif option_select == "mae_shita" then
+      sequence = {{"forward"},{},{},{},{},{},{},{},{},{},{},{"down"},{},{},{},{},{},{},{},{},{},{}}
+    elseif option_select == "parry_dash" then
+      sequence = {{"forward"},{},{},{},{},{},{},{"forward"},{},{},{},{},{},{},{},{},{},{}}        
     end
   end
   return sequence, offset
@@ -504,10 +508,28 @@ function log_input(players)
   end
 end
 
-return {
+local input_module = {
   swap_inputs = swap_inputs,
   interpret_input = interpret_input,
   make_input_empty = make_input_empty,
   clear_directional_input = clear_directional_input,
   clear_p1_buttons = clear_p1_buttons,
 }
+
+setmetatable(input_module, {
+  __index = function(_, key)
+    if key == "previous_input" then
+      return previous_input
+    end
+  end,
+
+  __newindex = function(_, key, value)
+    if key == "previous_input" then
+      previous_input = value
+    else
+      rawset(input_module, key, value)
+    end
+  end
+})
+
+return input_module

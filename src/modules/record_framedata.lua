@@ -4702,74 +4702,6 @@ function record_attacks(player_obj, projectiles)
   end
 end
 
-function debugframedatagui(player_obj, projectiles)
-  if gamestate.is_in_match then
-    display = {}
-    local p2 = gamestate.P2
-    debuggui("frame", gamestate.frame_number)
-    debuggui("state", state)
-    debuggui("anim", player_obj.animation)
-    debuggui("anim f", player_obj.animation_frame)
-    debuggui("hash", player_obj.animation_frame_hash)
-    debuggui("freeze", player_obj.remaining_freeze_frames)
-    debuggui("sfreeze", player_obj.superfreeze_decount)
-    debuggui("action #", player_obj.action_count)
-    debuggui("action #", player_obj.animation_action_count)
-    debuggui("conn action #", player_obj.connected_action_count)
-    debuggui("hit id", player_obj.current_hit_id)
-    -- debuggui("attacking", tostring(player_obj.is_attacking))
-    -- debuggui("wakeup", player_obj.remaining_wakeup_time)
-    -- debuggui("wakeup2", p2.remaining_wakeup_time)
-    debuggui("pos", string.format("%04f,%04f",player_obj.pos_x, player_obj.pos_y))
-    debuggui("pos", string.format("%04f,%04f",p2.pos_x, p2.pos_y))
-    debuggui("diff", string.format("%04f,%04f",player_obj.pos_x - player_obj.previous_pos_x, player_obj.pos_y - player_obj.previous_pos_y ))
-    debuggui("diff", string.format("%04f,%04f",p2.pos_x - p2.previous_pos_x, p2.pos_y - p2.previous_pos_y ))
-    debuggui("vel", string.format("%04f,%04f",player_obj.velocity_x, player_obj.velocity_y))
-    debuggui("vel", string.format("%04f,%04f",p2.velocity_x, p2.velocity_y))
-    debuggui("acc", string.format("%04f,%04f",player_obj.acceleration_x, player_obj.acceleration_y))
-    -- debuggui("recording", tostring(recording))
-
-    for _, obj in pairs(projectiles) do
-      if obj.emitter_id == player_obj.id and obj.alive then
-        -- debuggui("s_type", obj.projectile_start_type)
-        debuggui("type", obj.projectile_type)
-        -- debuggui("emitter", obj.emitter_id)
-
---         debuggui("xy", tostring(obj.pos_x) .. ", " .. tostring(obj.pos_y))
---         debuggui("frame", obj.animation_frame)
-        debuggui("freeze", obj.remaining_freeze_frames)
---         if frame_data["projectiles"] and frame_data["projectiles"][obj.projectile_start_type] and frame_data["projectiles"][obj.projectile_start_type].frames[obj.animation_frame+1] then
---           if obj.animation_frame_hash ~= frame_data["projectiles"][obj.projectile_start_type].frames[obj.animation_frame+1].hash then
---             debuggui("desync!", obj.animation_frame_hash)
---           end
---         end
-        debuggui("vx", obj.velocity_x)
-        debuggui("vy", obj.velocity_y)
-        debuggui("hits", obj.remaining_hits)
-        debuggui("cd", obj.cooldown)
-
---         debuggui("rem", string.format("%x", obj.remaining_lifetime))
-      end
-    end
-  end
-end
-
-function debuggui(name, var)
-  if name and var then
-    table.insert(display, {name, var})
-  end
-end
-
-function draw_debug_gui()
-  local gui_box_bg_color = 0x1F1F1FF0
-  local gui_box_outline_color = 0xBBBBBBF0
-  local y = 44
-  gui.box(2, 2 + y, 80, 5+10*#display + y, gui_box_bg_color, gui_box_bg_color)
-  for i=1,#display do
-    render_text(6,6+10*(i-1) + y, string.format("%s: %s", display[i][1], display[i][2]), "en")
-  end
-end
-
 function land_player(obj)
   memory.writeword(obj.base + 0x64 + 36, -1)
   memory.writeword(obj.base + 0x64 + 38, 0)
@@ -6281,3 +6213,24 @@ function sequence_to_name(seq)
   end
   return btn
 end
+
+local record_framedata =  {
+}
+
+setmetatable(record_framedata, {
+  __index = function(_, key)
+    if key == "state" then
+      return state
+    end
+  end,
+
+  __newindex = function(_, key, value)
+    if key == "state" then
+      state = value
+    else
+      rawset(record_framedata, key, value)
+    end
+  end
+})
+
+return record_framedata

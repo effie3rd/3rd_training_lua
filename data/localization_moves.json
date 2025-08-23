@@ -642,5 +642,60 @@
   "geneijin": {
     "en": "Genei Jin",
     "jp": "幻影陣"
+  },
+  "guard_jump_forward":
+  {
+    "en": "Guard Jump Forward",
+    "jp": "前Gジャン"
+  },
+  "guard_jump_neutral":
+  {
+    "en": "Guard Jump Neutral",
+    "jp": "垂直Gジャン"
+  },
+  "guard_jump_back":
+  {
+    "en": "Guard Jump Back",
+    "jp": "後ろGジャン"
+  },
+  "guard_jump_forward_air_parry":
+  {
+    "en": "Guard Jump Forward Parry",
+    "jp": "前Gジャンブロ"
+  },
+  "guard_jump_neutral_air_parry":
+  {
+    "en": "Guard Jump Neutral Parry",
+    "jp": "垂直Gジャンブロ"
+  },
+  "guard_jump_back_air_parry":
+  {
+    "en": "Guard Jump Back Parry",
+    "jp": "後ろGジャンブロ"
+  },
+  "crouch_tech":
+  {
+    "en": "Crouch Tech",
+    "jp": "しゃがみグラップ"
+  },
+  "block_late_tech":
+  {
+    "en": "Block Late Tech",
+    "jp": "最遅グラップ"
+  },
+  "mae_shita":
+  {
+    "en": "Forward Down",
+    "jp": "前下"
+  },
+  "shita_mae":
+  {
+    "en": "Down Forward",
+    "jp": "下前"
+  },
+  "parry_dash":
+  {
+    "en": "Parry Dash",
+    "jp": "ブロダッシュ"
   }
 }

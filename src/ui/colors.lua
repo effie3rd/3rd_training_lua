@@ -11,7 +11,7 @@ local text = {
 --gui.text
 local gui_text = {
   default = 0xFFFFFFFF,
-  default_border = 0x00c2FFFF
+  default_border = 0x000000FF
 }
 
 local gauges = {

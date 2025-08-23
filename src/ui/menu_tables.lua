@@ -6,7 +6,7 @@ local pose = {
   "standing",
   "crouching",
   "jumping",
-  "highjumping",
+  "highjumping"
 }
 
 local stick_gesture = {
@@ -37,7 +37,7 @@ local stick_gesture = {
   --"guard back jump",
   --"guard forward jump",
   "Shun Goku Satsu", -- Gouki hidden SA1
-  "Kongou Kokuretsu Zan", -- Gouki hidden SA2
+  "Kongou Kokuretsu Zan" -- Gouki hidden SA2
 }
 if is_4rd_strike then
   table.insert(stick_gesture, "Demon Armageddon") -- Gouki SA3
@@ -57,21 +57,21 @@ local button_gesture =
   "EXK",
   "LP+LK",
   "MP+MK",
-  "HP+HK",
+  "HP+HK"
 }
 
 local quick_stand_mode =
 {
   "menu_off",
   "menu_on",
-  "menu_random",
+  "menu_random"
 }
 
 local blocking_style =
 {
   "block",
   "parry",
-  "red_parry",
+  "red_parry"
 }
 
 local blocking_mode =
@@ -79,7 +79,7 @@ local blocking_mode =
   "menu_off",
   "menu_on",
   "menu_first_hit",
-  "menu_random",
+  "menu_random"
 }
 
 local counter_attack_type =
@@ -151,9 +151,10 @@ local counter_attack_option_select =
   "guard_jump_neutral_air_parry",
   "guard_jump_forward_air_parry",
   "crouch_tech",
-  "block_throw",
+  "block_late_tech",
   "shita_mae",
-  "mae_shita"
+  "mae_shita",
+  "parry_dash"
 }
 
 
@@ -161,20 +162,20 @@ local mash_stun_mode =
 {
   "menu_off",
   "menu_fastest",
-  "menu_realistic",
+  "menu_realistic"
 }
 local tech_throws_mode =
 {
-  "menu_on",
   "menu_off",
-  "menu_random",
+  "menu_on",
+  "menu_random"
 }
 
 local hit_type =
 {
   "normal",
   "low",
-  "overhead",
+  "overhead"
 }
 
 local life_mode =
@@ -240,8 +241,8 @@ local slot_replay_mode = {
 
 local distance_display_reference_point =
 {
-  "origin",
-  "hurtbox"
+  "distance_origin",
+  "distance_hurtbox"
 }
 
 return {
