@@ -4652,7 +4652,7 @@ function record_attacks(player_obj, projectiles)
       end
     end
 
-    if dummy.stunned and dummy.stun_timer >= 0 then
+    if dummy.is_stunned and dummy.stun_timer >= 0 then
       memory.writebyte(dummy.stun_timer_addr, 0)
     end
 

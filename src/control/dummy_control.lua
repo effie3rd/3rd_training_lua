@@ -373,57 +373,108 @@ end
 
 
 
-local stun_mash_start_frame = 1
-local mash_inputs_realistic =
+local mash_start_frame = 1
+local mash_directions_normal =
 {
-  {{"down","forward"}},
-  {{"down"}},
-  {{"down","back"}},
-  {{"back"}},
-  {{"up","back"}},
-  {{"up"}},
-  {{"up","forward"}},
-  {{"forward"}}
+  {"down","forward"},
+  {"down"},
+  {"down","back"},
+  {"back"},
+  {"up","back"},
+  {"up"},
+  {"up","forward"},
+  {"forward"}
 }
-local mash_inputs_fastest =
+local mash_directions_serious =
 {
-  {{"down","forward"}},
-  {{"down","back"}}
+  {"down","forward"},
+  {"down"},
+  {"up","back"},
+  {"up"}
 }
-local mash_inputs = mash_inputs_fastest
-local all_buttons = {"LP","LK","MP","MK","HP","HK"}
+local mash_directions_fastest =
+{
+  {"down","forward"},
+  {"down","back"}
+}
+local mash_directions = mash_directions_fastest
+local all_buttons = {"LP","MP","HP","LK","MK","HK"}
+local p_buttons = {"LP","MP","HP"}
+local k_buttons = {"LK","MK","HK"}
 
-function update_mash_stun(input, player, dummy, mode)
-  if gamestate.is_in_match and mode ~= 1 and current_recording_state ~= 4 then
-    if dummy.stun_just_began then
-      stun_mash_start_frame = gamestate.frame_number
+local i_mash_directions = 1
+local i_mash_buttons = 1
+
+local function wrap_around(i, tbl)
+  if i > #tbl then
+    i = 1
+  end
+  return i
+end
+
+function update_mash_inputs(input, player, dummy, mode)
+  if not gamestate.is_in_match or mode == 1 or current_recording_state == 4 then
+    return
+  end
+  if dummy.stun_just_began or dummy.has_just_been_thrown then
+    mash_start_frame = gamestate.frame_number
+    i_mash_directions = 1
+    i_mash_buttons = 1
+    if mode == 2 then
+      mash_directions = mash_directions_normal
+    elseif mode == 3 then
+      mash_directions = mash_directions_serious
+    elseif mode == 4 then
+      mash_directions = mash_directions_fastest
+    end
+  end
+  if dummy.is_stunned
+  or (dummy.is_being_thrown and dummy.other.throw_countdown <= 1)
+  then
+    --try to prevent move from coming out
+    --diagonal input reduces stun by 3
+    --pressing all buttons reduces stun by 4 more
+    if dummy.stun_timer <= 15 and dummy.stun_timer > 0 and not dummy.is_being_thrown then
+      mash_directions = mash_directions_fastest
+      i_mash_directions = wrap_around(i_mash_directions, mash_directions)
+    end
+    local elapsed = gamestate.frame_number - mash_start_frame
+    local sequence = {}
+    if dummy.stun_timer >= 8 or dummy.is_being_thrown then
+      --normal
       if mode == 2 then
-        mash_inputs = mash_inputs_fastest
+        table.insert(sequence, deepcopy(mash_directions[i_mash_directions]))
+        table.insert(sequence[1], p_buttons[i_mash_buttons])
+        table.insert(sequence[1], k_buttons[#k_buttons - i_mash_buttons + 1])
+        if elapsed % 4 == 0 then
+          i_mash_directions = wrap_around(i_mash_directions + 1, mash_directions)
+        end
+        if elapsed % 6 == 0 then
+          i_mash_buttons = wrap_around(i_mash_buttons + 1, p_buttons)
+        end
+      --serious
       elseif mode == 3 then
-        mash_inputs = mash_inputs_realistic
+        table.insert(sequence, deepcopy(mash_directions[i_mash_directions]))
+        table.insert(sequence[1], p_buttons[i_mash_buttons])
+        table.insert(sequence[1], k_buttons[#k_buttons - i_mash_buttons + 1])
+        if elapsed % 5 == 0 then
+          i_mash_directions = wrap_around(i_mash_directions + 1, mash_directions)
+        end
+        if elapsed % 2 == 0 then
+          i_mash_buttons = wrap_around(i_mash_buttons + 1, p_buttons)
+        end
+      --fastest
+      elseif mode == 4 then
+        table.insert(sequence, deepcopy(mash_directions[i_mash_directions]))
+        if elapsed % 3 == 0 then
+          for _,button in pairs(all_buttons) do
+            table.insert(sequence[1], button)
+          end
+        end
+        i_mash_directions = wrap_around(i_mash_directions + 1, mash_directions)
       end
     end
-    if dummy.stunned then
-      --try to prevent move from coming out
-      --diagonal input reduces stun by 3
-      --pressing all buttons reduces stun by 4 more
-      if dummy.stun_timer <= 15 and dummy.stun_timer > 0 then
-        mash_inputs = mash_inputs_fastest
-      end
-      local elapsed = gamestate.frame_number - stun_mash_start_frame
-      local sequence = deepcopy(mash_inputs[elapsed % #mash_inputs + 1])
-      if dummy.stun_timer >= 8 then
-        if mode == 2 then
-          if elapsed % 2 == 0 then
-            for _,button in pairs(all_buttons) do
-              table.insert(sequence[1], button)
-            end
-          end
-        elseif mode == 3 then
-          table.insert(sequence[1], all_buttons[elapsed % 3 + 1])
-          table.insert(sequence[1], all_buttons[6 - elapsed % 3])
-        end
-      end
+    if #sequence > 0 then
       queue_input_sequence(dummy, sequence)
     end
   end
@@ -486,6 +537,26 @@ local function is_guard_jump(str)
   end
   return false
 end
+
+--needed by input also
+counter_attack_motion =
+{
+  "dir_5",
+  "dir_6",
+  "dir_3",
+  "dir_2",
+  "dir_1",
+  "dir_4",
+  "dir_7",
+  "dir_8",
+  "dir_9",
+  "hjump_back",
+  "hjump_neutral",
+  "hjump_forward",
+  "back_dash",
+  "forward_dash",
+  "kara_throw"
+}
 
 local wakeup_queued = false
 function update_counter_attack(input, attacker, defender, counter_attack_settings, hits_before)
@@ -652,7 +723,7 @@ function update_counter_attack(input, attacker, defender, counter_attack_setting
         defender.counter.attack_frame = gamestate.frame_number
       end
     end
-    if defender.stunned then
+    if defender.is_stunned then
       local seq_stun_reduction = get_stun_reduction_value(defender.counter.sequence)
       if seq_stun_reduction <= defender.stun_timer then
 

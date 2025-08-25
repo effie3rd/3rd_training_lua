@@ -504,7 +504,7 @@ local function predict_projectile_movement(projectile, mdata, line, index, ignor
   mdata[index].pos_y = mdata[index].pos_y + mdata[index - 1].velocity_y
 end
 
-local function filter_lines(player_obj, lines)
+local function filter_lines(player, lines)
   local filtered = {}
   for _, line in pairs(lines) do
     local pass = false
@@ -512,7 +512,7 @@ local function filter_lines(player_obj, lines)
       local predicted_frame = line[i]
       local frame = predicted_frame.frame
       local frame_to_check = frame + 1
-      local fdata = find_move_frame_data(player_obj.char_str, predicted_frame.animation)
+      local fdata = find_move_frame_data(player.char_str, predicted_frame.animation)
 
       if fdata then
         if fdata.frames[frame_to_check].projectile then
@@ -527,7 +527,7 @@ local function filter_lines(player_obj, lines)
               next_hit_id = i + 1
             end
           end
-          if next_hit_id > player_obj.current_hit_id then
+          if next_hit_id > player.current_hit_id then
             pass = true
             break
           end

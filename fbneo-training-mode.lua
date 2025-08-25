@@ -94,6 +94,8 @@ local function on_load_state()
 
   recording.restore_recordings()
 
+  training.reset_gauge_state()
+
   -- reset recording states in a useful way
   if current_recording_state == 3 then
     set_recording_state({}, 2)
@@ -186,7 +188,7 @@ local function before_frame()
   if not loading.text_images_loaded or not loading.frame_data_loaded then
     local number_loaded = loading.load_all()
     loading_bar_loaded = loading_bar_loaded + number_loaded
-  elseif loading.text_images_loaded and not menu.initialized then
+  elseif loading.text_images_loaded and not menu.is_initialized then
     menu.init_menu()
   end
 
@@ -203,7 +205,7 @@ local function before_frame()
     debug.run_debug()
   end
 
-  if menu.initialized then
+  if menu.is_initialized then
     menu.update_menu()
     -- load recordings according to gamestate.P2 character
     if previous_p2_char_str ~= gamestate.P2.char_str then
@@ -223,7 +225,7 @@ local function before_frame()
     end
   end
 
-  training.freeze_game = menu.is_open
+  training.should_freeze_game = menu.is_open
   training.update_training_state()
 
   -- input
@@ -245,13 +247,6 @@ local function before_frame()
     end
   end
 
-   if not training.swap_characters then
-    training.player = gamestate.P1
-    training.dummy = gamestate.P2
-  else
-    training.player = gamestate.P2
-    training.dummy = gamestate.P1
-  end
 
   --challenge
 --[[   if is_in_challenge then
@@ -279,7 +274,7 @@ local function before_frame()
     update_pose(input, training.player, training.dummy, settings.training.pose)
 
     -- mash stun
-    update_mash_stun(input, training.player, training.dummy, settings.training.mash_stun_mode)
+    update_mash_inputs(input, training.player, training.dummy, settings.training.mash_inputs_mode)
 
     -- fast wake-up
     update_fast_wake_up(input, training.player, training.dummy, settings.training.fast_wakeup_mode)

@@ -91,25 +91,6 @@ local counter_attack_type =
   "recording"
 }
 
-local counter_attack_motion =
-{
-  "dir_5",
-  "dir_6",
-  "dir_3",
-  "dir_2",
-  "dir_1",
-  "dir_4",
-  "dir_7",
-  "dir_8",
-  "dir_9",
-  "hjump_back",
-  "hjump_neutral",
-  "hjump_forward",
-  "back_dash",
-  "forward_dash",
-  "kara_throw"
-}
-
 local counter_attack_motion_input =
 {
   {{"neutral"}},
@@ -158,11 +139,12 @@ local counter_attack_option_select =
 }
 
 
-local mash_stun_mode =
+local mash_inputs_mode =
 {
   "menu_off",
-  "menu_fastest",
-  "menu_realistic"
+  "mash_normal",
+  "mash_serious",
+  "mash_fastest"
 }
 local tech_throws_mode =
 {
@@ -180,30 +162,36 @@ local hit_type =
 
 local life_mode =
 {
-  "no_refill",
-  "refill",
-  "infinite"
-}
-
-local meter_mode =
-{
-  "no_refill",
-  "refill",
-  "infinite"
+  "menu_off",
+  "gauge_reset_value",
+  "gauge_reset_zero",
+  "gauge_reset_max",
+  "gauge_infinite"
 }
 
 local stun_mode =
 {
-  "normal",
-  "no_stun",
-  "delayed_reset"
+  "menu_off",
+  "gauge_reset_value",
+  "gauge_reset_zero",
+  "gauge_reset_max",
+  "gauge_always_zero",
+  "gauge_always_max"
 }
+
+local meter_mode =
+{
+  "menu_off",
+  "gauge_reset_value",
+  "gauge_reset_zero",
+  "gauge_reset_max",
+  "gauge_infinite"
+}
+
 
 local player_options = {"off","P1","P2","P1+P2"}
 
 local display_input_history_mode = {"off","P1","P2","P1+P2","moving"}
-
-local gauge_refill_mode = {"off", "refill_max", "reset_value", "infinite" }
 
 local display_attack_bars_mode =
 {
@@ -254,11 +242,10 @@ return {
   blocking_style = blocking_style,
   blocking_mode = blocking_mode,
   counter_attack_type = counter_attack_type,
-  counter_attack_motion = counter_attack_motion,
   counter_attack_motion_input = counter_attack_motion_input,
   counter_attack_button_default = counter_attack_button_default,
   counter_attack_option_select = counter_attack_option_select,
-  mash_stun_mode = mash_stun_mode,
+  mash_inputs_mode = mash_inputs_mode,
   tech_throws_mode = tech_throws_mode,
   hit_type = hit_type,
   life_mode = life_mode,
@@ -266,7 +253,6 @@ return {
   stun_mode = stun_mode,
   player_options = player_options,
   display_input_history_mode = display_input_history_mode,
-  gauge_refill_mode = gauge_refill_mode,
   display_attack_bars_mode = display_attack_bars_mode,
   language = language,
   special_training_mode = special_training_mode,

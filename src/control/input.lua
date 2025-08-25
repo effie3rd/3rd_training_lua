@@ -6,14 +6,14 @@ local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_sl
 
 local previous_input = nil
 
-function queue_input_sequence(player_obj, sequence, offset, allow_blocking)
+function queue_input_sequence(player, sequence, offset, allow_blocking)
   offset = offset or 0
 
   if sequence == nil or #sequence == 0 then
     return
   end
 
-  if player_obj.pending_input_sequence ~= nil then
+  if player.pending_input_sequence ~= nil then
     return
   end
 
@@ -22,35 +22,35 @@ function queue_input_sequence(player_obj, sequence, offset, allow_blocking)
   seq.current_frame = 1 - offset
   seq.allow_blocking = false or allow_blocking
 
-  player_obj.pending_input_sequence = seq
+  player.pending_input_sequence = seq
 
 end
 
-function process_pending_input_sequence(player_obj, input)
-  if player_obj.pending_input_sequence == nil then
+function process_pending_input_sequence(player, input)
+  if player.pending_input_sequence == nil then
     return
   end
 
   -- Cancel all input
-  if player_obj.pending_input_sequence.allow_blocking then
-    if player_obj.flip_input then
-      input[player_obj.prefix.." Right"] = false
+  if player.pending_input_sequence.allow_blocking then
+    if player.flip_input then
+      input[player.prefix.." Right"] = false
     else
-      input[player_obj.prefix.." Left"] = false
+      input[player.prefix.." Left"] = false
     end
   else
-    input[player_obj.prefix.." Left"] = false
-    input[player_obj.prefix.." Right"] = false
-    input[player_obj.prefix.." Down"] = false
+    input[player.prefix.." Left"] = false
+    input[player.prefix.." Right"] = false
+    input[player.prefix.." Down"] = false
   end
-  input[player_obj.prefix.." Up"] = false
+  input[player.prefix.." Up"] = false
 
-  input[player_obj.prefix.." Weak Punch"] = false
-  input[player_obj.prefix.." Medium Punch"] = false
-  input[player_obj.prefix.." Strong Punch"] = false
-  input[player_obj.prefix.." Weak Kick"] = false
-  input[player_obj.prefix.." Medium Kick"] = false
-  input[player_obj.prefix.." Strong Kick"] = false
+  input[player.prefix.." Weak Punch"] = false
+  input[player.prefix.." Medium Punch"] = false
+  input[player.prefix.." Strong Punch"] = false
+  input[player.prefix.." Weak Kick"] = false
+  input[player.prefix.." Medium Kick"] = false
+  input[player.prefix.." Strong Kick"] = false
 
   -- Charge moves memory locations
   -- P1
@@ -67,22 +67,22 @@ function process_pending_input_sequence(player_obj, input)
   -- 0x0202604C
   -- 0x02026068
   local gauges_base = 0
-  if player_obj.id == 1 then
+  if player.id == 1 then
     gauges_base = 0x020259D8
-  elseif player_obj.id == 2 then
+  elseif player.id == 2 then
     gauges_base = 0x02025FF8
   end
   local gauges_offsets = { 0x0, 0x1C, 0x38, 0x54, 0x70 }
 
-  if player_obj.pending_input_sequence.current_frame >= 1 then
+  if player.pending_input_sequence.current_frame >= 1 then
 --     local s = ""
-    local current_frame_input = player_obj.pending_input_sequence.sequence[player_obj.pending_input_sequence.current_frame]
+    local current_frame_input = player.pending_input_sequence.sequence[player.pending_input_sequence.current_frame]
     for i = 1, #current_frame_input do
-      local input_name = player_obj.prefix.." "
+      local input_name = player.prefix.." "
       if current_frame_input[i] == "forward" then
-        if player_obj.flip_input then input_name = input_name.."Right" else input_name = input_name.."Left" end
+        if player.flip_input then input_name = input_name.."Right" else input_name = input_name.."Left" end
       elseif current_frame_input[i] == "back" then
-        if player_obj.flip_input then input_name = input_name.."Left" else input_name = input_name.."Right" end
+        if player.flip_input then input_name = input_name.."Left" else input_name = input_name.."Right" end
       elseif current_frame_input[i] == "up" then
         input_name = input_name.."Up"
       elseif current_frame_input[i] == "down" then
@@ -100,59 +100,59 @@ function process_pending_input_sequence(player_obj, input)
       elseif current_frame_input[i] == "HK" then
         input_name = input_name.."Strong Kick"
       elseif current_frame_input[i] == "h_charge" then
-        if player_obj.char_str == "urien" then
+        if player.char_str == "urien" then
           memory.writeword(gauges_base + gauges_offsets[1], 0xFF00)
-        elseif player_obj.char_str == "oro" then
+        elseif player.char_str == "oro" then
           memory.writeword(gauges_base + gauges_offsets[3], 0xFF00)
-        elseif player_obj.char_str == "chunli" then
-        elseif player_obj.char_str == "q" then
+        elseif player.char_str == "chunli" then
+        elseif player.char_str == "q" then
           memory.writeword(gauges_base + gauges_offsets[1], 0xFF00)
           memory.writeword(gauges_base + gauges_offsets[2], 0xFF00)
-        elseif player_obj.char_str == "remy" then
+        elseif player.char_str == "remy" then
           memory.writeword(gauges_base + gauges_offsets[2], 0xFF00)
           memory.writeword(gauges_base + gauges_offsets[3], 0xFF00)
-        elseif player_obj.char_str == "alex" then
+        elseif player.char_str == "alex" then
           memory.writeword(gauges_base + gauges_offsets[5], 0xFF00)
         end
       elseif current_frame_input[i] == "v_charge" then
-        if player_obj.char_str == "urien" then
+        if player.char_str == "urien" then
           memory.writeword(gauges_base + gauges_offsets[2], 0xFF00)
           memory.writeword(gauges_base + gauges_offsets[4], 0xFF00)
-        elseif player_obj.char_str == "oro" then
+        elseif player.char_str == "oro" then
           memory.writeword(gauges_base + gauges_offsets[1], 0xFF00)
-        elseif player_obj.char_str == "chunli" then
+        elseif player.char_str == "chunli" then
           memory.writeword(gauges_base + gauges_offsets[1], 0xFF00)
-        elseif player_obj.char_str == "q" then
-        elseif player_obj.char_str == "remy" then
+        elseif player.char_str == "q" then
+        elseif player.char_str == "remy" then
           memory.writeword(gauges_base + gauges_offsets[1], 0xFF00)
-        elseif player_obj.char_str == "alex" then
+        elseif player.char_str == "alex" then
           memory.writeword(gauges_base + gauges_offsets[4], 0xFF00)
         end
       elseif current_frame_input[i] == "legs_LK" then
-        player_obj.legs_state.l_legs_count = memory.writebyte(addresses.players[player_obj.id].kyaku_l_count, 0x4)
-        player_obj.legs_state.reset_time = memory.writebyte(addresses.players[player_obj.id].kyaku_reset_time, 0x63)
+        player.legs_state.l_legs_count = memory.writebyte(addresses.players[player.id].kyaku_l_count, 0x4)
+        player.legs_state.reset_time = memory.writebyte(addresses.players[player.id].kyaku_reset_time, 0x63)
       elseif current_frame_input[i] == "legs_MK" then
-        player_obj.legs_state.m_legs_count = memory.writebyte(addresses.players[player_obj.id].kyaku_m_count, 0x4)
-        player_obj.legs_state.reset_time = memory.writebyte(addresses.players[player_obj.id].kyaku_reset_time, 0x63)
+        player.legs_state.m_legs_count = memory.writebyte(addresses.players[player.id].kyaku_m_count, 0x4)
+        player.legs_state.reset_time = memory.writebyte(addresses.players[player.id].kyaku_reset_time, 0x63)
       elseif current_frame_input[i] == "legs_HK" then
-        player_obj.legs_state.h_legs_count = memory.writebyte(addresses.players[player_obj.id].kyaku_h_count, 0x4)
-        player_obj.legs_state.reset_time = memory.writebyte(addresses.players[player_obj.id].kyaku_reset_time, 0x63)
+        player.legs_state.h_legs_count = memory.writebyte(addresses.players[player.id].kyaku_h_count, 0x4)
+        player.legs_state.reset_time = memory.writebyte(addresses.players[player.id].kyaku_reset_time, 0x63)
       elseif current_frame_input[i] == "legs_EXK" then
-        player_obj.legs_state.l_legs_count = memory.writebyte(addresses.players[player_obj.id].kyaku_l_count, 0x4)
-        player_obj.legs_state.m_legs_count = memory.writebyte(addresses.players[player_obj.id].kyaku_m_count, 0x4)
-        player_obj.legs_state.reset_time = memory.writebyte(addresses.players[player_obj.id].kyaku_reset_time, 0x63)
+        player.legs_state.l_legs_count = memory.writebyte(addresses.players[player.id].kyaku_l_count, 0x4)
+        player.legs_state.m_legs_count = memory.writebyte(addresses.players[player.id].kyaku_m_count, 0x4)
+        player.legs_state.reset_time = memory.writebyte(addresses.players[player.id].kyaku_reset_time, 0x63)
       elseif current_frame_input[i] == "360" then
-        memory.writebyte(player_obj.kaiten_1_addr, 15)
-        memory.writebyte(player_obj.kaiten_2_addr, 15)
-        memory.writebyte(player_obj.kaiten_1_reset_addr, 31)
-        memory.writebyte(player_obj.kaiten_2_reset_addr, 31)
-        -- if player_obj.char_str == "hugo" then
-        --   memory.writebyte(player_obj.kaiten_completed_360_addr, 56)
+        memory.writebyte(player.kaiten_1_addr, 15)
+        memory.writebyte(player.kaiten_2_addr, 15)
+        memory.writebyte(player.kaiten_1_reset_addr, 31)
+        memory.writebyte(player.kaiten_2_reset_addr, 31)
+        -- if player.char_str == "hugo" then
+        --   memory.writebyte(player.kaiten_completed_360_addr, 56)
         -- end
       elseif current_frame_input[i] == "720" then
-        memory.writebyte(player_obj.kaiten_1_addr, 15)
-        memory.writebyte(player_obj.kaiten_1_reset_addr, 31)
-        -- memory.writebyte(player_obj.kaiten_completed_360_addr, 48)
+        memory.writebyte(player.kaiten_1_addr, 15)
+        memory.writebyte(player.kaiten_1_reset_addr, 31)
+        -- memory.writebyte(player.kaiten_completed_360_addr, 48)
       end
       input[input_name] = true
 --       s = s..input_name
@@ -160,18 +160,18 @@ function process_pending_input_sequence(player_obj, input)
   end
   --print(s)
 
-  player_obj.pending_input_sequence.current_frame = player_obj.pending_input_sequence.current_frame + 1
-  if player_obj.pending_input_sequence.current_frame > #player_obj.pending_input_sequence.sequence then
-    player_obj.pending_input_sequence = nil
+  player.pending_input_sequence.current_frame = player.pending_input_sequence.current_frame + 1
+  if player.pending_input_sequence.current_frame > #player.pending_input_sequence.sequence then
+    player.pending_input_sequence = nil
   end
 end
 
-function clear_input_sequence(player_obj)
-  player_obj.pending_input_sequence = nil
+function clear_input_sequence(player)
+  player.pending_input_sequence = nil
 end
 
-function is_playing_input_sequence(player_obj)
-  return player_obj.pending_input_sequence ~= nil and player_obj.pending_input_sequence.current_frame >= 1
+function is_playing_input_sequence(player)
+  return player.pending_input_sequence ~= nil and player.pending_input_sequence.current_frame >= 1
 end
 
 function make_input_empty(input)
@@ -469,12 +469,12 @@ function queue_input_from_json(player, file)
   queue_input_sequence(player, recording_slots[1].inputs)
 end
 
-function is_previous_input_neutral(player_obj)
+function is_previous_input_neutral(player)
   if previous_input then
-    if previous_input[player_obj.prefix.." Up"] == false
-    and previous_input[player_obj.prefix.." Down"] == false
-    and previous_input[player_obj.prefix.." Left"] == false
-    and previous_input[player_obj.prefix.." Right"] == false then
+    if previous_input[player.prefix.." Up"] == false
+    and previous_input[player.prefix.." Down"] == false
+    and previous_input[player.prefix.." Left"] == false
+    and previous_input[player.prefix.." Right"] == false then
       return true
     end
   end

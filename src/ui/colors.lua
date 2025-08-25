@@ -14,6 +14,13 @@ local gui_text = {
   default_border = 0x000000FF
 }
 
+local menu = {
+  background = 0x1F1F1FF0,
+  outline = 0xBBBBBBF0,
+  gauge_background = 0xFFFFFF22,
+  gauge_border = 0x000000FF
+}
+
 local gauges = {
   outline = 0x000000FF,
   background = 0x00000044,
@@ -105,6 +112,7 @@ end
 return{
   text = text,
   gui_text = gui_text,
+  menu = menu,
   gauges = gauges,
   parry = parry,
   charge = charge,

@@ -596,7 +596,7 @@ local function attack_range_display()
                 offset_x = offset_x + fdata.frames[j].movement[1]
                 offset_y = offset_y + fdata.frames[j].movement[2]
               else -- velocity based movement
-        --         next_attacker_pos = predict_object_position(player_obj, frame_delta)
+        --         next_attacker_pos = predict_object_position(, frame_delta)
               end
 
             if fdata.frames[j].boxes then
@@ -925,13 +925,13 @@ local function hitboxes_display()
   local p2_filter = nil
   -- draw.draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, fff, nil, nil, 0x90)
 
-  draw.draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, nil, nil, nil, 0x90)
+  draw.draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, nil, nil, nil, settings.training.display_hitboxes_opacity)
   draw.draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, p1_filter, nil, nil)
-  draw.draw_hitboxes(gamestate.P2.pos_x, gamestate.P2.pos_y, gamestate.P2.flip_x, gamestate.P2.boxes, p2_filter, nil, nil, 0x90)
+  draw.draw_hitboxes(gamestate.P2.pos_x, gamestate.P2.pos_y, gamestate.P2.flip_x, gamestate.P2.boxes, p2_filter, nil, nil, settings.training.display_hitboxes_opacity)
 
   -- projectiles
   for _, obj in pairs(gamestate.projectiles) do
-    draw.draw_hitboxes(obj.pos_x, obj.pos_y, obj.flip_x, obj.boxes)
+    draw.draw_hitboxes(obj.pos_x, obj.pos_y, obj.flip_x, obj.boxes, nil, nil, nil, settings.training.display_hitboxes_opacity)
   end
 end
 
@@ -1092,12 +1092,12 @@ local function stun_text_display(player_object)
   local x = 0
   local y = 28
 
-  local t = string.format("%d/%d", math.floor(player_object.stun_bar), player_object.stun_max)
+  local t = string.format("%d/%d", math.floor(player_object.stun_bar), player_object.stun_bar_max)
 
   if player_object.id == 1 then
-    x = 167 - player_object.stun_max + 3
+    x = 167 - player_object.stun_bar_max + 3
   elseif player_object.id == 2 then
-    x = 216 + player_object.stun_max - draw.get_text_width(t) - 1
+    x = 216 + player_object.stun_bar_max - draw.get_text_width(t) - 1
   end
 
   gui.text(x, y, t, 0xe60000FF, 0x001433FF)
@@ -1105,10 +1105,10 @@ end
 
 local function display_draw_distances(p1_object, p2_object, mid_distance_height, p1_reference_point, p2_reference_point)
 
-  local function find_closest_box_at_height(player_obj, height, box_types)
+  local function find_closest_box_at_height(player, height, box_types)
 
-    local px = player_obj.pos_x
-    local py = player_obj.pos_y
+    local px = player.pos_x
+    local py = player.pos_y
 
     local left, right = px, px
 
@@ -1117,11 +1117,11 @@ local function display_draw_distances(p1_object, p2_object, mid_distance_height,
     end
 
     local has_boxes = false
-    for __, box in ipairs(player_obj.boxes) do
+    for __, box in ipairs(player.boxes) do
       box = format_box(box)
       if box_types[box.type] then
         local l, r
-        if player_obj.flip_x == 0 then
+        if player.flip_x == 0 then
           l = px + box.left
         else
           l = px - box.left - box.width

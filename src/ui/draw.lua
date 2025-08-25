@@ -48,7 +48,10 @@ end
 local function draw_hitboxes(pos_x, pos_y, flip_x, boxes, filter, dilation, color, opacity)
   dilation = dilation or 0
   local px, py = game_to_screen_space(pos_x, pos_y)
-
+  local opacity_byte = 0xFF
+  if opacity and opacity < 100 then
+    opacity_byte = float_to_byte(opacity / 100)
+  end
   for __, box in pairs(boxes) do
     box = format_box(box)
     if filter == nil or filter[box.type] == true then
@@ -69,7 +72,7 @@ local function draw_hitboxes(pos_x, pos_y, flip_x, boxes, filter, dilation, colo
       c = color or c
 
       if opacity then
-        c = bit.band(c, 0xFFFFFF00) + opacity
+        c = bit.band(c, 0xFFFFFF00) + opacity_byte
       end
 
       local l, r

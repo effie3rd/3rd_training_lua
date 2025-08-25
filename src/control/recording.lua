@@ -211,7 +211,7 @@ function set_recording_state(input, state)
   end
 end
 
-local function stick_input_to_sequence_input(player_obj, input)
+local function stick_input_to_sequence_input(player, input)
   if input == "Up" then return "up" end
   if input == "Down" then return "down" end
   if input == "Weak Punch" then return "LP" end
@@ -222,7 +222,7 @@ local function stick_input_to_sequence_input(player_obj, input)
   if input == "Strong Kick" then return "HK" end
 
   if input == "Left" then
-    if player_obj.flip_input then
+    if player.flip_input then
       return "back"
     else
       return "forward"
@@ -230,7 +230,7 @@ local function stick_input_to_sequence_input(player_obj, input)
   end
 
   if input == "Right" then
-    if player_obj.flip_input then
+    if player.flip_input then
       return "forward"
     else
       return "back"

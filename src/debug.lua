@@ -8,6 +8,7 @@ local images = require("src.ui.image_tables")
 local menu = require("src.ui.menu")
 local settings = require("src/settings")
 local record_framedata = require("src.modules.record_framedata")
+local debug_settings = require("src.debug_settings")
 
 local frame_data = fd.frame_data
 local frame_data_meta = fdm.frame_data_meta
@@ -30,7 +31,7 @@ local function dump_variables()
         string.format("Posture: %d State: %d", player.posture, player.character_state_byte),
         string.format("Is Attacking: %d Ext: %d", player.is_attacking_byte, player.is_attacking_ext_byte),
         string.format("Is Blocking: %s Busy: %d", tostring(player.is_blocking), player.busy_flag),
-        string.format("Is in Action: %s Idle: %s", tostring(player.is_in_basic_action), tostring(player.is_idle)),
+        string.format("In Basic Action: %s Idle: %s", tostring(player.is_in_basic_action), tostring(player.is_idle)),
         string.format("Next Hit Dmg: %d Stun: %d", player.damage_of_next_hit, player.stun_of_next_hit),
         string.format("Throwing: %s Being Thrown: %s CD: %d", tostring(player.is_throwing), tostring(player.is_being_thrown), player.throw_countdown),
         string.format("Anim: %s Frame %d", tostring(player.animation), player.animation_frame),
@@ -38,7 +39,7 @@ local function dump_variables()
         string.format("Anim Hash: %s", player.animation_frame_hash),
         string.format("Recv Hit #: %d Recv Conn #: %d", player.total_received_hit_count, player.received_connection_marker),
         string.format("Hit #: %d Conn Hit #: %d", player.hit_count, player.connected_action_count),
-        string.format("Stand State: %d Stunned: %s Ended: %s", player.standing_state, tostring(player.stunned), tostring(player.stun_just_ended)),
+        string.format("Stand State: %d Stunned: %s Ended: %s", player.standing_state, tostring(player.is_stunned), tostring(player.stun_just_ended)),
         string.format("Air Recovery: %s Is Flying Down: %s", tostring(player.is_in_air_recovery), tostring(player.is_flying_down_flag))}
     end
   end
@@ -358,7 +359,7 @@ local function memory_display()
   end
 end
 
-local memory_view_start = 0x0202600f
+local memory_view_start = gamestate.P1.stun_bar_max_addr
 local function memory_view_display()
   for i = 1, 20 do
     local addr = memory_view_start + 4 * (i - 1)
@@ -412,15 +413,19 @@ local function filter_memory_decreased()
 end
 
 local function run_debug()
-  dump_variables()
-  debug_update_framedata(gamestate.P1, gamestate.projectiles)
+  if debug_settings.dump_state_display then
+    dump_variables()
+  end
+  if debug_settings.debug_frames_display then
+    debug_update_framedata(gamestate.P1, gamestate.projectiles)
+  end
 
   if gamestate.frame_number % 2000 == 0 then
     collectgarbage()
     print("GC memory:", collectgarbage("count"))
   end
 
---[[   if parry_down then
+  --[[   if parry_down then
           memory.writebyte(gamestate.P2.parry_down_validity_time_addr, 2)
   end ]]
   local keys = input.get()
@@ -489,8 +494,12 @@ local function draw_debug()
   if not menu.is_open then
     -- memory_display()
     -- memory_view_display()
-    -- debug_framedata_display()
-    dump_state_display()
+    if debug_settings.dump_state_display then
+      dump_state_display()
+    end
+    if debug_settings.debug_frames_display then
+      debug_framedata_display()
+    end
   end
 
   if gamestate.projectiles then
@@ -523,7 +532,9 @@ local function draw_debug()
     end ]]
 end
 
+
 local function debug_things()
+  print(settings.training.counter_attack_delay)
   print(settings.training.display_parry)
   print(settings.training.display_charge)
 end

@@ -14,10 +14,10 @@ local function update(attacker, defender)
     local stun_decrease_offset = 0
     local stun_decrease_timer = memory.readbyte(defender.stun_bar_decrease_timer_addr)
     if stun_decrease_timer > 0 then
-      stun_decrease_offset = (memory.readbyte(defender.stun_bar_decrease_amount_addr) + 1) / 256
+      stun_decrease_offset = (memory.readbyte(defender.stun_bar_decrease_mantissa_addr) + 1) / 256
     end
-    if player.stunned then
-      data.total_stun = player.stun_max - data.start_stun
+    if player.is_stunned then
+      data.total_stun = player.stun_bar_max - data.start_stun
     elseif player.stun_just_ended then
       data.start_stun = 0
       data.total_stun = player.stun_bar - data.start_stun + stun_decrease_offset
@@ -32,7 +32,7 @@ local function update(attacker, defender)
       data.total_stun = 0
       data.start_life = player.previous_life
       data.start_stun = player.stun_bar
-      data.stun_max = player.stun_max
+      data.stun_bar_max = player.stun_bar_max
       data.id = gamestate.frame_number
       data.finished = false
     end
@@ -42,7 +42,7 @@ local function update(attacker, defender)
     data.start_stun = 0
   end
 
-  if not defender.stunned then
+  if not defender.is_stunned then
     if defender.posture == 38
     or defender.just_recovered
     or defender.is_in_air_recovery
@@ -67,10 +67,10 @@ local function update(attacker, defender)
       local stun_decrease_offset = 0
       local stun_decrease_timer = memory.readbyte(defender.stun_bar_decrease_timer_addr)
       if stun_decrease_timer > 0 then
-        stun_decrease_offset = (memory.readbyte(defender.stun_bar_decrease_amount_addr) + 1) / 256
+        stun_decrease_offset = (memory.readbyte(defender.stun_bar_decrease_mantissa_addr) + 1) / 256
       end
       data.start_stun = defender.stun_bar + stun_decrease_offset
-      data.stun_max = defender.stun_max
+      data.stun_bar_max = defender.stun_bar_max
       data.id = gamestate.frame_number
       data.finished = false
     end
@@ -112,7 +112,7 @@ local function reset()
     combo = 0,
     total_damage = 0,
     total_stun = 0,
-    stun_max = 64,
+    stun_bar_max = 64,
     max_combo = 0,
     start_life = 160,
     start_stun = 0,

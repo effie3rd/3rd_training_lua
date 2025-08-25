@@ -276,26 +276,7 @@ end
 
 function float_to_byte(n)
   local mantissa = n - math.floor(n)
-
-  local error = 0x01 / 256
-  if mantissa >= error then
-    local min = 0x0
-    local max = 0xFF
-    local guess = bit.rshift(min + max, 1)
-    repeat
-      if math.abs(guess / 256 - mantissa) < error then
-        return guess
-      elseif guess / 256 < mantissa then
-        min = guess
-        guess = bit.rshift(guess + max, 1)
-      elseif guess / 256 > mantissa then
-        max = guess
-        guess = bit.rshift(guess + min, 1)
-      end
-    until guess == min or guess == max
-    return guess
-  end
-  return 0
+  return math.floor(mantissa * 256)
 end
 
 convert_box_types = {"push", "throwable", "vulnerability", "ext. vulnerability", "attack", "throw"}

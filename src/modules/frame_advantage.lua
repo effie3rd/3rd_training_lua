@@ -17,16 +17,16 @@ end
 
 function frame_advantage_update(attacker, defender)
 
-  function has_just_attacked(player_obj)
-    return player_obj.has_just_attacked or player_obj.has_just_thrown or (player_obj.recovery_time == 0 and player_obj.freeze_frames == 0 and player_obj.input_capacity == 0 and player_obj.previous_input_capacity ~= 0) or (player_obj.movement_type == 4 and player_obj.last_movement_type_change_frame == 0)
+  function has_just_attacked(player)
+    return player.has_just_attacked or player.has_just_thrown or (player.recovery_time == 0 and player.freeze_frames == 0 and player.input_capacity == 0 and player.previous_input_capacity ~= 0) or (player.movement_type == 4 and player.last_movement_type_change_frame == 0)
   end
 
-  function has_ended_attack(player_obj)
-    return (player_obj.busy_flag == 0 or player_obj.is_in_jump_startup or player_obj.is_idle)
+  function has_ended_attack(player)
+    return (player.busy_flag == 0 or player.is_in_jump_startup or player.is_idle)
   end
 
-  function has_ended_recovery(player_obj)
-    return (player_obj.is_idle or has_just_attacked(player_obj) or player_obj.is_in_jump_startup)
+  function has_ended_recovery(player)
+    return (player.is_idle or has_just_attacked(player) or player.is_in_jump_startup)
   end
 
   -- reset end frame if attack occurs again

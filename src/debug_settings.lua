@@ -1,5 +1,5 @@
 -- debug options
-local developer_mode = true -- Unlock frame data recording options. Touch at your own risk since you may use those options to fuck up some already recorded frame data
+local developer_mode = true 
 local recording_framedata = false
 local assert_enabled = developer_mode
 local log_enabled = developer_mode
@@ -11,7 +11,6 @@ local log_categories_display = {
   parry_training_FORWARD =    { history = false, print = false },
   blocking =                  { history = true, print = false },
   counter_attack =            { history = false, print = false },
-  block_string =              { history = true, print = false },
   frame_advantage =           { history = false, print = false },
 }
 
@@ -25,6 +24,9 @@ local player_debug_variables = {
     debug_standing_state = false
   }
 }
+
+local dump_state_display = false
+local debug_frames_display = false
 
 local debug =  {
   player_debug_variables = player_debug_variables,
@@ -40,6 +42,10 @@ setmetatable(debug, {
       return recording_framedata
     elseif key == "log_categories_display" then
       return log_categories_display
+    elseif key == "dump_state_display" then
+      return dump_state_display
+    elseif key == "debug_frames_display" then
+      return debug_frames_display      
     end
   end,
 
@@ -50,6 +56,10 @@ setmetatable(debug, {
       recording_framedata = value
     elseif key == "log_categories_display" then
       log_categories_display = value
+    elseif key == "dump_state_display" then
+      dump_state_display = value
+    elseif key == "debug_frames_display" then
+      debug_frames_display = value      
     else
       rawset(debug, key, value)
     end

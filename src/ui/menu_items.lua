@@ -1,5 +1,6 @@
 local settings = require("src/settings")
 local gamestate = require("src/gamestate")
+local colors = require("src.ui.colors")
 local text = require("src.ui.text")
 local draw = require("src.ui.draw")
 local images = require("src.ui.image_tables")
@@ -9,13 +10,13 @@ local render_text, render_text_multiple, get_text_dimensions, get_text_dimension
 
 local localization = read_object_from_json_file("data/localization.json")
 
-local gauge_background_color = 0xFFFFFF22
-local gauge_border_color = 0x000000FF
+local gauge_background_color = colors.menu.gauge_background
+local gauge_border_color = colors.menu.gauge_border
 
 local button_activated_color = text.button_activated_color
 
-local gui_box_bg_color = 0x1F1F1FF0
-local gui_box_outline_color = 0xBBBBBBF0
+local menu_background_color = colors.menu.background
+local menu_outline_color = colors.menu.outline
 
 local lang_code = {"en", "jp"}
 
@@ -31,6 +32,7 @@ function gauge_menu_item(name, object, property_name, unit, fill_color, gauge_ma
   o.fill_color = fill_color or 0x0000FFFF
   o.width = 0
   o.height = 0
+  o.indent = false
 
   function o:draw(x, y, selected)
     local color = text.default_color
@@ -38,9 +40,16 @@ function gauge_menu_item(name, object, property_name, unit, fill_color, gauge_ma
       color = text.selected_color
     end
 
-    render_text_multiple(x, y, {self.name, ":  "}, nil, nil, color)
-    local offset, h = get_text_dimensions_multiple({self.name, ":  "})
+    local offset = 0
+    if self.indent then
+      offset = 8
+    end
 
+    render_text_multiple(x + offset, y, {self.name, ":  "}, nil, nil, color)
+    local w, h = get_text_dimensions_multiple({self.name, ":  "})
+
+    offset = offset + w
+    
     local box_width = self.gauge_max / self.unit
     local box_top = y + (h - 4) / 2
     if lang_code[settings.training.language] == "jp" then
@@ -306,7 +315,7 @@ function checkbox_menu_item(name, object, property_name, default_value)
   o.name = name
   o.object = object
   o.property_name = property_name
-  o.default_value = default_value
+  o.default_value = default_value or false
   o.indent = false
   o.width = 0
   o.height = 0
@@ -319,9 +328,9 @@ function checkbox_menu_item(name, object, property_name, default_value)
 
     local value = ""
     if self.object[self.property_name] then
-      value = "on"
+      value = "menu_on"
     else
-      value = "off"
+      value = "menu_off"
     end
     local offset = 0
     if self.indent then
@@ -334,9 +343,9 @@ function checkbox_menu_item(name, object, property_name, default_value)
   function o:calc_dimensions()
     local value = ""
     if self.object[self.property_name] then
-      value = "on"
+      value = "menu_on"
     else
-      value = "off"
+      value = "menu_off"
     end
     self.width, self.height = get_text_dimensions_multiple({self.name, ":  ", value})
   end
@@ -939,7 +948,7 @@ function controller_style_item(name, object, property_name, list, default_value,
 
 end
 
-function integer_menu_item(name, object, property_name, min, max, loop, default_value, autofire_rate, on_change)
+function integer_menu_item(name, object, property_name, min, max, loop, default_value, increment, autofire_rate, on_change)
   if default_value == nil then default_value = min end
   local o = {}
   o.name = name
@@ -949,6 +958,7 @@ function integer_menu_item(name, object, property_name, min, max, loop, default_
   o.max = max
   o.loop = loop
   o.default_value = default_value
+  o.increment = increment or 1
   o.autofire_rate = autofire_rate
   o.on_change = on_change or nil
   o.width = 0
@@ -975,7 +985,7 @@ function integer_menu_item(name, object, property_name, min, max, loop, default_
   end
 
   function o:left()
-    self.object[self.property_name] = self.object[self.property_name] - 1
+    self.object[self.property_name] = self.object[self.property_name] - self.increment
     if self.object[self.property_name] < self.min then
       if self.loop then
         self.object[self.property_name] = self.max
@@ -990,7 +1000,7 @@ function integer_menu_item(name, object, property_name, min, max, loop, default_
   end
 
   function o:right()
-    self.object[self.property_name] = self.object[self.property_name] + 1
+    self.object[self.property_name] = self.object[self.property_name] + self.increment
     if self.object[self.property_name] > self.max then
       if self.loop then
         self.object[self.property_name] = self.min
@@ -1561,7 +1571,7 @@ function multitab_menu_update(menu, input)
 end
 
 function multitab_menu_draw(menu)
-  gui.box(menu.left, menu.top, menu.right, menu.bottom, gui_box_bg_color, gui_box_outline_color)
+  gui.box(menu.left, menu.top, menu.right, menu.bottom, menu_background_color, menu_outline_color)
 
   local base_offset = 0
   local menu_width = menu.right - menu.left
@@ -1774,7 +1784,7 @@ function menu_update(menu, input)
 end
 
 function menu_draw(menu)
-  gui.box(menu.left, menu.top, menu.right, menu.bottom, gui_box_bg_color, gui_box_outline_color)
+  gui.box(menu.left, menu.top, menu.right, menu.bottom, menu_background_color, menu_outline_color)
 
   local menu_x = menu.left + 10
   local menu_y = menu.top + 9

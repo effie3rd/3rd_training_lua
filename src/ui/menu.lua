@@ -6,14 +6,14 @@ local character_select = require("src.control.character_select")
 local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
 local settings = require("src/settings")
-local debug_settings = require("src/debug_settings")
+local debug_settings = require("src.debug_settings")
 local menu_tables = require("src.ui.menu_tables")
 require("src.ui.menu_items")
 
 
 local move_list = movedata.move_list
 
-local initialized = false
+local is_initialized = false
 local is_open = false
 
 
@@ -22,15 +22,15 @@ save_file_name = ""
 local load_file_list = {}
 local load_file_index = 1
 local save_recording_slot_popup, load_recording_slot_popup, controller_style_menu_item,
-life_refill_delay_item, p1_life_reset_value_gauge_item, p2_life_reset_value_gauge_item,
+life_reset_delay_item, p1_life_reset_value_gauge_item, p2_life_reset_value_gauge_item,
 p1_stun_reset_value_gauge_item, p2_stun_reset_value_gauge_item, stun_reset_delay_item,
-p1_meter_gauge_item, p2_meter_gauge_item, meter_refill_delay_item, slot_weight_item,
+p1_meter_reset_value_gauge_item, p2_meter_reset_value_gauge_item, meter_reset_delay_item, slot_weight_item,
 counter_attack_delay_item, recording_delay_item, recording_random_deviation_item, charge_overcharge_on_item, charge_follow_player_item,
-parry_follow_player_item, blocking_item, hits_before_red_parry_item, parry_every_n_item, prefer_down_parry_item, counter_attack_item,
+parry_follow_player_item, display_parry_compact_item, blocking_item, hits_before_red_parry_item, parry_every_n_item, prefer_down_parry_item, counter_attack_item,
 counter_attack_motion_item, counter_attack_button_item, counter_attack_special_item, counter_attack_special_button_item,
 counter_attack_input_display_item, counter_attack_option_select_item, hits_before_counter_attack, change_characters_item,
 p1_distances_reference_point_item, p2_distances_reference_point_item, mid_distance_height_item, air_time_player_coloring_item,
-attack_range_display_max_item, attack_bars_show_decimal_item, language_item, play_challenge_item, select_char_challenge_item
+attack_range_display_max_item, attack_bars_show_decimal_item, display_hitboxes_opacity_item, language_item, play_challenge_item, select_char_challenge_item
 
 local main_menu
 
@@ -111,14 +111,14 @@ end
 local function update_gauge_items()
   settings.training.p1_meter_reset_value = math.min(settings.training.p1_meter_reset_value, gamestate.P1.max_meter_count * gamestate.P1.max_meter_gauge)
   settings.training.p2_meter_reset_value = math.min(settings.training.p2_meter_reset_value, gamestate.P2.max_meter_count * gamestate.P2.max_meter_gauge)
-  p1_meter_gauge_item.gauge_max = gamestate.P1.max_meter_gauge * gamestate.P1.max_meter_count
-  p1_meter_gauge_item.subdivision_count = gamestate.P1.max_meter_count
-  p2_meter_gauge_item.gauge_max = gamestate.P2.max_meter_gauge * gamestate.P2.max_meter_count
-  p2_meter_gauge_item.subdivision_count = gamestate.P2.max_meter_count
-  settings.training.p1_stun_reset_value = math.min(settings.training.p1_stun_reset_value, gamestate.P1.stun_max)
-  settings.training.p2_stun_reset_value = math.min(settings.training.p2_stun_reset_value, gamestate.P2.stun_max)
-  p1_stun_reset_value_gauge_item.gauge_max = gamestate.P1.stun_max
-  p2_stun_reset_value_gauge_item.gauge_max = gamestate.P2.stun_max
+  p1_meter_reset_value_gauge_item.gauge_max = gamestate.P1.max_meter_gauge * gamestate.P1.max_meter_count
+  p1_meter_reset_value_gauge_item.subdivision_count = gamestate.P1.max_meter_count
+  p2_meter_reset_value_gauge_item.gauge_max = gamestate.P2.max_meter_gauge * gamestate.P2.max_meter_count
+  p2_meter_reset_value_gauge_item.subdivision_count = gamestate.P2.max_meter_count
+  settings.training.p1_stun_reset_value = math.min(settings.training.p1_stun_reset_value, gamestate.P1.stun_bar_max)
+  settings.training.p2_stun_reset_value = math.min(settings.training.p2_stun_reset_value, gamestate.P2.stun_bar_max)
+  p1_stun_reset_value_gauge_item.gauge_max = gamestate.P1.stun_bar_max
+  p2_stun_reset_value_gauge_item.gauge_max = gamestate.P2.stun_bar_max
 end
 
 local function update_counter_attack_settings()
@@ -199,7 +199,7 @@ local function update_counter_attack_special()
 end
 
 local function update_counter_attack_items()
-  if initialized then
+  if is_initialized then
     update_counter_attack_settings()
     update_counter_attack_button()
     update_counter_attack_special()
@@ -228,39 +228,59 @@ local function init_menu()
   end
 
 
-  life_refill_delay_item = integer_menu_item("life_refill_delay", settings.training, "life_refill_delay", 1, 100, false, 20)
-  life_refill_delay_item.is_disabled = function()
+  p1_life_reset_value_gauge_item = gauge_menu_item("p1_life_reset_value", settings.training, "p1_life_reset_value", 1, colors.gauges.life, 160)
+  p2_life_reset_value_gauge_item = gauge_menu_item("p2_life_reset_value", settings.training, "p2_life_reset_value", 1, colors.gauges.life, 160)
+  life_reset_delay_item = integer_menu_item("reset_delay", settings.training, "life_reset_delay", 1, 100, false, 20)
+  
+  p1_life_reset_value_gauge_item.indent = true
+  p2_life_reset_value_gauge_item.indent = true
+  life_reset_delay_item.indent = true
+
+  p1_life_reset_value_gauge_item.is_disabled = function()
     return settings.training.life_mode ~= 2
   end
+  p2_life_reset_value_gauge_item.is_disabled = p1_life_reset_value_gauge_item.is_disabled
+  life_reset_delay_item.is_disabled = function()
+    return settings.training.life_mode == 1 or settings.training.life_mode == 5
+  end
 
-  p1_life_reset_value_gauge_item = gauge_menu_item("p1_life_reset_value", settings.training, "p1_life_reset_value", 160, colors.gauges.life)
-  p2_life_reset_value_gauge_item = gauge_menu_item("p2_life_reset_value", settings.training, "p2_life_reset_value", 160, colors.gauges.life)
+  p1_stun_reset_value_gauge_item = gauge_menu_item("p1_stun_reset_value", settings.training, "p1_stun_reset_value", 1, colors.gauges.stun, 64)
+  p2_stun_reset_value_gauge_item = gauge_menu_item("p2_stun_reset_value", settings.training, "p2_stun_reset_value", 1, colors.gauges.stun, 64)
+  stun_reset_delay_item = integer_menu_item("reset_delay", settings.training, "stun_reset_delay", 1, 100, false, 20)
+    
+  p1_stun_reset_value_gauge_item.indent = true
+  p2_stun_reset_value_gauge_item.indent = true
+  stun_reset_delay_item.indent = true
 
-  p1_stun_reset_value_gauge_item = gauge_menu_item("p1_stun_reset_value", settings.training, "p1_stun_reset_value", 64, colors.gauges.stun)
-  p2_stun_reset_value_gauge_item = gauge_menu_item("p2_stun_reset_value", settings.training, "p2_stun_reset_value", 64, colors.gauges.stun)
-  p1_stun_reset_value_gauge_item.unit = 1
-  p2_stun_reset_value_gauge_item.unit = 1
-  stun_reset_delay_item = integer_menu_item("stun_reset_delay", settings.training, "stun_reset_delay", 1, 100, false, 20)
   p1_stun_reset_value_gauge_item.is_disabled = function()
-    return settings.training.stun_mode ~= 3
+    return settings.training.stun_mode ~= 2
   end
   p2_stun_reset_value_gauge_item.is_disabled = p1_stun_reset_value_gauge_item.is_disabled
-  stun_reset_delay_item.is_disabled = p1_stun_reset_value_gauge_item.is_disabled
+  stun_reset_delay_item.is_disabled = function()
+    return settings.training.stun_mode == 1 or settings.training.stun_mode == 5
+  end
 
-  p1_meter_gauge_item = gauge_menu_item("p1_meter_reset_value", settings.training, "p1_meter_reset_value", 2, colors.gauges.meter)
-  p2_meter_gauge_item = gauge_menu_item("p2_meter_reset_value", settings.training, "p2_meter_reset_value", 2, colors.gauges.meter)
-  meter_refill_delay_item = integer_menu_item("meter_refill_delay", settings.training, "meter_refill_delay", 1, 100, false, 20)
 
-  p1_meter_gauge_item.is_disabled = function()
+  p1_meter_reset_value_gauge_item = gauge_menu_item("p1_meter_reset_value", settings.training, "p1_meter_reset_value", 2, colors.gauges.meter)
+  p2_meter_reset_value_gauge_item = gauge_menu_item("p2_meter_reset_value", settings.training, "p2_meter_reset_value", 2, colors.gauges.meter)
+  meter_reset_delay_item = integer_menu_item("reset_delay", settings.training, "meter_reset_delay", 1, 100, false, 20)
+
+  p1_meter_reset_value_gauge_item.indent = true
+  p2_meter_reset_value_gauge_item.indent = true
+  meter_reset_delay_item.indent = true
+
+  p1_meter_reset_value_gauge_item.is_disabled = function()
     return settings.training.meter_mode ~= 2
   end
-  p2_meter_gauge_item.is_disabled = p1_meter_gauge_item.is_disabled
-  meter_refill_delay_item.is_disabled = p1_meter_gauge_item.is_disabled
+  p2_meter_reset_value_gauge_item.is_disabled = p1_meter_reset_value_gauge_item.is_disabled
+  meter_reset_delay_item.is_disabled = function()
+    return settings.training.meter_mode == 1 or settings.training.meter_mode == 5
+  end
 
 
   slot_weight_item = integer_menu_item("slot_weight", recording_slots[settings.training.current_recording_slot], "weight", 0, 100, false, 1)
   recording_delay_item = integer_menu_item("replay_delay", recording_slots[settings.training.current_recording_slot], "delay", -40, 40, false, 0)
-  recording_random_deviation_item = integer_menu_item("replay_max_random_deviation", recording_slots[settings.training.current_recording_slot], "random_deviation", -600, 600, false, 0, 1)
+  recording_random_deviation_item = integer_menu_item("replay_max_random_deviation", recording_slots[settings.training.current_recording_slot], "random_deviation", -600, 600, false, 0, 1, 1)
 
   charge_overcharge_on_item = checkbox_menu_item("display_overcharge", settings.training, "charge_overcharge_on")
   charge_overcharge_on_item.indent = true
@@ -277,6 +297,12 @@ local function init_menu()
   parry_follow_player_item = checkbox_menu_item("menu_follow_player", settings.training, "parry_follow_player")
   parry_follow_player_item.indent = true
   parry_follow_player_item.is_disabled = function()
+  return not settings.training.display_parry
+  end
+
+  display_parry_compact_item = checkbox_menu_item("display_parry_compact", settings.training, "display_parry_compact")
+  display_parry_compact_item.indent = true
+  display_parry_compact_item.is_disabled = function()
   return not settings.training.display_parry
   end
 
@@ -387,6 +413,11 @@ local function init_menu()
   return not (settings.training.display_attack_bars > 1)
   end
 
+  display_hitboxes_opacity_item = integer_menu_item("display_hitboxes_opacity", settings.training, "display_hitboxes_opacity", 5, 100, false, 100, 5)
+  display_hitboxes_opacity_item.indent = true
+  display_hitboxes_opacity_item.is_disabled = function()
+    return settings.training.display_hitboxes == 1
+  end
 
   language_item = list_menu_item("language", settings.training, "language", menu_tables.language, 1, update_dimensions)
 
@@ -398,7 +429,7 @@ local function init_menu()
     23, 14, 360, 197, -- screen size 383,223
     {
       {
-        header = header_menu_item("dummy"),
+        header = header_menu_item("menu_title_dummy"),
         entries = {
           list_menu_item("pose", settings.training, "pose", menu_tables.pose),
           list_menu_item("blocking_style", settings.training, "blocking_style", menu_tables.blocking_style),
@@ -414,18 +445,18 @@ local function init_menu()
           counter_attack_option_select_item,
           hits_before_counter_attack,
           counter_attack_delay_item,
-          list_menu_item("mash_stun", settings.training, "mash_stun_mode", menu_tables.mash_stun_mode, 1),
-          list_menu_item("tech_throws", settings.training, "tech_throws_mode", menu_tables.tech_throws_mode),
-          list_menu_item("quick_stand", settings.training, "fast_wakeup_mode", menu_tables.quick_stand_mode),
+          list_menu_item("tech_throws", settings.training, "tech_throws_mode", menu_tables.tech_throws_mode, 1),
+          list_menu_item("mash_inputs", settings.training, "mash_inputs_mode", menu_tables.mash_inputs_mode, 1),
+          list_menu_item("quick_stand", settings.training, "fast_wakeup_mode", menu_tables.quick_stand_mode, 1),
         }
       },
       {
-        header = header_menu_item("recording"),
+        header = header_menu_item("menu_title_recording"),
         entries = {
           checkbox_menu_item("auto_crop_first_frames", settings.training, "auto_crop_recording_start"),
           checkbox_menu_item("auto_crop_last_frames", settings.training, "auto_crop_recording_end"),
           list_menu_item("replay_mode", settings.training, "replay_mode", menu_tables.slot_replay_mode),
-          integer_menu_item("menu_slot", settings.training, "current_recording_slot", 1, recording_slot_count, true, 1, 10, update_current_recording_slot_frames),
+          integer_menu_item("menu_slot", settings.training, "current_recording_slot", 1, recording_slot_count, true, 1, 1, 10, update_current_recording_slot_frames),
                                 frame_number_item(current_recording_slot_frames, true),
           slot_weight_item,
           recording_delay_item,
@@ -437,7 +468,7 @@ local function init_menu()
         }
       },
       {
-        header = header_menu_item("display"),
+        header = header_menu_item("menu_title_display"),
         entries = {
           checkbox_menu_item("display_controllers", settings.training, "display_input"),
           controller_style_menu_item,
@@ -449,6 +480,7 @@ local function init_menu()
           attack_bars_show_decimal_item,
           checkbox_menu_item("display_frame_advantage", settings.training, "display_frame_advantage"),
           checkbox_menu_item("display_hitboxes", settings.training, "display_hitboxes"),
+          display_hitboxes_opacity_item,
           checkbox_menu_item("display_distances", settings.training, "display_distances"),
           mid_distance_height_item,
           p1_distances_reference_point_item,
@@ -460,6 +492,7 @@ local function init_menu()
           charge_overcharge_on_item,
           checkbox_menu_item("display_parry", settings.training, "display_parry"),
           parry_follow_player_item,
+          display_parry_compact_item,
           checkbox_menu_item("display_red_parry_miss", settings.training, "display_red_parry_miss"),
           list_menu_item("attack_range_display", settings.training, "display_attack_range", menu_tables.player_options),
           attack_range_display_max_item,
@@ -467,25 +500,25 @@ local function init_menu()
         }
       },
       {
-        header = header_menu_item("rules"),
+        header = header_menu_item("menu_title_rules"),
         entries = {
           change_characters_item,
           list_menu_item("force_stage", settings.training, "force_stage", menu_tables.stage_list, 1),
           checkbox_menu_item("infinite_time", settings.training, "infinite_time"),
-          list_menu_item("life_refill_mode", settings.training, "life_mode", menu_tables.gauge_refill_mode),
+          list_menu_item("life_refill_mode", settings.training, "life_mode", menu_tables.life_mode, 4),
           p1_life_reset_value_gauge_item,
           p2_life_reset_value_gauge_item,
-          life_refill_delay_item,
-          list_menu_item("stun_mode", settings.training, "stun_mode", menu_tables.gauge_refill_mode),
+          -- life_reset_delay_item,
+          list_menu_item("stun_refill_mode", settings.training, "stun_mode", menu_tables.stun_mode, 3),
           p1_stun_reset_value_gauge_item,
           p2_stun_reset_value_gauge_item,
-          stun_reset_delay_item,
-          list_menu_item("meter_refill_mode", settings.training, "meter_mode", menu_tables.gauge_refill_mode),
-          p1_meter_gauge_item,
-          p2_meter_gauge_item,
-          meter_refill_delay_item,
+          -- stun_reset_delay_item,
+          list_menu_item("meter_refill_mode", settings.training, "meter_mode", menu_tables.meter_mode, 5),
+          p1_meter_reset_value_gauge_item,
+          p2_meter_reset_value_gauge_item,
+          -- meter_reset_delay_item,
           checkbox_menu_item("infinite_super_art_time", settings.training, "infinite_sa_time"),
-          integer_menu_item("music_volume", settings.training, "music_volume", 0, 10, false, 10),
+          integer_menu_item("music_volume", settings.training, "music_volume", 0, 10, false, 0),
           checkbox_menu_item("speed_up_game_intro", settings.training, "fast_forward_intro"),
           list_menu_item("cheat_parrying", settings.training, "cheat_parrying", menu_tables.player_options),
           checkbox_menu_item("universal_cancel", settings.training, "universal_cancel"),
@@ -494,14 +527,14 @@ local function init_menu()
         }
       },
       {
-        header = header_menu_item("training"),
+        header = header_menu_item("menu_title_training"),
         entries = {
           list_menu_item("mode", settings.training, "special_training_mode", menu_tables.special_training_mode),
 
         }
       },
         {
-          header = header_menu_item("challenge"),
+          header = header_menu_item("menu_title_challenge"),
           entries = {
             list_menu_item("challenge", settings.training, "challenge_current_mode", menu_tables.challenge_mode),
                                 play_challenge_item,
@@ -515,23 +548,22 @@ local function init_menu()
     end
   )
 
-  -- debug_move_menu_item = map_menu_item("debug_move", debug_settings, "debug_move", frame_data, nil)
   if debug_settings.developer_mode then
     local debug_settings_menu = {
-      header = header_menu_item("debug"),
+      header = header_menu_item("menu_title_debug"),
       entries = {
+        checkbox_menu_item("dump_state_display", debug_settings, "dump_state_display"),
+        checkbox_menu_item("debug_frames_display", debug_settings, "debug_frames_display"),
         checkbox_menu_item("show_predicted_hitboxes", debug_settings, "show_predicted_hitbox"),
         checkbox_menu_item("record_frame_data", debug_settings, "record_framedata"),
         button_menu_item("save_frame_data", save_frame_data),
-        map_menu_item("debug_character", debug_settings, "debug_character", _G, "frame_data")
-        -- debug_move_menu_item
       },
       topmost_entry = 1
     }
     table.insert(main_menu.content, debug_settings_menu)
   end
 
-  initialized = true
+  is_initialized = true
 end
 
 function open_save_popup()
@@ -567,7 +599,7 @@ end
 local horizontal_autofire_rate = 4
 local vertical_autofire_rate = 4
 local function handle_input()
-  if initialized then
+  if is_initialized then
     if gamestate.is_in_match then
       local should_toggle = gamestate.P1.input.pressed.start
       if debug_settings.log_enabled then
@@ -631,16 +663,16 @@ local menu_module = {
 
 setmetatable(menu_module, {
   __index = function(_, key)
-    if key == "initialized" then
-      return initialized
+    if key == "is_initialized" then
+      return is_initialized
     elseif key == "is_open" then
       return is_open
     end
   end,
 
   __newindex = function(_, key, value)
-    if key == "initialized" then
-      initialized = value
+    if key == "is_initialized" then
+      is_initialized = value
     elseif key == "is_open" then
       is_open = value
     else

@@ -1429,6 +1429,10 @@
     "en": "images/menu/chariot_tackle_en_5_white.png",
     "jp": "images/menu/chariot_tackle_jp_10_white.png"
   },
+  "cheat_parrying": {
+    "en": "images/menu/cheat_parrying_en_5_white.png",
+    "jp": "images/menu/cheat_parrying_jp_10_white.png"
+  },
   "clear_all_slots": {
     "en": "images/menu/clear_all_slots_en_5_white.png",
     "jp": "images/menu/clear_all_slots_jp_10_white.png"
@@ -1521,9 +1525,9 @@
     "en": "images/menu/debug_en_5_white.png",
     "jp": "images/menu/debug_jp_10_white.png"
   },
-  "debug_character": {
-    "en": "images/menu/debug_character_en_5_white.png",
-    "jp": "images/menu/debug_character_jp_10_white.png"
+  "debug_frames_display": {
+    "en": "images/menu/debug_frames_display_en_5_white.png",
+    "jp": "images/menu/debug_frames_display_jp_10_white.png"
   },
   "debug_move": {
     "en": "images/menu/debug_move_en_5_white.png",
@@ -1589,6 +1593,10 @@
     "en": "images/menu/display_hitboxes_en_5_white.png",
     "jp": "images/menu/display_hitboxes_jp_10_white.png"
   },
+  "display_hitboxes_opacity": {
+    "en": "images/menu/display_hitboxes_opacity_en_5_white.png",
+    "jp": "images/menu/display_hitboxes_opacity_jp_10_white.png"
+  },
   "display_input_history": {
     "en": "images/menu/display_input_history_en_5_white.png",
     "jp": "images/menu/display_input_history_jp_10_white.png"
@@ -1633,6 +1641,10 @@
     "en": "images/menu/dummy_en_5_white.png",
     "jp": "images/menu/dummy_jp_10_white.png"
   },
+  "dump_state_display": {
+    "en": "images/menu/dump_state_display_en_5_white.png",
+    "jp": "images/menu/dump_state_display_jp_10_white.png"
+  },
   "electric_snake": {
     "en": "images/menu/electric_snake_en_5_white.png",
     "jp": "images/menu/electric_snake_jp_10_white.png"
@@ -1672,6 +1684,30 @@
   "fukiage": {
     "en": "images/menu/fukiage_en_5_white.png",
     "jp": "images/menu/fukiage_jp_10_white.png"
+  },
+  "gauge_always_max": {
+    "en": "images/menu/gauge_always_max_en_5_white.png",
+    "jp": "images/menu/gauge_always_max_jp_10_white.png"
+  },
+  "gauge_always_zero": {
+    "en": "images/menu/gauge_always_zero_en_5_white.png",
+    "jp": "images/menu/gauge_always_zero_jp_10_white.png"
+  },
+  "gauge_infinite": {
+    "en": "images/menu/gauge_infinite_en_5_white.png",
+    "jp": "images/menu/gauge_infinite_jp_10_white.png"
+  },
+  "gauge_reset_max": {
+    "en": "images/menu/gauge_reset_max_en_5_white.png",
+    "jp": "images/menu/gauge_reset_max_jp_10_white.png"
+  },
+  "gauge_reset_value": {
+    "en": "images/menu/gauge_reset_value_en_5_white.png",
+    "jp": "images/menu/gauge_reset_value_jp_10_white.png"
+  },
+  "gauge_reset_zero": {
+    "en": "images/menu/gauge_reset_zero_en_5_white.png",
+    "jp": "images/menu/gauge_reset_zero_jp_10_white.png"
   },
   "geneijin": {
     "en": "images/menu/geneijin_en_5_white.png",
@@ -1833,10 +1869,6 @@
     "en": "images/menu/hyper_tornado_en_5_white.png",
     "jp": "images/menu/hyper_tornado_jp_10_white.png"
   },
-  "infinite": {
-    "en": "images/menu/infinite_en_5_white.png",
-    "jp": "images/menu/infinite_jp_10_white.png"
-  },
   "infinite_juggle": {
     "en": "images/menu/infinite_juggle_en_5_white.png",
     "jp": "images/menu/infinite_juggle_jp_10_white.png"
@@ -1989,10 +2021,6 @@
     "en": "images/menu/legend_textfield_edit2_en_5_white.png",
     "jp": "images/menu/legend_textfield_edit2_jp_8_white.png"
   },
-  "life_refill_delay": {
-    "en": "images/menu/life_refill_delay_en_5_white.png",
-    "jp": "images/menu/life_refill_delay_jp_10_white.png"
-  },
   "life_refill_mode": {
     "en": "images/menu/life_refill_mode_en_5_white.png",
     "jp": "images/menu/life_refill_mode_jp_10_white.png"
@@ -2029,9 +2057,21 @@
     "en": "images/menu/mallet_smash_en_5_white.png",
     "jp": "images/menu/mallet_smash_jp_10_white.png"
   },
-  "mash_stun": {
-    "en": "images/menu/mash_stun_en_5_white.png",
-    "jp": "images/menu/mash_stun_jp_10_white.png"
+  "mash_fastest": {
+    "en": "images/menu/mash_fastest_en_5_white.png",
+    "jp": "images/menu/mash_fastest_jp_10_white.png"
+  },
+  "mash_inputs": {
+    "en": "images/menu/mash_inputs_en_5_white.png",
+    "jp": "images/menu/mash_inputs_jp_10_white.png"
+  },
+  "mash_normal": {
+    "en": "images/menu/mash_normal_en_5_white.png",
+    "jp": "images/menu/mash_normal_jp_10_white.png"
+  },
+  "mash_serious": {
+    "en": "images/menu/mash_serious_en_5_white.png",
+    "jp": "images/menu/mash_serious_jp_10_white.png"
   },
   "meat_squasher": {
     "en": "images/menu/meat_squasher_en_5_white.png",
@@ -2068,10 +2108,6 @@
   "menu_elena": {
     "en": "images/menu/menu_elena_en_5_white.png",
     "jp": "images/menu/menu_elena_jp_10_white.png"
-  },
-  "menu_fastest": {
-    "en": "images/menu/menu_fastest_en_5_white.png",
-    "jp": "images/menu/menu_fastest_jp_10_white.png"
   },
   "menu_first_hit": {
     "en": "images/menu/menu_first_hit_en_5_white.png",
@@ -2129,10 +2165,6 @@
     "en": "images/menu/menu_random_en_5_white.png",
     "jp": "images/menu/menu_random_jp_10_white.png"
   },
-  "menu_realistic": {
-    "en": "images/menu/menu_realistic_en_5_white.png",
-    "jp": "images/menu/menu_realistic_jp_10_white.png"
-  },
   "menu_remy": {
     "en": "images/menu/menu_remy_en_5_white.png",
     "jp": "images/menu/menu_remy_jp_10_white.png"
@@ -2152,6 +2184,34 @@
   "menu_slot": {
     "en": "images/menu/menu_slot_en_5_white.png",
     "jp": "images/menu/menu_slot_jp_10_white.png"
+  },
+  "menu_title_challenge": {
+    "en": "images/menu/menu_title_challenge_en_5_white.png",
+    "jp": "images/menu/menu_title_challenge_jp_10_white.png"
+  },
+  "menu_title_debug": {
+    "en": "images/menu/menu_title_debug_en_5_white.png",
+    "jp": "images/menu/menu_title_debug_jp_10_white.png"
+  },
+  "menu_title_display": {
+    "en": "images/menu/menu_title_display_en_5_white.png",
+    "jp": "images/menu/menu_title_display_jp_10_white.png"
+  },
+  "menu_title_dummy": {
+    "en": "images/menu/menu_title_dummy_en_5_white.png",
+    "jp": "images/menu/menu_title_dummy_jp_10_white.png"
+  },
+  "menu_title_recording": {
+    "en": "images/menu/menu_title_recording_en_5_white.png",
+    "jp": "images/menu/menu_title_recording_jp_10_white.png"
+  },
+  "menu_title_rules": {
+    "en": "images/menu/menu_title_rules_en_5_white.png",
+    "jp": "images/menu/menu_title_rules_jp_10_white.png"
+  },
+  "menu_title_training": {
+    "en": "images/menu/menu_title_training_en_5_white.png",
+    "jp": "images/menu/menu_title_training_jp_10_white.png"
   },
   "menu_twelve": {
     "en": "images/menu/menu_twelve_en_5_white.png",
@@ -2232,10 +2292,6 @@
   "nishoukyaku": {
     "en": "images/menu/nishoukyaku_en_5_white.png",
     "jp": "images/menu/nishoukyaku_jp_10_white.png"
-  },
-  "no_refill": {
-    "en": "images/menu/no_refill_en_5_white.png",
-    "jp": "images/menu/no_refill_jp_10_white.png"
   },
   "none": {
     "en": "images/menu/none_en_5_white.png",
@@ -2365,14 +2421,6 @@
     "en": "images/menu/record_frame_data_en_5_white.png",
     "jp": "images/menu/record_frame_data_jp_10_white.png"
   },
-  "record_idle_frame_data": {
-    "en": "images/menu/record_idle_frame_data_en_5_white.png",
-    "jp": "images/menu/record_idle_frame_data_jp_10_white.png"
-  },
-  "record_wake-up_data": {
-    "en": "images/menu/record_wake-up_data_en_5_white.png",
-    "jp": "images/menu/record_wake-up_data_jp_10_white.png"
-  },
   "recording": {
     "en": "images/menu/recording_en_5_white.png",
     "jp": "images/menu/recording_jp_10_white.png"
@@ -2380,10 +2428,6 @@
   "red_parry": {
     "en": "images/menu/red_parry_en_5_white.png",
     "jp": "images/menu/red_parry_jp_10_white.png"
-  },
-  "refill": {
-    "en": "images/menu/refill_en_5_white.png",
-    "jp": "images/menu/refill_jp_10_white.png"
   },
   "refill_delay": {
     "en": "images/menu/refill_delay_en_5_white.png",
@@ -2605,9 +2649,9 @@
     "en": "images/menu/standing_en_5_white.png",
     "jp": "images/menu/standing_jp_10_white.png"
   },
-  "stun_mode": {
-    "en": "images/menu/stun_mode_en_5_white.png",
-    "jp": "images/menu/stun_mode_jp_10_white.png"
+  "stun_refill_mode": {
+    "en": "images/menu/stun_refill_mode_en_5_white.png",
+    "jp": "images/menu/stun_refill_mode_jp_10_white.png"
   },
   "stungun_headbutt": {
     "en": "images/menu/stungun_headbutt_en_5_white.png",
