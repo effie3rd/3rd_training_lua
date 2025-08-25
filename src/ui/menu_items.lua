@@ -1606,6 +1606,9 @@ function multitab_menu_draw(menu)
     offset = offset + menu.content[i].header.width + gap
     menu_y = menu.top + y_padding * 2 + menu.content[i].header.height
   end
+  if lang_code[settings.training.language] == "en" then
+    menu_y = menu_y - 1
+  end
   for pad = 15, 35 do
     gui.drawline(menu.left + pad, menu_y - 1, menu.right - pad, menu_y - 1, 0xFFFFFF0F)
   end
