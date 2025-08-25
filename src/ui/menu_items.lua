@@ -1,5 +1,5 @@
-local settings = require("src/settings")
-local gamestate = require("src/gamestate")
+local settings = require("src.settings")
+local gamestate = require("src.gamestate")
 local colors = require("src.ui.colors")
 local text = require("src.ui.text")
 local draw = require("src.ui.draw")

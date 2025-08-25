@@ -67,13 +67,18 @@ Training mode for Street Fighter III: 3rd Strike
     - Stun state, fractional stun value
     - Graphics mode
     - 360 charge (P1+P2)
+    - Air timer P1
     - Denjin charge P1
   - Framedata now uses the following fields:
     - animation level: name, frames, hit_frames, idle_frames, loops, pushback, advantage, uses_velocity, air, infinite_loop, max_hits, cooldown, self_chain, exceptions
     - frame level: hash, boxes, movement, velocity, acceleration, loop, next_anim, optional_anim, wakeup, bypass_freeze
   - Character Select - Made selection of bosses consistent. Added option to disable selecting bosses and ability to force character selection
+  - Updated debug menu
 
 ### Bug Fixes
   - Blocking of multi-hit attacks and supers
   - The same move performed in frame perfect succession was not blocked
   - Jumping attacks that hit behind a cornered opponent were not blocked
+
+### Notes
+  - Dummy blocking is imperfect, so if you absolutely need something parried then enable the cheat parrying option. Be aware that it will parry things that are normally impossible to parry.

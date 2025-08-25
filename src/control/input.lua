@@ -1,6 +1,6 @@
-local settings = require("src/settings")
-local gamestate = require("src/gamestate")
-local training = require("src/training")
+local settings = require("src.settings")
+local gamestate = require("src.gamestate")
+local training = require("src.training")
 local fd = require("src.modules.framedata")
 local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_slow_jumper
 

@@ -1,4 +1,4 @@
-local gamestate = require("src/gamestate")
+local gamestate = require("src.gamestate")
 local colors = require("src.ui.colors")
 local text = require("src.ui.text")
 local images = require("src.ui.image_tables")

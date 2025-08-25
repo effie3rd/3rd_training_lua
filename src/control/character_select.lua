@@ -1,5 +1,5 @@
-local settings = require("src/settings")
-local gamestate = require("src/gamestate")
+local settings = require("src.settings")
+local gamestate = require("src.gamestate")
 local sd = require("src.modules.stagedata")
 local inp = require("src.control.input")
 

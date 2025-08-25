@@ -1,6 +1,6 @@
 require("gd")
 local utf8 = require("src.libs.utf8")
-local settings = require("src/settings")
+local settings = require("src.settings")
 local colors = require("src.ui.colors")
 
 local image_map = {}

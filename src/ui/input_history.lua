@@ -1,4 +1,4 @@
-local gamestate = require("src/gamestate")
+local gamestate = require("src.gamestate")
 local draw = require("src.ui.draw")
 
 local input_history_size_max = 15

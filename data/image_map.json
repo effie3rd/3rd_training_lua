@@ -2081,6 +2081,10 @@
     "en": "images/menu/megaton_press_en_5_white.png",
     "jp": "images/menu/megaton_press_jp_10_white.png"
   },
+  "memory_view_display": {
+    "en": "images/menu/memory_view_display_en_5_white.png",
+    "jp": "images/menu/memory_view_display_jp_10_white.png"
+  },
   "menu_1_line": {
     "en": "images/menu/menu_1_line_en_5_white.png",
     "jp": "images/menu/menu_1_line_jp_10_white.png"

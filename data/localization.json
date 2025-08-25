@@ -741,10 +741,6 @@
     "en": "Hadou Festival",
     "jp": "波動祭り"
   },
-  "debug_move": {
-    "en": "Debug Move",
-    "jp": "技デバグ"
-  },
   "dump_state_display": {
     "en": "Dump State Display",
     "jp": "ダンプステート表示"
@@ -752,6 +748,10 @@
   "debug_frames_display": {
     "en": "Debug Frames Display",
     "jp": "デバグフレ表示"
+  },
+  "memory_view_display": {
+    "en": "Memory View Display",
+    "jp": "メモリービュー表示"
   },
   "show_predicted_hitboxes": {
     "en": "Show Predicted Hitboxes",

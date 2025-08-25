@@ -1,7 +1,7 @@
 --manages training mode state. who is the player/dummy, gauges, dummy response settings
 local fd = require("src.modules.framedata")
-local gamestate = require("src/gamestate")
-local settings = require("src/settings")
+local gamestate = require("src.gamestate")
+local settings = require("src.settings")
 local mem = require("src.control.write_memory")
 
 local character_specific = fd.character_specific

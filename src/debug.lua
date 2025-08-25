@@ -1,12 +1,12 @@
-local gamestate = require("src/gamestate")
-local loading = require("src/loading")
+local gamestate = require("src.gamestate")
+local loading = require("src.loading")
 local text = require("src.ui.text")
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
 local draw = require("src.ui.draw")
 local images = require("src.ui.image_tables")
 local menu = require("src.ui.menu")
-local settings = require("src/settings")
+local settings = require("src.settings")
 local record_framedata = require("src.modules.record_framedata")
 local debug_settings = require("src.debug_settings")
 
@@ -45,7 +45,7 @@ local function dump_variables()
   end
 end
 
-local function dump_state_display()
+local function show_dump_state_display()
   if gamestate.is_in_match then
     if #dump_state > 0 then
       for i = 1, #dump_state[1] do
@@ -71,27 +71,27 @@ local function debug_update_framedata(player, projectiles)
     local p2 = gamestate.P2
 
     display = {}
-    debuggui("frame", gamestate.frame_number)
+     debuggui("frame", gamestate.frame_number)
     debuggui("state", record_framedata.state)
     debuggui("anim", player.animation)
     debuggui("anim f", player.animation_frame)
     debuggui("hash", player.animation_frame_hash)
     debuggui("freeze", player.remaining_freeze_frames)
-    debuggui("sfreeze", player.superfreeze_decount)
-    debuggui("action #", player.action_count)
-    debuggui("action #", player.animation_action_count)
+    -- debuggui("sfreeze", player.superfreeze_decount)
+    -- debuggui("action #", player.action_count)
+    -- debuggui("action #", player.animation_action_count)
     debuggui("conn action #", player.connected_action_count)
     debuggui("hit id", player.current_hit_id)
     -- debuggui("attacking", tostring(player.is_attacking))
     -- debuggui("wakeup", player.remaining_wakeup_time)
     -- debuggui("wakeup2", p2.remaining_wakeup_time)
-    debuggui("pos", string.format("%04f,%04f",player.pos_x, player.pos_y))
-    debuggui("pos", string.format("%04f,%04f",p2.pos_x, p2.pos_y))
-    debuggui("diff", string.format("%04f,%04f",player.pos_x - player.previous_pos_x, player.pos_y - player.previous_pos_y ))
-    debuggui("diff", string.format("%04f,%04f",p2.pos_x - p2.previous_pos_x, p2.pos_y - p2.previous_pos_y ))
-    debuggui("vel", string.format("%04f,%04f",player.velocity_x, player.velocity_y))
-    debuggui("vel", string.format("%04f,%04f",p2.velocity_x, p2.velocity_y))
-    debuggui("acc", string.format("%04f,%04f",player.acceleration_x, player.acceleration_y))
+    -- debuggui("pos", string.format("%04f,%04f",player.pos_x, player.pos_y))
+    -- debuggui("pos", string.format("%04f,%04f",p2.pos_x, p2.pos_y))
+    -- debuggui("diff", string.format("%04f,%04f",player.pos_x - player.previous_pos_x, player.pos_y - player.previous_pos_y ))
+    -- debuggui("diff", string.format("%04f,%04f",p2.pos_x - p2.previous_pos_x, p2.pos_y - p2.previous_pos_y ))
+    -- debuggui("vel", string.format("%04f,%04f",player.velocity_x, player.velocity_y))
+    -- debuggui("vel", string.format("%04f,%04f",p2.velocity_x, p2.velocity_y))
+    -- debuggui("acc", string.format("%04f,%04f",player.acceleration_x, player.acceleration_y))
     -- debuggui("recording", tostring(recording))
 
     for _, obj in pairs(projectiles) do
@@ -108,9 +108,10 @@ local function debug_update_framedata(player, projectiles)
 --             debuggui("desync!", obj.animation_frame_hash)
 --           end
 --         end
-        debuggui("vx", obj.velocity_x)
-        debuggui("vy", obj.velocity_y)
-        debuggui("hits", obj.remaining_hits)
+        -- debuggui("vx", obj.velocity_x)
+        -- debuggui("vy", obj.velocity_y)
+        -- debuggui("hits", obj.remaining_hits)
+        debuggui("ts", obj.tengu_state)
         debuggui("cd", obj.cooldown)
 
 --         debuggui("rem", string.format("%x", obj.remaining_lifetime))
@@ -359,8 +360,8 @@ local function memory_display()
   end
 end
 
-local memory_view_start = gamestate.P1.stun_bar_max_addr
-local function memory_view_display()
+memory_view_start = gamestate.P1.stun_bar_max_addr
+local function show_memory_view_display()
   for i = 1, 20 do
     local addr = memory_view_start + 4 * (i - 1)
     local cv = memory.readdword(addr)
@@ -413,10 +414,10 @@ local function filter_memory_decreased()
 end
 
 local function run_debug()
-  if debug_settings.dump_state_display then
+  if debug_settings.show_dump_state_display then
     dump_variables()
   end
-  if debug_settings.debug_frames_display then
+  if debug_settings.show_debug_frames_display then
     debug_update_framedata(gamestate.P1, gamestate.projectiles)
   end
 
@@ -493,12 +494,14 @@ end
 local function draw_debug()
   if not menu.is_open then
     -- memory_display()
-    -- memory_view_display()
-    if debug_settings.dump_state_display then
-      dump_state_display()
+    if debug_settings.show_dump_state_display then
+      show_dump_state_display()
     end
-    if debug_settings.debug_frames_display then
+    if debug_settings.show_debug_frames_display then
       debug_framedata_display()
+    end
+    if debug_settings.show_memory_view_display then
+      show_memory_view_display()
     end
   end
 

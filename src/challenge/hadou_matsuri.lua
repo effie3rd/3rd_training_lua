@@ -3,7 +3,7 @@ local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
 local draw = require("src.ui.draw")
 local menu = require("src.ui.menu")
-local gamestate = require("src/gamestate")
+local gamestate = require("src.gamestate")
 local character_select = require("src.control.character_select")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific

@@ -1,8 +1,8 @@
---in-match drawing
-local settings = require("src/settings")
+--in-match displays
+local settings = require("src.settings")
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
-local gamestate = require("src/gamestate")
+local gamestate = require("src.gamestate")
 local attack_data = require("src.modules.attack_data")
 local text = require("src.ui.text")
 local colors = require("src.ui.colors")

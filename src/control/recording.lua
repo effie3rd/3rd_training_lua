@@ -1,6 +1,6 @@
-local settings = require("src/settings")
-local gamestate = require("src/gamestate")
-local training = require("src/training")
+local settings = require("src.settings")
+local gamestate = require("src.gamestate")
+local training = require("src.training")
 local inp = require("src.control.input")
 
 local make_input_empty, interpret_input = inp.make_input_empty, inp.interpret_input

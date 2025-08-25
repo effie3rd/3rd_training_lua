@@ -1,6 +1,6 @@
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
-local debug_settings = require("src/debug_settings")
+local debug_settings = require("src.debug_settings")
 
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
@@ -292,6 +292,20 @@ local function is_state_on_ground(state, player)
       end
     end
   end
+end
+
+local function get_parry_type(player)
+  local player_airborne = player.posture >= 20 and player.posture <= 30
+  local opponent_airborne = player.other.posture >= 20 and player.other.posture <= 30
+  local parry_type = "ground"
+
+  --this code can flag projectiles as anti air parries even though they are ground parries
+  if player_airborne then
+    parry_type = "air"
+  elseif opponent_airborne then
+    parry_type = "anti_air"
+  end
+  return parry_type
 end
 
 local function read_game_vars()
@@ -1156,16 +1170,8 @@ local function read_player_vars(player)
 
     -- check success/miss
     if parry_object.armed then
-      local player_airborne = player.posture >= 20 and player.posture <= 30
-      local opponent_airborne = player.other.posture >= 20 and player.other.posture <= 30
-      local parry_type = "ground"
+      local parry_type = get_parry_type(player)
 
-      --this code can flag projectiles as anti air parries even though they are ground parries
-      if player_airborne then
-        parry_type = "air"
-      elseif opponent_airborne then
-        parry_type = "anti_air"
-      end
       if parry_type == "ground" and (parry_object.name == "forward" or parry_object.name == "down")
       or parry_type == "air" and parry_object.name == "air"
       or parry_type == "anti_air" and parry_object.name == "anti_air"
@@ -1406,9 +1412,88 @@ local function read_player_vars(player)
 
 end
 
+local function update_tengu_stones()
+  if not (P1 and P1.char_str == "oro" and P1.selected_sa == 3)
+  and not (P2 and P2.char_str == "oro" and P2.selected_sa == 3)
+  then
+    return
+  end
 
+  for _, proj in pairs(projectiles) do
+    if proj.projectile_type == "00_tenguishi" then
+      proj.tengu_state = memory.readbyte(proj.base + 41)
+      if proj.tengu_attack_queued then
+        if proj.tengu_state == 3 then
+          proj.tengu_attack_queued = false
+        end
+      else
+        if proj.tengu_state ~= 3 then
+          proj.cooldown = 99
+        else
+          proj.cooldown = 0
+        end
+      end
+    end
+  end
+
+  for _, player in ipairs(player_objects) do
+    if player.char_str == "oro" then
+      if player.has_just_attacked then
+        local fdata = player.animation_frame_data
+        if fdata then
+          local next_hit_id = player.current_hit_id + 1
+          if fdata.hit_frames and fdata.hit_frames[next_hit_id] then
+            player.tengu_connect_frame = frame_number + fdata.hit_frames[next_hit_id][1] - player.animation_frame
+          end
+        end
+      end
+      if player.tengu_connect_frame and player.tengu_connect_frame > frame_number then
+        local delta = player.tengu_connect_frame - frame_number
+        for _, proj in pairs(projectiles) do
+          if proj.emitter_id == player.id
+          and proj.projectile_type == "00_tenguishi"
+          and (proj.tengu_state == 1 or proj.tengu_state == 2)
+          and not proj.tengu_attack_queued
+          then
+            proj.cooldown = delta
+            proj.tengu_attack_queued = true
+          end
+        end
+      end
+    end
+  end
+
+end
+
+local function update_seieienbu()
+  if not (P1 and P1.char_str == "yang" and P1.selected_sa == 3)
+  and not (P2 and P2.char_str == "yang" and P2.selected_sa == 3)
+  then
+    return
+  end
+  for _, player in ipairs(player_objects) do
+    if player.char_str == "yang" and player.is_in_timed_sa and player.has_just_attacked then
+      local fdata = player.animation_frame_data
+      if fdata then
+        local seiei_projectiles = {}
+        for _, proj in pairs(projectiles) do
+          if proj.emitter_id == player.id
+          and proj.projectile_type == "00_seieienbu"
+          then
+            table.insert(seiei_projectiles, proj)
+            proj.cooldown = 10
+            proj.seiei_animation = player.animation
+            proj.seiei_frame = player.animation_frame
+            -- insert_projectile(player, motion_data, predicted_hit)
+          end
+        end
+      end
+    end
+  end
+end
+
+local max_objects = 30
 local function read_projectiles()
-  local mAX_OBJECTS = 30
   projectiles = projectiles or {}
 
   -- flag everything as expired by default, we will reset the flag it we update the projectile
@@ -1427,7 +1512,7 @@ local function read_projectiles()
   local obj_index = memory.readwordsigned(index + (list * 2))
 
   local obj_slot = 1
-  while obj_slot <= mAX_OBJECTS and obj_index ~= -1 do
+  while obj_slot <= max_objects and obj_index ~= -1 do
     local base = initial + bit.lshift(obj_index, 11)
     local id = string.format("%08X", base)
     local obj = projectiles[id]
@@ -1513,8 +1598,9 @@ local function read_projectiles()
         if obj.projectile_type == "25" then --debug
           P1_Current_search_adr = obj.base
         end
-        if obj.projectile_type == "5B" or obj.projectile_type == "00" then
-          debug.memory_view_start = obj.base
+        --debug
+        if obj.projectile_type == "5B" or obj.projectile_type == "00_tenguishi" then
+          memory_view_start = obj.base
         end
         obj.projectile_start_type = obj.projectile_type -- type can change during projectile life (ex: aegis)
         obj.animation_start_frame = frame_number
@@ -1540,14 +1626,6 @@ local function read_projectiles()
 
       if obj.next_hit_at_lifetime then
         obj.cooldown = obj.remaining_lifetime - obj.next_hit_at_lifetime
-      end
-      if obj.projectile_type == "00_tenguishi" then
-        obj.tengu_state = memory.readbyte(obj.base + 41)
-        if obj.tengu_state ~= 3 then
-          obj.cooldown = 99
-        else
-          obj.cooldown = 0
-        end
       end
 
       obj.animation_frame = frame_number - obj.animation_start_frame - obj.animation_freeze_frames
@@ -1587,6 +1665,9 @@ local function read_projectiles()
     obj_index = memory.readwordsigned(obj.base + 0x1C)
     obj_slot = obj_slot + 1
   end
+
+  update_tengu_stones()
+  update_seieienbu()
 end
 
 local function remove_expired_projectiles()

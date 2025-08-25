@@ -1,11 +1,11 @@
-local gamestate = require("src/gamestate")
+local gamestate = require("src.gamestate")
 local movedata = require("src.modules.movedata")
 local recording = require("src.control.recording")
-local training = require("src/training")
+local training = require("src.training")
 local character_select = require("src.control.character_select")
 local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
-local settings = require("src/settings")
+local settings = require("src.settings")
 local debug_settings = require("src.debug_settings")
 local menu_tables = require("src.ui.menu_tables")
 require("src.ui.menu_items")
@@ -104,7 +104,7 @@ end
 
 local function update_menu()
   slot_weight_item.object = recording_slots[settings.training.current_recording_slot]
-  counter_attack_delay_item.object = recording_slots[settings.training.current_recording_slot]
+  recording_delay_item.object = recording_slots[settings.training.current_recording_slot]
   recording_random_deviation_item.object = recording_slots[settings.training.current_recording_slot]
 end
 
@@ -206,6 +206,34 @@ local function update_counter_attack_items()
   end
 end
 
+local function open_save_popup()
+  save_recording_slot_popup.selected_index = 1
+  menu_stack_push(save_recording_slot_popup)
+  save_file_name = string.gsub(training.dummy.char_str, "(.*)", string.upper).."_"
+end
+
+local function open_load_popup()
+  load_recording_slot_popup.selected_index = 1
+  menu_stack_push(load_recording_slot_popup)
+
+  load_file_index = 1
+
+  local cmd = "dir /b "..string.gsub(saved_recordings_path, "/", "\\")
+  local f = io.popen(cmd)
+  if f == nil then
+    print(string.format("Error: Failed to execute command \"%s\"", cmd))
+    return
+  end
+  local str = f:read("*all")
+  load_file_list = {}
+  for line in string.gmatch(str, '([^\r\n]+)') do -- Split all lines that have ".json" in them
+    if string.find(line, ".json") ~= nil then
+      local file = line
+      table.insert(load_file_list, file)
+    end
+  end
+  load_recording_slot_popup.content[1].list = load_file_list
+end
 
 local function init_menu()
   save_recording_slot_popup = make_menu(71, 61, 312, 122, -- screen size 383,223
@@ -370,7 +398,7 @@ local function init_menu()
     return counter_attack_settings.ca_type == 1
   end
 
-  counter_attack_delay_item = integer_menu_item("counter_attack_delay", settings.training, "mid_distance_height", -40, 40, false, 0)
+  counter_attack_delay_item = integer_menu_item("counter_attack_delay", settings.training, "counter_attack_delay", -40, 40, false, 0)
   counter_attack_delay_item.indent = true
   counter_attack_delay_item.is_disabled = function()
     return counter_attack_settings.ca_type == 1
@@ -552,8 +580,9 @@ local function init_menu()
     local debug_settings_menu = {
       header = header_menu_item("menu_title_debug"),
       entries = {
-        checkbox_menu_item("dump_state_display", debug_settings, "dump_state_display"),
-        checkbox_menu_item("debug_frames_display", debug_settings, "debug_frames_display"),
+        checkbox_menu_item("dump_state_display", debug_settings, "show_dump_state_display"),
+        checkbox_menu_item("debug_frames_display", debug_settings, "show_debug_frames_display"),
+        checkbox_menu_item("memory_view_display", debug_settings, "show_memory_view_display"),
         checkbox_menu_item("show_predicted_hitboxes", debug_settings, "show_predicted_hitbox"),
         checkbox_menu_item("record_frame_data", debug_settings, "record_framedata"),
         button_menu_item("save_frame_data", save_frame_data),
@@ -566,34 +595,6 @@ local function init_menu()
   is_initialized = true
 end
 
-function open_save_popup()
-  save_recording_slot_popup.selected_index = 1
-  menu_stack_push(save_recording_slot_popup)
-  save_file_name = string.gsub(training.dummy.char_str, "(.*)", string.upper).."_"
-end
-
-function open_load_popup()
-  load_recording_slot_popup.selected_index = 1
-  menu_stack_push(load_recording_slot_popup)
-
-  load_file_index = 1
-
-  local cmd = "dir /b "..string.gsub(saved_recordings_path, "/", "\\")
-  local f = io.popen(cmd)
-  if f == nil then
-    print(string.format("Error: Failed to execute command \"%s\"", cmd))
-    return
-  end
-  local str = f:read("*all")
-  load_file_list = {}
-  for line in string.gmatch(str, '([^\r\n]+)') do -- Split all lines that have ".json" in them
-    if string.find(line, ".json") ~= nil then
-      local file = line
-      table.insert(load_file_list, file)
-    end
-  end
-  load_recording_slot_popup.content[1].list = load_file_list
-end
 
 
 local horizontal_autofire_rate = 4

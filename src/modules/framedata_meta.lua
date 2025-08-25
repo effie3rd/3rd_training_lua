@@ -313,7 +313,7 @@ frame_data_meta["gouki"]["3850"] = { hit_type = {3, 3}}                         
 frame_data_meta["gouki"]["3768"] = { throw = true}                               --throw_neutral
 frame_data_meta["gouki"]["98f8"] = { hit_type = {4}}                             --uoh
 frame_data_meta["gouki"]["9c18"] = { throw = true}                               --sgs
-frame_data_meta["gouki"]["9c98"] = { hit_type = {3}, unparryable = true}          --kkz
+frame_data_meta["gouki"]["9c98"] = { hit_type = {3}, unparryable = true}         --kkz
 frame_data_meta["gouki"]["86e8"] = { hit_type = {3, 3}}                          --tatsumaki_LK
 frame_data_meta["gouki"]["87f8"] = { hit_type = {3, 3, 3, 3, 3}}                 --tatsumaki_MK
 frame_data_meta["gouki"]["8968"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3}}     --tatsumaki_HK

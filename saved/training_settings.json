@@ -1031,7 +1031,7 @@
   "tech_throws_mode":1,
   "display_input":true,
   "hits_before_counter_attack_count":0,
-  "counter_attack_delay":1,
+  "counter_attack_delay":0,
   "display_attack_data":false,
   "display_attack_bars":3,
   "attack_bars_show_decimal":false,

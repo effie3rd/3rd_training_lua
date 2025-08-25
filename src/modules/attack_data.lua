@@ -1,4 +1,4 @@
-local gamestate = require("src/gamestate")
+local gamestate = require("src.gamestate")
 
 local data = {}
 

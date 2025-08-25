@@ -25,8 +25,9 @@ local player_debug_variables = {
   }
 }
 
-local dump_state_display = false
-local debug_frames_display = false
+local show_dump_state_display = false
+local show_debug_frames_display = false
+local show_memory_view_display = false
 
 local debug =  {
   player_debug_variables = player_debug_variables,
@@ -42,10 +43,12 @@ setmetatable(debug, {
       return recording_framedata
     elseif key == "log_categories_display" then
       return log_categories_display
-    elseif key == "dump_state_display" then
-      return dump_state_display
-    elseif key == "debug_frames_display" then
-      return debug_frames_display      
+    elseif key == "show_dump_state_display" then
+      return show_dump_state_display
+    elseif key == "show_debug_frames_display" then
+      return show_debug_frames_display
+    elseif key == "show_memory_view_display" then
+      return show_memory_view_display            
     end
   end,
 
@@ -56,10 +59,12 @@ setmetatable(debug, {
       recording_framedata = value
     elseif key == "log_categories_display" then
       log_categories_display = value
-    elseif key == "dump_state_display" then
-      dump_state_display = value
-    elseif key == "debug_frames_display" then
-      debug_frames_display = value      
+    elseif key == "show_dump_state_display" then
+      show_dump_state_display = value
+    elseif key == "show_debug_frames_display" then
+      show_debug_frames_display = value
+    elseif key == "show_memory_view_display" then
+      show_memory_view_display = value
     else
       rawset(debug, key, value)
     end

@@ -1,5 +1,5 @@
-local json = require("src/libs/dkjson")
-local debug_settings = require("src/debug_settings")
+local json = require("src.libs.dkjson")
+local debug_settings = require("src.debug_settings")
 
 
 local assert_enabled = debug_settings.developer_mode

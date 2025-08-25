@@ -1,13 +1,13 @@
-local loading = require("src/loading")
+local loading = require("src.loading")
 local text = require("src.ui.text")
 local fd = require("src.modules.framedata")
 local movedata = require("src.modules.movedata")
-local gamestate = require("src/gamestate")
+local gamestate = require("src.gamestate")
 local character_select = require("src.control.character_select")
-local settings = require("src/settings")
+local settings = require("src.settings")
 local mem = require("src.control.write_memory")
-local debug_settings = require("src/debug_settings")
-local json = require("src/libs/dkjson")
+local debug_settings = require("src.debug_settings")
+local json = require("src.libs.dkjson")
 
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
@@ -640,17 +640,19 @@ function record_frames_hotkey()
   end
 end
 
-local i_record = 4
-local i_characters = 11
+local i_record = 1
+local i_characters = 1
 local end_character = 21
 local record_char_state = "start"
 local char_list = deepcopy(Characters)
+local char
 table.sort(char_list)
 local last_category = 1
 
 function record_all_characters(player_obj, projectiles)
   if debug_settings.recording_framedata then
-    -- emu.speedmode("turbo")
+    debug_settings.show_debug_frames_display = true
+    emu.speedmode("turbo")
     settings.training.blocking_mode = 1
     player = player_obj
     dummy = player_obj.other
@@ -666,7 +668,7 @@ function record_all_characters(player_obj, projectiles)
         state = "start"
         setup = false
         recording = false
-        i_attack_categories = 6
+        i_attack_categories = 1
         last_category = 7
         i_recording_hit_types = 1
         received_hits = 0
@@ -681,8 +683,6 @@ function record_all_characters(player_obj, projectiles)
         record_char_state = "finished"
       end
     elseif record_char_state == "recording" then
-      debug_settings.recording_framedata = true
-
       if i_record == 1 then
         record_idle(player)
       elseif i_record == 2 then
@@ -699,7 +699,6 @@ function record_all_characters(player_obj, projectiles)
         state = "start"
         setup = false
         recording = false
-        debug_settings.recording_framedata = false
         i_record = i_record + 1
         -- i_characters = 99
       end
@@ -713,6 +712,7 @@ function record_all_characters(player_obj, projectiles)
       end
     elseif record_char_state == "finished" then
       save_frame_data()
+      debug_settings.recording_framedata = false
       loading.frame_data_loaded = false --debug
       record_char_state = "the_end"
     end
@@ -1494,7 +1494,7 @@ function record_attacks(player_obj, projectiles)
           moves[i].air = nil
           local move = deepcopy(moves[i])
           move.air = "only"
-          move.name = move.name .. "air"
+          move.name = move.name .. "_air"
           table.insert(moves, i + 1, move)
         end
         if moves[i].move_type == "special" then
@@ -1745,7 +1745,7 @@ function record_attacks(player_obj, projectiles)
         if not current_attack.name then
           current_attack.name = sequence_to_name(current_attack.sequence)
           if current_attack.air then
-            current_attack.name = current_attack.name .. "air"
+            current_attack.name = current_attack.name .. "_air"
           end
           if string.len(current_attack.name) == 2 then
             current_attack.name = "cl_" .. current_attack.name
@@ -5012,7 +5012,7 @@ reset_current_recording_animation()
 
 display = {}
 local next_anim_types = {"next_anim", "optional_anim"}
-local props_to_copy = {"self_freeze", "opponent_freeze", "opponent_recovery", "pushback","wakeup"}
+local props_to_copy = {"self_freeze", "opponent_freeze", "opponent_recovery", "pushback", "wakeup", "bypass_freeze"}
 
 function new_recording(player_obj, projectiles, name)
   reset_current_recording_animation()
@@ -5099,13 +5099,13 @@ function end_recording(player_obj, projectiles, name)
     if fdata then
       if recording_options.hit_type == "block"
       or recording_options.self_chain then
-        for j = 1, #new_frames - 1 do
+--[[         for j = 1, #new_frames - 1 do
           local str = "0000000000"
           if fdata.frames[j] then
             str = fdata.frames[j].hash
           end
           print(j-1, str, new_frames[j].hash)
-        end
+        end ]]
         for j = 1, #new_frames - 1 do
           if index_of_hash(fdata.frames, new_frames[j].hash) == 0 then
             local index_of_next_frame = find_exception_position(fdata.frames, new_frames, j + 1) - 1 - 1
@@ -5323,7 +5323,9 @@ function record_framedata(player_obj, projectiles, name)
     end
 
     if bypassing_freeze then
-      current_recording_animation.frames[frame + 1].bypass_freeze = true
+      if current_recording_animation.frames[frame] then
+        current_recording_animation.frames[frame].bypass_freeze = true
+      end
     end
 
     if player.has_just_acted then
@@ -5458,7 +5460,8 @@ function record_framedata(player_obj, projectiles, name)
       if recording_options.recording_wakeups or recording_options.recording_movement or recording_options.recording_idle then
         for __, box in ipairs(player.boxes) do
           local type = convert_box_types[box[1]]
-          if (type == "vulnerability") then
+          if type == "vulnerability"
+          or type == "throwable" then
             table.insert(current_recording_animation.frames[frame + 1].boxes, copytable(box))
           end
         end

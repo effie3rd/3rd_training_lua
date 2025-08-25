@@ -1,7 +1,7 @@
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
 local sd = require("src.modules.stagedata")
-local gamestate = require("src/gamestate")
+local gamestate = require("src.gamestate")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local stages = sd.stages
@@ -9,6 +9,11 @@ local test_collision, find_move_frame_data = fd.test_collision, fd.find_move_fra
 local frame_data_meta = fdm.frame_data_meta
 
 local next_anim_types = {"next_anim", "optional_anim"}
+
+
+
+
+
 
 local function predict_frames_branching(obj, anim, frame, frames_prediction, result, include_start_frame)
   local results = {}
