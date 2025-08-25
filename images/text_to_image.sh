@@ -11,18 +11,18 @@ if [ "$5" == "en" ]; then
 
         WIDTH=$((WIDTH+1))
 
-        magick -size ${WIDTH}x8 xc:transparent +antialias \
+        magick -size ${WIDTH}x9 xc:transparent +antialias \
         -font TinyUnicode -pointsize 16 -interword-spacing 2 -gravity west \
-        -draw "fill black         text  2,-3  '$1' \
+        -draw "fill black         text  2,-4  '$1' \
+            fill black         text  2,-3  '$1' \
             fill black         text  2,-2  '$1' \
-            fill black         text  2,-1  '$1' \
+            fill black         text  0,-4  '$1' \
             fill black         text  0,-3  '$1' \
             fill black         text  0,-2  '$1' \
-            fill black         text  0,-1  '$1' \
+            fill black         text  1,-4  '$1' \
             fill black         text  1,-3  '$1' \
             fill black         text  1,-2  '$1' \
-            fill black         text  1,-1  '$1' \
-            fill '$4'          text  1,-2  '$1' " \
+            fill '$4'          text  1,-3  '$1' " \
         png32:"${FP}$2".png
     fi
 elif [ "$5" == "jp" ]; then

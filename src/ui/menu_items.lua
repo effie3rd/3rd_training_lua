@@ -1614,7 +1614,7 @@ function multitab_menu_draw(menu)
   menu_y = menu_y + 4
 
   local scroll_down = false
-  local menu_item_spacing = 2
+  local menu_item_spacing = 1
   if lang_code[settings.training.language] == "jp" then
     menu_item_spacing = 1
   end
