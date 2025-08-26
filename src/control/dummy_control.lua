@@ -377,17 +377,25 @@ local k_buttons = {"LK","MK","HK"}
 local i_mash_directions = 1
 local i_mash_buttons = 1
 
+local mash_inputs_mode = 1
+
 local previous_stun = 0
 local stun_values = {}
 function update_mash_inputs(input, player, dummy, mode)
+  mash_inputs_mode = mode
   if dummy.is_stunned and previous_stun == 0 and dummy.stun_timer > 0 then
-    table.insert(stun_values, dummy.stun_timer)
+    previous_stun = dummy.stun_timer
+  end
+  if dummy.is_stunned and dummy.stun_timer > 0 then
+    local diff = previous_stun - dummy.stun_timer
+    table.insert(stun_values, diff)
     local sum = 0
     for _, val in ipairs(stun_values) do
       sum = sum + val
     end
     local avg = sum / #stun_values
-    print(dummy.stun_timer, "avg:", avg)
+    print(diff, "avg:", avg)
+    previous_stun = dummy.stun_timer
   end
   previous_stun = dummy.stun_timer
   if not gamestate.is_in_match or mode == 1 or current_recording_state == 4 then
@@ -472,30 +480,28 @@ function update_fast_wake_up(input, player, dummy, mode)
   end
 end
 
-function get_stun_reduction_value(sequence)
-  local n_kicks = 0
-  local total = 0
-  for i = 1, #sequence do
-    local has_dir = false
-    for j = 1, #sequence[i] do
-      if sequence[i][j] == "forward"
-      or sequence[i][j] == "back"
-      or sequence[i][j] == "up"
-      or sequence[i][j] == "down" then
-        total = total + 1
-        has_dir = true
-      elseif sequence[i][j] == "LP"
-      or sequence[i][j] == "MP"
-      or sequence[i][j] == "HP" then
-        total = total + 1
-      elseif sequence[i][j] == "LK"
-      or sequence[i][j] == "MK"
-      or sequence[i][j] == "HK" then
-        n_kicks = n_kicks + 1
-      end
-    end
+--normal 1.46
+--serious 2.8
+--fastest 4.33
+
+local stun_reduction_rate_normal = 1.46
+local stun_reduction_rate_serious = 2.8
+local stun_reduction_rate_fastest = 4.33
+local function estimate_frames_until_stun_recovery(stun_timer)
+  if mash_inputs_mode == 1 then
+    return stun_timer
+  elseif mash_inputs_mode == 2 then
+    return math.ceil(stun_timer / stun_reduction_rate_normal)
+  elseif mash_inputs_mode == 3 then
+    return math.ceil(stun_timer / stun_reduction_rate_serious)
+  elseif mash_inputs_mode == 4 then
+    return math.ceil(stun_timer / stun_reduction_rate_fastest)
   end
-  return total + #sequence + math.floor(n_kicks / 3)
+end
+
+local function reduce_stun_controlled()
+
+
 end
 
 local guard_jumps =
@@ -702,10 +708,11 @@ function update_counter_attack(input, attacker, defender, counter_attack_setting
         defender.counter.attack_frame = gamestate.frame_number
       end
     end
-    if defender.is_stunned then
-      local seq_stun_reduction = get_stun_reduction_value(defender.counter.sequence)
-      if seq_stun_reduction <= defender.stun_timer then
-
+    if defender.is_stunned and defender.stun_timer > 0 then
+      local frames_until_recovery = estimate_frames_until_stun_recovery(defender.stun_timer)
+      local offset = 2
+      if frames_until_recovery > 0 and frames_until_recovery <= #defender.counter.sequence + offset then
+        
       end
     end
     local frames_remaining = defender.counter.attack_frame - gamestate.frame_number

@@ -95,6 +95,8 @@ local function on_load_state()
 
   training.reset_gauge_state()
 
+  hud.reset_hud()
+
   -- reset recording states in a useful way
   if current_recording_state == 3 then
     set_recording_state({}, 2)
@@ -217,8 +219,9 @@ local function before_frame()
       menu.update_counter_attack_items()
     end
     if gamestate.has_match_just_started then
-      hud.attack_range_display_reset()
-      hud.red_parry_miss_display_reset()
+
+      hud.reset_hud()
+
     end
     if gamestate.is_in_match then
       menu.update_gauge_items()

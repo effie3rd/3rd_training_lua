@@ -321,6 +321,18 @@ local function find_move_frame_data(char_str, animation_id)
   return frame_data[char_str][animation_id]
 end
 
+function get_hurtboxes(char, anim, frame)
+  if  frame_data[char][anim]
+  and frame_data[char][anim].frames
+  and frame_data[char][anim].frames[frame + 1]
+  and frame_data[char][anim].frames[frame + 1].boxes
+  and has_boxes(frame_data[char][anim].frames[frame + 1].boxes, {"vulnerability", "ext. vulnerability"})
+  then
+    return frame_data[char][anim].frames[frame + 1].boxes
+  end
+  return nil
+end
+
 return {
   frame_data = frame_data,
   character_specific = character_specific,

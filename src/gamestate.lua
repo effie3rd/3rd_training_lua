@@ -1393,6 +1393,11 @@ local function read_player_vars(player)
   player.stun_just_began = false
   player.stun_just_ended = false
 
+  --for detecting stun from savestate
+  if player.previous_stun_timer and player.stun_timer < player.previous_stun_timer
+  and player.stun_timer > 0 and player.stun_timer < 250 then
+    player.is_stunned = true
+  end
   if player.stun_activate == 1 then
     player.is_stunned = true
     if not player.previous_stunned then
@@ -1409,6 +1414,7 @@ local function read_player_vars(player)
   end
 
   player.previous_stunned = player.is_stunned
+  player.previous_stun_timer = player.stun_timer
 
 end
 

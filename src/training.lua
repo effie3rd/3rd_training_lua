@@ -228,17 +228,27 @@ local function update_gauges(player)
     if wanted_stun >=  player.stun_bar_max * .5 then
       stun_recovery_rate = stun_recovery_rate_default * 2
     end
-    if wanted_stun >=  player.stun_bar_max * .75 then
+    if wanted_stun >=  player.stun_bar_max * .7 then
       stun_recovery_rate = stun_recovery_rate_default * 3
     end
+    if wanted_stun >=  player.stun_bar_max * .9 then
+      stun_recovery_rate = stun_recovery_rate_default * 6
+    end
 
+    if player.stun_just_ended then
+      gauge_state[id].stun_refill_start_frame = 0
+      gauge_state[id].should_refill_stun = true
+    end
     if (player.idle_time == 1 and not gauge_state[id].should_refill_stun)
     or player.has_just_been_hit or player.is_being_thrown
     or player.is_stunned or player.has_just_hit_ground
     then
+      print(player.has_just_been_hit, player.is_being_thrown, player.is_stunned, player.has_just_hit_ground)
       gauge_state[id].stun_refill_start_frame = gamestate.frame_number
       gauge_state[id].should_refill_stun = false
     end
+
+
 
     if gamestate.frame_number - gauge_state[id].stun_refill_start_frame >= settings.training.stun_reset_delay
     and (player.is_idle or (player.remaining_wakeup_time > 0 and player.remaining_wakeup_time <= 20))

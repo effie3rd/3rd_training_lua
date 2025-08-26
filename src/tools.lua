@@ -315,6 +315,47 @@ function get_boxes(boxes, types)
   return res
 end
 
+function get_pushboxes(player)
+  for _, box in pairs(player.boxes) do
+    if convert_box_types[box[1]] == "push" then
+      return box
+    end
+  end
+  return nil
+end
+
+function get_boxes_lowest_position(boxes, types)
+  if boxes then
+    local min = math.huge
+    for _, box in pairs(boxes) do
+      local  b = format_box(box)
+      for _, type in pairs(types) do
+        if b.type == type and b.bottom < min then
+          min = b.bottom
+        end
+      end
+    end
+    return min
+  end
+  return nil
+end
+
+function get_boxes_highest_position(boxes, types)
+  if boxes then
+    local max = 0
+    for _, box in pairs(boxes) do
+      local  b = format_box(box)
+      for _, type in pairs(types) do
+        if b.type == type and b.bottom + b.height > max then
+          max = b.bottom + b.height
+        end
+      end
+    end
+    return max
+  end
+  return nil
+end
+
 function input_to_text(t)
   local result = {}
   for i = 1, #t do

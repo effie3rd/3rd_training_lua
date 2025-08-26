@@ -713,6 +713,10 @@ end ]]
 local last_hit_history = nil
 local last_hit_history_size = 2
 
+local function last_hit_bars_reset()
+  last_hit_history = nil
+end
+
 local function last_hit_bars()
   if settings.training.display_attack_bars > 1 then
     if settings.training.display_attack_bars == 2 then
@@ -809,20 +813,81 @@ local function last_hit_bars()
   end
 end
 
+local function get_stun_timer_position(player)
+  local char_height = get_boxes_highest_position(player.boxes, {"vulnerability"})
+  return draw.game_to_screen_space(player.pos_x, player.pos_y + char_height)
+end
 local stun_timer_max_width = 60
+local stun_timer_half_width = math.floor(stun_timer_max_width / 2)
 local stun_timer_max_value = 240
 local stun_timer_gauge_height = 2
+local stun_timer_state = {
+  {stunned_y_pos = 0,
+  capture_next_pos = false},
+  {stunned_y_pos = 0,
+  capture_next_pos = false}
+}
+local stun_timer_position_adjust = {
+  ["alex"] = 8,
+  ["dudley"] = 4,
+  ["elena"] = 2,
+  ["ken"] = 6,
+  ["gouki"] = 8,
+  ["hugo"] = 4,
+  ["necro"] = 16,
+  ["oro"] = 6,
+  ["remy"] = 2,
+  ["ryu"] = 6,
+  ["sean"] = 6,
+  ["shingouki"] = 4
+}
+
+local function stun_timer_display_reset()
+  stun_timer_state = {
+    {stunned_y_pos = 0,
+    capture_next_pos = false},
+    {stunned_y_pos = 0,
+    capture_next_pos = false}
+  }
+end
+
 local function stun_timer_display(player)
   local id = player.id
-  if player.is_stunned and player.stun_timer > 0 then
-    local stun_text = player.stun_timer
-    local pos_x, pos_y = draw.game_to_screen_space(player.pos_x, player.pos_y + character_specific[player.char_str].height)
-    local text_w, text_h = get_text_dimensions(stun_text, "en")
+  if player.is_stunned then
+    if stun_timer_state[id].capture_next_pos then
+      local char_height = get_boxes_highest_position(player.boxes, {"vulnerability"})
+      if char_height then
+        local x, y = draw.game_to_screen_space(player.pos_x, player.pos_y + char_height)
+        if stun_timer_position_adjust[player.char_str] then
+          y = y - stun_timer_position_adjust[player.char_str]
+        end
+        stun_timer_state[id].stunned_y_pos = y
+        stun_timer_state[id].capture_next_pos = false
+      end
+    end
+    if player.just_recovered or player.has_just_woke_up then
+      stun_timer_state[id].capture_next_pos = true
+    end
+    if player.stun_timer > 0 then
+      local stun_text = player.stun_timer
+      local pos_x, pos_y = get_stun_timer_position(player)
 
-    pos_y = pos_y - 8
-    draw.draw_gauge(pos_x - math.floor(stun_timer_max_width / 2), pos_y, stun_timer_max_width, stun_timer_gauge_height, player.stun_timer / stun_timer_max_value, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color)
+      if player.standing_state == 1
+      or (player.char_str == "alex" and player.standing_state == 13)
+      or (player.char_str == "hugo" and player.standing_state == 2)
+      or (player.char_str == "ibuki" and player.standing_state == 10)
+      then
+        pos_y = stun_timer_state[id].stunned_y_pos
+      end
+      local text_w, text_h = get_text_dimensions(stun_text, "en")
 
-    render_text(pos_x - math.round(text_w / 2), pos_y - text_h + 1, stun_text, "en")
+      pos_x = pos_x - stun_timer_half_width
+      pos_x = clamp(pos_x, 1, draw.SCREEN_WIDTH - stun_timer_max_width - 2)
+      pos_y = pos_y - 8
+      draw.draw_gauge(pos_x, pos_y, stun_timer_max_width, stun_timer_gauge_height, player.stun_timer / stun_timer_max_value, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color)
+
+      render_text(pos_x + stun_timer_half_width - math.round(text_w / 2), pos_y - text_h + 1, stun_text, "en")
+    end
   end
 end
 
@@ -888,6 +953,11 @@ end
 
 local blocking_direction_history = {}
 local last_dir = 1
+
+local function blocking_direction_display_reset()
+  blocking_direction_history = {}
+end
+
 local function update_blocking_direction(input, player, dummy)
   if (player.previous_pos_x - dummy.previous_pos_x) * (player.pos_x - dummy.pos_x) <= 0 then
   end
@@ -1292,6 +1362,14 @@ local function player_position_display()
   gui.image(x - 4 , y, images.img_dir_small[8])
 end
 
+local function reset_hud()
+  attack_range_display_reset()
+  blocking_direction_display_reset()
+  last_hit_bars_reset()
+  red_parry_miss_display_reset()
+  stun_timer_display_reset()
+end
+
 local function draw_hud(player, dummy)
   if settings.training.display_attack_range ~= 1 then
     attack_range_display()
@@ -1365,7 +1443,6 @@ end
 
 return {
   draw_hud = draw_hud,
-  attack_range_display_reset = attack_range_display_reset,
-  update_blocking_direction = update_blocking_direction,
-  red_parry_miss_display_reset = red_parry_miss_display_reset
+  reset_hud = reset_hud,
+  update_blocking_direction = update_blocking_direction
 }

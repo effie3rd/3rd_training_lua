@@ -204,39 +204,6 @@ local function insert_projectile(player, motion_data, predicted_hit)
   end
 end
 
-local function get_hurtboxes(char, anim, frame)
-  if  frame_data[char][anim]
-  and frame_data[char][anim].frames
-  and frame_data[char][anim].frames[frame + 1]
-  and frame_data[char][anim].frames[frame + 1].boxes
-  and has_boxes(frame_data[char][anim].frames[frame + 1].boxes, {"vulnerability", "ext. vulnerability"})
-  then
-    return frame_data[char][anim].frames[frame + 1].boxes
-  end
-  return nil
-end
-
-local function get_pushboxes(player)
-  for _, box in pairs(player.boxes) do
-    if convert_box_types[box[1]] == "push" then
-      return box
-    end
-  end
-  return nil
-end
-
-local function get_boxes_lowest_position(boxes, types)
-  local min = math.huge
-  for _, box in pairs(boxes) do
-    local  b = format_box(box)
-    for _, type in pairs(types) do
-      if b.type == type and b.bottom < min then
-        min = b.bottom
-      end
-    end
-  end
-  return min
-end
 
 local function get_horizontal_box_overlap(a_box, ax, ay, a_flip, b_box, bx, by, b_flip)
   local a_l, b_l

@@ -64,7 +64,7 @@ function queue_denjin(player, n)
     table.insert(sequence, {})
   end
   for i = 1, n do
-    local inputs = copytable(mash_directions_normal[wrap_index(i, mash_directions_normal)])
+    local inputs = copytable(mash_directions_normal[(i - 1) % #mash_directions_normal + 1])
     table.insert(inputs, "LP")
     table.insert(inputs, p_buttons[i % 2 + 1])
     table.insert(sequence, inputs)
