@@ -2113,6 +2113,10 @@
     "en": "images/menu/menu_2_lines_en_5_white.png",
     "jp": "images/menu/menu_2_lines_jp_10_white.png"
   },
+  "menu_after_first_hit": {
+    "en": "images/menu/menu_after_first_hit_en_5_white.png",
+    "jp": "images/menu/menu_after_first_hit_jp_10_white.png"
+  },
   "menu_alex": {
     "en": "images/menu/menu_alex_en_5_white.png",
     "jp": "images/menu/menu_alex_jp_10_white.png"

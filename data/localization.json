@@ -33,7 +33,7 @@
   },
   "parry_every_suffix": {
     "en": "",
-    "jp": "段目おきに"
+    "jp": "ヒットごとに"
   },
   "footsies": {
     "en": "Footsies",
@@ -129,7 +129,7 @@
   },
   "hits_before_rp_suffix": {
     "en": "Before Red Parry",
-    "jp": "段目以降"
+    "jp": "ヒット以降"
   },
   "prefer_down_parry": {
     "en": "Prefer Down Parry",
@@ -141,7 +141,7 @@
   },
   "hits_before_ca_suffix": {
     "en": "Before Counterattack",
-    "jp": "段目以降"
+    "jp": "ヒット以降"
   },
   "counter_attack_delay": {
     "en": "Counterattack delay",
@@ -333,7 +333,11 @@
   },
   "menu_first_hit": {
     "en": "first hit",
-    "jp": "一段"
+    "jp": "第一ヒット"
+  },
+  "menu_after_first_hit": {
+    "en": "after first hit",
+    "jp": "一ヒット以降"
   },
   "menu_on": {
     "en": "on",

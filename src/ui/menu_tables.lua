@@ -79,6 +79,7 @@ local blocking_mode =
   "menu_off",
   "menu_on",
   "menu_first_hit",
+  "menu_after_first_hit",
   "menu_random"
 }
 
