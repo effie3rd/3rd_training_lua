@@ -346,3 +346,21 @@ function input_to_text(t)
   end
   return result
 end
+
+function wrap_index(i, tbl)
+  if i > #tbl then
+    return 1
+  elseif i < 1 then
+    return #tbl
+  end
+  return i
+end
+
+function bound_index(i, tbl)
+  if i > #tbl then
+    return #tbl
+  elseif i < 1 then
+    return 1
+  end
+  return i
+end

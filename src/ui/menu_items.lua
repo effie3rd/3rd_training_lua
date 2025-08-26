@@ -4,6 +4,7 @@ local colors = require("src.ui.colors")
 local text = require("src.ui.text")
 local draw = require("src.ui.draw")
 local images = require("src.ui.image_tables")
+local move_data = require("src.modules.move_data")
 
 local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text, text.render_text_multiple, text.get_text_dimensions, text.get_text_dimensions_multiple
 
@@ -309,7 +310,7 @@ function textfield_menu_item(name, object, property_name, default_value, max_len
   return o
 end
 
-function checkbox_menu_item(name, object, property_name, default_value)
+function on_off_menu_item(name, object, property_name, default_value)
   if default_value == nil then default_value = false end
   local o = {}
   o.name = name
@@ -652,6 +653,8 @@ function move_input_menu_item(name, object)
       offset_x = 8
     end
     local img_list = {}
+    local button = self.object.button
+    local inputs = move_data.get_move_inputs_by_name(self.object.char_str, self.object.name, self.object.button)
     local style = draw.controller_styles[settings.training.controller_style]
 
     if counter_attack_type[self.object.ca_type] == "special_sa" then
@@ -1612,7 +1615,6 @@ function multitab_menu_draw(menu)
   for pad = 15, 35 do
     gui.drawline(menu.left + pad, menu_y - 1, menu.right - pad, menu_y - 1, 0xFFFFFF0F)
   end
-
 
   menu_y = menu_y + 4
 

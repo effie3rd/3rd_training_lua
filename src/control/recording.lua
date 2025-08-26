@@ -24,6 +24,30 @@ recording_states =
   "playing",
 }
 
+recording_slots = {}
+
+recording_slots_names = {}
+
+
+local function make_recording_slot()
+  return {
+    inputs = {},
+    delay = 0,
+    random_deviation = 0,
+    weight = 1,
+  }
+end
+
+local function initialize_slots()
+  for i = 1, recording_slot_count do
+    table.insert(recording_slots, make_recording_slot())
+  end
+
+  for i = 1, #recording_slots do
+    table.insert(recording_slots_names, "slot "..i)
+  end
+end
+
 function clear_slot()
   recording_slots[settings.training.current_recording_slot] = make_recording_slot()
   settings.save_training_data()
@@ -37,6 +61,13 @@ function clear_all_slots()
   settings.save_training_data()
 end
 
+local function clear_all_recordings()
+  for _, char in pairs(Characters) do
+    settings.training.recordings[char] = {}
+    recording_slots = settings.training.recordings[char]
+    clear_all_slots()
+  end
+end
 
 local function backup_recordings()
   -- Init base table
@@ -302,24 +333,8 @@ end
 
 
 
-function make_recording_slot()
-  return {
-    inputs = {},
-    delay = 0,
-    random_deviation = 0,
-    weight = 1,
-  }
-end
+initialize_slots()
 
-recording_slots = {}
-for i = 1, recording_slot_count do
-  table.insert(recording_slots, make_recording_slot())
-end
-
-recording_slots_names = {}
-for i = 1, #recording_slots do
-  table.insert(recording_slots_names, "slot "..i)
-end
 
 local recording = {
   backup_recordings = backup_recordings,

@@ -413,6 +413,9 @@ local function filter_memory_decreased()
   end
 end
 
+
+local wait_for_stun = false
+
 local function run_debug()
   if debug_settings.show_dump_state_display then
     dump_variables()
@@ -468,6 +471,18 @@ local function run_debug()
   end
 
   if start_debug then
+    if not gamestate.P2.is_stunned and not wait_for_stun and gamestate.P2.stun_bar > 40 then
+      queue_denjin(gamestate.P1, 50)
+      wait_for_stun = true
+    end
+    if wait_for_stun then
+      if gamestate.P2.is_stunned then
+        wait_for_stun = false
+      end
+    end
+
+
+
     if not gamestate.P2.previous_is_wakingup and gamestate.P2.is_wakingup then
       if first_time then
         scan_frame = gamestate.frame_number + 50

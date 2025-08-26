@@ -1,7 +1,7 @@
 local loading = require("src.loading")
 local text = require("src.ui.text")
 local fd = require("src.modules.framedata")
-local movedata = require("src.modules.movedata")
+local move_data = require("src.modules.move_data")
 local gamestate = require("src.gamestate")
 local character_select = require("src.control.character_select")
 local settings = require("src.settings")
@@ -14,7 +14,7 @@ local frame_data, character_specific = fd.frame_data, fd.character_specific
 local test_collision, find_frame_data_by_name = fd.test_collision, fd.find_frame_data_by_name
 local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_slow_jumper
 local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text, text.render_text_multiple, text.get_text_dimensions, text.get_text_dimensions_multiple
-local move_list, get_move_sequence_by_name = movedata.move_list, movedata.get_move_sequence_by_name
+local move_list, get_move_inputs_by_name = move_data.move_list, move_data.get_move_inputs_by_name
 local frame_data_keys = copytable(Characters)
 table.insert(frame_data_keys, "projectiles")
 
@@ -572,13 +572,13 @@ local throw_uoh_pa = {
   {sequence={{"MP","MK"}}, name="uoh"},
   {sequence={{"HP","HK"}}, name="pa"}}
 
-local reverse_power_bomb = combine_arrays(get_move_sequence_by_name("alex","flash_chop","MP"), {{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}})
-reverse_power_bomb = combine_arrays(reverse_power_bomb, get_move_sequence_by_name("alex","power_bomb","MP"))
+local reverse_power_bomb = combine_arrays(get_move_inputs_by_name("alex","flash_chop","MP"), {{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}})
+reverse_power_bomb = combine_arrays(reverse_power_bomb, get_move_inputs_by_name("alex","power_bomb","MP"))
 
 local wakeups_list = {
-    {character = "ibuki", name = "raida", sequence = get_move_sequence_by_name("ibuki","raida","HP")},
-    {character = "ibuki", name = "kazekiri", sequence = get_move_sequence_by_name("ibuki","kazekiri","LK"), quick = true},
-    {character = "ibuki", name = "kubiori", sequence = get_move_sequence_by_name("ibuki","kubiori","EXP"), quick = true}
+    {character = "ibuki", name = "raida", sequence = get_move_inputs_by_name("ibuki","raida","HP")},
+    {character = "ibuki", name = "kazekiri", sequence = get_move_inputs_by_name("ibuki","kazekiri","LK"), quick = true},
+    {character = "ibuki", name = "kubiori", sequence = get_move_inputs_by_name("ibuki","kubiori","EXP"), quick = true}
 }
 
 

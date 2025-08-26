@@ -5,7 +5,7 @@ local training_settings_file = "training_settings.json"
 local training = {}
 
 local function save_training_data()
-  if not write_object_to_json_file(training, saved_path..training_settings_file) then
+  if not write_object_to_json_file(training, saved_path..training_settings_file, true) then
     print(string.format("Error: Failed to save training settings to \"%s\"", training_settings_file))
   end
 end
@@ -17,19 +17,19 @@ local function load_training_data()
     settings = {}
   end
   -- update old versions data
-  if settings.recordings then
-    for _, value in pairs(settings.recordings) do
-      for i, slot in ipairs(value) do
-        if value[i].inputs == nil then
-          value[i] = make_recording_slot()
-        else
-          slot.delay = slot.delay or 0
-          slot.random_deviation = slot.random_deviation or 0
-          slot.weight = slot.weight or 1
-        end
-      end
-    end
-  end
+  -- if settings.recordings then
+  --   for _, value in pairs(settings.recordings) do
+  --     for i, slot in ipairs(value) do
+  --       if value[i].inputs == nil then
+  --         value[i] = make_recording_slot()
+  --       else
+  --         slot.delay = slot.delay or 0
+  --         slot.random_deviation = slot.random_deviation or 0
+  --         slot.weight = slot.weight or 1
+  --       end
+  --     end
+  --   end
+  -- end
 
   for key, value in pairs(settings) do
     training[key] = value

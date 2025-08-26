@@ -1,5 +1,5 @@
 local gamestate = require("src.gamestate")
-local movedata = require("src.modules.movedata")
+local move_data = require("src.modules.move_data")
 local recording = require("src.control.recording")
 local training = require("src.training")
 local character_select = require("src.control.character_select")
@@ -11,7 +11,7 @@ local menu_tables = require("src.ui.menu_tables")
 require("src.ui.menu_items")
 
 
-local move_list = movedata.move_list
+local move_list = move_data.move_list
 
 local is_initialized = false
 local is_open = false
@@ -123,6 +123,7 @@ end
 
 local function update_counter_attack_settings()
   counter_attack_settings = settings.training.counter_attack[training.dummy.char_str]
+  counter_attack_settings.char_str = training.dummy.char_str
   counter_attack_item.object = counter_attack_settings
   counter_attack_motion_item.object = counter_attack_settings
   counter_attack_button_item.object = counter_attack_settings
@@ -138,20 +139,17 @@ end
 
 local function update_counter_attack_button()
   if counter_attack_settings.motion == 15 then
-    for i = 1, #move_list[training.dummy.char_str] do
-      if move_list[training.dummy.char_str][i].move_type == "kara" then
-          counter_attack_button_input = move_list[training.dummy.char_str][i].buttons
-          counter_attack_button = input_to_text(counter_attack_button_input)
-          break
-      end
-    end
+    counter_attack_button_input = move_data.get_buttons_by_move_name(training.dummy.char_str, "kara_throw")
+    counter_attack_button = input_to_text(counter_attack_button_input)
   else
     counter_attack_button = menu_tables.counter_attack_button_default
   end
   counter_attack_button_item.list = counter_attack_button
+
+
   if counter_attack_settings.button > #counter_attack_button then
     counter_attack_settings.button = #counter_attack_button
-    if #counter_attack_button == 0 then
+    if #counter_attack_button < 1 then
       counter_attack_settings.button = 1
     end
   end
@@ -166,12 +164,9 @@ local function update_counter_attack_special_button()
       break
     end
   end
-  if counter_attack_settings.special_button > #counter_attack_special_button then
-    counter_attack_settings.special_button = #counter_attack_special_button
-    if #counter_attack_special_button == 0 then
-      counter_attack_settings.special_button = 1
-    end
-  end
+
+  counter_attack_settings.special_button = bound_index(counter_attack_settings.special_button, counter_attack_special_button)
+
 end
 
 local function update_counter_attack_special()
@@ -310,25 +305,25 @@ local function init_menu()
   recording_delay_item = integer_menu_item("replay_delay", recording_slots[settings.training.current_recording_slot], "delay", -40, 40, false, 0)
   recording_random_deviation_item = integer_menu_item("replay_max_random_deviation", recording_slots[settings.training.current_recording_slot], "random_deviation", -600, 600, false, 0, 1, 1)
 
-  charge_overcharge_on_item = checkbox_menu_item("display_overcharge", settings.training, "charge_overcharge_on")
+  charge_overcharge_on_item = on_off_menu_item("display_overcharge", settings.training, "charge_overcharge_on")
   charge_overcharge_on_item.indent = true
   charge_overcharge_on_item.is_disabled = function()
   return not settings.training.display_charge
   end
 
-  charge_follow_player_item = checkbox_menu_item("menu_follow_player", settings.training, "charge_follow_player")
+  charge_follow_player_item = on_off_menu_item("menu_follow_player", settings.training, "charge_follow_player")
   charge_follow_player_item.indent = true
   charge_follow_player_item.is_disabled = function()
   return not settings.training.display_charge
   end
 
-  parry_follow_player_item = checkbox_menu_item("menu_follow_player", settings.training, "parry_follow_player")
+  parry_follow_player_item = on_off_menu_item("menu_follow_player", settings.training, "parry_follow_player")
   parry_follow_player_item.indent = true
   parry_follow_player_item.is_disabled = function()
   return not settings.training.display_parry
   end
 
-  display_parry_compact_item = checkbox_menu_item("display_parry_compact", settings.training, "display_parry_compact")
+  display_parry_compact_item = on_off_menu_item("display_parry_compact", settings.training, "display_parry_compact")
   display_parry_compact_item.indent = true
   display_parry_compact_item.is_disabled = function()
   return not settings.training.display_parry
@@ -349,7 +344,7 @@ local function init_menu()
     return settings.training.blocking_style ~= 3
   end
 
-  prefer_down_parry_item = checkbox_menu_item("prefer_down_parry", settings.training, "prefer_down_parry")
+  prefer_down_parry_item = on_off_menu_item("prefer_down_parry", settings.training, "prefer_down_parry")
   prefer_down_parry_item.indent = true
   prefer_down_parry_item.is_disabled = function()
     return not (settings.training.blocking_style == 2 or settings.training.blocking_style == 3)
@@ -424,7 +419,7 @@ local function init_menu()
     return not settings.training.display_distances
   end
 
-  air_time_player_coloring_item = checkbox_menu_item("display_air_time_player_coloring", settings.training, "display_air_time_player_coloring")
+  air_time_player_coloring_item = on_off_menu_item("display_air_time_player_coloring", settings.training, "display_air_time_player_coloring")
   air_time_player_coloring_item.indent = true
   air_time_player_coloring_item.is_disabled = function()
   return not settings.training.display_air_time
@@ -435,7 +430,7 @@ local function init_menu()
   attack_range_display_max_item.is_disabled = function()
     return settings.training.display_attack_range == 1
   end
-  attack_bars_show_decimal_item = checkbox_menu_item("show_decimal", settings.training, "attack_bars_show_decimal")
+  attack_bars_show_decimal_item = on_off_menu_item("show_decimal", settings.training, "attack_bars_show_decimal")
   attack_bars_show_decimal_item.indent = true
   attack_bars_show_decimal_item.is_disabled = function()
   return not (settings.training.display_attack_bars > 1)
@@ -481,8 +476,8 @@ local function init_menu()
       {
         header = header_menu_item("menu_title_recording"),
         entries = {
-          checkbox_menu_item("auto_crop_first_frames", settings.training, "auto_crop_recording_start"),
-          checkbox_menu_item("auto_crop_last_frames", settings.training, "auto_crop_recording_end"),
+          on_off_menu_item("auto_crop_first_frames", settings.training, "auto_crop_recording_start"),
+          on_off_menu_item("auto_crop_last_frames", settings.training, "auto_crop_recording_end"),
           list_menu_item("replay_mode", settings.training, "replay_mode", menu_tables.slot_replay_mode),
           integer_menu_item("menu_slot", settings.training, "current_recording_slot", 1, recording_slot_count, true, 1, 1, 10, update_current_recording_slot_frames),
                                 frame_number_item(current_recording_slot_frames, true),
@@ -498,30 +493,31 @@ local function init_menu()
       {
         header = header_menu_item("menu_title_display"),
         entries = {
-          checkbox_menu_item("display_controllers", settings.training, "display_input"),
+          on_off_menu_item("display_controllers", settings.training, "display_input"),
           controller_style_menu_item,
           list_menu_item("display_input_history", settings.training, "display_input_history", menu_tables.display_input_history_mode, 1),
-          checkbox_menu_item("display_gauge_numbers", settings.training, "display_gauges", false),
-          checkbox_menu_item("display_bonuses", settings.training, "display_bonuses", true),
-          checkbox_menu_item("display_attack_info", settings.training, "display_attack_data"),
+          on_off_menu_item("display_gauge_numbers", settings.training, "display_gauges", false),
+          on_off_menu_item("display_bonuses", settings.training, "display_bonuses", true),
+          on_off_menu_item("display_attack_info", settings.training, "display_attack_data"),
           list_menu_item("display_attack_bars", settings.training, "display_attack_bars", menu_tables.display_attack_bars_mode, 3),
           attack_bars_show_decimal_item,
-          checkbox_menu_item("display_frame_advantage", settings.training, "display_frame_advantage"),
-          checkbox_menu_item("display_hitboxes", settings.training, "display_hitboxes"),
+          on_off_menu_item("display_frame_advantage", settings.training, "display_frame_advantage"),
+          on_off_menu_item("display_hitboxes", settings.training, "display_hitboxes"),
           display_hitboxes_opacity_item,
-          checkbox_menu_item("display_distances", settings.training, "display_distances"),
+          on_off_menu_item("display_distances", settings.training, "display_distances"),
           mid_distance_height_item,
           p1_distances_reference_point_item,
           p2_distances_reference_point_item,
-          checkbox_menu_item("display_air_time", settings.training, "display_air_time"),
+          on_off_menu_item("display_stun_timer", settings.training, "display_stun_timer", 2),
+          on_off_menu_item("display_air_time", settings.training, "display_air_time"),
           air_time_player_coloring_item,
-          checkbox_menu_item("display_charge", settings.training, "display_charge"),
+          on_off_menu_item("display_charge", settings.training, "display_charge"),
           charge_follow_player_item,
           charge_overcharge_on_item,
-          checkbox_menu_item("display_parry", settings.training, "display_parry"),
+          on_off_menu_item("display_parry", settings.training, "display_parry"),
           parry_follow_player_item,
           display_parry_compact_item,
-          checkbox_menu_item("display_red_parry_miss", settings.training, "display_red_parry_miss"),
+          on_off_menu_item("display_red_parry_miss", settings.training, "display_red_parry_miss"),
           list_menu_item("attack_range_display", settings.training, "display_attack_range", menu_tables.player_options),
           attack_range_display_max_item,
           language_item
@@ -532,7 +528,7 @@ local function init_menu()
         entries = {
           change_characters_item,
           list_menu_item("force_stage", settings.training, "force_stage", menu_tables.stage_list, 1),
-          checkbox_menu_item("infinite_time", settings.training, "infinite_time"),
+          on_off_menu_item("infinite_time", settings.training, "infinite_time"),
           list_menu_item("life_refill_mode", settings.training, "life_mode", menu_tables.life_mode, 4),
           p1_life_reset_value_gauge_item,
           p2_life_reset_value_gauge_item,
@@ -545,13 +541,13 @@ local function init_menu()
           p1_meter_reset_value_gauge_item,
           p2_meter_reset_value_gauge_item,
           -- meter_reset_delay_item,
-          checkbox_menu_item("infinite_super_art_time", settings.training, "infinite_sa_time"),
+          on_off_menu_item("infinite_super_art_time", settings.training, "infinite_sa_time"),
           integer_menu_item("music_volume", settings.training, "music_volume", 0, 10, false, 0),
-          checkbox_menu_item("speed_up_game_intro", settings.training, "fast_forward_intro"),
-          list_menu_item("cheat_parrying", settings.training, "cheat_parrying", menu_tables.player_options),
-          checkbox_menu_item("universal_cancel", settings.training, "universal_cancel"),
-          checkbox_menu_item("infinite_projectiles", settings.training, "infinite_projectiles"),
-          checkbox_menu_item("infinite_juggle", settings.training, "infinite_juggle")
+          on_off_menu_item("speed_up_game_intro", settings.training, "fast_forward_intro"),
+          list_menu_item("auto_parrying", settings.training, "auto_parrying", menu_tables.player_options),
+          on_off_menu_item("universal_cancel", settings.training, "universal_cancel"),
+          on_off_menu_item("infinite_projectiles", settings.training, "infinite_projectiles"),
+          on_off_menu_item("infinite_juggle", settings.training, "infinite_juggle")
         }
       },
       {
@@ -580,11 +576,11 @@ local function init_menu()
     local debug_settings_menu = {
       header = header_menu_item("menu_title_debug"),
       entries = {
-        checkbox_menu_item("dump_state_display", debug_settings, "show_dump_state_display"),
-        checkbox_menu_item("debug_frames_display", debug_settings, "show_debug_frames_display"),
-        checkbox_menu_item("memory_view_display", debug_settings, "show_memory_view_display"),
-        checkbox_menu_item("show_predicted_hitboxes", debug_settings, "show_predicted_hitbox"),
-        checkbox_menu_item("record_frame_data", debug_settings, "record_framedata"),
+        on_off_menu_item("dump_state_display", debug_settings, "show_dump_state_display"),
+        on_off_menu_item("debug_frames_display", debug_settings, "show_debug_frames_display"),
+        on_off_menu_item("memory_view_display", debug_settings, "show_memory_view_display"),
+        on_off_menu_item("show_predicted_hitboxes", debug_settings, "show_predicted_hitbox"),
+        on_off_menu_item("record_frame_data", debug_settings, "record_framedata"),
         button_menu_item("save_frame_data", save_frame_data),
       },
       topmost_entry = 1

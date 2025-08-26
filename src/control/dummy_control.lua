@@ -357,10 +357,12 @@ local mash_directions_normal =
 }
 local mash_directions_serious =
 {
-  {"down","forward"},
+  {"down","back"},
   {"down"},
-  {"up","back"},
-  {"up"}
+  {"up","forward"},
+  {"up"},
+  {"down","back"},
+  {"up","forward"}
 }
 local mash_directions_fastest =
 {
@@ -375,14 +377,19 @@ local k_buttons = {"LK","MK","HK"}
 local i_mash_directions = 1
 local i_mash_buttons = 1
 
-local function wrap_around(i, tbl)
-  if i > #tbl then
-    i = 1
-  end
-  return i
-end
-
+local previous_stun = 0
+local stun_values = {}
 function update_mash_inputs(input, player, dummy, mode)
+  if dummy.is_stunned and previous_stun == 0 and dummy.stun_timer > 0 then
+    table.insert(stun_values, dummy.stun_timer)
+    local sum = 0
+    for _, val in ipairs(stun_values) do
+      sum = sum + val
+    end
+    local avg = sum / #stun_values
+    print(dummy.stun_timer, "avg:", avg)
+  end
+  previous_stun = dummy.stun_timer
   if not gamestate.is_in_match or mode == 1 or current_recording_state == 4 then
     return
   end
@@ -406,8 +413,9 @@ function update_mash_inputs(input, player, dummy, mode)
     --pressing all buttons reduces stun by 4 more
     if dummy.stun_timer <= 15 and dummy.stun_timer > 0 and not dummy.is_being_thrown then
       mash_directions = mash_directions_fastest
-      i_mash_directions = wrap_around(i_mash_directions, mash_directions)
+      i_mash_directions = wrap_index(i_mash_directions, mash_directions)
     end
+
     local elapsed = gamestate.frame_number - mash_start_frame
     local sequence = {}
     if dummy.stun_timer >= 8 or dummy.is_being_thrown then
@@ -417,31 +425,32 @@ function update_mash_inputs(input, player, dummy, mode)
         table.insert(sequence[1], p_buttons[i_mash_buttons])
         table.insert(sequence[1], k_buttons[#k_buttons - i_mash_buttons + 1])
         if elapsed % 4 == 0 then
-          i_mash_directions = wrap_around(i_mash_directions + 1, mash_directions)
+          i_mash_directions = wrap_index(i_mash_directions + 1, mash_directions)
         end
         if elapsed % 6 == 0 then
-          i_mash_buttons = wrap_around(i_mash_buttons + 1, p_buttons)
+          i_mash_buttons = wrap_index(i_mash_buttons + 1, p_buttons)
         end
       --serious
       elseif mode == 3 then
         table.insert(sequence, deepcopy(mash_directions[i_mash_directions]))
         table.insert(sequence[1], p_buttons[i_mash_buttons])
+        table.insert(sequence[1], p_buttons[wrap_index(i_mash_buttons + 1, p_buttons)])
         table.insert(sequence[1], k_buttons[#k_buttons - i_mash_buttons + 1])
-        if elapsed % 5 == 0 then
-          i_mash_directions = wrap_around(i_mash_directions + 1, mash_directions)
+        table.insert(sequence[1], k_buttons[wrap_index(#k_buttons - i_mash_buttons, k_buttons)])
+
+        if elapsed % 3 == 0 then
+          i_mash_directions = wrap_index(i_mash_directions + 1, mash_directions)
         end
-        if elapsed % 2 == 0 then
-          i_mash_buttons = wrap_around(i_mash_buttons + 1, p_buttons)
-        end
+          i_mash_buttons = wrap_index(i_mash_buttons + 1, p_buttons)
       --fastest
       elseif mode == 4 then
         table.insert(sequence, deepcopy(mash_directions[i_mash_directions]))
-        if elapsed % 3 == 0 then
+        if elapsed % 2 == 0 then
           for _,button in pairs(all_buttons) do
             table.insert(sequence[1], button)
           end
         end
-        i_mash_directions = wrap_around(i_mash_directions + 1, mash_directions)
+        i_mash_directions = wrap_index(i_mash_directions + 1, mash_directions)
       end
     end
     if #sequence > 0 then

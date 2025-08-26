@@ -1,5 +1,4 @@
 require("src.startup")
-
 print("-----------------------------")
 print("  3rd_training.lua - "..script_version.."")
 print("  Training mode for "..game_name.."")
@@ -53,7 +52,6 @@ local gamestate = require("src.gamestate")
 local loading = require("src.loading")
 local training = require("src.training")
 require("src.control.dummy_control")
-local images = require("src.ui.image_tables")
 local draw = require("src.ui.draw")
 local hud = require("src.ui.hud")
 local inp = require("src.control.input")
@@ -66,6 +64,7 @@ local character_select = require("src.control.character_select")
 -- require("src.training.jumpins")
 require("src.modules.record_framedata")
 local debug = require("src.debug")
+
 
 --aliases
 local frame_data, character_specific = fd.frame_data, fd.character_specific
@@ -135,7 +134,9 @@ local function hotkey3()
 end
 
 local function hotkey4() --debug
-  queue_input_from_json(gamestate.P1, "Debug.json")
+  -- queue_input_from_json(gamestate.P1, "Debug.json")
+queue_denjin(gamestate.P1, 20)
+
 end
 
 local function hotkey5() --debug

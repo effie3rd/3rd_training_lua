@@ -1209,6 +1209,18 @@
     "jp": "images/menu/utf_12543_jp_10_white.png",
     "jp_8": "images/menu/utf_12543_jp_8_white.png"
   },
+  "B+": {
+    "en": "images/menu/B+_en_5_white.png",
+    "jp": "images/menu/B+_jp_10_white.png"
+  },
+  "D+": {
+    "en": "images/menu/D+_en_5_white.png",
+    "jp": "images/menu/D+_jp_10_white.png"
+  },
+  "F+": {
+    "en": "images/menu/F+_en_5_white.png",
+    "jp": "images/menu/F+_jp_10_white.png"
+  },
   "HK": {
     "en": "images/menu/HK_en_5_white.png",
     "jp": "images/menu/HK_jp_10_white.png"
@@ -1257,6 +1269,10 @@
     "en": "images/menu/P2_en_5_white.png",
     "jp": "images/menu/P2_jp_10_white.png"
   },
+  "U+": {
+    "en": "images/menu/U+_en_5_white.png",
+    "jp": "images/menu/U+_jp_10_white.png"
+  },
   "abaretosanami": {
     "en": "images/menu/abaretosanami_en_5_white.png",
     "jp": "images/menu/abaretosanami_jp_10_white.png"
@@ -1296,6 +1312,10 @@
   "auto_crop_last_frames": {
     "en": "images/menu/auto_crop_last_frames_en_5_white.png",
     "jp": "images/menu/auto_crop_last_frames_jp_10_white.png"
+  },
+  "auto_parrying": {
+    "en": "images/menu/auto_parrying_en_5_white.png",
+    "jp": "images/menu/auto_parrying_jp_10_white.png"
   },
   "axe": {
     "en": "images/menu/axe_en_5_white.png",
@@ -1428,10 +1448,6 @@
   "chariot_tackle": {
     "en": "images/menu/chariot_tackle_en_5_white.png",
     "jp": "images/menu/chariot_tackle_jp_10_white.png"
-  },
-  "cheat_parrying": {
-    "en": "images/menu/cheat_parrying_en_5_white.png",
-    "jp": "images/menu/cheat_parrying_jp_10_white.png"
   },
   "clear_all_slots": {
     "en": "images/menu/clear_all_slots_en_5_white.png",
@@ -1616,6 +1632,10 @@
   "display_red_parry_miss": {
     "en": "images/menu/display_red_parry_miss_en_5_white.png",
     "jp": "images/menu/display_red_parry_miss_jp_10_white.png"
+  },
+  "display_stun_timer": {
+    "en": "images/menu/display_stun_timer_en_5_white.png",
+    "jp": "images/menu/display_stun_timer_jp_10_white.png"
   },
   "distance_hurtbox": {
     "en": "images/menu/distance_hurtbox_en_5_white.png",

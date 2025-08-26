@@ -809,6 +809,24 @@ local function last_hit_bars()
   end
 end
 
+local stun_timer_max_width = 60
+local stun_timer_max_value = 240
+local stun_timer_gauge_height = 2
+local function stun_timer_display(player)
+  local id = player.id
+  if player.is_stunned and player.stun_timer > 0 then
+    local stun_text = player.stun_timer
+    local pos_x, pos_y = draw.game_to_screen_space(player.pos_x, player.pos_y + character_specific[player.char_str].height)
+    local text_w, text_h = get_text_dimensions(stun_text, "en")
+
+    pos_y = pos_y - 8
+    draw.draw_gauge(pos_x - math.floor(stun_timer_max_width / 2), pos_y, stun_timer_max_width, stun_timer_gauge_height, player.stun_timer / stun_timer_max_value, gauge_cooldown_fill_color, gauge_background_color, gauge_outline_color)
+
+    render_text(pos_x - math.round(text_w / 2), pos_y - text_h + 1, stun_text, "en")
+  end
+end
+
+
 local function attack_data_display()
   local text_width1 = draw.get_text_width("damage: ")
   local text_width2 = draw.get_text_width("stun: ")
@@ -912,10 +930,10 @@ local function blocking_direction_display(player, dummy)
       end
       local x, y = draw.game_to_screen_space(dummy.pos_x, dummy.pos_y + character_specific[dummy.char_str].height)
       gui.image(x, y - (#blocking_direction_history - i - 1) * offset_y, images.img_dir_small[blocking_direction_history[i].dir], opacity)
+      i = i + 1
     else
       table.remove(blocking_direction_history, i)
     end
-    i = i + 1
   end
 end
 
@@ -1296,6 +1314,11 @@ local function draw_hud(player, dummy)
   last_hit_bars()
   red_parry_miss_display(player)
   blocking_direction_display(player, dummy)
+
+  if settings.training.display_stun_timer then
+    stun_timer_display(player)
+    stun_timer_display(dummy)
+  end
 
   if settings.training.display_attack_data then
     attack_data_display()

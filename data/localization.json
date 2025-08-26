@@ -249,7 +249,7 @@
   },
   "distance_hurtbox": {
     "en": "Hurtbox",
-    "jp": "喰らい判定"
+    "jp": "食らい判定"
   },
   "display_attack_info": {
     "en": "Display Attack Info",
@@ -271,6 +271,10 @@
     "en": "Display Red Parry Miss",
     "jp": "赤ブロミス表示"
   },
+  "display_stun_timer": {
+    "en": "Display Stun Timer",
+    "jp": "スタンタイマー表示"
+  },  
   "display_air_time": {
     "en": "Display Air Time",
     "jp": "空中時間表示"
@@ -661,6 +665,22 @@
     "en": "HP+HK",
     "jp": "大P＋大K"
   },
+  "F+": {
+    "en": "F+",
+    "jp": "前"
+  },
+  "B+": {
+    "en": "B+",
+    "jp": "後ろ"
+  },
+  "D+": {
+    "en": "D+",
+    "jp": "D+"
+  },
+  "U+": {
+    "en": "U+",
+    "jp": "U+"
+  },
   "counter_attack_button": {
     "en": "Button",
     "jp": "ボタン"
@@ -717,9 +737,9 @@
     "en": "Speed Up Game Intro",
     "jp": "導入加速"
   },
-  "cheat_parrying": {
-    "en": "Cheat Parrying",
-    "jp": " チートブロ"
+  "auto_parrying": {
+    "en": "Auto Parrying",
+    "jp": " オートブロ"
   },
   "universal_cancel": {
     "en": "Universal Cancel",

@@ -35,11 +35,12 @@ Training mode for Street Fighter III: 3rd Strike
 
 ### New Displays
   - Attack Bars: Compact display for comparing the damage/stun of the last two attacks
-  - Attack Range Display: Shows the maximum range of the last 1-3 used attacks
-  - Blocking Direction Display: What the dummy input in order to block. Good for ambiguous crossups
+  - Attack Range: Shows the maximum range of the last 1-3 used attacks
+  - Blocking Direction: What the dummy input in order to block. Good for ambiguous crossups
   - Red Parry Miss Indicator: If you attempted a red parry and failed, red number pops up showing how many frames you were off by.
-  - Air Time Display: Colors the opponent blue when they can no longer be juggled. The coloring is delayed by 2 frames so please use the gauge as the source of truth.
-  - Parry/Charge displays
+  - Stun Timer - Shows remaining stun time.
+  - Air Time: Colors the opponent blue when they can no longer be juggled. The coloring is delayed by 2 frames so please use the gauge as the source of truth.
+  - Parry/Charge
     - Appearance update
     - Tweaked follow player code
     - Compact display for parry display

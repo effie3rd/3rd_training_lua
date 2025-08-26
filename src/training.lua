@@ -69,7 +69,7 @@ local function update_gauges(player)
         wanted_life = max_life
       end
       
-      if player.idle_time == 1 or player.has_just_started_wake_up
+      if (player.idle_time == 1 and not gauge_state[id].should_refill_life)
       or player.has_just_been_hit or player.is_being_thrown
       or player.is_stunned or player.has_just_hit_ground
       then
@@ -223,10 +223,16 @@ local function update_gauges(player)
       wanted_stun = 0
     elseif settings.training.stun_mode == 4 then
       wanted_stun = player.stun_bar_max
-      stun_recovery_rate = stun_recovery_rate_default * 2
     end
 
-    if player.idle_time == 1 or player.has_just_started_wake_up
+    if wanted_stun >=  player.stun_bar_max * .5 then
+      stun_recovery_rate = stun_recovery_rate_default * 2
+    end
+    if wanted_stun >=  player.stun_bar_max * .75 then
+      stun_recovery_rate = stun_recovery_rate_default * 3
+    end
+
+    if (player.idle_time == 1 and not gauge_state[id].should_refill_stun)
     or player.has_just_been_hit or player.is_being_thrown
     or player.is_stunned or player.has_just_hit_ground
     then
@@ -282,10 +288,10 @@ local function update_cheats()
     memory.writebyte(0x20694C6, 0x0)
   end
 
-  if settings.training.cheat_parrying == 2 or settings.training.cheat_parrying == 4 then
+  if settings.training.auto_parrying == 2 or settings.training.auto_parrying == 4 then
     mem.enable_cheat_parrying(gamestate.P1)
   end
-  if settings.training.cheat_parrying == 3 or settings.training.cheat_parrying == 4 then
+  if settings.training.auto_parrying == 3 or settings.training.auto_parrying == 4 then
     mem.enable_cheat_parrying(gamestate.P2)
   end
 end
