@@ -1,6 +1,6 @@
 local settings = require("src.settings")
 local gamestate = require("src.gamestate")
-local sd = require("src.modules.stagedata")
+local sd = require("src.modules.stage_data")
 local inputs = require("src.control.inputs")
 local memory_addresses = require("src.control.memory_addresses")
 

@@ -388,6 +388,34 @@ function input_to_text(t)
   return result
 end
 
+local function sequence_to_name(seq)
+  local btn = ""
+  local ud = ""
+  local bf = ""
+  for k,v in pairs(seq[1]) do
+    if v == "LP" or v == "MP" or v == "HP"
+    or v == "LK" or v == "MK" or v == "HK" then
+      if btn == "" then
+        btn = v
+      else
+        btn = btn .. "+" .. v
+      end
+    elseif v == "down" then
+      ud = "d"
+    elseif v == "up" then
+      ud = "u"
+    elseif v == "forward" then
+      bf = "f"
+    elseif v == "back" then
+      bf = "b"
+    end
+  end
+  if string.len(ud .. bf) > 0 then
+    return ud .. bf .. "_" .. btn
+  end
+  return btn
+end
+
 function wrap_index(i, tbl)
   if tbl then
     if i > #tbl then
@@ -409,3 +437,7 @@ function bound_index(i, tbl)
   end
   return i
 end
+
+return {
+  sequence_to_name = sequence_to_name
+}

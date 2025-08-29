@@ -3,6 +3,7 @@ local gamestate = require("src.gamestate")
 local training = require("src.training")
 local fd = require("src.modules.framedata")
 local frame_data, is_slow_jumper, is_really_slow_jumper = fd.frame_data, fd.is_slow_jumper, fd.is_really_slow_jumper
+local memory_addresses = require("src.control.memory_addresses")
 
 local previous_input = nil
 

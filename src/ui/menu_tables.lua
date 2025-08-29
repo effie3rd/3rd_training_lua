@@ -1,4 +1,4 @@
-local sd = require("src.modules.stagedata")
+local sd = require("src.modules.stage_data")
 
 local stage_list = sd.menu_stages
 

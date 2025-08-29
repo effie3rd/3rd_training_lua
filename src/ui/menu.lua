@@ -9,6 +9,7 @@ local settings = require("src.settings")
 local debug_settings = require("src.debug_settings")
 local menu_tables = require("src.ui.menu_tables")
 local menu_items = require("src.ui.menu_items")
+local record_framedata = require("src.modules.record_framedata")
 
 
 local is_initialized = false
@@ -618,7 +619,7 @@ local function create_debug_tab()
       menu_items.On_Off_Menu_Item:new("memory_view_display", debug_settings, "show_memory_view_display"),
       menu_items.On_Off_Menu_Item:new("show_predicted_hitboxes", debug_settings, "show_predicted_hitbox"),
       menu_items.On_Off_Menu_Item:new("record_frame_data", debug_settings, "record_framedata"),
-      menu_items.Button_Menu_Item:new("save_frame_data", save_frame_data),
+      menu_items.Button_Menu_Item:new("save_frame_data", record_framedata.save_frame_data),
     },
     topmost_entry = 1
   }

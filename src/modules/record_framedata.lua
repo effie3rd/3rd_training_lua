@@ -5,7 +5,9 @@ local fd = require("src.modules.framedata")
 local move_data = require("src.modules.move_data")
 local gamestate = require("src.gamestate")
 local character_select = require("src.control.character_select")
+local inputs = require("src.control.inputs")
 local settings = require("src.settings")
+local tools = require("src.tools")
 local write_memory = require("src.control.write_memory")
 local debug_settings = require("src.debug_settings")
 local json = require("src.libs.dkjson")
@@ -583,6 +585,97 @@ local wakeups_list = {
 }
 
 
+local data_path = "data/"..rom_name.."/"
+local framedata_path = data_path.."framedata/"
+local frame_data_file_ext = "_framedata.json"
+local final_props = {"name", "frames", "hit_frames", "idle_frames", "loops", "pushback", "advantage", "uses_velocity", "air", "infinite_loop", "max_hits", "cooldown", "self_chain", "exceptions"}
+local final_frame_props = {"hash", "boxes", "movement", "velocity", "acceleration", "loop", "next_anim", "optional_anim", "wakeup", "bypass_freeze"}
+local function save_frame_data()
+  for _, char in ipairs(frame_data_keys) do
+    if frame_data[char].should_save then
+      frame_data[char].should_save = nil
+      local fdata = deepcopy(frame_data[char])
+      if not (char == "projectiles") then
+        fdata.standing = ""
+        fdata.standing_turn = ""
+        fdata.crouching = ""
+        fdata.crouching_turn = ""
+        fdata.block_high = ""
+        fdata.block_low = ""
+        if not fdata.wakeups then
+          fdata.wakeups = {}
+        end
+      end
+      for id, data in pairs(fdata) do
+        if type(data) == "table" and id ~= "wakeups" then
+          for k, v in pairs(data) do
+            if k == "name" then
+              if v == "standing" then
+                fdata.standing = id
+              elseif v == "standing_turn" then
+                fdata.standing_turn = id
+              elseif v == "crouching" then
+                fdata.crouching = id
+              elseif v == "crouching_turn" then
+                fdata.crouching_turn = id
+              elseif v == "block_high" then
+                fdata.block_high = id
+              elseif v == "block_low" then
+                fdata.block_low = id
+              elseif string.find(v, "wakeup") then
+                if not table_contains_deep(fdata.wakeups, id) then
+                  table.insert(fdata.wakeups, id)
+                end
+              end
+            else
+              if k == "hit_frames" then
+                if deep_equal(v, {}) then
+                  fdata[id][k] = nil
+                end
+              end
+            end
+            if not table_contains_deep(final_props, k) then
+              data[k] = nil
+            end
+          end
+
+          local frames = {}
+          if data.frames then
+            for i, frame in ipairs(data.frames) do
+              for k, v in pairs(data.frames[i]) do
+                if not table_contains_deep(final_frame_props, k) then
+                  data.frames[i][k] = nil
+                end
+                if k == "movement"
+                or k == "velocity"
+                or k == "acceleration"
+                then
+                  if deep_equal(v, {0,0}) then
+                    data.frames[i][k] = nil
+                  end
+                elseif k == "boxes" then
+                  if deep_equal(v, {}) then
+                    data.frames[i][k] = nil
+                  end
+                end
+              end
+              table.insert(frames, data.frames[i])
+            end
+            data.frames = frames
+          else
+            print("no frames", id)
+          end
+        end
+      end
+      local file_path = framedata_path.."@"..char..frame_data_file_ext
+      if not write_object_to_json_file(fdata, file_path, true) then
+        print(string.format("Error: Failed to write frame data to \"%s\"", file_path))
+      else
+        print(string.format("Saved frame data to \"%s\"", file_path))
+      end
+    end
+  end
+end
 
 
 local current_attack = {}
@@ -1420,12 +1513,12 @@ function guess_landing_height()
   return false
 end
 
-function queue_guess_landing_height()
+local function queue_guess_landing_height()
   Queue_Command(gamestate.frame_number + 1, {command = guess_landing_height})
 end
 
 
-function record_attacks(player_obj, projectiles)
+local function record_attacks(player_obj, projectiles)
   if gamestate.is_in_match and debug_settings.recording_framedata then
     player = player_obj
     dummy = player_obj.other
@@ -1726,7 +1819,7 @@ function record_attacks(player_obj, projectiles)
 
       if current_attack_category.name == "normals" then
         current_attack = deepcopy(normals[i_attacks])
-        current_attack.name = sequence_to_name(current_attack.sequence)
+        current_attack.name = tools.sequence_to_name(current_attack.sequence)
         current_attack.reset_pos_x = reset_pos_x
         dummy_offset_x = far_dist
         dummy_offset_y = 0
@@ -1744,7 +1837,7 @@ function record_attacks(player_obj, projectiles)
       elseif current_attack_category.name == "other_normals" then
         current_attack = deepcopy(other_normals[i_attacks])
         if not current_attack.name then
-          current_attack.name = sequence_to_name(current_attack.sequence)
+          current_attack.name = tools.sequence_to_name(current_attack.sequence)
           if current_attack.air then
             current_attack.name = current_attack.name .. "_air"
           end
@@ -4703,23 +4796,23 @@ function record_attacks(player_obj, projectiles)
   end
 end
 
-function land_player(obj)
+local function land_player(obj)
   memory.writeword(obj.base + 0x64 + 36, -1)
   memory.writeword(obj.base + 0x64 + 38, 0)
   Queue_Command(gamestate.frame_number + 1, {command = function() current_recording_acceleration_offset = -1 end})
 end
 
-function block_high(player_obj)
+local function block_high(player_obj)
   inputs.queue_input_sequence(player_obj, {{"back"}})
   write_memory.clear_motion_data(player_obj)
 end
 
-function block_low(player_obj)
+local function block_low(player_obj)
   inputs.queue_input_sequence(player_obj, {{"down","back"}})
   write_memory.clear_motion_data(player_obj)
 end
 
-function is_hit_frame(frame)
+local function is_hit_frame(frame)
   if frame.boxes then
     for _, box in pairs(frame.boxes) do
       local type = convert_box_types[box[1]]
@@ -4731,14 +4824,14 @@ function is_hit_frame(frame)
   return false
 end
 
-function is_idle_frame(frame)
+local function is_idle_frame(frame)
   if frame.idle then
     return true
   end
   return false
 end
 
-function divide_hit_frames(anim)
+local function divide_hit_frames(anim)
   local result = {}
 
   if anim.hit_frames then
@@ -4771,7 +4864,7 @@ function divide_hit_frames(anim)
   return result
 end
 
-function calculate_ranges(list, predicate)
+local function calculate_ranges(list, predicate)
   local ranges = {}
   local in_range = false
   local range_start = nil
@@ -4797,10 +4890,11 @@ function calculate_ranges(list, predicate)
   return ranges
 end
 
+
 local data_path = "data/"..rom_name.."/"
 local framedata_path = data_path.."framedata/"
 
-function span_frame_data()
+local function span_frame_data()
   local decode_times = {}
   local file_names = {}
   local key_list = deepcopy(frame_data_keys)
@@ -4848,7 +4942,7 @@ function span_frame_data()
   end
 end
 
-function pack_ffd(items, capacity)
+local function pack_ffd(items, capacity)
   local sorted = {}
   for i, v in ipairs(items) do
     sorted[i] = v
@@ -4893,7 +4987,7 @@ function pack_ffd(items, capacity)
 end
 
 
-function estimate_decode_time(json_str, decode_fn, trials)
+local function estimate_decode_time(json_str, decode_fn, trials)
   trials = trials or 5
   local total = 0
 
@@ -4916,100 +5010,8 @@ function estimate_decode_time(json_str, decode_fn, trials)
   }
 end
 
-local data_path = "data/"..rom_name.."/"
-local framedata_path = data_path.."framedata/"
-local frame_data_file_ext = "_framedata.json"
-local final_props = {"name", "frames", "hit_frames", "idle_frames", "loops", "pushback", "advantage", "uses_velocity", "air", "infinite_loop", "max_hits", "cooldown", "self_chain", "exceptions"}
-local final_frame_props = {"hash", "boxes", "movement", "velocity", "acceleration", "loop", "next_anim", "optional_anim", "wakeup", "bypass_freeze"}
-function save_frame_data()
-  for _, char in ipairs(frame_data_keys) do
-    if frame_data[char].should_save then
-      frame_data[char].should_save = nil
-      local fdata = deepcopy(frame_data[char])
-      if not (char == "projectiles") then
-        fdata.standing = ""
-        fdata.standing_turn = ""
-        fdata.crouching = ""
-        fdata.crouching_turn = ""
-        fdata.block_high = ""
-        fdata.block_low = ""
-        if not fdata.wakeups then
-          fdata.wakeups = {}
-        end
-      end
-      for id, data in pairs(fdata) do
-        if type(data) == "table" and id ~= "wakeups" then
-          for k, v in pairs(data) do
-            if k == "name" then
-              if v == "standing" then
-                fdata.standing = id
-              elseif v == "standing_turn" then
-                fdata.standing_turn = id
-              elseif v == "crouching" then
-                fdata.crouching = id
-              elseif v == "crouching_turn" then
-                fdata.crouching_turn = id
-              elseif v == "block_high" then
-                fdata.block_high = id
-              elseif v == "block_low" then
-                fdata.block_low = id
-              elseif string.find(v, "wakeup") then
-                if not table_contains_deep(fdata.wakeups, id) then
-                  table.insert(fdata.wakeups, id)
-                end
-              end
-            else
-              if k == "hit_frames" then
-                if deep_equal(v, {}) then
-                  fdata[id][k] = nil
-                end
-              end
-            end
-            if not table_contains_deep(final_props, k) then
-              data[k] = nil
-            end
-          end
 
-          local frames = {}
-          if data.frames then
-            for i, frame in ipairs(data.frames) do
-              for k, v in pairs(data.frames[i]) do
-                if not table_contains_deep(final_frame_props, k) then
-                  data.frames[i][k] = nil
-                end
-                if k == "movement"
-                or k == "velocity"
-                or k == "acceleration"
-                then
-                  if deep_equal(v, {0,0}) then
-                    data.frames[i][k] = nil
-                  end
-                elseif k == "boxes" then
-                  if deep_equal(v, {}) then
-                    data.frames[i][k] = nil
-                  end
-                end
-              end
-              table.insert(frames, data.frames[i])
-            end
-            data.frames = frames
-          else
-            print("no frames", id)
-          end
-        end
-      end
-      local file_path = framedata_path.."@"..char..frame_data_file_ext
-      if not write_object_to_json_file(fdata, file_path, true) then
-        print(string.format("Error: Failed to write frame data to \"%s\"", file_path))
-      else
-        print(string.format("Saved frame data to \"%s\"", file_path))
-      end
-    end
-  end
-end
-
-
-function reset_current_recording_animation()
+local function reset_current_recording_animation()
   current_recording_animation = nil
   current_recording_anim_list = {}
   current_recording_proj_list = {}
@@ -5023,7 +5025,7 @@ display = {}
 local next_anim_types = {"next_anim", "optional_anim"}
 local props_to_copy = {"self_freeze", "opponent_freeze", "opponent_recovery", "pushback", "wakeup", "bypass_freeze"}
 
-function new_recording(player_obj, projectiles, name)
+local function new_recording(player_obj, projectiles, name)
   reset_current_recording_animation()
   current_recording_animation = {name = name, frames = {}, hit_frames = {}, id = player_obj.animation}
   if recording_options.air then
@@ -5036,7 +5038,7 @@ function new_recording(player_obj, projectiles, name)
   state = "recording"
 end 
 
-function new_animation(player_obj, projectiles, name)
+local function new_animation(player_obj, projectiles, name)
   local frames = current_recording_animation.frames
   if not frames[#frames].hash then --patch up missing frames
     frames[#frames].hash = player_obj.animation_frame_hash
@@ -5065,7 +5067,7 @@ function new_animation(player_obj, projectiles, name)
   state = "recording"
 end
 
-function end_recording(player_obj, projectiles, name)
+local function end_recording(player_obj, projectiles, name)
   local frames = current_recording_animation.frames
   if not frames[#frames].hash then --patch up missing frames
     frames[#frames].hash = player_obj.animation_frame_hash
@@ -5288,7 +5290,7 @@ end
 
 local previous_hash = ""
 
-function record_framedata(player_obj, projectiles, name)
+local function record_framedata(player_obj, projectiles, name)
   local player = player_obj
   local dummy = player_obj.other
   local frame = player.animation_frame
@@ -5714,7 +5716,7 @@ function record_framedata(player_obj, projectiles, name)
 end
 
 
-function index_of_projectile(list, proj)
+local function index_of_projectile(list, proj)
   for k,v in pairs(list) do
     if v.object == proj then
       return k
@@ -5723,7 +5725,7 @@ function index_of_projectile(list, proj)
   return 0
 end
 
-function index_of_hash(t, s)
+local function index_of_hash(t, s)
   for i = 1, #t do
     if t[i].hash == s then
       return i
@@ -5732,7 +5734,7 @@ function index_of_hash(t, s)
   return 0
 end
 
-function next_anim_contains(t, v)
+local function next_anim_contains(t, v)
   v = v.id or v[1]
   for _,val in pairs(t) do
     local id = val.id or val[1]
@@ -5743,7 +5745,7 @@ function next_anim_contains(t, v)
   return false
 end
 
-function index_of_frames(t1, t2)
+local function index_of_frames(t1, t2)
   i_search = 1
   i_seq = 1
   i_begin = 1
@@ -5763,7 +5765,7 @@ function index_of_frames(t1, t2)
   return 0
 end
 
-function merge_sequence(existing, incoming)
+local function merge_sequence(existing, incoming)
   local ne, ni = #existing, #incoming
   for k = math.min(ne, ni), 1, -1 do
     local matching = true
@@ -5844,7 +5846,7 @@ function merge_sequence(existing, incoming)
   return true
 end
 
-function force_merge_sequence(existing, incoming)
+local function force_merge_sequence(existing, incoming)
   -- for i = 1, #existing do
   --   print(existing[i].hash)
   -- end
@@ -5890,7 +5892,7 @@ function force_merge_sequence(existing, incoming)
   return merged
 end
 
-function fill_missing_boxes(frames)
+local function fill_missing_boxes(frames)
   local segments = {}
   local in_segment = false
   local seg_start = 0
@@ -5938,7 +5940,7 @@ function connect_next_anim(fdata, f, next_anim_type)
   end
 end
 
-function process_motion_data(anim_list)
+local function process_motion_data(anim_list)
   local all_frames = {}
   local uses_velocity = {}
   local ignore_motion = {}
@@ -6015,7 +6017,7 @@ function process_motion_data(anim_list)
 end
 
 
-function handle_loops(frames)
+local function handle_loops(frames)
   local n = #frames
   if n < 2 then return frames end
 
@@ -6121,7 +6123,7 @@ function handle_loops(frames)
 
 end
 
-function copy_props(source_frame, dest_frame, props_to_copy)
+local function copy_props(source_frame, dest_frame, props_to_copy)
   for _,prop in pairs(props_to_copy) do
     if source_frame[prop] then
       dest_frame[prop] = source_frame[prop]
@@ -6129,7 +6131,7 @@ function copy_props(source_frame, dest_frame, props_to_copy)
   end
 end
 
-function find_seq_start(existing, incoming)
+local function find_seq_start(existing, incoming)
   local ne, ni = #existing, #incoming
   for k = math.min(ne, ni), 1, -1 do
     for i = 1, k do
@@ -6142,7 +6144,7 @@ function find_seq_start(existing, incoming)
   return nil
 end
 
-function find_exception_position(existing, incoming, index)
+local function find_exception_position(existing, incoming, index)
   for i = 1, #existing do
     if existing[i].hash == incoming[index].hash then
       return i
@@ -6154,7 +6156,7 @@ function find_exception_position(existing, incoming, index)
   return 0
 end
 
-function get_index_of_action_count(frames, ac)
+local function get_index_of_action_count(frames, ac)
   for i = 1, #frames do
     if tonumber(string.sub(frames[i].hash, 9, 10)) == ac then
       return i
@@ -6163,7 +6165,7 @@ function get_index_of_action_count(frames, ac)
   return 0
 end
 
-function find_exceptions(existing, incoming)
+local function find_exceptions(existing, incoming)
   local results = {}
   local incoming_start_index = 1
   local existing_start_index = 1
@@ -6198,35 +6200,10 @@ function find_exceptions(existing, incoming)
   return results
 end
 
-function sequence_to_name(seq)
-  local btn = ""
-  local ud = ""
-  local bf = ""
-  for k,v in pairs(seq[1]) do
-    if v == "LP" or v == "MP" or v == "HP"
-    or v == "LK" or v == "MK" or v == "HK" then
-      if btn == "" then
-        btn = v
-      else
-        btn = btn .. "+" .. v
-      end
-    elseif v == "down" then
-      ud = "d"
-    elseif v == "up" then
-      ud = "u"
-    elseif v == "forward" then
-      bf = "f"
-    elseif v == "back" then
-      bf = "b"
-    end
-  end
-  if string.len(ud .. bf) > 0 then
-    return ud .. bf .. "_" .. btn
-  end
-  return btn
-end
+
 
 local record_framedata =  {
+  save_frame_data = save_frame_data
 }
 
 setmetatable(record_framedata, {

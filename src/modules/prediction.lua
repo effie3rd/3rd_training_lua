@@ -1,6 +1,6 @@
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
-local sd = require("src.modules.stagedata")
+local sd = require("src.modules.stage_data")
 local gamestate = require("src.gamestate")
 
 local frame_data, character_specific, get_hurtboxes = fd.frame_data, fd.character_specific, fd.get_hurtboxes
