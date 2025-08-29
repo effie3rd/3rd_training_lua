@@ -8,6 +8,7 @@ local text = require("src.ui.text")
 local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
 local images = require("src.ui.image_tables")
+local recording = require("src.control.recording")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local frame_data_meta = fdm.frame_data_meta
@@ -23,22 +24,13 @@ local life_color = colors.last_hit_bars.life
 
 local lang_code = {"en", "jp"}
 
-local draw_kaiten_first_run = true
-local dir_2_inactive, dir_4_inactive, dir_6_inactive, dir_8_inactive
+
 local kaiten_images =
 {
   active = {images.img_dir_small[6], images.img_dir_small[2], images.img_dir_small[4], images.img_dir_small[8]},
-  inactive = {dir_6_inactive, dir_2_inactive, dir_4_inactive, dir_8_inactive}
+  inactive = {images.img_dir_inactive[6], images.img_dir_inactive[2], images.img_dir_inactive[4], images.img_dir_inactive[8]}
 }
 local function draw_kaiten(x, y, dirs, flip)
-  if draw_kaiten_first_run then
-    dir_2_inactive = gd.createFromPng("images/controller/2_dir_s_inactive.png"):gdStr()
-    dir_4_inactive = gd.createFromPng("images/controller/4_dir_s_inactive.png"):gdStr()
-    dir_6_inactive = gd.createFromPng("images/controller/6_dir_s_inactive.png"):gdStr()
-    dir_8_inactive = gd.createFromPng("images/controller/8_dir_s_inactive.png"):gdStr()
-    kaiten_images.inactive = {dir_6_inactive, dir_2_inactive, dir_4_inactive, dir_8_inactive}
-    draw_kaiten_first_run = false
-  end
   --input       2 4 6 8 2 4 6 8
   --reorder to  6 2 4 8 6 2 4 8
   local dirs_ordered = deepcopy(dirs)
@@ -952,6 +944,7 @@ local function attack_data_display()
 end
 
 local blocking_direction_history = {}
+local blocking_dir = 1
 local last_dir = 1
 
 local function blocking_direction_display_reset()
@@ -959,30 +952,30 @@ local function blocking_direction_display_reset()
 end
 
 local function update_blocking_direction(input, player, dummy)
-  if (player.previous_pos_x - dummy.previous_pos_x) * (player.pos_x - dummy.pos_x) <= 0 then
-  end
-  if dummy.received_connection and settings.training.blocking_mode > 1 then
-    table.insert(blocking_direction_history, {start_frame=gamestate.frame_number, dir=last_dir})
-  end
-  if dummy.blocking.last_blocked_frame == gamestate.frame_number then
-    last_dir = 5
+  if settings.training.blocking_mode > 1 then
+    blocking_dir = 5
     if input[dummy.prefix.." Up"] == false then
       if input[dummy.prefix.." Down"] == false then
         if input[dummy.prefix.." Left"] == true then
-          last_dir = 4
+          blocking_dir = 4
         elseif input[dummy.prefix.." Right"] == true then
-          last_dir = 6
+          blocking_dir = 6
         end
       else
         if input[dummy.prefix.." Left"] == true then
-          last_dir = 1
+          blocking_dir = 1
         elseif input[dummy.prefix.." Right"] == true then
-          last_dir = 3
+          blocking_dir = 3
         else
-          last_dir = 2
+          blocking_dir = 2
         end
       end
     end
+    if dummy.blocking.last_blocked_frame == gamestate.frame_number
+    and blocking_dir ~= last_dir then
+      table.insert(blocking_direction_history, {start_frame=gamestate.frame_number, dir=blocking_dir})
+    end
+    last_dir = blocking_dir
   end
 end
 
@@ -1294,14 +1287,14 @@ end
 
 local function recording_display(dummy)
   local current_recording_size = 0
-  if (recording_slots[settings.training.current_recording_slot].inputs) then
-    current_recording_size = #recording_slots[settings.training.current_recording_slot].inputs
+  if (recording.recording_slots[settings.training.current_recording_slot].inputs) then
+    current_recording_size = #recording.recording_slots[settings.training.current_recording_slot].inputs
   end
   local x = 0
   local y = 4
   local padding = 4
   local lang = lang_code[settings.training.language]
-  if current_recording_state == 2 then
+  if recording.current_recording_state == 2 then
     local text = {"hud_slot", " ", settings.training.current_recording_slot, ": ", "hud_wait_for_recording", " ", current_recording_size}
     local w, h = 0, 0
     if lang == "en" then
@@ -1316,7 +1309,7 @@ local function recording_display(dummy)
     elseif lang == "jp" then
       render_text_multiple(x, y, text, "jp", "8")
     end
-  elseif current_recording_state == 3 then
+  elseif recording.current_recording_state == 3 then
     local text = {"hud_slot", " ", settings.training.current_recording_slot, ": ", "hud_recording", "... (", current_recording_size, ")"}
     local w, h = 0, 0
     if lang == "en" then
@@ -1331,7 +1324,7 @@ local function recording_display(dummy)
     elseif lang == "jp" then
       render_text_multiple(x, y, text, "jp", "8")
     end
-  elseif current_recording_state == 4 and dummy.pending_input_sequence and dummy.pending_input_sequence.sequence then
+  elseif recording.current_recording_state == 4 and dummy.pending_input_sequence and dummy.pending_input_sequence.sequence then
     local text = {""}
     if settings.training.replay_mode == 1 or settings.training.replay_mode == 4 then
       text = {"hud_playing", " (", dummy.pending_input_sequence.current_frame, "/", #dummy.pending_input_sequence.sequence, ")"}
@@ -1414,7 +1407,7 @@ local function draw_hud(player, dummy)
   if show_player_position then
     player_position_display()
   end
-  if current_recording_state ~= 1 then
+  if recording.current_recording_state ~= 1 then
     recording_display(dummy)
   end
   if settings.training.display_gauges then

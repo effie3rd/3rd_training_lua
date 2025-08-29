@@ -321,7 +321,7 @@ local function find_move_frame_data(char_str, animation_id)
   return frame_data[char_str][animation_id]
 end
 
-function get_hurtboxes(char, anim, frame)
+local function get_hurtboxes(char, anim, frame)
   if  frame_data[char][anim]
   and frame_data[char][anim].frames
   and frame_data[char][anim].frames[frame + 1]
@@ -341,5 +341,6 @@ return {
   test_collision = test_collision,
   get_wakeup_time = get_wakeup_time,
   find_frame_data_by_name = find_frame_data_by_name,
-  find_move_frame_data = find_move_frame_data
+  find_move_frame_data = find_move_frame_data,
+  get_hurtboxes = get_hurtboxes
 }

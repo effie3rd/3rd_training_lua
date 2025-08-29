@@ -1,4 +1,4 @@
----@diagnostic disable: lowercase-global
+---@diagnostic disable: lowercase-global, undefined-global
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
 local draw = require("src.ui.draw")
@@ -95,8 +95,8 @@ end
 
 function animation_cancel(args)
   local player = args[1]
---  memory.writebyte(gamestate.P1.life_addr, 0x0) --p1 life
---   memory.writebyte(gamestate.P2.life_addr, 0x0) --p2 life
+--  memory.writebyte(gamestate.P1.addresses.life, 0x0) --p1 life
+--   memory.writebyte(gamestate.P2.addresses.life, 0x0) --p2 life
   memory.writebyte(player.base + 0x27, 0x0)
   memory.writeword(player.base + 0x202, 0x8800) --idle
   memory.writeword(player.base + 0x21A, 22177)
@@ -302,21 +302,21 @@ function process_command_queue(player, input)
 end
 
 function zero_gauge(player)
-  memory.writebyte(player.gauge_addr, 0)
-  memory.writebyte(player.meter_addr[2], 0)
---   memory.writebyte(player.meter_update_flag, 0x01)
+  memory.writebyte(player.addresses.gauge, 0)
+  memory.writebyte(player.addresses.meter_master, 0)
+--   memory.writebyte(player.addresses.meter_update_flag, 0x01)
 end
 
 function full_gauge(player)
-  memory.writebyte(player.gauge_addr, player.max_meter_gauge)
-  memory.writebyte(player.meter_addr[2], player.max_meter_count)
-  memory.writebyte(player.meter_update_flag, 0x01)
+  memory.writebyte(player.addresses.gauge, player.max_meter_gauge)
+  memory.writebyte(player.addresses.meter_master, player.max_meter_count)
+  memory.writebyte(player.addresses.meter_update_flag, 0x01)
 end
 
 
 function air_hadou()
   queue_input(gamestate.P1, 0, motion_hadou_lp)
-  queue_func(gamestate.P1, 2, funcs["zero_gauge"], {gamestate.P1})
+  -- queue_func(gamestate.P1, 2, funcs["zero_gauge"], {gamestate.P1})
 end
 
 function sgs()
@@ -418,9 +418,9 @@ end
 --gamestate.P2 base movespeed forward 3 3 4 backwards 2 3
 
 --set gauges and hp
--- memory.writebyte(player.gauge_addr, gauge_value)
--- memory.writebyte(player.meter_addr[2], player.max_meter_count)
--- memory.writebyte(player.meter_update_flag, 0x01)
+-- memory.writebyte(player.addresses.gauge, gauge_value)
+-- memory.writebyte(player.addresses.meter_master, player.max_meter_count)
+-- memory.writebyte(player.addresses.meter_update_flag, 0x01)
 
 --air parry increases y by 1
 
@@ -583,8 +583,8 @@ function hadou_matsuri_run()
 --   end
   if gamestate.P1.animation_frame_id == 22179 then
 --     animation_cancel()
---     queue_input_sequence(gamestate.P1,{{"HP","HK"}})
---     queue_input_sequence(gamestate.P1,motion_teleport_forward_p)
+--     inputs.queue_input_sequence(gamestate.P1,{{"HP","HK"}})
+--     inputs.queue_input_sequence(gamestate.P1,motion_teleport_forward_p)
   end
   --set hp to 0 on hit/block
   if gamestate.P2.character_state_byte == 1 then
@@ -687,11 +687,11 @@ function hadou_matsuri_run()
   memory.writebyte(0x02068FB8, 0xFF) --p1
   memory.writebyte(0x02069450, 0xFF) --p2
 
---   memory.writebyte(gamestate.P1.parry_forward_validity_time_addr,0x00000008)
---   memory.writebyte(gamestate.P2.parry_forward_validity_time_addr,0x00000008)
+--   memory.writebyte(gamestate.P1.addresses.parry_forward_validity_time,0x00000008)
+--   memory.writebyte(gamestate.P2.addresses.parry_forward_validity_time,0x00000008)
 
   for _, player in pairs(gamestate.player_objects) do
-    memory.writebyte(player.life_addr, 160)
+    memory.writebyte(player.addresses.life, 160)
     if gamestate.frame_number % 8 == 0 then
 
       memory.writedword(player.base + 616, debug_color)
@@ -709,8 +709,8 @@ function hadou_matsuri_run()
 --     the_end = true
     clear_command_queue(gamestate.P2)
     full_gauge(gamestate.P2)
---     memory.writebyte(gamestate.P2.parry_forward_validity_time_addr,0x0)
---     memory.writebyte(gamestate.P2.parry_forward_cooldown_time_addr,0x0)
+--     memory.writebyte(gamestate.P2.addresses.parry_forward_validity_time,0x0)
+--     memory.writebyte(gamestate.P2.addresses.parry_forward_cooldown_time,0x0)
     queue_input(gamestate.P2, 0, {{"LP","LK"}})
 --     queue_func(gamestate.P2, 10, funcs["set_acceleration"], {gamestate.P2, 4, 0})
     queue_func(gamestate.P2, 30, {func=write_velocity_x, args={gamestate.P2, 13, 0}})

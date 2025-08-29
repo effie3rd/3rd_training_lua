@@ -1,0 +1,61 @@
+
+[
+{
+"name": "default",
+"colors": {
+  "text" : {
+    "default" : "0xFFFFFFFF",
+    "selected" : "0x00c2FFFF",
+    "disabled" : "0x909090FF",
+    "button_activated" : "0x10FF10FF"
+  },
+  "gui_text" : {
+    "default" : "0xFFFFFFFF",
+    "default_border" : "0x000000FF"
+  },
+  "menu" : {
+    "background" : "0x1F1F1FF0",
+    "outline" : "0xBBBBBBF0",
+    "gauge_background" : "0xFFFFFF22",
+    "gauge_border" : "0x000000FF"
+  },
+  "gauges" : {
+    "outline" : "0x000000FF",
+    "background" : "0x00000044",
+    "valid_fill" : "0xc200c8FF",
+    "cooldown_fill" : "0x6800b5FF",
+    "life" : "0x00CD4CFF",
+    "stun" : "0xE60000FF",
+    "meter" : "0x00E6F7FF"
+  },
+  "parry" : {
+    "text_validity" : "0xFFFFFFFF",
+    "text_success" : "0x10FF10FF",
+    "text_failure" : "0xFF1010FF"
+  },
+  "charge" : {
+    "text_validity" : "0xFFFFFFFF",
+    "text_success" : "0x10FF10FF",
+    "text_failure" : "0xFF1010FF",
+    "overcharge" : "0x4900FF80"
+  },
+  "last_hit_bars" : {
+    "life" : "0xFFFFFFFF",
+    "stun" : "0xE60000FF"
+  },
+  "red_parry_miss" : "0xE60000FF",
+  "bonuses" : {
+    "damage" : "0xFF7184FF",
+    "defense" : "0xD6E3EFFF",
+    "stun" : "0xD6E3EFFF"
+  },
+  "hitboxes" : {
+    "vulnerability" : "0x0000FFFF",
+    "attack" : "0xFF0000FF",
+    "throwable" : "0x00FF00FF",
+    "throw" : "0xFFFF00FF",
+    "push" : "0xFF00FFFF",
+    "extvulnerability" : "0x00FFFFFF"
+  }
+}}
+]

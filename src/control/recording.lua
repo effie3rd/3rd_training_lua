@@ -1,32 +1,21 @@
 local settings = require("src.settings")
 local gamestate = require("src.gamestate")
 local training = require("src.training")
-local inp = require("src.control.input")
+local inputs = require("src.control.inputs")
 
-local make_input_empty, interpret_input = inp.make_input_empty, inp.interpret_input
-
-saved_recordings_path = "saved/recordings/"
-
-recording_slot_count = 16
+local recording_slot_count = 16
 
 -- 1: Default Mode, 2: Wait for recording, 3: Recording, 4: Replaying
-current_recording_state = 1
-last_ordered_recording_slot = 0
-current_recording_last_idle_frame = -1
-override_replay_slot = -1
-current_recording_slot_frames = {}
+local current_recording_state = 1
+local last_ordered_recording_slot = 0
+local current_recording_last_idle_frame = -1
+local override_replay_slot = -1
+local current_recording_slot_frames = {frames = 0}
 
-recording_states =
-{
-  "none",
-  "waiting",
-  "recording",
-  "playing",
-}
 
-recording_slots = {}
+local recording_slots = {}
 
-recording_slots_names = {}
+local recording_slots_names = {}
 
 
 local function make_recording_slot()
@@ -48,12 +37,12 @@ local function initialize_slots()
   end
 end
 
-function clear_slot()
+local function clear_slot()
   recording_slots[settings.training.current_recording_slot] = make_recording_slot()
   settings.save_training_data()
 end
 
-function clear_all_slots()
+local function clear_all_slots()
   for i = 1, recording_slot_count do
     recording_slots[i] = make_recording_slot()
   end
@@ -88,6 +77,10 @@ local function backup_recordings()
   end
 end
 
+local function update_current_recording_slot_frames()
+  current_recording_slot_frames.frames = #recording_slots[settings.training.current_recording_slot].inputs
+end
+
 local function restore_recordings()
   local char = gamestate.P2.char_str
   if char and char ~= "" then
@@ -103,11 +96,9 @@ local function restore_recordings()
   update_current_recording_slot_frames()
 end
 
-function update_current_recording_slot_frames()
-  current_recording_slot_frames[1] = #recording_slots[settings.training.current_recording_slot].inputs
-end
 
-function can_play_recording()
+
+local function can_play_recording()
   if settings.training.replay_mode == 2 or settings.training.replay_mode == 3 or settings.training.replay_mode == 5 or settings.training.replay_mode == 6 then
     for i, value in ipairs(recording_slots) do
       if #value.inputs > 0 then
@@ -120,7 +111,7 @@ function can_play_recording()
   return false
 end
 
-function find_random_recording_slot()
+local function find_random_recording_slot()
   -- random slot selection
   local recorded_slots = {}
   for i, value in ipairs(recording_slots) do
@@ -153,7 +144,7 @@ function find_random_recording_slot()
   return -1
 end
 
-function go_to_next_ordered_slot()
+local function go_to_next_ordered_slot()
   local slot = -1
   for i = 1, recording_slot_count do
     local slot_index = ((last_ordered_recording_slot - 1 + i) % recording_slot_count) + 1
@@ -167,7 +158,7 @@ function go_to_next_ordered_slot()
   return slot
 end
 
-function set_recording_state(input, state)
+local function set_recording_state(input, state)
   if (state == current_recording_state) then
     return
   end
@@ -207,7 +198,7 @@ function set_recording_state(input, state)
 
     training.swap_characters = false
   elseif current_recording_state == 4 then
-    clear_input_sequence(training.dummy)
+    inputs.clear_input_sequence(training.dummy)
   end
 
   current_recording_state = state
@@ -216,11 +207,11 @@ function set_recording_state(input, state)
   if current_recording_state == 1 then
   elseif current_recording_state == 2 then
     training.swap_characters = true
-    make_input_empty(input)
+    inputs.make_input_empty(input)
   elseif current_recording_state == 3 then
     current_recording_last_idle_frame = -1
     training.swap_characters = true
-    make_input_empty(input)
+    inputs.make_input_empty(input)
     recording_slots[settings.training.current_recording_slot].inputs = {}
   elseif current_recording_state == 4 then
     local replay_slot = -1
@@ -237,8 +228,18 @@ function set_recording_state(input, state)
     end
 
     if replay_slot > 0 then
-      queue_input_sequence(training.dummy, recording_slots[replay_slot].inputs)
+      inputs.queue_input_sequence(training.dummy, recording_slots[replay_slot].inputs)
     end
+  end
+end
+
+local function reset_recording_state()
+  -- reset recording states in a useful way
+  if current_recording_state == 3 then
+    set_recording_state({}, 2)
+  elseif current_recording_state == 4 and (settings.training.replay_mode == 4 or settings.training.replay_mode == 5 or settings.training.replay_mode == 6) then
+    set_recording_state({}, 1)
+    set_recording_state({}, 4)
   end
 end
 
@@ -270,9 +271,9 @@ local function stick_input_to_sequence_input(player, input)
   return ""
 end
 
-function update_recording(input, player, dummy)
+local function update_recording(input, player, dummy)
   if gamestate.is_in_match then
-    local motion = interpret_input(training.player, training.dummy)
+    local motion = inputs.interpret_input(training.player, training.dummy)
     if motion == "double_tap" then
       if current_recording_state == 2 or current_recording_state == 3 then
         set_recording_state(input, 1)
@@ -327,8 +328,6 @@ function update_recording(input, player, dummy)
       end
     end
   end
-
-  previous_recording_state = current_recording_state
 end
 
 
@@ -336,9 +335,38 @@ end
 initialize_slots()
 
 
-local recording = {
+local recording_module = {
+  recording_slot_count = recording_slot_count,
+  clear_slot = clear_slot,
+  clear_all_slots = clear_all_slots,
   backup_recordings = backup_recordings,
-  restore_recordings = restore_recordings
+  restore_recordings = restore_recordings,
+  set_recording_state = set_recording_state,
+  reset_recording_state = reset_recording_state,
+  update_current_recording_slot_frames = update_current_recording_slot_frames,
+  update_recording = update_recording
 }
 
-return recording
+setmetatable(recording_module, {
+  __index = function(_, key)
+    if key == "current_recording_slot_frames" then
+      return current_recording_slot_frames
+    elseif key == "current_recording_state" then
+      return current_recording_state
+    elseif key == "override_replay_slot" then
+      return override_replay_slot
+    elseif key == "recording_slots" then
+      return recording_slots
+    end
+  end,
+
+  __newindex = function(_, key, value)
+    if key == "recording_slots" then
+      recording_slots = value
+    else
+      rawset(recording_module, key, value)
+    end
+  end
+})
+
+return recording_module

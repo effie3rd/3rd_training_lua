@@ -1,9 +1,8 @@
 local settings = require("src.settings")
 local gamestate = require("src.gamestate")
 local sd = require("src.modules.stagedata")
-local inp = require("src.control.input")
-
-local swap_inputs, make_input_empty, clear_directional_input, clear_p1_buttons = inp.swap_inputs, inp.make_input_empty, inp.clear_directional_input, inp.clear_p1_buttons 
+local inputs = require("src.control.inputs")
+local memory_addresses = require("src.control.memory_addresses")
 
 local character_select_savestate = savestate.create("data/"..rom_name.."/savestates/character_select.fs")
 local first_run = true
@@ -124,7 +123,7 @@ local function co_force_select_character(input, player_id, char, sa, sel_button)
   local col = character_map[char][1]
   local row = character_map[char][2]
 
-  local character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
+  local character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
 
   if character_select_state > 2 then
     return
@@ -134,41 +133,41 @@ local function co_force_select_character(input, player_id, char, sa, sel_button)
   local curr_row = -1
 
   while not (curr_col == col and curr_row == row) do
-    memory.writebyte(addresses.players[player_id].character_select_col, col)
-    memory.writebyte(addresses.players[player_id].character_select_row, row)
+    memory.writebyte(memory_addresses.players[player_id].character_select_col, col)
+    memory.writebyte(memory_addresses.players[player_id].character_select_row, row)
     co_wait_x_frames(1)
-    curr_col = memory.readbyte(addresses.players[player_id].character_select_col)
-    curr_row = memory.readbyte(addresses.players[player_id].character_select_row)
+    curr_col = memory.readbyte(memory_addresses.players[player_id].character_select_col)
+    curr_row = memory.readbyte(memory_addresses.players[player_id].character_select_row)
   end
 
   while character_select_state < 3 do
     co_wait_x_frames(2)
-    queue_input_sequence(gamestate.player_objects[player_id], {{sel_button}})
+    inputs.queue_input_sequence(gamestate.player_objects[player_id], {{sel_button}})
     co_wait_x_frames(2)
-    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
+    character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
   end
 
   while character_select_state < 4 do
     co_wait_x_frames(1)
-    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
+    character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
   end
 
   if char == "shingouki" then
-    memory.writebyte(addresses.players[player_id].character_select_id, 0x0F)
+    memory.writebyte(memory_addresses.players[player_id].character_select_id, 0x0F)
   end
 
   if sa == 2 then
-    queue_input_sequence(gamestate.player_objects[player_id], {{"down"}})
+    inputs.queue_input_sequence(gamestate.player_objects[player_id], {{"down"}})
     co_wait_x_frames(20)
   elseif sa == 3 then
-    queue_input_sequence(gamestate.player_objects[player_id], {{"up"}})
+    inputs.queue_input_sequence(gamestate.player_objects[player_id], {{"up"}})
     co_wait_x_frames(20)
   end
 
   while character_select_state < 5 do
-    queue_input_sequence(gamestate.player_objects[player_id], {{sel_button}})
+    inputs.queue_input_sequence(gamestate.player_objects[player_id], {{sel_button}})
     co_wait_x_frames(2)
-    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
+    character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
   end
 end
 
@@ -184,8 +183,8 @@ local function co_select_gill(input)
   local sel_buttons = {"LP","HK"}
   local i = math.random(1,#sel_buttons)
   local sel_button = sel_buttons[i]
-  local p1_character_select_state = memory.readbyte(addresses.players[1].character_select_state)
-  local p2_character_select_state = memory.readbyte(addresses.players[2].character_select_state)
+  local p1_character_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
+  local p2_character_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
 
   if p1_character_select_state > 2 and p2_character_select_state > 2 then
     return
@@ -201,25 +200,25 @@ local function co_select_gill(input)
     character_select_state = p2_character_select_state
   end
 
-  memory.writebyte(addresses.players[player_id].character_select_col, 3)
-  memory.writebyte(addresses.players[player_id].character_select_row, 1)
+  memory.writebyte(memory_addresses.players[player_id].character_select_col, 3)
+  memory.writebyte(memory_addresses.players[player_id].character_select_row, 1)
 
   while character_select_state < 3 do
     co_wait_x_frames(2)
-    queue_input_sequence(gamestate.P1, {{sel_button}})
+    inputs.queue_input_sequence(gamestate.P1, {{sel_button}})
     co_wait_x_frames(2)
-    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
+    character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
   end
 
   while character_select_state < 4 do
     co_wait_x_frames(1)
-    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
+    character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
   end
 
   while character_select_state < 5 do
-    queue_input_sequence(gamestate.P1, {{sel_button}})
+    inputs.queue_input_sequence(gamestate.P1, {{sel_button}})
     co_wait_x_frames(2)
-    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
+    character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
   end
 end
 
@@ -237,8 +236,8 @@ local function co_select_shingouki(input)
   local sel_buttons = {"LP","HK"}
   local i = math.random(1,#sel_buttons)
   local sel_button = sel_buttons[i]
-  local p1_character_select_state = memory.readbyte(addresses.players[1].character_select_state)
-  local p2_character_select_state = memory.readbyte(addresses.players[2].character_select_state)
+  local p1_character_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
+  local p2_character_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
 
   if p1_character_select_state > 2 and p2_character_select_state > 2 then
     return
@@ -254,28 +253,28 @@ local function co_select_shingouki(input)
     character_select_state = p2_character_select_state
   end
 
-  memory.writebyte(addresses.players[player_id].character_select_col, 0)
-  memory.writebyte(addresses.players[player_id].character_select_row, 6)
+  memory.writebyte(memory_addresses.players[player_id].character_select_col, 0)
+  memory.writebyte(memory_addresses.players[player_id].character_select_row, 6)
 
 
   while character_select_state < 3 do
     co_wait_x_frames(2)
-    queue_input_sequence(gamestate.P1, {{sel_button}})
+    inputs.queue_input_sequence(gamestate.P1, {{sel_button}})
     co_wait_x_frames(2)
-    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
+    character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
   end
 
   while character_select_state < 4 do
     co_wait_x_frames(1)
-    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
+    character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
   end
 
-  memory.writebyte(addresses.players[player_id].character_select_id, 0x0F)
+  memory.writebyte(memory_addresses.players[player_id].character_select_id, 0x0F)
 
   while character_select_state < 5 do
-    queue_input_sequence(gamestate.P1, {{sel_button}})
+    inputs.queue_input_sequence(gamestate.P1, {{sel_button}})
     co_wait_x_frames(2)
-    character_select_state = memory.readbyte(addresses.players[player_id].character_select_state)
+    character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
   end
 end
 
@@ -297,8 +296,8 @@ local function co_random_character(input)
   local p1_character_select_state
   local p2_character_select_state
 
-  p1_character_select_state = memory.readbyte(addresses.players[1].character_select_state)
-  p2_character_select_state = memory.readbyte(addresses.players[2].character_select_state)
+  p1_character_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
+  p2_character_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
 
   if p1_character_select_state <= 2 then
     player_id = 1
@@ -315,8 +314,8 @@ local function co_random_character(input)
     return
   end
 
-  local character_select_col = memory.readbyte(addresses.players[player_id].character_select_col)
-  local character_select_row = memory.readbyte(addresses.players[player_id].character_select_row)
+  local character_select_col = memory.readbyte(memory_addresses.players[player_id].character_select_col)
+  local character_select_row = memory.readbyte(memory_addresses.players[player_id].character_select_row)
 
   --don't select the same character twice
   while true do
@@ -326,8 +325,8 @@ local function co_random_character(input)
     local row = character_select_loc[n][2]
 
     if col ~= character_select_col or row ~= character_select_row then
-      memory.writebyte(addresses.players[player_id].character_select_col, col)
-      memory.writebyte(addresses.players[player_id].character_select_row, row)
+      memory.writebyte(memory_addresses.players[player_id].character_select_col, col)
+      memory.writebyte(memory_addresses.players[player_id].character_select_row, row)
       break
     end
   end
@@ -356,10 +355,10 @@ local function update_character_select(input, do_fast_forward)
   end
 
   -- Infinite select time
-  --memory.writebyte(addresses.global.character_select_timer, 0x30)
+  --memory.writebyte(memory_addresses.global.character_select_timer, 0x30)
 
   if p1_forced_select then
-    make_input_empty(input)
+    inputs.make_input_empty(input)
   end
 
   for k,cs in pairs(character_select_coroutines) do
@@ -384,8 +383,8 @@ local function update_character_select(input, do_fast_forward)
     end
   end
 
-  p1_character_select_state = memory.readbyte(addresses.players[1].character_select_state)
-  p2_character_select_state = memory.readbyte(addresses.players[2].character_select_state)
+  p1_character_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
+  p2_character_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
 
 
   if not p1_forced_select then
@@ -400,7 +399,7 @@ local function update_character_select(input, do_fast_forward)
       --  print(string.format("%s %s",key, tostring(value)))
       --end
       if not p1_forced_select and not p2_forced_select then
-        swap_inputs(input)
+        inputs.swap_inputs(input)
       end
       --for key, value in pairs(input) do
       --  print(string.format("Swap %s %s",key, tostring(value)))
@@ -409,14 +408,14 @@ local function update_character_select(input, do_fast_forward)
     end
 
     if gamestate.frame_number < clear_buttons_until_frame then
-      clear_p1_buttons(input)
+      inputs.clear_p1_buttons(input)
     end
 
     -- wait for all inputs to be released
     if character_select_sequence_state == 1 or character_select_sequence_state == 3 then
       for _, state in pairs(input) do
         if state == true then
-          make_input_empty(input)
+          inputs.make_input_empty(input)
           return
         end
       end
@@ -424,7 +423,7 @@ local function update_character_select(input, do_fast_forward)
     end
 
     if selecting_random_character then
-      clear_directional_input(input)
+      inputs.clear_directional_input(input)
     end
   end
 
@@ -434,7 +433,7 @@ local function update_character_select(input, do_fast_forward)
       local n = 3 + math.random(0, sd.n_stages - 1)
       stage = sd.menu_to_stage_map[n]
     end
-    memory.writebyte(addresses.global.stage, stage)
+    memory.writebyte(memory_addresses.global.stage, stage)
   end
 
 

@@ -45,32 +45,23 @@ require("src.control.write_memory")
 local settings = require("src.settings")
 local debug_settings = require("src.debug_settings")
 local recording = require("src.control.recording")
-local fd = require("src.modules.framedata")
-local fdm = require("src.modules.framedata_meta")
-local text = require("src.ui.text")
 local gamestate = require("src.gamestate")
 local loading = require("src.loading")
 local training = require("src.training")
 require("src.control.dummy_control")
 local draw = require("src.ui.draw")
 local hud = require("src.ui.hud")
-local inp = require("src.control.input")
+local inputs = require("src.control.inputs")
 local input_history = require("src.ui.input_history")
 require("src.modules.prediction")
 local menu = require("src.ui.menu")
 local attack_data = require("src.modules.attack_data")
-require("src.modules.frame_advantage")
+local frame_advantage = require("src.modules.frame_advantage")
 local character_select = require("src.control.character_select")
 -- require("src.training.jumpins")
 require("src.modules.record_framedata")
 local debug = require("src.debug")
 
-
---aliases
-local frame_data, character_specific = fd.frame_data, fd.character_specific
-local frame_data_meta = fdm.frame_data_meta
-local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text, text.render_text_multiple, text.get_text_dimensions, text.get_text_dimensions_multiple
-local swap_inputs, interpret_input = inp.swap_inputs, inp.interpret_input
 
 local disable_display = false
 
@@ -86,26 +77,27 @@ end
 
 local function on_load_state()
   gamestate.reset_player_objects()
-  attack_data.reset()
-  frame_advantage_reset()
-
   gamestate.gamestate_read()
+
+  attack_data.reset()
+  frame_advantage.frame_advantage_reset()
 
   recording.restore_recordings()
 
   training.reset_gauge_state()
 
-  hud.reset_hud()
-
-  -- reset recording states in a useful way
-  if current_recording_state == 3 then
-    set_recording_state({}, 2)
-  elseif current_recording_state == 4 and (settings.training.replay_mode == 4 or settings.training.replay_mode == 5 or settings.training.replay_mode == 6) then
-    set_recording_state({}, 1)
-    set_recording_state({}, 4)
+  if menu.is_initialized then
+    menu.update_counter_attack_items()
+    menu.update_gauge_items()
+    menu.update_menu()
   end
 
+  hud.reset_hud()
+
   input_history.clear_input_history()
+
+  recording.reset_recording_state()
+
   emu.speedmode("normal")
 
   for key, com in ipairs(after_load_state_callback) do
@@ -123,7 +115,7 @@ end
 
 local function hotkey1()
   -- is_in_challenge = false
-  set_recording_state({}, 1)
+  recording.set_recording_state({}, 1)
   character_select.start_character_select_sequence()
 end
 
@@ -136,8 +128,8 @@ local function hotkey3()
 end
 
 local function hotkey4() --debug
-  -- queue_input_from_json(gamestate.P1, "Debug.json")
-queue_denjin(gamestate.P1, 20)
+  -- inputs.queue_input_from_json(gamestate.P1, "Debug.json")
+  debug.queue_denjin(gamestate.P1, 20)
 
 end
 
@@ -192,7 +184,7 @@ local function before_frame()
     local number_loaded = loading.load_all()
     loading_bar_loaded = loading_bar_loaded + number_loaded
   elseif loading.text_images_loaded and not menu.is_initialized then
-    menu.init_menu()
+    menu.create_menu()
   end
 
   draw.update_draw_variables()
@@ -209,7 +201,6 @@ local function before_frame()
   end
 
   if menu.is_initialized then
-    menu.update_menu()
     -- load recordings according to gamestate.P2 character
     if previous_p2_char_str ~= gamestate.P2.char_str then
       recording.restore_recordings()
@@ -217,15 +208,13 @@ local function before_frame()
     --update character specific settings on training.dummy change
     if previous_dummy_char_str ~= training.dummy.char_str then
       menu.update_counter_attack_items()
+      menu.update_menu()
     end
     if gamestate.has_match_just_started then
-
-      hud.reset_hud()
-
-    end
-    if gamestate.is_in_match then
-      menu.update_gauge_items()
       menu.update_counter_attack_items()
+      menu.update_gauge_items()
+      menu.update_menu()
+      hud.reset_hud()
     end
   end
 
@@ -235,7 +224,7 @@ local function before_frame()
   -- input
   local input = joypad.get()
   if gamestate.is_in_match and not menu.is_open and training.swap_characters then
-    swap_inputs(input)
+    inputs.swap_inputs(input)
   end
  
   character_select.update_character_select(input, settings.training.fast_forward_intro)
@@ -267,7 +256,7 @@ local function before_frame()
     attack_data.update(training.player, training.dummy)
 
     -- frame advantage
-    frame_advantage_update(training.player, training.dummy)
+    frame_advantage.frame_advantage_update(training.player, training.dummy)
 
     -- blocking
     update_blocking(input, training.player, training.dummy, settings.training.blocking_mode, settings.training.blocking_style, settings.training.red_parry_hit_count, settings.training.parry_every_n_count)
@@ -287,17 +276,17 @@ local function before_frame()
     update_tech_throws(input, training.player, training.dummy, settings.training.tech_throws_mode)
 
     -- counter attack
-    update_counter_attack(input, training.player, training.dummy, settings.training.counter_attack[training.dummy.char_str], settings.training.hits_before_counter_attack_count)
+    update_counter_attack(input, training.player, training.dummy, training.counter_attack_data, settings.training.hits_before_counter_attack_count)
 
     -- recording
     if not menu.is_open then
-      update_recording(input, training.player, training.dummy)
+      recording.update_recording(input, training.player, training.dummy)
     end
   end
 
   if not menu.is_open then
-    process_pending_input_sequence(gamestate.P1, input)
-    process_pending_input_sequence(gamestate.P2, input)
+    inputs.process_pending_input_sequence(gamestate.P1, input)
+    inputs.process_pending_input_sequence(gamestate.P2, input)
   end
 
   if gamestate.is_in_match then
@@ -305,10 +294,10 @@ local function before_frame()
     input_history.input_history_update(gamestate.P2, input)
   else
     input_history.clear_input_history()
-    frame_advantage_reset()
+    frame_advantage.frame_advantage_reset()
   end
 
-  inp.previous_input = input
+  inputs.previous_input = input
 
   if not (gamestate.is_in_match and is_in_challenge) then
     joypad.set(input)
@@ -363,7 +352,7 @@ local function on_gui()
 
 
       if settings.training.display_frame_advantage then
-        frame_advantage_display()
+        frame_advantage.frame_advantage_display()
       end
     end
 

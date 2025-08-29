@@ -43,6 +43,18 @@
     "en": "File Name",
     "jp": "ファイル名"
   },
+  "file_save": {
+    "en": "Save",
+    "jp": "セーブ"
+  },
+  "file_load": {
+    "en": "Load",
+    "jp": "ロード"
+  },
+  "file_cancel": {
+    "en": "Cancel",
+    "jp": "キャンセル"
+  },
   "save": {
     "en": "Save",
     "jp": "セーブ"
@@ -333,11 +345,11 @@
   },
   "menu_first_hit": {
     "en": "first hit",
-    "jp": "第一ヒット"
+    "jp": "最初ヒット"
   },
   "menu_after_first_hit": {
     "en": "after first hit",
-    "jp": "一ヒット以降"
+    "jp": "最初ヒット以降"
   },
   "menu_on": {
     "en": "on",
@@ -391,7 +403,7 @@
     "en": "highjumping",
     "jp": "ハイジャンプ"
   },
-  "counterattack": {
+  "counter_attack_type": {
     "en": "Counterattack",
     "jp": "反撃"
   },
@@ -407,7 +419,7 @@
     "en": "Move",
     "jp": "技名"
   },
-  "counter_attack_option_select": {
+  "counter_attack_option_select_names": {
     "en": "Option Select",
     "jp": "仕込み"
   },
@@ -669,21 +681,77 @@
     "en": "HP+HK",
     "jp": "大P＋大K"
   },
-  "F+": {
-    "en": "F+",
-    "jp": "前"
+  "F+LP": {
+    "en": "F+LP",
+    "jp": "前小P"
   },
-  "B+": {
-    "en": "B+",
-    "jp": "後ろ"
+  "F+MP": {
+    "en": "F+MP",
+    "jp": "前中P"
   },
-  "D+": {
-    "en": "D+",
-    "jp": "D+"
+  "F+HP": {
+    "en": "F+HP",
+    "jp": "前大P"
   },
-  "U+": {
-    "en": "U+",
-    "jp": "U+"
+  "F+LK": {
+    "en": "F+LK",
+    "jp": "前小K"
+  },
+  "F+MK": {
+    "en": "F+MK",
+    "jp": "前中K"
+  },
+  "F+HK": {
+    "en": "F+HK",
+    "jp": "前大K"
+  },
+  "B+LP": {
+    "en": "B+LP",
+    "jp": "後ろ小P"
+  },
+  "B+MP": {
+    "en": "B+MP",
+    "jp": "後ろ中P"
+  },
+  "B+HP": {
+    "en": "B+HP",
+    "jp": "後ろ大P"
+  },
+  "B+LK": {
+    "en": "B+LK",
+    "jp": "後ろ小K"
+  },
+  "B+MK": {
+    "en": "B+MK",
+    "jp": "後ろ中K"
+  },
+  "B+HK": {
+    "en": "B+HK",
+    "jp": "後ろ大K"
+  },
+  "D+LP": {
+    "en": "D+LP",
+    "jp": "↓小P"
+  },
+  "D+MP": {
+    "en": "D+MP",
+    "jp": "↓中P"
+  },
+  "D+HP": {
+    "en": "D+HP",
+    "jp": "↓大P"
+  },
+  "D+LK": {
+    "en": "D+LK",
+    "jp": "↓小K"
+  },
+  "D+MK": {
+    "en": "D+MK",
+    "jp": "↓中K"
+  },
+  "D+HK": {
+    "en": "D+HK",
+    "jp": "↓大K"
   },
   "counter_attack_button": {
     "en": "Button",

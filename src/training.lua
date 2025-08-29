@@ -2,7 +2,7 @@
 local fd = require("src.modules.framedata")
 local gamestate = require("src.gamestate")
 local settings = require("src.settings")
-local mem = require("src.control.write_memory")
+local write_memory = require("src.control.write_memory")
 
 local character_specific = fd.character_specific
 
@@ -13,6 +13,8 @@ local dummy = gamestate.P2
 local swap_characters = false
 
 local should_freeze_game = false
+
+local counter_attack_data
 
 local life_recovery_rate_default = 4
 local stun_recovery_rate_default = 1.5
@@ -32,7 +34,8 @@ local function reset_gauge_state()
     meter_refill_start_frame = 0,
     expected_meter = 0,
     should_refill_stun = false,
-    stun_refill_start_frame = 0
+    stun_refill_start_frame = 0,
+    start_stun = 0
   },
   {
     should_refill_life = false,
@@ -41,7 +44,8 @@ local function reset_gauge_state()
     meter_refill_start_frame = 0,
     expected_meter = 0,
     should_refill_stun = false,
-    stun_refill_start_frame = 0
+    stun_refill_start_frame = 0,
+    start_stun = 0
   }}
 end
 
@@ -51,7 +55,7 @@ local function update_gauges(player)
   if gamestate.is_in_match and not should_freeze_game then
     --infinite
     if settings.training.life_mode == 5 then
-      memory.writebyte(player.life_addr, max_life)
+      memory.writebyte(player.addresses.life, max_life)
     --not off 
     elseif settings.training.life_mode > 1 then
       local id = player.id
@@ -93,7 +97,7 @@ local function update_gauges(player)
           life = math.min(life, wanted_life)
         end
         life = math.min(life, max_life)
-        memory.writebyte(player.life_addr, life)
+        memory.writebyte(player.addresses.life, life)
         if player.life == life then
           gauge_state[id].should_refill_life = false
         end
@@ -107,16 +111,16 @@ local function update_gauges(player)
     -- If the SA is a timed SA, the gauge won't go back to 0 when it reaches max. We have to make special cases for it
     local is_timed_sa = character_specific[player.char_str].timed_sa[player.selected_sa]
     if settings.training.meter_mode == 5 then
-      local meter_count = memory.readbyte(player.meter_addr[2])
-      local meter_count_slave = memory.readbyte(player.meter_addr[1])
+      local meter_count = memory.readbyte(player.addresses.meter_master)
+      local meter_count_slave = memory.readbyte(player.addresses.meter)
       if meter_count ~= player.max_meter_count and meter_count_slave ~= player.max_meter_count then
         local gauge_value = 0
         if is_timed_sa then
           gauge_value = player.max_meter_gauge
         end
-        memory.writebyte(player.gauge_addr, gauge_value)
-        memory.writebyte(player.meter_addr[2], player.max_meter_count)
-        memory.writebyte(player.meter_update_flag, 0x01)
+        memory.writebyte(player.addresses.gauge, gauge_value)
+        memory.writebyte(player.addresses.meter_master, player.max_meter_count)
+        memory.writebyte(player.addresses.meter_update_flag, 0x01)
       end
     elseif settings.training.meter_mode > 1 then
       local id = player.id
@@ -132,10 +136,10 @@ local function update_gauges(player)
       elseif settings.training.meter_mode == 4 then
         wanted_meter = player.max_meter_gauge * player.max_meter_count
       end
-      local meter_count = memory.readbyte(player.meter_addr[2])
-      local meter_count_slave = memory.readbyte(player.meter_addr[1])
+      local meter_count = memory.readbyte(player.addresses.meter_master)
+      local meter_count_slave = memory.readbyte(player.addresses.meter)
 
-      local gauge = memory.readbyte(player.gauge_addr)
+      local gauge = memory.readbyte(player.addresses.gauge)
 
       local meter = 0
       -- If the SA is a timed SA, the gauge won't go back to 0 when it reaches max
@@ -176,12 +180,12 @@ local function update_gauges(player)
       if gauge_state[id].should_refill_meter
       and meter_count == meter_count_slave then
         if wanted_gauge ~= gauge then
-          memory.writebyte(player.gauge_addr, wanted_gauge)
+          memory.writebyte(player.addresses.gauge, wanted_gauge)
           gauge_state[id].expected_meter = wanted_gauge
         end
         if meter_count ~= wanted_meter_count then
-          memory.writebyte(player.meter_addr[2], wanted_meter_count)
-          memory.writebyte(player.meter_update_flag, 0x01)
+          memory.writebyte(player.addresses.meter_master, wanted_meter_count)
+          memory.writebyte(player.addresses.meter_update_flag, 0x01)
         end
         if wanted_gauge == gauge then
           gauge_state[id].should_meter_life = false
@@ -193,20 +197,20 @@ local function update_gauges(player)
   end
 
   if settings.training.infinite_sa_time and player.is_in_timed_sa then
-    memory.writebyte(player.gauge_addr, player.max_meter_gauge)
+    memory.writebyte(player.addresses.gauge, player.max_meter_gauge)
   end
 
   -- STUN
   --always 0
   if settings.training.stun_mode == 5 then
-      memory.writebyte(player.stun_bar_char_addr, 0)
-      memory.writebyte(player.stun_bar_mantissa_addr, 0)
-      memory.writebyte(player.stun_bar_decrease_timer_addr, 0)
+      memory.writebyte(player.addresses.stun_bar_char, 0)
+      memory.writebyte(player.addresses.stun_bar_mantissa, 0)
+      memory.writebyte(player.addresses.stun_bar_decrease_timer, 0)
   --always max
   elseif settings.training.stun_mode == 6 then
-      memory.writebyte(player.stun_bar_char_addr, player.stun_bar_max)
-      memory.writebyte(player.stun_bar_mantissa_addr, 0xFF)
-      memory.writebyte(player.stun_bar_decrease_timer_addr, 0)
+      memory.writebyte(player.addresses.stun_bar_char, player.stun_bar_max)
+      memory.writebyte(player.addresses.stun_bar_mantissa, 0xFF)
+      memory.writebyte(player.addresses.stun_bar_decrease_timer, 0)
   --not off 
   elseif settings.training.stun_mode > 1 then
     local id = player.id
@@ -225,17 +229,19 @@ local function update_gauges(player)
       wanted_stun = player.stun_bar_max
     end
 
-    if wanted_stun >=  player.stun_bar_max * .5 then
+    local diff = math.abs(wanted_stun - gauge_state[id].start_stun)
+    if diff >=  player.stun_bar_max * .5 then
       stun_recovery_rate = stun_recovery_rate_default * 2
     end
-    if wanted_stun >=  player.stun_bar_max * .7 then
+    if diff >=  player.stun_bar_max * .7 then
       stun_recovery_rate = stun_recovery_rate_default * 3
     end
-    if wanted_stun >=  player.stun_bar_max * .9 then
+    if diff >=  player.stun_bar_max * .9 then
       stun_recovery_rate = stun_recovery_rate_default * 6
     end
 
     if player.stun_just_ended then
+      gauge_state[id].start_stun = 0
       gauge_state[id].stun_refill_start_frame = 0
       gauge_state[id].should_refill_stun = true
     end
@@ -243,6 +249,7 @@ local function update_gauges(player)
     or player.has_just_been_hit or player.is_being_thrown
     or player.is_stunned or player.has_just_hit_ground
     then
+      gauge_state[id].start_stun = stun
       gauge_state[id].stun_refill_start_frame = gamestate.frame_number
       gauge_state[id].should_refill_stun = false
     end
@@ -271,11 +278,11 @@ local function update_gauges(player)
         stun_mantissa = 0xFF
       end
       if player.stun_bar ~= wanted_stun then
-        memory.writebyte(player.stun_bar_char_addr, math.floor(stun))
-        memory.writebyte(player.stun_bar_mantissa_addr, stun_mantissa)
+        memory.writebyte(player.addresses.stun_bar_char, math.floor(stun))
+        memory.writebyte(player.addresses.stun_bar_mantissa, stun_mantissa)
       end
     end
-    memory.writebyte(player.stun_bar_decrease_timer_addr, 0)
+    memory.writebyte(player.addresses.stun_bar_decrease_timer, 0)
   end
 end
 
@@ -296,19 +303,19 @@ local function update_cheats()
   end
 
   if settings.training.auto_parrying == 2 or settings.training.auto_parrying == 4 then
-    mem.enable_cheat_parrying(gamestate.P1)
+    write_memory.enable_cheat_parrying(gamestate.P1)
   end
   if settings.training.auto_parrying == 3 or settings.training.auto_parrying == 4 then
-    mem.enable_cheat_parrying(gamestate.P2)
+    write_memory.enable_cheat_parrying(gamestate.P2)
   end
 end
 
 local function update_game_settings()
-  mem.set_freeze_game(should_freeze_game)
+  write_memory.set_freeze_game(should_freeze_game)
 
-  mem.set_infinite_time(settings.training.infinite_time)
+  write_memory.set_infinite_time(settings.training.infinite_time)
 
-  mem.set_music_volume(settings.training.music_volume)
+  write_memory.set_music_volume(settings.training.music_volume)
 end
 
 local function update_training_state()
@@ -329,8 +336,6 @@ local function update_training_state()
   update_cheats()
 end
 
-local counter_attack_settings = settings.training.counter_attack[dummy.char_str]
-local counter_attack = {}
 
 reset_gauge_state()
 
@@ -349,6 +354,8 @@ setmetatable(training, {
       return should_freeze_game
     elseif key == "swap_characters" then
       return swap_characters
+    elseif key == "counter_attack_data" then
+      return counter_attack_data
     end
   end,
 
@@ -361,6 +368,8 @@ setmetatable(training, {
       should_freeze_game = value
     elseif key == "swap_characters" then
       swap_characters = value
+    elseif key == "counter_attack_data" then
+      counter_attack_data = value
     else
       rawset(training, key, value)
     end

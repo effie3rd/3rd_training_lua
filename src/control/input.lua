@@ -2,7 +2,7 @@ local settings = require("src.settings")
 local gamestate = require("src.gamestate")
 local training = require("src.training")
 local fd = require("src.modules.framedata")
-local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_slow_jumper
+local frame_data, is_slow_jumper, is_really_slow_jumper = fd.frame_data, fd.is_slow_jumper, fd.is_really_slow_jumper
 
 local previous_input = nil
 
@@ -26,7 +26,29 @@ function queue_input_sequence(player, sequence, offset, allow_blocking)
 
 end
 
-function process_pending_input_sequence(player, input)
+local function queue_input_sequence_on_recovery(player, sequence, offset)
+  if player.is_idle then
+    queue_input_sequence(player, sequence, offset)
+  end
+  local idle_frames = frame_data[player.char_str][player.animation].idle_frames
+  if idle_frames then
+    local next_idle_frame = 0
+    for _, idle_frame in ipairs(idle_frames) do
+      print(idle_frame[1], idle_frame[2])
+      if player.animation_frame < idle_frame[1] then
+        next_idle_frame = idle_frame[1]
+        break
+      end
+    end
+    local delta = next_idle_frame - player.animation_frame
+
+    if delta > 0 then
+      queue_input_sequence(player, sequence, delta - #sequence)
+    end
+  end
+end
+
+local function process_pending_input_sequence(player, input)
   if player.pending_input_sequence == nil then
     return
   end
@@ -244,10 +266,10 @@ function make_input_sequence(char_str, counter_attack_settings)
   if counter_attack_settings.ca_type == 2 then
 
     local stick = counter_attack_motion[counter_attack_settings.motion]
-    local button = counter_attack_button[counter_attack_settings.button]
+    local button = counter_attack_normal_button[counter_attack_settings.normal_button]
     if stick == "kara_throw" then
       sequence = {{"LP","LK"}}
-      table.insert(sequence, 1, counter_attack_button_input[counter_attack_settings.button])
+      table.insert(sequence, 1, counter_attack_button_input[counter_attack_settings.normal_button])
       return sequence, offset
     end
     if      stick == "dir_5"    then sequence = { { } }
@@ -320,7 +342,7 @@ function make_input_sequence(char_str, counter_attack_settings)
     end
   elseif counter_attack_settings.ca_type == 3 then
     local move_input = counter_attack_special_inputs[counter_attack_settings.special]
-    local button = counter_attack_special_button[counter_attack_settings.special_button]
+    local button = counter_attack_special_buttons[counter_attack_settings.special_button]
     for i = 1, #move_input do
       sequence[i] = {}
       for j = 1, #move_input[i]  do
@@ -372,14 +394,14 @@ function make_input_sequence(char_str, counter_attack_settings)
       offset = 1
     end
   elseif counter_attack_settings.ca_type == 4 then
-    local option_select = counter_attack_option_select[counter_attack_settings.option_select]
-    if option_select == "guard_jump_back" then
+    local name = counter_attack_option_select_names[counter_attack_settings.option_select]
+    if name == "guard_jump_back" then
       sequence = {{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"back","up"},{"back","up"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"}}
-    elseif option_select == "guard_jump_neutral" then
+    elseif name == "guard_jump_neutral" then
       sequence = {{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"up"},{"up"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"}}
-    elseif option_select == "guard_jump_forward" then
+    elseif name == "guard_jump_forward" then
         sequence = {{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"forward","up"},{"forward","up"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"}}
-    elseif option_select == "guard_jump_back_air_parry" then
+    elseif name == "guard_jump_back_air_parry" then
       sequence = {{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"back","up"},{"back","up"},{},{},{},{"forward"}}
       if(is_slow_jumper(char_str)) then
         table.insert(sequence,#sequence,{})
@@ -387,7 +409,7 @@ function make_input_sequence(char_str, counter_attack_settings)
         table.insert(sequence,#sequence,{})
         table.insert(sequence,#sequence,{})
       end
-    elseif option_select == "guard_jump_neutral_air_parry" then
+    elseif name == "guard_jump_neutral_air_parry" then
       sequence = {{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"up"},{"up"},{},{},{},{"forward"}}
       if(is_slow_jumper(char_str)) then
         table.insert(sequence,#sequence,{})
@@ -395,7 +417,7 @@ function make_input_sequence(char_str, counter_attack_settings)
         table.insert(sequence,#sequence,{})
         table.insert(sequence,#sequence,{})
       end
-    elseif option_select == "guard_jump_forward_air_parry" then
+    elseif name == "guard_jump_forward_air_parry" then
       sequence = {{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"up","forward"},{"up","forward"},{},{},{},{"forward"}}
       if(is_slow_jumper(char_str)) then
         table.insert(sequence,#sequence,{})
@@ -403,16 +425,16 @@ function make_input_sequence(char_str, counter_attack_settings)
         table.insert(sequence,#sequence,{})
         table.insert(sequence,#sequence,{})
       end
-    elseif option_select == "crouch_tech" then
+    elseif name == "crouch_tech" then
       sequence = {{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back","LP","LK"},{"down","back","LP","LK"}}
-    elseif option_select == "block_late_tech" then
+    elseif name == "block_late_tech" then
       sequence = {{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"down","back"},{"back","LP","LK"},{"back","LP","LK"}}
-    elseif option_select == "shita_mae" then
+    elseif name == "shita_mae" then
       sequence = {{"down"},{},{},{},{},{},{},{},{},{},{},{"forward"},{},{},{},{},{},{},{},{},{},{}}
-    elseif option_select == "mae_shita" then
+    elseif name == "mae_shita" then
       sequence = {{"forward"},{},{},{},{},{},{},{},{},{},{},{"down"},{},{},{},{},{},{},{},{},{},{}}
-    elseif option_select == "parry_dash" then
-      sequence = {{"forward"},{},{},{},{},{},{},{"forward"},{},{},{},{},{},{},{},{},{},{}}        
+    elseif name == "parry_dash" then
+      sequence = {{"forward"},{},{},{},{},{},{},{"forward"},{},{},{},{},{},{},{},{},{},{}}
     end
   end
   return sequence, offset
@@ -509,6 +531,9 @@ function log_input(players)
 end
 
 local input_module = {
+  queue_input_sequence = queue_input_sequence,
+  queue_input_sequence_on_recovery = queue_input_sequence_on_recovery,
+  process_pending_input_sequence = process_pending_input_sequence,
   swap_inputs = swap_inputs,
   interpret_input = interpret_input,
   make_input_empty = make_input_empty,

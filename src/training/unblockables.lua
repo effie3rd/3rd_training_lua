@@ -16,3 +16,4 @@ function start_unblockables()
   local i_color = math.random(#colors)
     character_select.start_character_select_sequence(true, {2, "urien", 3, colors[i_color]})
 end
+

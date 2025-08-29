@@ -13,7 +13,6 @@ Training mode for Street Fighter III: 3rd Strike
   - Now uses subpixel positions and velocity based movement for everything.
   - Able to parry unblockables, tengu stones, and other nonsense
   - Wakeup prediction - Dummy can now do reversals after loading a savestate.
-
   
 ### Menu Redesign
   - Translucent background and readable text!
@@ -22,7 +21,7 @@ Training mode for Street Fighter III: 3rd Strike
     - Displays input sequence of special moves
     - Option selects can be chosen as counterattacks (Guard jumps now do not require additional setup)
       - Guard jumps, guard jumps with parry, crouch tech, block and late tech, down forward, forward down, forward forward
-  - Controller button themes
+  - Button and menu themes
   - Japanese language support
 
 ### New Options

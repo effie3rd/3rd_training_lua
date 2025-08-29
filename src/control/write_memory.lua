@@ -1,3 +1,5 @@
+local memory_addresses = require("src.control.memory_addresses")
+
 local function write_pos_x(obj, x)
   local x_char = math.floor(x)
   local x_mantissa = float_to_byte(x)
@@ -103,42 +105,42 @@ local function set_freeze(obj, v)
 end
 
 local function enable_cheat_parrying(player)
-  memory.writebyte(player.parry_forward_validity_time_addr, 0xA)
-  memory.writebyte(player.parry_down_validity_time_addr, 0xA)
-  memory.writebyte(player.parry_air_validity_time_addr, 0x7)
-  memory.writebyte(player.parry_antiair_validity_time_addr, 0x5)
+  memory.writebyte(player.addresses.parry_forward_validity_time, 0xA)
+  memory.writebyte(player.addresses.parry_down_validity_time, 0xA)
+  memory.writebyte(player.addresses.parry_air_validity_time, 0x7)
+  memory.writebyte(player.addresses.parry_antiair_validity_time, 0x5)
 end
 
 local function disable_cheat_parrying(player)
-  memory.writebyte(player.parry_forward_validity_time_addr, 0x0)
-  memory.writebyte(player.parry_down_validity_time_addr, 0x0)
-  memory.writebyte(player.parry_air_validity_time_addr, 0x0)
-  memory.writebyte(player.parry_antiair_validity_time_addr, 0x0)
+  memory.writebyte(player.addresses.parry_forward_validity_time, 0x0)
+  memory.writebyte(player.addresses.parry_down_validity_time, 0x0)
+  memory.writebyte(player.addresses.parry_air_validity_time, 0x0)
+  memory.writebyte(player.addresses.parry_antiair_validity_time, 0x0)
 end
 
 local function reset_parry_cooldowns(player)
-  memory.writebyte(player.parry_forward_cooldown_time_addr, 0)
-  memory.writebyte(player.parry_down_cooldown_time_addr, 0)
-  memory.writebyte(player.parry_air_cooldown_time_addr, 0)
-  memory.writebyte(player.parry_antiair_cooldown_time_addr, 0)
+  memory.writebyte(player.addresses.parry_forward_cooldown_time, 0)
+  memory.writebyte(player.addresses.parry_down_cooldown_time, 0)
+  memory.writebyte(player.addresses.parry_air_cooldown_time, 0)
+  memory.writebyte(player.addresses.parry_antiair_cooldown_time, 0)
 end
 
 local function set_freeze_game(yes)
   if yes then
-    memory.writebyte(0x0201136F, 0xFF)
+    memory.writebyte(memory_addresses.global.freeze_game, 0xFF)
   else
-    memory.writebyte(0x0201136F, 0x00)
+    memory.writebyte(memory_addresses.global.freeze_game, 0x00)
   end
 end
 
 local function set_infinite_time(yes)
   if yes then
-    memory.writebyte(0x02011377, 100)
+    memory.writebyte(memory_addresses.global.match_timer, 100)
   end
 end
 
 local function set_music_volume(num)
-  memory.writebyte(0x02078D06, num * 8)
+  memory.writebyte(memory_addresses.global.music_volume, num * 8)
 end
 
 return {

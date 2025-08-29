@@ -47,7 +47,21 @@ local img_dir_small = {
   img_9_dir_small
 }
 
-local controller_styles = {'default', 'rose', 'cherry', 'blueberry', 'sky', 'blood_orange', 'salmon', 'grape', 'lavender', 'lemon', 'champagne', 'matcha', 'mint', 'retro_scifi', 'watermelon', 'macaron', 'famicom', 'van_gogh', 'munch', 'hokusai', 'monet', 'dali', 'cyberpunk', '2077', 'aurora', 'ursa_major', 'crab_nebula', 'pillars_of_creation', 'sunset', 'fly_by_night', 'lake', 'airplane', 'warm_rainbow', 'soft_rainbow', 'pearl', 'beach', 'nether', 'blue_planet', 'poison', 'moon', 'blood_moon', 'volcano', 'desert_sun', 'canyon', 'redgreen', 'acid', 'dawn', 'picnic', 'gelato', 'patrick', '01'}
+local dir_2_inactive = gd.createFromPng("images/controller/2_dir_s_inactive.png"):gdStr()
+local dir_4_inactive = gd.createFromPng("images/controller/4_dir_s_inactive.png"):gdStr()
+local dir_6_inactive = gd.createFromPng("images/controller/6_dir_s_inactive.png"):gdStr()
+local dir_8_inactive = gd.createFromPng("images/controller/8_dir_s_inactive.png"):gdStr()
+
+local img_dir_inactive = {
+  [2] = dir_2_inactive,
+  [4] = dir_4_inactive,
+  [6] = dir_6_inactive,
+  [8] = dir_8_inactive
+}
+
+
+local controller_styles = {"rose", "cherry", "blueberry", "sky", "blood_orange", "salmon", "grape", "lavender", "lemon", "champagne", "matcha", "lime", "retro_scifi", "watermelon", "macaron", "famicom", "van_gogh", "munch", "hokusai", "monet", "dali", "classic", "hyper_reflector", "cyberpunk", "2077", "aurora", "ursa_major", "crab_nebula", "pillars_of_creation", "sunset", "fly_by_night", "lake", "airplane", "warm_rainbow", "soft_rainbow", "pearl", "beach", "nether", "blue_planet", "poison", "moon", "blood_moon", "volcano", "desert_sun", "canyon", "redgreen", "acid", "dawn", "picnic", "gelato", "patrick", "01"}
+
 
 local img_button_small = {}
 local img_button_big = {}
@@ -86,6 +100,8 @@ setmetatable(draw, {
       return img_dir_big
     elseif key == "img_dir_small" then
       return img_dir_small
+    elseif key == "img_dir_inactive" then
+      return img_dir_inactive
     elseif key == "img_button_small" then
       return img_button_small
     elseif key == "img_button_big" then

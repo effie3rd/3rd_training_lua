@@ -1213,13 +1213,85 @@
     "en": "images/menu/B+_en_5_white.png",
     "jp": "images/menu/B+_jp_10_white.png"
   },
+  "B+HK": {
+    "en": "images/menu/B+HK_en_5_white.png",
+    "jp": "images/menu/B+HK_jp_10_white.png"
+  },
+  "B+HP": {
+    "en": "images/menu/B+HP_en_5_white.png",
+    "jp": "images/menu/B+HP_jp_10_white.png"
+  },
+  "B+LK": {
+    "en": "images/menu/B+LK_en_5_white.png",
+    "jp": "images/menu/B+LK_jp_10_white.png"
+  },
+  "B+LP": {
+    "en": "images/menu/B+LP_en_5_white.png",
+    "jp": "images/menu/B+LP_jp_10_white.png"
+  },
+  "B+MK": {
+    "en": "images/menu/B+MK_en_5_white.png",
+    "jp": "images/menu/B+MK_jp_10_white.png"
+  },
+  "B+MP": {
+    "en": "images/menu/B+MP_en_5_white.png",
+    "jp": "images/menu/B+MP_jp_10_white.png"
+  },
   "D+": {
     "en": "images/menu/D+_en_5_white.png",
     "jp": "images/menu/D+_jp_10_white.png"
   },
+  "D+HK": {
+    "en": "images/menu/D+HK_en_5_white.png",
+    "jp": "images/menu/D+HK_jp_10_white.png"
+  },
+  "D+HP": {
+    "en": "images/menu/D+HP_en_5_white.png",
+    "jp": "images/menu/D+HP_jp_10_white.png"
+  },
+  "D+LK": {
+    "en": "images/menu/D+LK_en_5_white.png",
+    "jp": "images/menu/D+LK_jp_10_white.png"
+  },
+  "D+LP": {
+    "en": "images/menu/D+LP_en_5_white.png",
+    "jp": "images/menu/D+LP_jp_10_white.png"
+  },
+  "D+MK": {
+    "en": "images/menu/D+MK_en_5_white.png",
+    "jp": "images/menu/D+MK_jp_10_white.png"
+  },
+  "D+MP": {
+    "en": "images/menu/D+MP_en_5_white.png",
+    "jp": "images/menu/D+MP_jp_10_white.png"
+  },
   "F+": {
     "en": "images/menu/F+_en_5_white.png",
     "jp": "images/menu/F+_jp_10_white.png"
+  },
+  "F+HK": {
+    "en": "images/menu/F+HK_en_5_white.png",
+    "jp": "images/menu/F+HK_jp_10_white.png"
+  },
+  "F+HP": {
+    "en": "images/menu/F+HP_en_5_white.png",
+    "jp": "images/menu/F+HP_jp_10_white.png"
+  },
+  "F+LK": {
+    "en": "images/menu/F+LK_en_5_white.png",
+    "jp": "images/menu/F+LK_jp_10_white.png"
+  },
+  "F+LP": {
+    "en": "images/menu/F+LP_en_5_white.png",
+    "jp": "images/menu/F+LP_jp_10_white.png"
+  },
+  "F+MK": {
+    "en": "images/menu/F+MK_en_5_white.png",
+    "jp": "images/menu/F+MK_jp_10_white.png"
+  },
+  "F+MP": {
+    "en": "images/menu/F+MP_en_5_white.png",
+    "jp": "images/menu/F+MP_jp_10_white.png"
   },
   "HK": {
     "en": "images/menu/HK_en_5_white.png",
@@ -1485,13 +1557,21 @@
     "en": "images/menu/counter_attack_motion_en_5_white.png",
     "jp": "images/menu/counter_attack_motion_jp_10_white.png"
   },
-  "counter_attack_option_select": {
-    "en": "images/menu/counter_attack_option_select_en_5_white.png",
-    "jp": "images/menu/counter_attack_option_select_jp_10_white.png"
+  "counter_attack_normal_button": {
+    "en": "images/menu/counter_attack_button_en_5_white.png",
+    "jp": "images/menu/counter_attack_button_jp_10_white.png"
+  },
+  "counter_attack_option_select_names": {
+    "en": "images/menu/counter_attack_option_select_names_en_5_white.png",
+    "jp": "images/menu/counter_attack_option_select_names_jp_10_white.png"
   },
   "counter_attack_special": {
     "en": "images/menu/counter_attack_special_en_5_white.png",
     "jp": "images/menu/counter_attack_special_jp_10_white.png"
+  },
+  "counter_attack_type": {
+    "en": "images/menu/counter_attack_type_en_5_white.png",
+    "jp": "images/menu/counter_attack_type_jp_10_white.png"
   },
   "counterattack": {
     "en": "images/menu/counterattack_en_5_white.png",
@@ -1677,9 +1757,21 @@
     "en": "images/menu/famicom_en_5_white.png",
     "jp": "images/menu/famicom_jp_10_white.png"
   },
+  "file_cancel": {
+    "en": "images/menu/file_cancel_en_5_white.png",
+    "jp": "images/menu/file_cancel_jp_10_white.png"
+  },
+  "file_load": {
+    "en": "images/menu/file_load_en_5_white.png",
+    "jp": "images/menu/file_load_jp_10_white.png"
+  },
   "file_name": {
     "en": "images/menu/file_name_en_5_white.png",
     "jp": "images/menu/file_name_jp_10_white.png"
+  },
+  "file_save": {
+    "en": "images/menu/file_save_en_5_white.png",
+    "jp": "images/menu/file_save_jp_10_white.png"
   },
   "flash_chop": {
     "en": "images/menu/flash_chop_en_5_white.png",

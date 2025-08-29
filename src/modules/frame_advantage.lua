@@ -2,7 +2,7 @@ local gamestate = require("src.gamestate")
 local draw = require("src.ui.draw")
 
 
-move_advantage = {}
+local move_advantage = {}
 
 local jumping_states = {[14]=true,[15]=true,[16]=true,[20]=true,[21]=true,[22]=true}
 
@@ -15,17 +15,17 @@ end
 -- conn hit
 
 
-function frame_advantage_update(attacker, defender)
+local function frame_advantage_update(attacker, defender)
 
-  function has_just_attacked(player)
+  local function has_just_attacked(player)
     return player.has_just_attacked or player.has_just_thrown or (player.recovery_time == 0 and player.freeze_frames == 0 and player.input_capacity == 0 and player.previous_input_capacity ~= 0) or (player.movement_type == 4 and player.last_movement_type_change_frame == 0)
   end
 
-  function has_ended_attack(player)
+  local function has_ended_attack(player)
     return (player.busy_flag == 0 or player.is_in_jump_startup or player.is_idle)
   end
 
-  function has_ended_recovery(player)
+  local function has_ended_recovery(player)
     return (player.is_idle or has_just_attacked(player) or player.is_in_jump_startup)
   end
 
@@ -133,7 +133,7 @@ function frame_advantage_update(attacker, defender)
   end
 end
 
-function frame_advantage_display()
+local function frame_advantage_display()
   if
     move_advantage.armed == true or
     move_advantage.player_id == nil or
@@ -145,7 +145,7 @@ function frame_advantage_display()
 
   local y = 49
   local text_default_border_color = 0x000000FF
-  function display_line(text, value, color)
+local function display_line(text, value, color)
     color = color or 0xF7FFF7FF
     local text_width = draw.get_text_width(text)
     local x = 0
@@ -191,10 +191,17 @@ function frame_advantage_display()
   end
 end
 
-function frame_advantage_reset()
+local function frame_advantage_reset()
   move_advantage = 
   {
     armed = false
   }
 end
 frame_advantage_reset()
+
+
+return {
+  frame_advantage_update = frame_advantage_update,
+  frame_advantage_display = frame_advantage_display,
+  frame_advantage_reset = frame_advantage_reset
+}

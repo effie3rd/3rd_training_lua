@@ -12,6 +12,8 @@ local data_path = "data/"..rom_name.."/"
 local framedata_path = data_path.."framedata/"
 local frame_data_file_ext = "_framedata.json"
 
+colors.themes = read_object_from_json_file("data/themes.json")
+
 ---@type table|nil
 local image_map_json_data = read_object_from_json_file("data/image_map.json")
 local frame_data_file_list = read_object_from_json_file(framedata_path .. "file_names.json")

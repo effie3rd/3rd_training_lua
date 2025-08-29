@@ -1285,7 +1285,7 @@ frame_data_meta["projectiles"]["81"] = { hit_type = {3}}                        
 -- frame_data_meta["projectiles"]["66"] = { hit_type = {3}}                         --aegis_reflector_MP
 -- frame_data_meta["projectiles"]["67"] = { hit_type = {3}}                         --aegis_reflector_HP
 frame_data_meta["projectiles"]["68"] = { hit_type = {3}}                         --aegis_reflector_EXP
-frame_data_meta["projectiles"]["70"] = { hit_type = {1}, cooldown = 4}           --aegis_reflector
+frame_data_meta["projectiles"]["70"] = { hit_type = {1}, cooldown = 5}           --aegis_reflector
 frame_data_meta["projectiles"]["08"] = { hit_type = {3}}                         --denjin_hadouken
 frame_data_meta["projectiles"]["09"] = { hit_type = {3}}                         --denjin_hadouken_2
 frame_data_meta["projectiles"]["0A"] = { hit_type = {3}}                         --denjin_hadouken_3

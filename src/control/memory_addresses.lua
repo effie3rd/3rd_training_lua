@@ -1,13 +1,28 @@
 --todo: move player memory addresses here instead of attaching everything to the player object
+local P1_base = 0x02068C6C
+local P2_base = 0x02069104
 
-addresses = {
+local P1_stun_bar_max = 0x020695F7
+local P2_stun_bar_max = 0x0206960B
+
+local addresses = {
   global = {
     -- [byte][read/write] hex value is the decimal display
     character_select_timer = 0x020154FB,
-    stage = 0x020154F5
+    frame_number = 0x02007F00,
+    stage = 0x020154F5,
+
+    p1_locked = 0x020154C6,
+    p2_locked = 0x020154C8,
+    match_state = 0x020154A7,
+    match_timer = 0x02011377,
+
+    freeze_game = 0x0201136F,
+    music_volume = 0x02078D06
   },
   players = {
     {
+      base = P1_base,
       -- [byte][read/write] from 0 to 6
       character_select_row = 0x020154CF, 
 
@@ -33,6 +48,53 @@ addresses = {
       -- [byte] used to overwrite shin gouki id
       character_select_id = 0x02011387,
 
+      selected_sa = 0x0201138B,
+      superfreeze_decount = 0x02069520,
+
+      life = P1_base + 0x9F,
+      gauge = 0x020695B5,
+      meter = 0x020286AB,
+      meter_master = 0x020695BF,
+      meter_update_flag = 0x020157C8,
+      max_meter_gauge = 0x020695B3,
+      max_meter_count = 0x020695BD,
+      stun_bar_max = P1_stun_bar_max,
+      stun_activate = P1_stun_bar_max - 0x3,
+      stun_timer = P1_stun_bar_max + 0x2,
+      stun_bar_char = P1_stun_bar_max + 0x6,
+      stun_bar_mantissa = P1_stun_bar_max + 0x7,
+      stun_bar_decrease_timer = P1_stun_bar_max + 0x8,
+      stun_bar_decrease_mantissa = P1_stun_bar_max + 0xB,
+      score = 0x020113A2,
+      parry_forward_validity_time = 0x02026335,
+      parry_forward_cooldown_time = 0x02025731,
+      parry_down_validity_time = 0x02026337,
+      parry_down_cooldown_time = 0x0202574D,
+      parry_air_validity_time = 0x02026339,
+      parry_air_cooldown_time = 0x02025769,
+      parry_antiair_validity_time = 0x02026347,
+      parry_antiair_cooldown_time = 0x0202582D,
+      damage_of_next_hit = 0x020691A7,
+      stun_of_next_hit = 0x02069437,
+
+      charge_1_reset = 0x02025A47, -- Alex_1(Elbow)
+      charge_1 = 0x02025A49,
+      charge_2_reset = 0x02025A2B, -- Alex_2(Stomp), Urien_2(Knee?)
+      charge_2 = 0x02025A2D,
+      charge_3_reset = 0x02025A0F, -- Oro_1(Shou), Remy_2(LoVKick?)
+      charge_3 = 0x02025A11,
+      charge_4_reset = 0x020259F3, -- Urien_3(headbutt?), Q_2(DashLeg), Remy_1(LoVPunch?)
+      charge_4 = 0x020259F5,
+      charge_5_reset = 0x020259D7, -- Oro_2(Yanma), Urien_1(tackle), Chun_4, Q_1(DashHead), Remy_3(Rising)
+      charge_5 = 0x020259D9,
+
+      kaiten_1_reset = 0x020258F7, -- Hugo Moonsault/Gigas, Alex Hyper Bomb
+      kaiten_1 = 0x0202590F,
+      kaiten_2_reset = 0x020259F3, -- Hugo Meat squasher
+      kaiten_2 = 0x02025A0B,
+      kaiten_completed_360 = 0x020258FF, -- equal to 48 if one 360 was completed. hugo only
+
+
       -- [byte] number of legs pressed fur Chun's Hyakuretsu Kyaku
       kyaku_l_count = 0x02025A03,
       kyaku_m_count = 0x02025A05,
@@ -40,11 +102,10 @@ addresses = {
 
       -- [byte] time before Hyakuretsu Kyaku button count reset
       kyaku_reset_time = 0x020259f3,
-
-
-      
     },
     {
+      base = P2_base,
+
       character_select_row = 0x020154D1,
       character_select_col = 0x0201566D,
       character_select_sa = 0x020154D5,
@@ -52,10 +113,80 @@ addresses = {
       character_select_state = 0x02015545,
       character_select_id = 0x02011388,
 
+      selected_sa = 0x0201138C,
+      superfreeze_decount = 0x02069088,
+
+      life = P2_base + 0x9F,
+      gauge = 0x020695E1,
+      meter = 0x020286DF,
+      meter_master = 0x020695EB,
+      meter_update_flag = 0x020157C9,
+      max_meter_gauge = 0x020695DF,
+      max_meter_count = 0x020695E9,
+      stun_bar_max = P2_stun_bar_max,
+      stun_activate = P2_stun_bar_max - 0x3,
+      stun_timer = P2_stun_bar_max + 0x2,
+      stun_bar_char = P2_stun_bar_max + 0x6,
+      stun_bar_mantissa = P2_stun_bar_max + 0x7,
+      stun_bar_decrease_timer = P2_stun_bar_max + 0x8,
+      stun_bar_decrease_mantissa = P2_stun_bar_max + 0xB, -- the byte before this one is the whole number part of the stun decreae amount
+      score = 0x020113AE,
+      parry_forward_validity_time = 0x202673B,
+      parry_forward_cooldown_time = 0x2025D51,
+      parry_down_validity_time = 0x202673D,
+      parry_down_cooldown_time = 0x2025D6D,
+      parry_air_validity_time = 0x202673F,
+      parry_air_cooldown_time = 0x2025D89,
+      parry_antiair_validity_time = 0x202674D,
+      parry_antiair_cooldown_time = 0x2025E4D,
+      damage_of_next_hit = 0x02068D0F,
+      stun_of_next_hit = 0x02068F9F,
+
+      charge_1_reset = 0x02025FF7,  --all of these are incorrect
+      charge_1 = 0x02025FF9,
+      charge_2_reset = 0x0202602F,
+      charge_2 = 0x02026031,
+      charge_3_reset = 0x02026013,
+      charge_3 = 0x02026013,
+      charge_4_reset = 0x0202604B,
+      charge_4 = 0x0202604D,
+      charge_5_reset = 0x02026067,
+      charge_5 = 0x02026069,        --to here
+
+      kaiten_1_reset = 0x2025F17,
+      kaiten_1 = 0x2025F2F,
+      kaiten_2_reset = 0x02026013,
+      kaiten_2 = 0x0202600F,
+      kaiten_completed_360 = 0x02025F1F,
+
       kyaku_l_count = 0x02026023,
       kyaku_m_count = 0x02026025,
       kyaku_h_count = 0x02026027,
       kyaku_reset_time = 0x02026013,
     }
+  },
+  offsets = {
+
   }
 }
+
+
+local function update_addresses(player)
+  player.addresses = addresses.players[player.id]
+end
+
+local addresses_module = {
+  update_addresses = update_addresses
+}
+
+setmetatable(addresses_module, {
+  __index = function(_, key)
+    if key == "global" then
+      return addresses.global
+    elseif key == "players" then
+      return addresses.players
+    end
+  end
+})
+
+return addresses_module

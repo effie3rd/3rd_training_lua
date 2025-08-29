@@ -1,7 +1,7 @@
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
+local memory_addresses = require("src.control.memory_addresses")
 local debug_settings = require("src.debug_settings")
-
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local get_wakeup_time = fd.get_wakeup_time
@@ -167,89 +167,14 @@ local function reset_player_objects()
   P1.other = P2
   P2.other = P1
 
-  P1.life_addr = P1.base + 0x9F
-  P1.gauge_addr = 0x020695B5
-  P1.meter_addr = { 0x020286AB, 0x020695BF } -- 2nd address is the master variable
-  P1.stun_bar_max_addr = 0x020695F7
-  P1.stun_activate_addr = P1.stun_bar_max_addr - 0x3
-  P1.stun_timer_addr = P1.stun_bar_max_addr + 0x2
-  P1.stun_bar_char_addr = P1.stun_bar_max_addr + 0x6
-  P1.stun_bar_mantissa_addr = P1.stun_bar_max_addr + 0x7
-  P1.stun_bar_decrease_timer_addr = P1.stun_bar_max_addr + 0x8
-  P1.stun_bar_decrease_mantissa_addr = P1.stun_bar_max_addr + 0xB
-  P1.meter_update_flag = 0x020157C8
-  P1.score_addr = 0x020113A2
-  P1.parry_forward_validity_time_addr = 0x02026335
-  P1.parry_forward_cooldown_time_addr = 0x02025731
-  P1.parry_down_validity_time_addr = 0x02026337
-  P1.parry_down_cooldown_time_addr = 0x0202574D
-  P1.parry_air_validity_time_addr = 0x02026339
-  P1.parry_air_cooldown_time_addr = 0x02025769
-  P1.parry_antiair_validity_time_addr = 0x02026347
-  P1.parry_antiair_cooldown_time_addr = 0x0202582D
-  P1.damage_of_next_hit_addr = 0x020691A7
-  P1.stun_of_next_hit_addr = 0x02069437
+  memory_addresses.update_addresses(P1)
+  memory_addresses.update_addresses(P2)
 
-  P1.charge_1_reset_addr = 0x02025A47 -- Alex_1(Elbow)
-  P1.charge_1_addr = 0x02025A49
-  P1.charge_2_reset_addr = 0x02025A2B -- Alex_2(Stomp), Urien_2(Knee?)
-  P1.charge_2_addr = 0x02025A2D
-  P1.charge_3_reset_addr = 0x02025A0F -- Oro_1(Shou), Remy_2(LoVKick?)
-  P1.charge_3_addr = 0x02025A11
-  P1.charge_4_reset_addr = 0x020259F3 -- Urien_3(headbutt?), Q_2(DashLeg), Remy_1(LoVPunch?)
-  P1.charge_4_addr = 0x020259F5
-  P1.charge_5_reset_addr = 0x020259D7 -- Oro_2(Yanma), Urien_1(tackle), Chun_4, Q_1(DashHead), Remy_3(Rising)
-  P1.charge_5_addr = 0x020259D9
-
-  P1.kaiten_1_reset_addr = 0x020258F7 -- Hugo Moonsault/Gigas, Alex Hyper Bomb
-  P1.kaiten_1_addr = 0x0202590F
-  P1.kaiten_2_reset_addr = 0x020259F3 -- Hugo Meat squasher
-  P1.kaiten_2_addr = 0x02025A0B
-  P1.kaiten_completed_360_addr = 0x020258FF -- equal to 48 if one 360 was completed. hugo only
-
-  P2.life_addr = P2.base + 0x9F
-  P2.gauge_addr = 0x020695E1
-  P2.meter_addr = { 0x020286DF, 0x020695EB} -- 2nd address is the master variable
-  P2.stun_bar_max_addr = 0x0206960B
-  P2.stun_activate_addr = P2.stun_bar_max_addr - 0x3
-  P2.stun_timer_addr = P2.stun_bar_max_addr + 0x2
-  P2.stun_bar_char_addr = P2.stun_bar_max_addr + 0x6
-  P2.stun_bar_mantissa_addr = P2.stun_bar_max_addr + 0x7
-  P2.stun_bar_decrease_timer_addr = P2.stun_bar_max_addr + 0x8
-  P2.stun_bar_decrease_mantissa_addr = P2.stun_bar_max_addr + 0xB -- the byte before this one is the whole number part of the stun decreae amount
-  P2.meter_update_flag = 0x020157C9
-  P2.score_addr = 0x020113AE
-  P2.parry_forward_validity_time_addr = P1.parry_forward_validity_time_addr + 0x406
-  P2.parry_forward_cooldown_time_addr = P1.parry_forward_cooldown_time_addr + 0x620
-  P2.parry_down_validity_time_addr = P1.parry_down_validity_time_addr + 0x406
-  P2.parry_down_cooldown_time_addr = P1.parry_down_cooldown_time_addr + 0x620
-  P2.parry_air_validity_time_addr = P1.parry_air_validity_time_addr + 0x406
-  P2.parry_air_cooldown_time_addr = P1.parry_air_cooldown_time_addr + 0x620
-  P2.parry_antiair_validity_time_addr = P1.parry_antiair_validity_time_addr + 0x406
-  P2.parry_antiair_cooldown_time_addr = P1.parry_antiair_cooldown_time_addr + 0x620
-  P2.damage_of_next_hit_addr = 0x02068D0F
-  P2.stun_of_next_hit_addr = 0x02068F9F
-
-  P2.charge_1_reset_addr = 0x02025FF7  --all of these are incorrect
-  P2.charge_1_addr = 0x02025FF9
-  P2.charge_2_reset_addr = 0x0202602F
-  P2.charge_2_addr = 0x02026031
-  P2.charge_3_reset_addr = 0x02026013
-  P2.charge_3_addr = 0x02026013
-  P2.charge_4_reset_addr = 0x0202604B
-  P2.charge_4_addr = 0x0202604D
-  P2.charge_5_reset_addr = 0x02026067
-  P2.charge_5_addr = 0x02026069        --to here
-
-  P2.kaiten_1_reset_addr = 0x2025F17
-  P2.kaiten_1_addr = 0x2025F2F
-  P2.kaiten_2_reset_addr = 0x02026013
-  P2.kaiten_2_addr = 0x0202600F
-  P2.kaiten_completed_360_addr = 0x02025F1F
-
-  for i, debug_vars in ipairs(debug_settings.player_debug_variables) do
-    for k, v in pairs(debug_vars) do
-      player_objects[i][k] = v
+  if debug_settings.developer_mode then
+    for i, debug_vars in ipairs(debug_settings.player_debug_variables) do
+      for k, v in pairs(debug_vars) do
+        player_objects[i][k] = v
+      end
     end
   end
 end
@@ -299,24 +224,25 @@ local function get_parry_type(player)
   local opponent_airborne = player.other.posture >= 20 and player.other.posture <= 30
   local parry_type = "ground"
 
-  --this code can flag projectiles as anti air parries even though they are ground parries
-  if player_airborne then
-    parry_type = "air"
-  elseif opponent_airborne then
-    parry_type = "anti_air"
+  if player.other.just_connected then --if other player connected, then attack is not a projectile
+    if player_airborne then
+      parry_type = "air"
+    elseif opponent_airborne then
+      parry_type = "anti_air"
+    end
   end
   return parry_type
 end
 
 local function read_game_vars()
   -- frame number
-  frame_number = memory.readdword(0x02007F00)
+  frame_number = memory.readdword(memory_addresses.global.frame_number)
 
   -- is in match
   -- I believe the bytes that are expected to be 0xff means that a character has been locked, while the byte expected to be 0x02 is the current match state. 0x02 means that round has started and players can move
-  local p1_locked = memory.readbyte(0x020154C6)
-  local p2_locked = memory.readbyte(0x020154C8)
-  local match_state = memory.readbyte(0x020154A7)
+  local p1_locked = memory.readbyte(memory_addresses.global.p1_locked)
+  local p2_locked = memory.readbyte(memory_addresses.global.p2_locked)
+  local match_state = memory.readbyte(memory_addresses.global.match_state)
 
   local previous_is_in_match = is_in_match
 
@@ -324,7 +250,7 @@ local function read_game_vars()
   is_in_match = ((p1_locked == 0xFF or p2_locked == 0xFF) and match_state == 0x02)
   has_match_just_started = not previous_is_in_match and is_in_match
 
-  stage = memory.readbyte(addresses.global.stage)
+  stage = memory.readbyte(memory_addresses.global.stage)
 end
 
 
@@ -436,8 +362,8 @@ local function read_game_object(obj)
 
   -- not a unique id for each frame but good enough
   local hash = {string.format("%04x", obj.animation_frame_id),
-                 string.format("%02x", obj.animation_frame_id2),
-                 string.format("%02x", obj.animation_frame_id3),}
+                string.format("%02x", obj.animation_frame_id2),
+                string.format("%02x", obj.animation_frame_id3),}
 
   if obj.id == 1 or obj.id == 2 then
     local action_type = memory.readbyte(obj.base + 0xAD)
@@ -557,7 +483,7 @@ local function read_player_vars(player)
 
   player.char_str = Characters[player.char_id + 1]
 
-  local player_addresses = addresses.players[player.id]
+  local player_addresses = memory_addresses.players[player.id]
 
   player.previous_remaining_freeze_frames = player.remaining_freeze_frames or 0
   player.remaining_freeze_frames = memory.readbyte(player.base + 0x45)
@@ -614,22 +540,16 @@ local function read_player_vars(player)
   player.recovery_flag = memory.readbyte(player.base + 0x3B)
   player.has_just_ended_recovery = previous_recovery_flag ~= 0 and player.recovery_flag == 0
 
-  player.meter_gauge = memory.readbyte(player.gauge_addr)
-  player.meter_count = memory.readbyte(player.meter_addr[2])
+  player.meter_gauge = memory.readbyte(player.addresses.gauge)
+  player.meter_count = memory.readbyte(player.addresses.meter_master)
 
   player.superfreeze_decount = player.superfreeze_decount or 0
   local previous_superfreeze_decount = player.superfreeze_decount
-  if player.id == 1 then
-    player.max_meter_gauge = memory.readbyte(0x020695B3)
-    player.max_meter_count = memory.readbyte(0x020695BD)
-    player.selected_sa = memory.readbyte(0x0201138B) + 1
-    player.superfreeze_decount = memory.readbyte(0x02069520) -- seems to be in P2 memory space, don't know why
-  else
-    player.max_meter_gauge = memory.readbyte(0x020695DF)
-    player.max_meter_count = memory.readbyte(0x020695E9)
-    player.selected_sa = memory.readbyte(0x0201138C) + 1
-    player.superfreeze_decount = memory.readbyte(0x02069088) -- seems to be in P1 memory space, don't know why
-  end
+
+  player.max_meter_gauge = memory.readbyte(player.addresses.max_meter_gauge)
+  player.max_meter_count = memory.readbyte(player.addresses.max_meter_count)
+  player.selected_sa = memory.readbyte(player.addresses.selected_sa) + 1
+  player.superfreeze_decount = memory.readbyte(player.addresses.superfreeze_decount)
 
   if player.superfreeze_decount == 0 and previous_superfreeze_decount > 0 then
     player.superfreeze_just_ended = true
@@ -641,7 +561,7 @@ local function read_player_vars(player)
   player.is_crouched = player.posture == 0x20
 
   -- LIFE
-  player.life = memory.readbyte(player.life_addr)
+  player.life = memory.readbyte(player.addresses.life)
 
   -- COMBO
   player.previous_combo = player.combo or 0
@@ -652,8 +572,8 @@ local function read_player_vars(player)
   end
 
   -- NEXT HIT
-  player.damage_of_next_hit = memory.readbyte(player.damage_of_next_hit_addr)
-  player.stun_of_next_hit = memory.readbyte(player.stun_of_next_hit_addr)
+  player.damage_of_next_hit = memory.readbyte(player.addresses.damage_of_next_hit)
+  player.stun_of_next_hit = memory.readbyte(player.addresses.stun_of_next_hit)
 
   -- BONUSES
   player.damage_bonus = memory.readword(player.base + 0x43A)
@@ -887,7 +807,7 @@ local function read_player_vars(player)
   -- is blocking/has just blocked/has just been hit/has_just_parried
   player.blocking_id = memory.readbyte(player.base + 0x3D3)
   player.has_just_blocked = false
-  if player.received_connection and player.received_connection_marker ~= 0xFFF1 and total_received_hit_count_diff == 0 then --0xFFF1 is parry --this is not completely accurate. there are exceptions e.g. kikouken
+  if player.received_connection and player.received_connection_marker ~= 0xFFF1 and total_received_hit_count_diff == 0 then --0xFFF1
     player.has_just_blocked = true
     log(player.prefix, "fight", "block")
     if debug_state_variables then
@@ -1135,7 +1055,7 @@ local function read_player_vars(player)
   if character_specific[player.char_str].timed_sa[player.selected_sa] then
     if player.superfreeze_decount > 0 then
       player.is_in_timed_sa = true
-    elseif player.is_in_timed_sa and memory.readbyte(player.gauge_addr) == 0 then
+    elseif player.is_in_timed_sa and memory.readbyte(player.addresses.gauge) == 0 then
       player.is_in_timed_sa = false
     end
   else
@@ -1212,10 +1132,10 @@ local function read_player_vars(player)
 
 
 
-  read_parry_state(player.parry_forward, player.parry_forward_validity_time_addr, player.parry_forward_cooldown_time_addr)
-  read_parry_state(player.parry_down, player.parry_down_validity_time_addr, player.parry_down_cooldown_time_addr)
-  read_parry_state(player.parry_air, player.parry_air_validity_time_addr, player.parry_air_cooldown_time_addr)
-  read_parry_state(player.parry_antiair, player.parry_antiair_validity_time_addr, player.parry_antiair_cooldown_time_addr)
+  read_parry_state(player.parry_forward, player.addresses.parry_forward_validity_time, player.addresses.parry_forward_cooldown_time)
+  read_parry_state(player.parry_down, player.addresses.parry_down_validity_time, player.addresses.parry_down_cooldown_time)
+  read_parry_state(player.parry_air, player.addresses.parry_air_validity_time, player.addresses.parry_air_cooldown_time)
+  read_parry_state(player.parry_antiair, player.addresses.parry_antiair_validity_time, player.addresses.parry_antiair_cooldown_time)
 
 -- LEGS STATE
   -- global game consts
@@ -1266,24 +1186,24 @@ local function read_player_vars(player)
   end
 
   local charge_table = {
-    ["alex"] = { charge_1_addr = player.charge_1_addr, reset_1_addr = player.charge_1_reset_addr, name1 = "charge_slash_elbow", valid_1 = true,
-      charge_2_addr = player.charge_2_addr, reset_2_addr = player.charge_2_reset_addr, name2= "charge_air_stampede", valid_2 = true,
-      charge_3_addr = player.charge_3_addr, reset_3_addr = player.charge_3_reset_addr, valid_3 = false},
-    ["oro"] = { charge_1_addr = player.charge_3_addr, reset_1_addr = player.charge_3_reset_addr, name1= "charge_nichirin", valid_1 = true,
-      charge_2_addr = player.charge_5_addr, reset_2_addr = player.charge_5_reset_addr, name2= "charge_oniyanma", valid_2 = true,
-      charge_3_addr = player.charge_3_addr, reset_3_addr = player.charge_3_reset_addr, valid_3 = false},
-    ["urien"] = { charge_1_addr = player.charge_5_addr, reset_1_addr = player.charge_5_reset_addr, name1= "charge_chariot_tackle", valid_1 = true,
-      charge_2_addr = player.charge_2_addr, reset_2_addr = player.charge_2_reset_addr, name2= "charge_violence_kneedrop", valid_2 = true,
-      charge_3_addr = player.charge_4_addr, reset_3_addr = player.charge_4_reset_addr, name3= "charge_dangerous_headbutt", valid_3 = true},
-    ["remy"] = { charge_1_addr = player.charge_4_addr, reset_1_addr = player.charge_4_reset_addr, name1= "charge_lov_high", valid_1 = true,
-      charge_2_addr = player.charge_3_addr, reset_2_addr = player.charge_3_reset_addr, name2= "charge_lov_low", valid_2 = true,
-      charge_3_addr = player.charge_5_addr, reset_3_addr = player.charge_5_reset_addr, name3= "charge_rising_rage_flash", valid_3 = true},
-    ["q"] = { charge_1_addr = player.charge_5_addr, reset_1_addr = player.charge_5_reset_addr, name1= "charge_dashing_head_attack", valid_1 = true,
-      charge_2_addr = player.charge_4_addr, reset_2_addr = player.charge_4_reset_addr, name2= "charge_dashing_leg_attack", valid_2 = true,
-      charge_3_addr = player.charge_3_addr, reset_3_addr = player.charge_3_reset_addr, valid_3 = false},
-    ["chunli"] = { charge_1_addr = player.charge_5_addr, reset_1_addr = player.charge_5_reset_addr, name1= "charge_spinning_bird_kick", valid_1 = true,
-      charge_2_addr = player.charge_2_addr, reset_2_addr = player.charge_2_reset_addr, valid_2 = false,
-      charge_3_addr = player.charge_3_addr, reset_3_addr = player.charge_3_reset_addr, valid_3 = false}
+    ["alex"] = { charge_1_addr = player.addresses.charge_1, reset_1_addr = player.addresses.charge_1_reset, name1 = "charge_slash_elbow", valid_1 = true,
+      charge_2_addr = player.addresses.charge_2, reset_2_addr = player.addresses.charge_2_reset, name2= "charge_air_stampede", valid_2 = true,
+      charge_3_addr = player.addresses.charge_3, reset_3_addr = player.addresses.charge_3_reset, valid_3 = false},
+    ["oro"] = { charge_1_addr = player.addresses.charge_3, reset_1_addr = player.addresses.charge_3_reset, name1= "charge_nichirin", valid_1 = true,
+      charge_2_addr = player.addresses.charge_5, reset_2_addr = player.addresses.charge_5_reset, name2= "charge_oniyanma", valid_2 = true,
+      charge_3_addr = player.addresses.charge_3, reset_3_addr = player.addresses.charge_3_reset, valid_3 = false},
+    ["urien"] = { charge_1_addr = player.addresses.charge_5, reset_1_addr = player.addresses.charge_5_reset, name1= "charge_chariot_tackle", valid_1 = true,
+      charge_2_addr = player.addresses.charge_2, reset_2_addr = player.addresses.charge_2_reset, name2= "charge_violence_kneedrop", valid_2 = true,
+      charge_3_addr = player.addresses.charge_4, reset_3_addr = player.addresses.charge_4_reset, name3= "charge_dangerous_headbutt", valid_3 = true},
+    ["remy"] = { charge_1_addr = player.addresses.charge_4, reset_1_addr = player.addresses.charge_4_reset, name1= "charge_lov_high", valid_1 = true,
+      charge_2_addr = player.addresses.charge_3, reset_2_addr = player.addresses.charge_3_reset, name2= "charge_lov_low", valid_2 = true,
+      charge_3_addr = player.addresses.charge_5, reset_3_addr = player.addresses.charge_5_reset, name3= "charge_rising_rage_flash", valid_3 = true},
+    ["q"] = { charge_1_addr = player.addresses.charge_5, reset_1_addr = player.addresses.charge_5_reset, name1= "charge_dashing_head_attack", valid_1 = true,
+      charge_2_addr = player.addresses.charge_4, reset_2_addr = player.addresses.charge_4_reset, name2= "charge_dashing_leg_attack", valid_2 = true,
+      charge_3_addr = player.addresses.charge_3, reset_3_addr = player.addresses.charge_3_reset, valid_3 = false},
+    ["chunli"] = { charge_1_addr = player.addresses.charge_5, reset_1_addr = player.addresses.charge_5_reset, name1= "charge_spinning_bird_kick", valid_1 = true,
+      charge_2_addr = player.addresses.charge_2, reset_2_addr = player.addresses.charge_2_reset, valid_2 = false,
+      charge_3_addr = player.addresses.charge_3, reset_3_addr = player.addresses.charge_3_reset, valid_3 = false}
   }
 
   if charge_table[player.char_str] then
@@ -1294,9 +1214,9 @@ local function read_player_vars(player)
     if charge_table[player.char_str].name3 then player.charge_3.name= charge_table[player.char_str].name3 end
     read_charge_state(player.charge_3, charge_table[player.char_str].valid_3, charge_table[player.char_str].charge_3_addr, charge_table[player.char_str].reset_3_addr)
   else
-    read_charge_state(player.charge_1, false, player.charge_1_addr, player.charge_1_reset_addr)
-    read_charge_state(player.charge_2, false, player.charge_1_addr, player.charge_1_reset_addr)
-    read_charge_state(player.charge_3, false, player.charge_1_addr, player.charge_1_reset_addr)
+    read_charge_state(player.charge_1, false, player.addresses.charge_1, player.addresses.charge_1_reset)
+    read_charge_state(player.charge_2, false, player.addresses.charge_1, player.addresses.charge_1_reset)
+    read_charge_state(player.charge_3, false, player.addresses.charge_1, player.addresses.charge_1_reset)
   end
 
   --360 STATE
@@ -1360,12 +1280,12 @@ local function read_player_vars(player)
 
   local kaiten_table = {
     ["alex"] = {
-      {kaiten_address = player.kaiten_1_addr, reset_address = player.kaiten_1_reset_addr, kaiten_completed_addr = player.kaiten_completed_360_addr,  name = "kaiten_hyper_bomb", valid = true}
+      {kaiten_address = player.addresses.kaiten_1, reset_address = player.addresses.kaiten_1_reset_addr, kaiten_completed = player.addresses.kaiten_completed_360,  name = "kaiten_hyper_bomb", valid = true}
     },
     ["hugo"] = {
-      {kaiten_address = player.kaiten_1_addr, reset_address = player.kaiten_1_reset_addr, kaiten_completed_addr = player.kaiten_completed_360_addr,  name= "kaiten_moonsault_press", valid = true},
-      {kaiten_address = player.kaiten_2_addr, reset_address = player.kaiten_2_reset_addr, kaiten_completed_addr = player.kaiten_completed_360_addr,  name= "kaiten_meat_squasher", valid = true},
-      {kaiten_address = player.kaiten_1_addr, reset_address = player.kaiten_1_reset_addr, kaiten_completed_addr = player.kaiten_completed_360_addr, name= "kaiten_gigas_breaker", valid = true, is_720 = true}
+      {kaiten_address = player.addresses.kaiten_1, reset_address = player.addresses.kaiten_1_reset_addr, kaiten_completed = player.addresses.kaiten_completed_360,  name= "kaiten_moonsault_press", valid = true},
+      {kaiten_address = player.addresses.kaiten_2, reset_address = player.addresses.kaiten_2_reset_addr, kaiten_completed = player.addresses.kaiten_completed_360,  name= "kaiten_meat_squasher", valid = true},
+      {kaiten_address = player.addresses.kaiten_1, reset_address = player.addresses.kaiten_1_reset_addr, kaiten_completed = player.addresses.kaiten_completed_360, name= "kaiten_gigas_breaker", valid = true, is_720 = true}
     }
   }
 
@@ -1384,11 +1304,11 @@ local function read_player_vars(player)
 
 
   -- STUN
-  player.stun_bar_max = memory.readbyte(player.stun_bar_max_addr)
-  player.stun_activate = memory.readbyte(player.stun_activate_addr)
-  player.stun_timer = memory.readbyte(player.stun_timer_addr)
-  player.stun_bar_char = memory.readbyte(player.stun_bar_char_addr)
-  player.stun_bar_mantissa = memory.readbyte(player.stun_bar_mantissa_addr)
+  player.stun_bar_max = memory.readbyte(player.addresses.stun_bar_max)
+  player.stun_activate = memory.readbyte(player.addresses.stun_activate)
+  player.stun_timer = memory.readbyte(player.addresses.stun_timer)
+  player.stun_bar_char = memory.readbyte(player.addresses.stun_bar_char)
+  player.stun_bar_mantissa = memory.readbyte(player.addresses.stun_bar_mantissa)
   player.stun_bar = player.stun_bar_char + player.stun_bar_mantissa / 256
   player.stun_just_began = false
   player.stun_just_ended = false

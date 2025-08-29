@@ -3,16 +3,12 @@ local fdm = require("src.modules.framedata_meta")
 local sd = require("src.modules.stagedata")
 local gamestate = require("src.gamestate")
 
-local frame_data, character_specific = fd.frame_data, fd.character_specific
+local frame_data, character_specific, get_hurtboxes = fd.frame_data, fd.character_specific, fd.get_hurtboxes
 local stages = sd.stages
 local test_collision, find_move_frame_data = fd.test_collision, fd.find_move_frame_data
 local frame_data_meta = fdm.frame_data_meta
 
 local next_anim_types = {"next_anim", "optional_anim"}
-
-
-
-
 
 
 local function predict_frames_branching(obj, anim, frame, frames_prediction, result, include_start_frame)
@@ -250,10 +246,6 @@ local function get_push_value(dist_from_pb_center, pushbox_overlap_range, push_v
   return 0
 end
 
-local function movement_prediction_special_cases()
-  --index - 1 == uf sjf, and current anim is ken ex tatsu at frame 0 then
-
-end
 
 local function predict_player_movement(p1, p1_motion_data, p1_line, p2, p2_motion_data, p2_line, index)
 
@@ -708,7 +700,7 @@ local function predict_everything(player, dummy, frames_prediction)
           end
 
           if proj_boxes and remaining_cooldown <= 0 then
-            local delta = proj_line[i].delta + projectile.remaining_freeze_frames
+            local delta = proj_line[i].delta + projectile.remaining_freeze_frames - 1
             local color = 0xa9691c00 + 255 - 70 * delta
             to_draw_hitboxes[gamestate.frame_number + delta] = {proj_motion_data[i].pos_x, proj_motion_data[i].pos_y, proj_motion_data[i].flip_x, proj_boxes, nil, nil, color}
       

@@ -9,6 +9,8 @@ local menu = require("src.ui.menu")
 local settings = require("src.settings")
 local record_framedata = require("src.modules.record_framedata")
 local debug_settings = require("src.debug_settings")
+local move_data      = require("src.modules.move_data")
+local inputs = require("src.control.inputs")
 
 local frame_data = fd.frame_data
 local frame_data_meta = fdm.frame_data_meta
@@ -110,7 +112,7 @@ local function debug_update_framedata(player, projectiles)
 --         end
         -- debuggui("vx", obj.velocity_x)
         -- debuggui("vy", obj.velocity_y)
-        -- debuggui("hits", obj.remaining_hits)
+        debuggui("hits", obj.remaining_hits)
         debuggui("ts", obj.tengu_state)
         debuggui("cd", obj.cooldown)
 
@@ -360,7 +362,7 @@ local function memory_display()
   end
 end
 
-memory_view_start = gamestate.P1.stun_bar_max_addr
+memory_view_start = gamestate.P1.addresses.stun_bar_max
 local function show_memory_view_display()
   for i = 1, 20 do
     local addr = memory_view_start + 4 * (i - 1)
@@ -414,6 +416,38 @@ local function filter_memory_decreased()
 end
 
 
+local p_buttons = {"MP","HP"}
+local mash_directions_normal =
+{
+  {"down","forward"},
+  {"down"},
+  {"down","back"},
+  {"back"},
+  {"up","back"},
+  {"up"},
+  {"up","forward"},
+  {"forward"}
+}
+
+local function queue_denjin(player, n)
+  local sequence = move_data.get_move_inputs_by_name("ryu", "denjin_hadouken")
+  for i = 1, 50 do
+    table.insert(sequence, {})
+  end
+  for i = 1, n do
+    local move_inputs = copytable(mash_directions_normal[(i - 1) % #mash_directions_normal + 1])
+    table.insert(move_inputs, "LP")
+    table.insert(move_inputs, p_buttons[i % 2 + 1])
+    table.insert(sequence, move_inputs)
+  end
+  inputs.queue_input_sequence(player, sequence)
+end
+
+
+
+
+
+
 local wait_for_stun = false
 
 local function run_debug()
@@ -430,7 +464,7 @@ local function run_debug()
   end
 
   --[[   if parry_down then
-          memory.writebyte(gamestate.P2.parry_down_validity_time_addr, 2)
+          memory.writebyte(gamestate.P2.addresses.parry_down_validity_time, 2)
   end ]]
   local keys = input.get()
   if keys.down then
@@ -551,10 +585,12 @@ local function draw_debug()
 end
 
 
+
+
 local function debug_things()
-  print(settings.training.counter_attack_delay)
-  print(settings.training.display_parry)
-  print(settings.training.display_charge)
+  local seq = move_data.get_move_inputs_by_name("alex", "slash_elbow", "MK")
+  inputs.queue_input_sequence(gamestate.P1, seq)
+  Queue_Command(gamestate.frame_number + 5, {command = inputs.queue_input_sequence_on_recovery, args = {gamestate.P1, seq}})
 end
 
 local debug =  {

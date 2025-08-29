@@ -12,9 +12,9 @@ local function update(attacker, defender)
 
   local function update_stun(player)
     local stun_decrease_offset = 0
-    local stun_decrease_timer = memory.readbyte(defender.stun_bar_decrease_timer_addr)
+    local stun_decrease_timer = memory.readbyte(defender.addresses.stun_bar_decrease_timer)
     if stun_decrease_timer > 0 then
-      stun_decrease_offset = (memory.readbyte(defender.stun_bar_decrease_mantissa_addr) + 1) / 256
+      stun_decrease_offset = (memory.readbyte(defender.addresses.stun_bar_decrease_mantissa) + 1) / 256
     end
     if player.is_stunned then
       data.total_stun = player.stun_bar_max - data.start_stun
@@ -65,9 +65,9 @@ local function update(attacker, defender)
       data.total_stun = 0
       data.start_life = current_life
       local stun_decrease_offset = 0
-      local stun_decrease_timer = memory.readbyte(defender.stun_bar_decrease_timer_addr)
+      local stun_decrease_timer = memory.readbyte(defender.addresses.stun_bar_decrease_timer)
       if stun_decrease_timer > 0 then
-        stun_decrease_offset = (memory.readbyte(defender.stun_bar_decrease_mantissa_addr) + 1) / 256
+        stun_decrease_offset = (memory.readbyte(defender.addresses.stun_bar_decrease_mantissa) + 1) / 256
       end
       data.start_stun = defender.stun_bar + stun_decrease_offset
       data.stun_bar_max = defender.stun_bar_max

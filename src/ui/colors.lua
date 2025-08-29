@@ -1,71 +1,64 @@
 --defines colors for all ui elements and color manipulation functions
+require("gd")
 
---text pngs
-local text = {
-  default = 0xFFFFFFFF,
-  selected = 0x00c2FFFF,
-  disabled = 0x909090FF,
-  button_activated = 0x10FF10FF
+local themes
+
+local colors = {
+  text = {
+    default = 0xFFFFFFFF,
+    selected = 0x00c2FFFF,
+    disabled = 0x909090FF,
+    button_activated = 0x10FF10FF
+  },
+  gui_text = {
+    default = 0xFFFFFFFF,
+    default_border = 0x000000FF
+  },
+  menu = {
+    background = 0x1F1F1FF0,
+    outline = 0xBBBBBBF0,
+    gauge_background = 0xFFFFFF22,
+    gauge_border = 0x000000FF
+  },
+  gauges = {
+    outline = 0x000000FF,
+    background = 0x00000044,
+    valid_fill = 0xc200c8FF,
+    cooldown_fill = 0x6800b5FF,
+    life = 0x00CD4CFF,
+    stun = 0xE60000FF,
+    meter = 0x00E6F7FF
+  },
+  parry = {
+    text_validity = 0xFFFFFFFF,
+    text_success = 0x10FF10FF,
+    text_failure = 0xFF1010FF
+  },
+  charge = {
+    text_validity = 0xFFFFFFFF,
+    text_success = 0x10FF10FF,
+    text_failure = 0xFF1010FF,
+    overcharge = 0x4900FF80
+  },
+  last_hit_bars = {
+    life = 0xFFFFFFFF,
+    stun = 0xE60000FF
+  },
+  red_parry_miss = 0xE60000FF,
+  bonuses = {
+    damage = 0xFF7184FF,
+    defense = 0xD6E3EFFF,
+    stun = 0xD6E3EFFF
+  },
+  hitboxes = {
+    vulnerability = 0x0000FFFF,
+    attack = 0xFF0000FF,
+    throwable = 0x00FF00FF,
+    throw = 0xFFFF00FF,
+    push = 0xFF00FFFF,
+    extvulnerability = 0x00FFFFFF
+  }
 }
-
---gui.text
-local gui_text = {
-  default = 0xFFFFFFFF,
-  default_border = 0x000000FF
-}
-
-local menu = {
-  background = 0x1F1F1FF0,
-  outline = 0xBBBBBBF0,
-  gauge_background = 0xFFFFFF22,
-  gauge_border = 0x000000FF
-}
-
-local gauges = {
-  outline = 0x000000FF,
-  background = 0x00000044,
-  valid_fill = 0xc200c8FF,
-  cooldown_fill = 0x6800b5FF,
-  life = 0x00CD4CFF,
-  stun = 0xE60000FF,
-  meter = 0x00E6F7FF
-}
-
-local parry = {
-  text_validity = 0xFFFFFFFF,
-  text_success = 0x10FF10FF,
-  text_failure = 0xFF1010FF
-}
-
-local charge = {
-  text_validity = 0xFFFFFFFF,
-  text_success = 0x10FF10FF,
-  text_failure = 0xFF1010FF,
-  overcharge = 0x4900FF80
-}
-
-local last_hit_bars = {
-  life = 0xFFFFFFFF,
-  stun = 0xE60000FF
-}
-
-local red_parry_miss = 0xE60000FF
-
-local bonuses = {
-  damage = 0xFF7184FF,
-  defense = 0xD6E3EFFF,
-  stun = 0xD6E3EFFF
-}
-
-local hitboxes = {
-  vulnerability = 0x0000FFFF,
-  attack = 0xFF0000FF,
-  throwable = 0x00FF00FF,
-  throw = 0xFFFF00FF,
-  push = 0xFF00FFFF,
-  extvulnerability = 0x00FFFFFF
-}
-
 
 local gd_color = gd.createTrueColor(1, 1)
 local gd_white = gd_color:colorAllocate(255, 255, 255)
@@ -109,19 +102,36 @@ local function colorscale(hex, scalefactor)
   return tonumber(string.format("0x%02x%02x%02x%02x", r, g, b, a))
 end
 
-return{
-  text = text,
-  gui_text = gui_text,
-  menu = menu,
-  gauges = gauges,
-  parry = parry,
-  charge = charge,
-  last_hit_bars = last_hit_bars,
-  red_parry_miss = red_parry_miss,
-  bonuses = bonuses,
-  hitboxes = hitboxes,
+local function set_theme(index)
+  colors = themes[index].colors
+end
+
+local colors_module = {
   hex_to_gd_color = hex_to_gd_color,
   substitute_color = substitute_color,
   colorscale = colorscale,
-  gd_white = gd_white
+  gd_white = gd_white,
+  set_theme = set_theme
 }
+
+setmetatable(colors_module, {
+  __index = function(_, key)
+    if colors[key] then
+      return colors[key]
+    elseif key == "themes" then
+      return themes
+    end
+  end,
+
+  __newindex = function(_, key, value)
+    if colors[key] then
+      colors[key] = value
+    elseif key == "themes" then
+      themes = value
+    else
+      rawset(colors_module, key, value)
+    end
+  end
+})
+
+return colors_module

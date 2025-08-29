@@ -9,40 +9,6 @@ local pose = {
   "highjumping"
 }
 
-local stick_gesture = {
-  "none",
-  "QCF",
-  "QCB",
-  "HCF",
-  "HCB",
-  "DPF",
-  "DPB",
-  "HCharge",
-  "VCharge",
-  "360",
-  "DQCF",
-  "720",
-  "forward",
-  "back",
-  "down",
-  "jump",
-  "super jump",
-  "forward jump",
-  "forward super jump",
-  "back jump",
-  "back super jump",
-  "back dash",
-  "forward dash",
-  "guard jump (See Readme)",
-  --"guard back jump",
-  --"guard forward jump",
-  "Shun Goku Satsu", -- Gouki hidden SA1
-  "Kongou Kokuretsu Zan" -- Gouki hidden SA2
-}
-if is_4rd_strike then
-  table.insert(stick_gesture, "Demon Armageddon") -- Gouki SA3
-end
-
 local button_gesture =
 {
   "none",
@@ -111,7 +77,26 @@ local counter_attack_motion_input =
   {{"maru"},{"tilda"},{"LP","LK"}}
 }
 
-local counter_attack_button_default =
+local counter_attack_motion =
+{
+  "dir_5",
+  "dir_6",
+  "dir_3",
+  "dir_2",
+  "dir_1",
+  "dir_4",
+  "dir_7",
+  "dir_8",
+  "dir_9",
+  "hjump_back",
+  "hjump_neutral",
+  "hjump_forward",
+  "back_dash",
+  "forward_dash",
+  "kara_throw"
+}
+
+local counter_attack_normal_button_default =
 {
   "none",
   "LP",
@@ -124,21 +109,6 @@ local counter_attack_button_default =
   "MP+MK",
   "HP+HK"
 }
-local counter_attack_option_select =
-{
-  "guard_jump_back",
-  "guard_jump_neutral",
-  "guard_jump_forward",
-  "guard_jump_back_air_parry",
-  "guard_jump_neutral_air_parry",
-  "guard_jump_forward_air_parry",
-  "crouch_tech",
-  "block_late_tech",
-  "shita_mae",
-  "mae_shita",
-  "parry_dash"
-}
-
 
 local mash_inputs_mode =
 {
@@ -237,15 +207,14 @@ local distance_display_reference_point =
 return {
   stage_list = stage_list,
   pose = pose,
-  stick_gesture = stick_gesture,
   button_gesture = button_gesture,
   quick_stand_mode = quick_stand_mode,
   blocking_style = blocking_style,
   blocking_mode = blocking_mode,
   counter_attack_type = counter_attack_type,
   counter_attack_motion_input = counter_attack_motion_input,
-  counter_attack_button_default = counter_attack_button_default,
-  counter_attack_option_select = counter_attack_option_select,
+  counter_attack_motion = counter_attack_motion,
+  counter_attack_normal_button_default = counter_attack_normal_button_default,
   mash_inputs_mode = mash_inputs_mode,
   tech_throws_mode = tech_throws_mode,
   hit_type = hit_type,
