@@ -1,6 +1,8 @@
 local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
+local game_data = require("src.modules.game_data")
 local memory_addresses = require("src.control.memory_addresses")
+local tools = require("src.tools")
 local debug_settings = require("src.debug_settings")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
@@ -9,955 +11,932 @@ local frame_data_meta = fdm.frame_data_meta
 
 local frame_number = 0
 local stage = 0
+local match_state = 0
+local is_in_character_select = false
+local is_before_curtain = false
 local is_in_match = false
 local has_match_just_started = false
 local player_objects = {}
 local projectiles = {}
 
-local P1 = nil
-local P2 = nil
+local P1, P2
+
+local movement_postures = {[6] = true, [8] = true, [10] = true, [12] = true}
+local jump_postures = {[20] = true, [22] = true, [24] = true, [26] = true, [28] = true, [30] = true}
 
 local attacking_byte_exception = {}
-attacking_byte_exception["alex"] = {
-                          ["5944"] = true,
-                          ["5aec"] = true,
-                          ["5cac"] = true,
-                          ["5e54"] = true}
+attacking_byte_exception["alex"] = {["5944"] = true, ["5aec"] = true, ["5cac"] = true, ["5e54"] = true}
 attacking_byte_exception["chunli"] = {
-                          ["486c"] = true,
-                          ["4b64"] = true,
-                          ["4e44"] = true,
-                          ["5124"] = true,
-                          ["ce8c"] = true,
-                          ["c3b4"] = true}
-attacking_byte_exception["dudley"] = {
-                          ["3cdc"] = true}
-attacking_byte_exception["gill"] = {
-                          ["d63c"] = true}
-attacking_byte_exception["gouki"] = {
-                          ["a330"] = true,
-                          ["a508"] = true,
-                          ["a6e0"] = true,
-                          ["5124"] = true}
+   ["486c"] = true,
+   ["4b64"] = true,
+   ["4e44"] = true,
+   ["5124"] = true,
+   ["ce8c"] = true,
+   ["c3b4"] = true
+}
+attacking_byte_exception["dudley"] = {["3cdc"] = true}
+attacking_byte_exception["gill"] = {["d63c"] = true}
+attacking_byte_exception["gouki"] = {["a330"] = true, ["a508"] = true, ["a6e0"] = true, ["5124"] = true}
 attacking_byte_exception["hugo"] = {
-                          ["efcc"] = true,
-                          ["f1bc"] = true,
-                          ["f3ac"] = true,
-                          ["f59c"] = true,
-                          ["1d64"] = true,
-                          ["1f24"] = true,
-                          ["2184"] = true,
-                          ["f7a4"] = true,
-                          ["fa54"] = true,
-                          ["fd1c"] = true,
-                          ["0044"] = true}
+   ["efcc"] = true,
+   ["f1bc"] = true,
+   ["f3ac"] = true,
+   ["f59c"] = true,
+   ["1d64"] = true,
+   ["1f24"] = true,
+   ["2184"] = true,
+   ["f7a4"] = true,
+   ["fa54"] = true,
+   ["fd1c"] = true,
+   ["0044"] = true
+}
 attacking_byte_exception["ibuki"] = {
-                          ["93b8"] = true,
-                          ["6aa8"] = true,
-                          ["9578"] = true,
-                          ["6b48"] = true,
-                          ["9750"] = true,
-                          ["63f0"] = true,
-                          ["edb0"] = true,
-                          ["66a8"] = true,
-                          ["ef80"] = true,
-                          ["f150"] = true,
-                          ["0748"] = true,
-                          ["e2f0"] = true}
-attacking_byte_exception["ken"] = {
-                          ["a870"] = true,
-                          ["abe8"] = true}
-attacking_byte_exception["makoto"] = {
-                          ["2720"] = true,
-                          ["df10"] = true}
+   ["93b8"] = true,
+   ["6aa8"] = true,
+   ["9578"] = true,
+   ["6b48"] = true,
+   ["9750"] = true,
+   ["63f0"] = true,
+   ["edb0"] = true,
+   ["66a8"] = true,
+   ["ef80"] = true,
+   ["f150"] = true,
+   ["0748"] = true,
+   ["e2f0"] = true
+}
+attacking_byte_exception["ken"] = {["a870"] = true, ["abe8"] = true}
+attacking_byte_exception["makoto"] = {["2720"] = true, ["df10"] = true}
 attacking_byte_exception["necro"] = {
-                          ["dd9c"] = true,
-                          ["f084"] = true,
-                          ["e7a4"] = true,
-                          ["5824"] = true,
-                          ["5e7c"] = true,
-                          ["7d94"] = true,
-                          ["7f24"] = true,
-                          ["80b4"] = true,
-                          ["8574"] = true,
-                          ["dadc"] = true}
-attacking_byte_exception["ryu"] = {
-                          ["81dc"] = true,
-                          ["8354"] = true,
-                          ["84fc"] = true}
+   ["dd9c"] = true,
+   ["f084"] = true,
+   ["e7a4"] = true,
+   ["5824"] = true,
+   ["5e7c"] = true,
+   ["7d94"] = true,
+   ["7f24"] = true,
+   ["80b4"] = true,
+   ["8574"] = true,
+   ["dadc"] = true
+}
+attacking_byte_exception["ryu"] = {["81dc"] = true, ["8354"] = true, ["84fc"] = true}
 attacking_byte_exception["sean"] = {
-                          ["1ef0"] = true,
-                          ["2060"] = true,
-                          ["2130"] = true,
-                          ["2200"] = true,
-                          ["4310"] = true,
-                          ["c25c"] = true}
-attacking_byte_exception["shingouki"] = {
-                          ["ddc0"] = true,
-                          ["df98"] = true,
-                          ["e170"] = true}
+   ["1ef0"] = true,
+   ["2060"] = true,
+   ["2130"] = true,
+   ["2200"] = true,
+   ["4310"] = true,
+   ["c25c"] = true
+}
+attacking_byte_exception["shingouki"] = {["ddc0"] = true, ["df98"] = true, ["e170"] = true}
 attacking_byte_exception["twelve"] = {
-                          ["510c"] = true,
-                          ["4bac"] = true}
-attacking_byte_exception["urien"] = {
-                          ["6aac"] = true}
-attacking_byte_exception["yang"] = {
-                          ["94d8"] = true}
-attacking_byte_exception["yun"] = {
-                          ["1e28"] = true}
+   ["510c"] = true,
+   ["4bac"] = true,
+   ["5a6c"] = true,
+   ["5b2c"] = true,
+   ["5bec"] = true,
+   ["5d0c"] = true,
+   ["5ddc"] = true,
+   ["5edc"] = true
+}
+attacking_byte_exception["urien"] = {["6aac"] = true}
+attacking_byte_exception["yang"] = {["94d8"] = true, ["a498"] = true, ["aa18"] = true, ["af98"] = true}
+attacking_byte_exception["yun"] = {["1e28"] = true}
 
--- # api
 local function make_input_set(value)
-  return {
-    up = value,
-    down = value,
-    left = value,
-    right = value,
-    LP = value,
-    MP = value,
-    HP = value,
-    LK = value,
-    MK = value,
-    HK = value,
-    start = value,
-    coin = value
-  }
+   return {
+      up = value,
+      down = value,
+      left = value,
+      right = value,
+      LP = value,
+      MP = value,
+      HP = value,
+      LK = value,
+      MK = value,
+      HK = value,
+      start = value,
+      coin = value
+   }
 end
 
 local function make_player_object(id, base, prefix)
-  return {
-    id = id,
-    base = base,
-    prefix = prefix,
-    type = "player",
-    input = {
-      pressed = make_input_set(false),
-      released = make_input_set(false),
-      down = make_input_set(false),
-      state_time = make_input_set(0),
-    },
-    blocking = {
-    },
-    counter = {
-      attack_frame = -1,
-      ref_time = -1,
-      recording_slot = -1,
-    },
-    throw = {},
-    stunned = false,
-    posture = 0,
-    meter_gauge = 0,
-    meter_count = 0,
-    max_meter_gauge = 0,
-    max_meter_count = 0,
-    cooldown = 0,
-    remaining_wakeup_time = 0
-  }
+   return {
+      id = id,
+      base = base,
+      prefix = prefix,
+      type = "player",
+      input = {
+         pressed = make_input_set(false),
+         released = make_input_set(false),
+         down = make_input_set(false),
+         state_time = make_input_set(0)
+      },
+      blocking = {},
+      counter = {attack_frame = -1, ref_time = -1, recording_slot = -1},
+      stunned = false,
+      throw_invulnerability_cooldown = 0,
+      posture = 0,
+      meter_gauge = 0,
+      meter_count = 0,
+      max_meter_gauge = 0,
+      max_meter_count = 0,
+      cooldown = 0,
+      remaining_wakeup_time = 0
+   }
 end
 
-
 local function reset_player_objects()
-  player_objects = {
-    make_player_object(1, 0x02068C6C, "P1"),
-    make_player_object(2, 0x02069104, "P2")
-  }
-  P1 = player_objects[1]
-  P2 = player_objects[2]
+   player_objects = {make_player_object(1, 0x02068C6C, "P1"), make_player_object(2, 0x02069104, "P2")}
+   P1 = player_objects[1]
+   P2 = player_objects[2]
 
-  P1.other = P2
-  P2.other = P1
+   P1.other = P2
+   P2.other = P1
 
-  memory_addresses.update_addresses(P1)
-  memory_addresses.update_addresses(P2)
+   memory_addresses.update_addresses(P1)
+   memory_addresses.update_addresses(P2)
 
-  if debug_settings.developer_mode then
-    for i, debug_vars in ipairs(debug_settings.player_debug_variables) do
-      for k, v in pairs(debug_vars) do
-        player_objects[i][k] = v
+   if debug_settings.developer_mode then
+      for i, debug_vars in ipairs(debug_settings.player_debug_variables) do
+         for k, v in pairs(debug_vars) do player_objects[i][k] = v end
       end
-    end
-  end
+   end
 end
 
 local function update_received_hits(self, other)
-  if self.received_connection or self.is_being_thrown then
-    self.last_received_connection_animation = other.animation
-    self.last_received_connection_hit_id = math.max(other.current_hit_id, 1)
-  elseif frame_number - self.last_received_connection_frame == 1 then
-    for _, proj in pairs(projectiles) do
-      --this will not detect tengu stones because their remaining_hits does not change
-      if proj.emitter_id == other.id
-      and (proj.previous_remaining_hits - proj.remaining_hits == 1
-          or proj.previous_remaining_hits - proj.remaining_hits == -255)
-      then
-        self.last_received_connection_animation = proj.projectile_type
-        self.last_received_connection_hit_id = proj.remaining_hits --could use max_hits - remaining if needed
+   if self.received_connection or self.is_being_thrown then
+      self.last_received_connection_animation = other.animation
+      self.last_received_connection_hit_id = math.max(other.current_hit_id, 1)
+   elseif frame_number - self.last_received_connection_frame == 1 then
+      for _, proj in pairs(projectiles) do
+         -- this will not detect tengu stones because their remaining_hits does not change
+         if proj.emitter_id == other.id and
+             (proj.previous_remaining_hits - proj.remaining_hits == 1 or proj.previous_remaining_hits -
+                 proj.remaining_hits == -255) then
+            self.last_received_connection_animation = proj.projectile_type
+            self.last_received_connection_hit_id = proj.remaining_hits -- could use max_hits - remaining if needed
+         end
       end
-    end
-  end
+   end
 end
 
-local function update_player_relationships(self, other)
-  if self.posture == 0x26 and not debug_settings.recording_framedata then
-    self.remaining_wakeup_time = get_wakeup_time(self.char_str, self.animation, self.animation_frame)
-  else
-    self.remaining_wakeup_time = 0
-  end
+local function update_wakeup(self, other)
+   if self.posture == 0x26 and self.posture_ext >= 0x40 and not debug_settings.recording_framedata then
+      self.remaining_wakeup_time = get_wakeup_time(self.char_str, self.animation, self.animation_frame)
+   else
+      self.remaining_wakeup_time = 0
+   end
 end
 
-local function is_state_on_ground(state, player)
-  -- 0x01 is standard standing
-  -- 0x02 is standard crouching
-  if state == 0x01 or state == 0x02 then
-    return true
-  elseif character_specific[player.char_str] and character_specific[player.char_str].additional_standing_states ~= nil then
-    for _, standing_state in ipairs(character_specific[player.char_str].additional_standing_states) do
-      if standing_state == state then
-        return true
+local function is_standing_state(player, state)
+   if state == 0x01 then
+      return true
+   elseif character_specific[player.char_str] and character_specific[player.char_str].standing_states then
+      for _, standing_state in ipairs(character_specific[player.char_str].standing_states) do
+         if standing_state == state then return true end
       end
-    end
-  end
+   end
+   return false
+end
+
+local function is_crouching_state(player, state)
+   if state == 0x02 then
+      return true
+   elseif character_specific[player.char_str] and character_specific[player.char_str].crouching_states then
+      for _, standing_state in ipairs(character_specific[player.char_str].crouching_states) do
+         if standing_state == state then return true end
+      end
+   end
+   return false
+end
+
+local function is_ground_state(player, state)
+   return is_standing_state(player, state) or is_crouching_state(player, state)
+end
+
+local function is_airborne_state_exception(player, state)
+   if character_specific[player.char_str] and character_specific[player.char_str].air_states then
+      return tools.table_contains(character_specific[player.char_str].air_states, state)
+   end
+   return false
+end
+
+local function get_additional_recovery_delay(char_str, crouching)
+   if crouching then
+      if (char_str == "q" or char_str == "ryu" or char_str == "chunli") then return 2 end
+   else
+      if char_str == "q" then return 1 end
+   end
+   return 0
 end
 
 local function get_parry_type(player)
-  local player_airborne = player.posture >= 20 and player.posture <= 30
-  local opponent_airborne = player.other.posture >= 20 and player.other.posture <= 30
-  local parry_type = "ground"
+   local player_airborne = player.posture >= 20 and player.posture <= 30
+   local opponent_airborne = player.other.posture >= 20 and player.other.posture <= 30
+   local parry_type = "ground"
 
-  if player.other.just_connected then --if other player connected, then attack is not a projectile
-    if player_airborne then
-      parry_type = "air"
-    elseif opponent_airborne then
-      parry_type = "anti_air"
-    end
-  end
-  return parry_type
+   if player.other.just_connected then -- if other player connected, then attack is not a projectile
+      if player_airborne then
+         parry_type = "air"
+      elseif opponent_airborne then
+         parry_type = "anti_air"
+      end
+   end
+   return parry_type
 end
 
 local function read_game_vars()
-  -- frame number
-  frame_number = memory.readdword(memory_addresses.global.frame_number)
+   -- frame number
+   frame_number = memory.readdword(memory_addresses.global.frame_number)
 
-  -- is in match
-  -- I believe the bytes that are expected to be 0xff means that a character has been locked, while the byte expected to be 0x02 is the current match state. 0x02 means that round has started and players can move
-  local p1_locked = memory.readbyte(memory_addresses.global.p1_locked)
-  local p2_locked = memory.readbyte(memory_addresses.global.p2_locked)
-  local match_state = memory.readbyte(memory_addresses.global.match_state)
+   -- is in match
+   local previous_match_state = match_state
+   local p1_locked = memory.readbyte(memory_addresses.global.p1_locked)
+   local p2_locked = memory.readbyte(memory_addresses.global.p2_locked)
+   match_state = memory.readbyte(memory_addresses.global.match_state) -- 1 before curtain, 2 after curtain, 9 character select
 
-  local previous_is_in_match = is_in_match
+   is_in_character_select = match_state == 0x09
 
-  if previous_is_in_match == nil then previous_is_in_match = true end
-  is_in_match = ((p1_locked == 0xFF or p2_locked == 0xFF) and match_state == 0x02)
-  has_match_just_started = not previous_is_in_match and is_in_match
+   is_in_match = ((p1_locked == 0xFF or p2_locked == 0xFF) and match_state == 0x02)
 
-  stage = memory.readbyte(memory_addresses.global.stage)
+   is_before_curtain = ((p1_locked == 0xFF or p2_locked == 0xFF) and match_state == 0x01)
+
+   has_match_just_started = previous_match_state == 0x01 and is_in_match
+
+   stage = memory.readbyte(memory_addresses.global.stage)
 end
-
 
 local function read_input(player)
 
-  local function read_single_input(input_object, input_name, input)
-    input_object.pressed[input_name] = false
-    input_object.released[input_name] = false
-    if input_object.down[input_name] == false and input then input_object.pressed[input_name] = true end
-    if input_object.down[input_name] == true and input == false then input_object.released[input_name] = true end
+   local function read_single_input(input_object, input_name, input)
+      input_object.pressed[input_name] = false
+      input_object.released[input_name] = false
+      if input_object.down[input_name] == false and input then input_object.pressed[input_name] = true end
+      if input_object.down[input_name] == true and input == false then input_object.released[input_name] = true end
 
-    if input_object.down[input_name] == input then
-      input_object.state_time[input_name] = input_object.state_time[input_name] + 1
-    else
-      input_object.state_time[input_name] = 0
-    end
-    input_object.down[input_name] = input
-  end
+      if input_object.down[input_name] == input then
+         input_object.state_time[input_name] = input_object.state_time[input_name] + 1
+      else
+         input_object.state_time[input_name] = 0
+      end
+      input_object.down[input_name] = input
+   end
 
-  local local_input = joypad.get()
-  read_single_input(player.input, "start", local_input[player.prefix.." Start"])
-  read_single_input(player.input, "coin", local_input[player.prefix.." Coin"])
-  read_single_input(player.input, "up", local_input[player.prefix.." Up"])
-  read_single_input(player.input, "down", local_input[player.prefix.." Down"])
-  read_single_input(player.input, "left", local_input[player.prefix.." Left"])
-  read_single_input(player.input, "right", local_input[player.prefix.." Right"])
-  read_single_input(player.input, "LP", local_input[player.prefix.." Weak Punch"])
-  read_single_input(player.input, "MP", local_input[player.prefix.." Medium Punch"])
-  read_single_input(player.input, "HP", local_input[player.prefix.." Strong Punch"])
-  read_single_input(player.input, "LK", local_input[player.prefix.." Weak Kick"])
-  read_single_input(player.input, "MK", local_input[player.prefix.." Medium Kick"])
-  read_single_input(player.input, "HK", local_input[player.prefix.." Strong Kick"])
+   local local_input = joypad.get()
+   read_single_input(player.input, "start", local_input[player.prefix .. " Start"])
+   read_single_input(player.input, "coin", local_input[player.prefix .. " Coin"])
+   read_single_input(player.input, "up", local_input[player.prefix .. " Up"])
+   read_single_input(player.input, "down", local_input[player.prefix .. " Down"])
+   read_single_input(player.input, "left", local_input[player.prefix .. " Left"])
+   read_single_input(player.input, "right", local_input[player.prefix .. " Right"])
+   read_single_input(player.input, "LP", local_input[player.prefix .. " Weak Punch"])
+   read_single_input(player.input, "MP", local_input[player.prefix .. " Medium Punch"])
+   read_single_input(player.input, "HP", local_input[player.prefix .. " Strong Punch"])
+   read_single_input(player.input, "LK", local_input[player.prefix .. " Weak Kick"])
+   read_single_input(player.input, "MK", local_input[player.prefix .. " Medium Kick"])
+   read_single_input(player.input, "HK", local_input[player.prefix .. " Strong Kick"])
 end
 
-
 local function read_box(obj, ptr, type)
-  if obj.friends > 1 then --Yang SA3
-    if type ~= "attack" then
-      return
-    end
-  end
+   if obj.friends > 1 then -- Yang SA3
+      if type ~= "attack" then return end
+   end
 
-  local left   = memory.readwordsigned(ptr + 0x0)
-  local width  = memory.readwordsigned(ptr + 0x2)
-  local bottom = memory.readwordsigned(ptr + 0x4) --debug
-  local height = memory.readwordsigned(ptr + 0x6)
+   local left = memory.readwordsigned(ptr + 0x0)
+   local width = memory.readwordsigned(ptr + 0x2)
+   local bottom = memory.readwordsigned(ptr + 0x4) -- debug
+   local height = memory.readwordsigned(ptr + 0x6)
 
-  local box = {convert_box_types[type], bottom, height, left, width}
+   local box = {tools.convert_box_types[type], bottom, height, left, width}
 
-  if left == 0 and width == 0 and bottom == 0 and height == 0 then
-    return
-  end
+   if left == 0 and width == 0 and bottom == 0 and height == 0 then return end
 
-  table.insert(obj.boxes, box)
+   table.insert(obj.boxes, box)
 end
 
 local function read_game_object(obj)
-  if memory.readdword(obj.base + 0x2A0) == 0 then --invalid objects
-    return false
-  end
+   if memory.readdword(obj.base + 0x2A0) == 0 then -- invalid objects
+      return false
+   end
 
-  obj.friends = memory.readbyte(obj.base + 0x1)
-  obj.flip_x = memory.readbytesigned(obj.base + 0x0A) -- sprites are facing left by default
-  obj.previous_pos_x = obj.pos_x or 0
-  obj.previous_pos_y = obj.pos_y or 0
-  obj.pos_x_char = memory.readwordsigned(obj.base + 0x64)
-  obj.pos_x_mantissa = memory.readbyte(obj.base + 0x66)
-  obj.pos_y_char = memory.readwordsigned(obj.base + 0x68)
-  obj.pos_y_mantissa = memory.readbyte(obj.base + 0x6A)
-  obj.pos_x = obj.pos_x_char + obj.pos_x_mantissa / 256
-  obj.pos_y = obj.pos_y_char + obj.pos_y_mantissa / 256
+   obj.friends = memory.readbyte(obj.base + 0x1)
+   obj.flip_x = memory.readbytesigned(obj.base + 0x0A) -- 0 = facing left, 1 = facing right
+   obj.previous_pos_x = obj.pos_x or 0
+   obj.previous_pos_y = obj.pos_y or 0
+   obj.pos_x_char = memory.readwordsigned(obj.base + 0x64)
+   obj.pos_x_mantissa = memory.readbyte(obj.base + 0x66)
+   obj.pos_y_char = memory.readwordsigned(obj.base + 0x68)
+   obj.pos_y_mantissa = memory.readbyte(obj.base + 0x6A)
+   obj.pos_x = obj.pos_x_char + obj.pos_x_mantissa / 256
+   obj.pos_y = obj.pos_y_char + obj.pos_y_mantissa / 256
 
-  obj.velocity_x_char = memory.readwordsigned(obj.base + 0x64 + 24)
-  obj.velocity_x_mantissa = memory.readbyte(obj.base + 0x64 + 26)
-  obj.velocity_y_char = memory.readwordsigned(obj.base + 0x64 + 28)
-  obj.velocity_y_mantissa = memory.readbyte(obj.base + 0x64 + 30)
-  obj.acceleration_x_char = memory.readwordsigned(obj.base + 0x64 + 32)
-  obj.acceleration_x_mantissa = memory.readbyte(obj.base + 0x64 + 34)
-  obj.acceleration_y_char = memory.readwordsigned(obj.base + 0x64 + 36)
-  obj.acceleration_y_mantissa = memory.readbyte(obj.base + 0x64 + 38)
+   obj.velocity_x_char = memory.readwordsigned(obj.base + 0x64 + 24)
+   obj.velocity_x_mantissa = memory.readbyte(obj.base + 0x64 + 26)
+   obj.velocity_y_char = memory.readwordsigned(obj.base + 0x64 + 28)
+   obj.velocity_y_mantissa = memory.readbyte(obj.base + 0x64 + 30)
+   obj.acceleration_x_char = memory.readwordsigned(obj.base + 0x64 + 32)
+   obj.acceleration_x_mantissa = memory.readbyte(obj.base + 0x64 + 34)
+   obj.acceleration_y_char = memory.readwordsigned(obj.base + 0x64 + 36)
+   obj.acceleration_y_mantissa = memory.readbyte(obj.base + 0x64 + 38)
 
+   obj.velocity_x = obj.velocity_x_char + obj.velocity_x_mantissa / 256
+   obj.velocity_y = obj.velocity_y_char + obj.velocity_y_mantissa / 256
+   obj.acceleration_x = obj.acceleration_x_char + obj.acceleration_x_mantissa / 256
+   obj.acceleration_y = obj.acceleration_y_char + obj.acceleration_y_mantissa / 256
 
-  obj.velocity_x = obj.velocity_x_char + obj.velocity_x_mantissa / 256
-  obj.velocity_y = obj.velocity_y_char + obj.velocity_y_mantissa / 256
-  obj.acceleration_x = obj.acceleration_x_char + obj.acceleration_x_mantissa / 256
-  obj.acceleration_y = obj.acceleration_y_char + obj.acceleration_y_mantissa / 256
+   obj.char_id = memory.readword(obj.base + 0x3C0)
 
-  obj.char_id = memory.readword(obj.base + 0x3C0)
+   obj.boxes = {}
+   local boxes = {
+      {initial = 1, offset = 0x2D4, type = "push", number = 1},
+      {initial = 1, offset = 0x2C0, type = "throwable", number = 1},
+      {initial = 1, offset = 0x2A0, type = "vulnerability", number = 4},
+      {initial = 1, offset = 0x2A8, type = "ext. vulnerability", number = 4},
+      {initial = 1, offset = 0x2C8, type = "attack", number = 4},
+      {initial = 1, offset = 0x2B8, type = "throw", number = 1}
+   }
 
-  obj.boxes = {}
-  local boxes = {
-    {initial = 1, offset = 0x2D4, type = "push", number = 1},
-    {initial = 1, offset = 0x2C0, type = "throwable", number = 1},
-    {initial = 1, offset = 0x2A0, type = "vulnerability", number = 4},
-    {initial = 1, offset = 0x2A8, type = "ext. vulnerability", number = 4},
-    {initial = 1, offset = 0x2C8, type = "attack", number = 4},
-    {initial = 1, offset = 0x2B8, type = "throw", number = 1}
-  }
+   for _, box in ipairs(boxes) do
+      for i = box.initial, box.number do
+         read_box(obj, memory.readdword(obj.base + box.offset) + (i - 1) * 8, box.type)
+      end
+   end
 
-  for _, box in ipairs(boxes) do
-    for i = box.initial, box.number do
-      read_box(obj, memory.readdword(obj.base + box.offset) + (i-1)*8, box.type)
-    end
-  end
+   obj.animation_frame_id = memory.readword(obj.base + 0x21A)
+   obj.animation_frame_id2 = memory.readbyte(obj.base + 0x214) -- number of frames animation stays on current frame_id
+   obj.animation_frame_id3 = memory.readbyte(obj.base + 0x205)
 
-  obj.animation_frame_id = memory.readword(obj.base + 0x21A)
-  obj.animation_frame_id2 = memory.readbyte(obj.base + 0x214) --number of frames animation stays on current frame_id
-  obj.animation_frame_id3 = memory.readbyte(obj.base + 0x205)
+   -- not a unique id for each frame but good enough
+   local hash = {
+      string.format("%04x", obj.animation_frame_id), string.format("%02x", obj.animation_frame_id2),
+      string.format("%02x", obj.animation_frame_id3)
+   }
 
-  -- not a unique id for each frame but good enough
-  local hash = {string.format("%04x", obj.animation_frame_id),
-                string.format("%02x", obj.animation_frame_id2),
-                string.format("%02x", obj.animation_frame_id3),}
-
-  if obj.id == 1 or obj.id == 2 then
-    local action_type = memory.readbyte(obj.base + 0xAD)
-    --throw, normal, special/sa
-    if action_type == 3 or action_type == 4 or action_type == 5 then
-      local action_count = memory.readbyte(obj.base + 0x459)
-      table.insert(hash, string.format("%02x", action_count))
-    else
+   if obj.id == 1 or obj.id == 2 then
+      local action_type = memory.readbyte(obj.base + 0xAD)
+      -- throw, normal, special/sa
+      if action_type == 3 or action_type == 4 or action_type == 5 then
+         local action_count = memory.readbyte(obj.base + 0x459)
+         table.insert(hash, string.format("%02x", action_count))
+      else
+         table.insert(hash, "00")
+      end
+   else
       table.insert(hash, "00")
-    end
-  else
-    table.insert(hash, "00")
-  end
+   end
 
-
-  obj.animation_frame_hash = table.concat(hash)
-  return true
+   obj.animation_frame_hash = table.concat(hash)
+   return true
 end
-
-
-
 
 local function find_resync_target(obj, fdata, infinite_loop)
-  local frames = fdata.frames
-  local hash_length = 10
-  local target = -1
-  if infinite_loop then
-    hash_length = 8
-  end
-  local target_hash = string.sub(obj.animation_frame_hash, 1, hash_length)
-  -- print(hash_length, current_hash, target_hash)
+   local frames = fdata.frames
+   local hash_length = 10
+   local target = -1
+   if infinite_loop then hash_length = 8 end
+   local target_hash = string.sub(obj.animation_frame_hash, 1, hash_length)
+   -- print(hash_length, current_hash, target_hash)
 
-  for i = 1, #frames do
-    local hash = string.sub(frames[i].hash, 1, hash_length)
-    if hash == target_hash then
-      return i - 1, target_hash
-    end
-  end
+   for i = 1, #frames do
+      local hash = string.sub(frames[i].hash, 1, hash_length)
+      if hash == target_hash then return i - 1, target_hash end
+   end
 
-  --framedata changes on block/hit for many moves
-  if fdata.exceptions then
-    if fdata.exceptions[target_hash] then
-      return fdata.exceptions[target_hash], target_hash
-    end
-  end
+   -- framedata changes on block/hit for many moves
+   if fdata.exceptions then
+      if fdata.exceptions[target_hash] then return fdata.exceptions[target_hash], target_hash end
+   end
 
-  --hits or blocks will change the frameid2/frameid3 portion of the hash, so we try to get a partial match instead
-  local matches = {}
-  local scores = {}
-  local frameid = string.format("%04x", obj.animation_frame_id)
-  for i = 1, #frames do
-    if frameid == string.sub(frames[i].hash, 1, 4) then
-      table.insert(matches, i)
-      table.insert(scores, 0)
-    end
-  end
-
-  if #matches > 0 then
-    local frameid2 = string.format("%02x", obj.animation_frame_id2)
-    local frameid3 = string.format("%02x", obj.animation_frame_id3)
-    local action_count = "00"
-    if obj.type == "player" then
-      action_count = string.format("%02x", obj.animation_action_count)
-    end
-    for i = 1, #matches do
-      local index = matches[i]
-      local t_frameid2 = string.sub(frames[index].hash, 5, 6)
-      local t_frameid3 = string.sub(frames[index].hash, 7, 8)
-      local t_action_count = string.sub(frames[index].hash, 9, 10)
-      if frameid2 == t_frameid2 then
-        scores[i] = scores[i] + 30
+   -- hits or blocks will change the frameid2/frameid3 portion of the hash, so we try to get a partial match instead
+   local matches = {}
+   local scores = {}
+   local frameid = string.format("%04x", obj.animation_frame_id)
+   for i = 1, #frames do
+      if frameid == string.sub(frames[i].hash, 1, 4) then
+         table.insert(matches, i)
+         table.insert(scores, 0)
       end
-      if frameid3 == t_frameid3 then
-        scores[i] = scores[i] + 20
-      end
-      if action_count == t_action_count then
-        scores[i] = scores[i] + 10
-      end
-    end
+   end
 
-    local key, max = 1, scores[1]
-    for i, v in ipairs(scores) do
-      if v > max then
-        key, max = i, v
-      elseif v == max then
-        local index = matches[i]
-        local index2 = matches[key]
-        if math.abs(index - obj.animation_frame) < math.abs(index2 - obj.animation_frame) then
-          key, max = i, v
-        end
+   if #matches > 0 then
+      local frameid2 = string.format("%02x", obj.animation_frame_id2)
+      local frameid3 = string.format("%02x", obj.animation_frame_id3)
+      local action_count = "00"
+      if obj.type == "player" then action_count = string.format("%02x", obj.animation_action_count) end
+      for i = 1, #matches do
+         local index = matches[i]
+         local t_frameid2 = string.sub(frames[index].hash, 5, 6)
+         local t_frameid3 = string.sub(frames[index].hash, 7, 8)
+         local t_action_count = string.sub(frames[index].hash, 9, 10)
+         if frameid2 == t_frameid2 then scores[i] = scores[i] + 30 end
+         if frameid3 == t_frameid3 then scores[i] = scores[i] + 20 end
+         if action_count == t_action_count then scores[i] = scores[i] + 10 end
       end
-    end
 
-    return matches[key] - 1, target_hash
-  end
-  
-  return target, target_hash
+      local key, max = 1, scores[1]
+      for i, v in ipairs(scores) do
+         if v > max then
+            key, max = i, v
+         elseif v == max then
+            local index = matches[i]
+            local index2 = matches[key]
+            if math.abs(index - obj.animation_frame) < math.abs(index2 - obj.animation_frame) then
+               key, max = i, v
+            end
+         end
+      end
+
+      return matches[key] - 1, target_hash
+   end
+
+   return target, target_hash
 end
-
 
 local function read_player_vars(player)
 
--- P1: 0x02068C6C
--- P2: 0x02069104
+   -- P1: 0x02068C6C
+   -- P2: 0x02069104
 
-  if memory.readdword(player.base + 0x2A0) == 0 then --invalid objects
-    return
-  end
+   if memory.readdword(player.base + 0x2A0) == 0 then -- invalid objects
+      return
+   end
 
-  local debug_state_variables = player.debug_state_variables
+   local debug_state_variables = player.debug_state_variables
 
-  read_input(player)
+   read_input(player)
 
-  read_game_object(player)
+   read_game_object(player)
 
-  local previous_movement_type = player.movement_type or 0
+   local previous_movement_type = player.movement_type or 0
 
-  player.char_str = Characters[player.char_id + 1]
+   player.char_str = game_data.characters[player.char_id + 1]
 
-  local player_addresses = memory_addresses.players[player.id]
-
-  player.previous_remaining_freeze_frames = player.remaining_freeze_frames or 0
-  player.remaining_freeze_frames = memory.readbyte(player.base + 0x45)
-  player.freeze_type = 0
-  if player.remaining_freeze_frames ~= 0 then
-    if player.remaining_freeze_frames < 127 then
-      -- inflicted freeze I guess (when the opponent parry you for instance)
-      player.freeze_type = 1
-      player.remaining_freeze_frames = player.remaining_freeze_frames
-    else
-      player.freeze_type = 2
-      player.remaining_freeze_frames = 256 - player.remaining_freeze_frames
-    end
-  end
-  local remaining_freeze_frame_diff = player.remaining_freeze_frames - player.previous_remaining_freeze_frames
-  if remaining_freeze_frame_diff > 0 then
-    log(player.prefix, "fight", string.format("freeze %d", player.remaining_freeze_frames))
-    --print(string.format("%d: %d(%d)",  player.id, player.remaining_freeze_frames, player.freeze_type))
-  end
-
-  local previous_action = player.action or 0x00
-  local previous_movement_type2 = player.movement_type2 or 0x00
-  local previous_posture = player.posture or 0x00
-
-  player.previous_input_capacity = player.input_capacity or 0
-  player.input_capacity = memory.readword(player.base + 0x46C)
-  player.action = memory.readdword(player.base + 0xAC)
-  player.action_ext = memory.readdword(player.base + 0x12C)
-  player.previous_recovery_time = player.recovery_time or 0
-  player.recovery_time = memory.readbyte(player.base + 0x187)
-  player.movement_type = memory.readbyte(player.base + 0x0AD)
-  player.movement_type2 = memory.readbyte(player.base + 0x0AF) -- seems that we can know which basic movement the player is doing from there
-  player.total_received_projectiles_count = memory.readword(player.base + 0x430) -- on block or hit
-
--- postures
---  0x00 -- standing neutral
---  0x08 -- going backwards
---  0x06 -- going forward
---  0x20 -- crouching
---  0x16 -- neutral jump
---  0x14 -- flying forward
---  0x18 -- flying backwards
---  0x1A -- high jump
---  0x26 -- knocked down
-  player.posture = memory.readbyte(player.base + 0x20E)
-
-  player.busy_flag = memory.readword(player.base + 0x3D1)
-
-  local previous_is_in_basic_action = player.is_in_basic_action or false
-  player.is_in_basic_action = player.action < 0xFF and previous_action < 0xFF -- this triggers one frame early than it should, so we delay it artificially
-  player.has_just_entered_basic_action = not previous_is_in_basic_action and player.is_in_basic_action
-
-  local previous_recovery_flag = player.recovery_flag or 1
-  player.recovery_flag = memory.readbyte(player.base + 0x3B)
-  player.has_just_ended_recovery = previous_recovery_flag ~= 0 and player.recovery_flag == 0
-
-  player.meter_gauge = memory.readbyte(player.addresses.gauge)
-  player.meter_count = memory.readbyte(player.addresses.meter_master)
-
-  player.superfreeze_decount = player.superfreeze_decount or 0
-  local previous_superfreeze_decount = player.superfreeze_decount
-
-  player.max_meter_gauge = memory.readbyte(player.addresses.max_meter_gauge)
-  player.max_meter_count = memory.readbyte(player.addresses.max_meter_count)
-  player.selected_sa = memory.readbyte(player.addresses.selected_sa) + 1
-  player.superfreeze_decount = memory.readbyte(player.addresses.superfreeze_decount)
-
-  if player.superfreeze_decount == 0 and previous_superfreeze_decount > 0 then
-    player.superfreeze_just_ended = true
-  else
-    player.superfreeze_just_ended = false
-  end
-
-  -- CROUCHED
-  player.is_crouched = player.posture == 0x20
-
-  -- LIFE
-  player.life = memory.readbyte(player.addresses.life)
-
-  -- COMBO
-  player.previous_combo = player.combo or 0
-  if player.id == 1 then
-    player.combo = memory.readbyte(0x020696C5)
-  else
-    player.combo = memory.readbyte(0x0206961D)
-  end
-
-  -- NEXT HIT
-  player.damage_of_next_hit = memory.readbyte(player.addresses.damage_of_next_hit)
-  player.stun_of_next_hit = memory.readbyte(player.addresses.stun_of_next_hit)
-
-  -- BONUSES
-  player.damage_bonus = memory.readword(player.base + 0x43A)
-  player.stun_bonus = memory.readword(player.base + 0x43E)
-  player.defense_bonus = memory.readword(player.base + 0x440)
-
-  -- THROW
-  local previous_is_throwing = player.is_throwing or false
-  player.is_throwing = bit.rshift(player.movement_type2, 4) == 9
-  player.has_just_thrown = not previous_is_throwing and player.is_throwing
-
-  local _previous_being_thrown = player.is_being_thrown
-  player.is_being_thrown = memory.readbyte(player.base + 0x3CF) ~= 0
-  player.throw_countdown = player.throw_countdown or 0
-  player.previous_throw_countdown = player.throw_countdown
-  player.has_just_been_thrown = (not _previous_being_thrown) and player.is_being_thrown
-
-  local throw_countdown = memory.readbyte(player.base + 0x434)
-  if throw_countdown > player.previous_throw_countdown then
-    player.throw_countdown = throw_countdown + 2 -- air throw animations seems to not match the countdown (ie. Ibuki's Air Throw), let's add a few frames to it
-  else
-    player.throw_countdown = math.max(player.throw_countdown - 1, 0)
-  end
-
-  if player.debug_freeze_frames and player.remaining_freeze_frames > 0 then print(string.format("%d - %d remaining freeze frames", frame_number, player.remaining_freeze_frames)) end
-
-
-
-  local previous_animation = player.animation or ""
-  player.animation = bit.tohex(memory.readword(player.base + 0x202), 4)
-
-
-
-  -- ATTACKING
-  local previous_is_attacking = player.is_attacking or false
-  player.character_state_byte = memory.readbyte(player.base + 0x27) -- used to detect hugos clap, meat squasher, lariat, which do not set the is_attacking_byte
-  player.is_attacking_byte = memory.readbyte(player.base + 0x428)
-  player.is_attacking = player.is_attacking_byte > 0
-                          or (attacking_byte_exception[player.char_str] and attacking_byte_exception[player.char_str][player.animation])
-  player.is_attacking_ext_byte = memory.readbyte(player.base + 0x429)
-  player.is_attacking_ext = player.is_attacking_ext_byte > 0
-  player.has_just_attacked =  player.is_attacking and not previous_is_attacking
-  if debug_state_variables and player.has_just_attacked then print(string.format("%d - %s attacked", frame_number, player.prefix)) end
-
-  -- ACTION
-  local previous_action_count = player.action_count or 0
-  player.action_count = memory.readbyte(player.base + 0x459)
-  player.has_just_acted = player.action_count > previous_action_count
-  if debug_state_variables and player.has_just_acted then print(string.format("%d - %s acted (%d > %d)", frame_number, player.prefix, previous_action_count, player.action_count)) end
-
-  player.animation_action_count = player.animation_action_count or 0
-  if player.has_just_acted then
-    player.animation_action_count = player.animation_action_count + 1
-  end
-
-  -- ANIMATION
-  player.animation_start_frame = player.animation_start_frame or frame_number
-  player.animation_freeze_frames = player.animation_freeze_frames or 0
-
-
-
-  player.animation_frame_data = nil
-  if frame_data[player.char_str] then
-    player.animation_frame_data = frame_data[player.char_str][player.animation]
-  end
-  player.has_animation_just_changed = previous_animation ~= player.animation
-  if debug_state_variables and player.has_animation_just_changed then print(string.format("%d - %s animation changed (%s -> %s)", frame_number, player.prefix, previous_animation, player.animation)) end
-
-  player.animation_frame = frame_number - player.animation_start_frame - player.animation_freeze_frames
-
-  --self chain. cr. lk chains, etc
-  if not debug_settings.recording_framedata then ---debug
-    if player.self_chain and player.animation_frame_data then
-      local hit_frames = player.animation_frame_data.hit_frames
-      if hit_frames and #hit_frames > 0 then
-        if player.animation_frame > hit_frames[#hit_frames][2] then
-          player.has_animation_just_changed = true
-        end
+   player.previous_remaining_freeze_frames = player.remaining_freeze_frames or 0
+   player.remaining_freeze_frames = memory.readbyte(player.base + 0x45)
+   player.freeze_type = 0
+   if player.remaining_freeze_frames ~= 0 then
+      if player.remaining_freeze_frames < 127 then
+         -- inflicted freeze I guess (when the opponent parry you for instance)
+         player.freeze_type = 1
+         player.remaining_freeze_frames = player.remaining_freeze_frames
+      else
+         player.freeze_type = 2
+         player.remaining_freeze_frames = 256 - player.remaining_freeze_frames
       end
-    end
+   end
+   local remaining_freeze_frame_diff = player.remaining_freeze_frames - player.previous_remaining_freeze_frames
+   if remaining_freeze_frame_diff > 0 then
+      log(player.prefix, "fight", string.format("freeze %d", player.remaining_freeze_frames))
+      -- print(string.format("%d: %d(%d)",  player.id, player.remaining_freeze_frames, player.freeze_type))
+   end
 
-    if player.animation_frame_data and not player.has_animation_just_changed
-    and player.animation_frame_data.self_chain and player.animation_frame > 0
-    and (player.has_just_attacked or (player.previous_input_capacity > 0 and player.input_capacity == 0)) then
-      player.self_chain = true --look for self chain next frame
-    end
-  end
+   local previous_action = player.action or 0x00
 
-  if player.has_animation_just_changed then
-    player.animation_start_frame = frame_number
-    player.animation_freeze_frames = 0
-    player.next_hit_id = 0
+   player.previous_input_capacity = player.input_capacity or 0
+   player.input_capacity = memory.readword(player.base + 0x46C)
+   player.action = memory.readdword(player.base + 0xAC)
+   player.action_ext = memory.readdword(player.base + 0x12C)
+   player.previous_recovery_time = player.recovery_time or 0
+   player.recovery_time = memory.readbyte(player.base + 0x187)
+   player.movement_type = memory.readbyte(player.base + 0x0AD)
+   player.movement_type2 = memory.readbyte(player.base + 0x0AF) -- seems that we can know which basic movement the player is doing from there
+   player.total_received_projectiles_count = memory.readword(player.base + 0x430) -- on block or hit
+   -- postures
+   --  0x00 -- standing neutral
+   --  0x08 -- going backwards
+   --  0x06 -- going forward
+   --  0x20 -- crouching
+   --  0x16 -- neutral jump
+   --  0x14 -- flying forward
+   --  0x18 -- flying backwards
+   --  0x1A -- high jump
+   --  0x26 -- knocked down
+   player.posture = memory.readbyte(player.base + 0x20E)
+   player.posture_ext = memory.readbyte(player.base + 0x209)
+   player.recovery_type = memory.readbyte(player.base + 0x207) -- 1 was hit on ground, 4 attacking normal, 5 attacking special, 6 was hit in air, 7 body hit ground, updates frame after hit
+   player.previous_standing_state = player.standing_state or 0
+   player.standing_state = memory.readbyte(player.base + 0x297)
+   player.is_standing = player.posture == 0x0 and player.pos_y == 0
+   player.is_crouching = player.posture == 0x20
+   player.is_jumping = jump_postures[player.posture] or false
+   player.is_airborne = player.is_jumping or (player.posture == 0 and player.pos_y ~= 0) -- maybe a memory location exists for distinguishing these states
+   player.is_grounded = player.is_standing or player.is_crouching or movement_postures[player.posture] or
+                            (player.posture == 0 and player.standing_state ~= 0 and player.pos_y == 0)
 
-    player.current_hit_id = 0
-    player.max_hit_id = 0
-    player.current_attack_hits = 0
-    player.current_attack_max_hits = 0
-    player.animation_action_count = 0
-    player.animation_miss_count = 0
-    player.animation_connection_count = 0
-    player.animation_hash_length = 10
-    player.self_chain = false
+   player.busy_flag = memory.readword(player.base + 0x3D1)
 
-    player.animation_frame = frame_number - player.animation_start_frame - player.animation_freeze_frames
-  end
---[[   if self_chain then
-    player.animation_hash_length = 8
-  end ]]
+   local previous_is_in_basic_action = player.is_in_basic_action or false
+   player.is_in_basic_action = player.action < 0xFF and previous_action < 0xFF -- this triggers one frame early than it should, so we delay it artificially
+   player.has_just_entered_basic_action = not previous_is_in_basic_action and player.is_in_basic_action
 
-    --debug
-  -- if not debug_settings.recording_framedata then
-    player.animation_frame_hash = string.sub(player.animation_frame_hash, 1, 8)
-                                      .. string.format("%02x", player.animation_action_count)
-  -- end
+   local previous_recovery_flag = player.recovery_flag or 1
+   player.recovery_flag = memory.readbyte(player.base + 0x3B)
+   player.has_just_ended_recovery =
+       player.standing_state <= 2 and previous_recovery_flag == 2 and player.recovery_flag ~= 2
 
---[[   if player.id == 1 then
-    print(frame_number, player.previous_input_capacity, player.input_capacity, player.animation_frame, player.is_attacking, tostring(self_cancel))
-  end ]]
-  if player.animation_frame_data and not debug_settings.recording_framedata then
-    --cap animation frame. animation frame will sometimes exceed # of frames in frame data for some long looping animations i.e. air recovery
-    player.animation_frame = math.min(player.animation_frame, #player.animation_frame_data.frames - 1)
+   player.additional_recovery_time = player.additional_recovery_time or 0
+   if player.recovery_time > player.previous_recovery_time then
+      player.additional_recovery_time = get_additional_recovery_delay(player.char_str, player.is_crouching)
+      player.is_in_recovery = true
+   elseif player.has_just_ended_recovery or player.recovery_flag == 1 then
+      player.is_in_recovery = false
+   end
 
-    player.current_attack_max_hits = player.animation_frame_data.max_hits or 0
-  end
+   if player.ends_recovery_next_frame then
+      player.has_just_ended_recovery = true
+      player.ends_recovery_next_frame = false
+   end
 
-  player.freeze_just_began = false
-  player.freeze_just_ended = false
-  if player.remaining_freeze_frames > 0 then
-    if player.previous_remaining_freeze_frames == 0 then
-      player.freeze_just_began = true
-    end
-    if not (player.animation_frame_data and not debug_settings.recording_framedata --debug
-            and player.animation_frame_data.frames
-            and player.animation_frame_data.frames[player.animation_frame + 1]
-            and player.animation_frame_data.frames[player.animation_frame + 1].bypass_freeze) then
-      player.animation_freeze_frames = player.animation_freeze_frames + 1
-    end
-  elseif player.remaining_freeze_frames == 0 and player.previous_remaining_freeze_frames > 0 then
-    player.freeze_just_ended = true
-  end
+   if player.additional_recovery_time > 0 then
+      player.has_just_ended_recovery = false
+      if player.recovery_time == 0 and player.previous_recovery_time == 0 then
+         player.additional_recovery_time = player.additional_recovery_time - 1
+         if player.additional_recovery_time <= 0 then player.ends_recovery_next_frame = true end
+      end
+   end
 
+   player.meter_gauge = memory.readbyte(player.addresses.gauge)
+   player.meter_count = memory.readbyte(player.addresses.meter_master)
 
-  player.pushback_start_frame = player.pushback_start_frame or 0
-  player.is_in_pushback = player.is_in_pushback or false
-  if player.freeze_just_began
-  or player.is_in_pushback and player.recovery_time == 0 then
-    player.is_in_pushback = false
-  end
+   player.superfreeze_decount = player.superfreeze_decount or 0
+   local previous_superfreeze_decount = player.superfreeze_decount
 
-  if player.freeze_just_ended and player.movement_type == 1 then
-    player.pushback_start_frame = frame_number
-    player.is_in_pushback = true
-  end
+   player.max_meter_gauge = memory.readbyte(player.addresses.max_meter_gauge)
+   player.max_meter_count = memory.readbyte(player.addresses.max_meter_count)
+   player.selected_sa = memory.readbyte(player.addresses.selected_sa) + 1
+   player.superfreeze_decount = memory.readbyte(player.addresses.superfreeze_decount)
 
-  if player.animation_frame_data ~= nil and not debug_settings.recording_framedata then
-    -- resync animation
-    local frames = player.animation_frame_data.frames
-    local current_frame = frames[player.animation_frame + 1]
-    if current_frame then
-      -- local target_hash = string.sub(player.animation_frame_hash, 1, player.animation_hash_length)
-      -- local current_hash = string.sub(current_frame.hash, 1, player.animation_hash_length)
-      local target_hash = player.animation_frame_hash
-      local current_hash = current_frame.hash
-      if current_hash ~= nil
-      and current_hash ~= target_hash
-      and (player.remaining_freeze_frames == 0 or player.freeze_just_began)
-      then
--- print(player.animation, target_hash, current_hash)
-        local resync_target, target_hash = find_resync_target(player, player.animation_frame_data, player.animation_frame_data.infinite_loop)
+   player.superfreeze_just_began = false
+   if player.superfreeze_decount > 0 and previous_superfreeze_decount == 0 then player.superfreeze_just_began = true end
 
-        if resync_target ~= -1 then
+   player.superfreeze_just_ended = false
+   if player.superfreeze_decount == 0 and previous_superfreeze_decount > 0 then player.superfreeze_just_ended = true end
 
-          if resync_target == 0 then
-            player.current_hit_id = 0
-            player.animation_action_count = 0
-            player.animation_connection_count = 0
-            player.animation_miss_count = 0
-            player.self_chain = false
-          end
---[[           if resync_target < player.animation_frame then
-            player.current_hit_id = 0
+   -- LIFE
+   player.life = memory.readbyte(player.addresses.life)
 
-            local hit_frames = player.animation_frame_data.hit_frames
-            for i, hit_frame in ipairs(hit_frames) do
-              if player.animation_frame > hit_frame[2]
-              or (player.animation_frame >= hit_frame[1]
-                and player.animation_connection_count >= i) then
-                player.current_hit_id = i
-              end
+   -- COMBO
+   player.previous_combo = player.combo or 0
+   if player.id == 1 then
+      player.combo = memory.readbyte(0x020696C5)
+   else
+      player.combo = memory.readbyte(0x0206961D)
+   end
+
+   -- NEXT HIT
+   player.damage_of_next_hit = memory.readbyte(player.addresses.damage_of_next_hit)
+   player.stun_of_next_hit = memory.readbyte(player.addresses.stun_of_next_hit)
+
+   -- BONUSES
+   player.damage_bonus = memory.readword(player.base + 0x43A)
+   player.stun_bonus = memory.readword(player.base + 0x43E)
+   player.defense_bonus = memory.readword(player.base + 0x440)
+
+   -- THROW
+   local previous_is_throwing = player.is_throwing or false
+   player.is_throwing = bit.rshift(player.movement_type2, 4) == 9
+   player.has_just_thrown = not previous_is_throwing and player.is_throwing
+
+   local _previous_being_thrown = player.is_being_thrown
+   player.is_being_thrown = memory.readbyte(player.base + 0x3CF) ~= 0
+   player.throw_countdown = player.throw_countdown or 0
+   player.previous_throw_countdown = player.throw_countdown
+   player.has_just_been_thrown = (not _previous_being_thrown) and player.is_being_thrown
+   player.throw_tech_countdown = player.throw_tech_countdown or 0
+   player.throw_tech_countdown = math.max(player.throw_tech_countdown - 1, 0)
+   if player.has_just_been_thrown then player.throw_tech_countdown = 4 end
+   player.is_in_throw_tech = player.action == 44 or player.action == 43 -- 44 attacker, 43 defender
+
+   local throw_countdown = memory.readbyte(player.base + 0x434)
+   if throw_countdown > player.previous_throw_countdown then
+      player.throw_countdown = throw_countdown + 2 -- air throw animations seems to not match the countdown (ie. Ibuki's Air Throw), let's add a few frames to it
+   else
+      player.throw_countdown = math.max(player.throw_countdown - 1, 0)
+   end
+
+   if player.debug_freeze_frames and player.remaining_freeze_frames > 0 then
+      print(string.format("%d - %d remaining freeze frames", frame_number, player.remaining_freeze_frames))
+   end
+
+   local previous_animation = player.animation or ""
+   player.animation = bit.tohex(memory.readword(player.base + 0x202), 4)
+
+   -- ATTACKING
+   local previous_is_attacking = player.is_attacking or false
+   local previous_attacking_state = player.character_state_byte == 4 or false
+   player.character_state_byte = memory.readbyte(player.base + 0x27) -- used to detect hugos clap, meat squasher, lariat, which do not set the is_attacking_byte
+   player.is_attacking_byte = memory.readbyte(player.base + 0x428)
+   player.is_attacking = player.is_attacking_byte > 0 or
+                             (attacking_byte_exception[player.char_str] and
+                                 attacking_byte_exception[player.char_str][player.animation])
+   player.is_attacking_ext_byte = memory.readbyte(player.base + 0x429)
+   player.is_attacking_ext = player.is_attacking_ext_byte > 0
+   player.has_just_attacked = player.is_attacking and not previous_is_attacking
+   if debug_state_variables and player.has_just_attacked then
+      print(string.format("%d - %s attacked", frame_number, player.prefix))
+   end
+
+   player.just_cancelled_into_attack = previous_attacking_state and player.character_state_byte == 4 and
+                                           player.has_animation_just_changed -- not the most accurate
+
+   -- ACTION
+   local previous_action_count = player.action_count or 0
+   player.action_count = memory.readbyte(player.base + 0x459)
+   player.has_just_acted = player.action_count > previous_action_count
+   if debug_state_variables and player.has_just_acted then
+      print(string.format("%d - %s acted (%d > %d)", frame_number, player.prefix, previous_action_count,
+                          player.action_count))
+   end
+
+   player.animation_action_count = player.animation_action_count or 0
+   if player.has_just_acted then player.animation_action_count = player.animation_action_count + 1 end
+
+   -- ANIMATION
+   player.animation_start_frame = player.animation_start_frame or frame_number
+   player.animation_freeze_frames = player.animation_freeze_frames or 0
+
+   player.animation_frame_data = nil
+   if frame_data[player.char_str] then player.animation_frame_data = frame_data[player.char_str][player.animation] end
+   player.has_animation_just_changed = previous_animation ~= player.animation
+   if debug_state_variables and player.has_animation_just_changed then
+      print(string.format("%d - %s animation changed (%s -> %s)", frame_number, player.prefix, previous_animation,
+                          player.animation))
+   end
+
+   player.animation_frame = frame_number - player.animation_start_frame - player.animation_freeze_frames
+
+   -- self chain. cr. lk chains, etc
+   if not debug_settings.recording_framedata then ---debug
+      if player.animation_frame_data and not player.has_animation_just_changed and
+          player.animation_frame_data.self_chain and player.animation_frame > 2 and
+          (player.has_just_attacked or (player.previous_input_capacity > 0 and player.input_capacity == 0)) then
+         player.self_chain = true -- look for self chain next frame
+      end
+   end
+
+   local function reset_animation()
+      player.animation_start_frame = frame_number
+      player.animation_freeze_frames = 0
+
+      player.current_hit_id = 0
+      player.max_hit_id = 0
+      player.animation_action_count = 0
+      player.animation_miss_count = 0
+      player.animation_connection_count = 0
+      player.animation_hash_length = 10
+      player.self_chain = false
+      player.animation_frame = frame_number - player.animation_start_frame - player.animation_freeze_frames
+   end
+
+   if player.has_animation_just_changed then reset_animation() end
+
+   -- debug
+   if not debug_settings.recording_framedata then
+      player.animation_frame_hash = string.sub(player.animation_frame_hash, 1, 8) ..
+                                        string.format("%02x", player.animation_action_count)
+   end
+
+   if player.animation_frame_data and not debug_settings.recording_framedata then
+      -- cap animation frame. animation frame will sometimes exceed # of frames in frame data for some long looping animations i.e. air recovery
+      player.animation_frame = math.min(player.animation_frame, #player.animation_frame_data.frames - 1)
+   end
+
+   player.freeze_just_began = false
+   player.freeze_just_ended = false
+   if player.remaining_freeze_frames > 0 then
+      if player.previous_remaining_freeze_frames == 0 then player.freeze_just_began = true end
+      if not (player.animation_frame_data and not debug_settings.recording_framedata -- debug
+      and player.animation_frame_data.frames and player.animation_frame_data.frames[player.animation_frame + 1] and
+          player.animation_frame_data.frames[player.animation_frame + 1].bypass_freeze) then
+         player.animation_freeze_frames = player.animation_freeze_frames + 1
+      end
+   elseif player.remaining_freeze_frames == 0 and player.previous_remaining_freeze_frames > 0 then
+      player.freeze_just_ended = true
+   end
+
+   player.pushback_start_frame = player.pushback_start_frame or 0
+   player.is_in_pushback = player.is_in_pushback or false
+   if player.freeze_just_began or player.is_in_pushback and player.recovery_time == 0 then
+      player.is_in_pushback = false
+   end
+
+   if player.freeze_just_ended and player.movement_type == 1 then
+      player.pushback_start_frame = frame_number
+      player.is_in_pushback = true
+   end
+
+   -- resync animation
+   if player.animation_frame_data ~= nil and not debug_settings.recording_framedata then
+      local frames = player.animation_frame_data.frames
+      local current_frame = frames[player.animation_frame + 1]
+      if current_frame then
+         local target_hash = player.animation_frame_hash
+         local current_hash = current_frame.hash
+         if current_hash ~= nil and current_hash ~= target_hash -- and (player.remaining_freeze_frames == 0 or player.freeze_just_began)
+         then
+            -- print(player.animation, target_hash, current_hash)
+            local resync_target, target_hash = find_resync_target(player, player.animation_frame_data,
+                                                                  player.animation_frame_data.infinite_loop)
+            if resync_target ~= -1 then
+               if player.self_chain and resync_target <= fd.get_first_hit_frame(player.char_str, player.animation) then
+                  reset_animation()
+               elseif resync_target == 0 then
+                  player.animation_action_count = 0
+                  player.animation_connection_count = 0
+                  player.animation_miss_count = 0
+                  player.self_chain = false
+               end
+               player.current_hit_id = 0
+               player.animation_frame = resync_target
+               player.animation_start_frame = frame_number - resync_target - player.animation_freeze_frames
             end
-            player.animation_action_count = 0
-            player.animation_connection_count = 0
-          end ]]
-          player.animation_frame = resync_target
-          player.animation_start_frame = frame_number - resync_target - player.animation_freeze_frames
-        end
+         end
       end
-    end
-  end
-  if player.has_just_acted then
-    player.last_act_animation = player.animation
-  end
+   end
+   if player.has_just_acted then player.last_act_animation = player.animation end
 
-
-  -- RECEIVED HITS/BLOCKS/PARRYS
-  local previous_total_received_hit_count = player.total_received_hit_count or nil
-  player.total_received_hit_count = memory.readword(player.base + 0x33E)
-  local total_received_hit_count_diff = 0
-  if previous_total_received_hit_count then
-    if previous_total_received_hit_count == 0xFFFF then
-      total_received_hit_count_diff = 1
-    else
-      total_received_hit_count_diff = player.total_received_hit_count - previous_total_received_hit_count
-    end
-  end
-
-  local previous_received_connection_marker = player.received_connection_marker or 0
-  player.received_connection_marker = memory.readword(player.base + 0x32E)
-  player.received_connection = previous_received_connection_marker == 0 and player.received_connection_marker ~= 0
-
-  player.last_received_connection_frame = player.last_received_connection_frame or 0
-  if player.received_connection then
-    player.last_received_connection_frame = frame_number
-  end
-
-  player.last_movement_type_change_frame = player.last_movement_type_change_frame or 0
-  if player.movement_type ~= previous_movement_type then
-    player.last_movement_type_change_frame = frame_number
-  end
-
-  -- is blocking/has just blocked/has just been hit/has_just_parried
-  player.blocking_id = memory.readbyte(player.base + 0x3D3)
-  player.has_just_blocked = false
-  if player.received_connection and player.received_connection_marker ~= 0xFFF1 and total_received_hit_count_diff == 0 then --0xFFF1
-    player.has_just_blocked = true
-    log(player.prefix, "fight", "block")
-    if debug_state_variables then
-      print(string.format("%d - %s blocked", frame_number, player.prefix))
-    end
-  end
-  player.is_blocking = player.blocking_id > 0 and player.blocking_id < 5 or player.has_just_blocked
-
-  player.has_just_been_hit = false
-
-  if total_received_hit_count_diff > 0 then
-    player.has_just_been_hit = true
-    log(player.prefix, "fight", "hit")
-  end
-
-  player.has_just_parried = false
-  if player.received_connection and player.received_connection_marker == 0xFFF1 and total_received_hit_count_diff == 0 then
-    player.has_just_parried = true
-    log(player.prefix, "fight", "parry")
-    if debug_state_variables then print(string.format("%d - %s parried", frame_number, player.prefix)) end
-  end
-
-  -- HITS
-  local previous_hit_count = player.hit_count or 0
-  player.hit_count = memory.readbyte(player.base + 0x189)
-  player.has_just_hit = player.hit_count > previous_hit_count
-  if player.has_just_hit then
-    log(player.prefix, "fight", "has hit")
-    if debug_state_variables then
-      print(string.format("%d - %s hit (%d > %d)", frame_number, player.prefix, previous_hit_count, player.hit_count))
-    end
-  end
-
-  -- BLOCKS
-  local previous_connected_action_count = player.connected_action_count or 0
-  local previous_blocked_count = previous_connected_action_count - previous_hit_count
-  player.connected_action_count = memory.readbyte(player.base + 0x17B)
-  local blocked_count = player.connected_action_count - player.hit_count
-  player.has_just_been_blocked = blocked_count > previous_blocked_count
-  if debug_state_variables and player.has_just_been_blocked then print(string.format("%d - %s blocked (%d > %d)", frame_number, player.prefix, previous_blocked_count, blocked_count)) end
-  
-  player.just_connected = player.just_connected or false
-  if player.connected_action_count > previous_connected_action_count then
-    player.just_connected =  true
-    player.animation_connection_count = player.animation_connection_count + 1
-  end
-  --for turning off hitboxes on hit like necro's drills
-  player.cooldown = math.max(player.cooldown - 1, 0)
-
-  --update hit id
-  if player.animation_frame_data then
-    local hit_frames = player.animation_frame_data.hit_frames
-    if hit_frames then
-      player.max_hit_id = #hit_frames
-  --[[     for i, hit_frame in ipairs(hit_frames) do
-        if player.animation_frame > hit_frame[2]
-        or (player.animation_frame >= hit_frame[1]
-          and player.animation_connection_count >= i) then
-
-          --make exceptions for infinite looping moves and yang tc
-          player.current_hit_id = i
-        end
-      end ]]
-
-      for i, hit_frame in ipairs(hit_frames) do
-        if i > player.current_hit_id then
-          if player.animation_frame > hit_frame[2] then
-            player.animation_miss_count = player.animation_miss_count + 1
-            player.current_hit_id = i
-          elseif (player.animation_frame >= hit_frame[1]
-          and player.animation_connection_count + player.animation_miss_count >= i) then
-            player.current_hit_id = i
-          end
-        end
+   -- RECEIVED HITS/BLOCKS/PARRYS
+   local previous_total_received_hit_count = player.total_received_hit_count or nil
+   player.total_received_hit_count = memory.readword(player.base + 0x33E)
+   local total_received_hit_count_diff = 0
+   if previous_total_received_hit_count then
+      if previous_total_received_hit_count == 0xFFFF then
+         total_received_hit_count_diff = 1
+      else
+         total_received_hit_count_diff = player.total_received_hit_count - previous_total_received_hit_count
       end
+   end
 
-      if player.just_connected then
-        --if infinite loop
-        player.current_attack_hits = player.current_attack_hits + 1
+   local previous_received_connection_marker = player.received_connection_marker or 0
+   player.received_connection_marker = memory.readword(player.addresses.received_connection_marker)
+   player.received_connection = previous_received_connection_marker == 0 and player.received_connection_marker ~= 0
+   player.received_connection_type = memory.readbyte(player.addresses.received_connection_type)
 
-        if player.animation_frame_data and player.animation_frame_data.cooldown then
-          player.cooldown = player.animation_frame_data.cooldown
-        end
+   player.last_received_connection_frame = player.last_received_connection_frame or 0
+   if player.received_connection then player.last_received_connection_frame = frame_number end
+
+   player.last_movement_type_change_frame = player.last_movement_type_change_frame or 0
+   if player.movement_type ~= previous_movement_type then player.last_movement_type_change_frame = frame_number end
+   -- is blocking/has just blocked/has just been hit/has_just_parried
+   player.blocking_id = memory.readbyte(player.base + 0x3D3)
+   player.has_just_blocked = false
+   if (player.received_connection and player.received_connection_marker ~= 0xFFF1 and total_received_hit_count_diff == 0) or
+       (player.received_connection and player.other.animation == "baac" and player.received_connection_marker == 0xFFF1 and
+           total_received_hit_count_diff == 0 and (player.action == 30 or player.action == 31)) then -- chun st.HP bug
+      player.has_just_blocked = true
+      log(player.prefix, "fight", "block")
+      if debug_state_variables then print(string.format("%d - %s blocked", frame_number, player.prefix)) end
+   end
+   local previous_is_blocking = player.is_blocking
+   player.is_blocking = player.blocking_id > 0 and player.blocking_id < 5 or player.has_just_blocked
+
+   player.has_just_been_hit = false
+
+   if total_received_hit_count_diff > 0 then
+      player.has_just_been_hit = true
+      log(player.prefix, "fight", "hit")
+   end
+
+   player.has_just_parried = false
+   if player.received_connection and player.received_connection_marker == 0xFFF1 and total_received_hit_count_diff == 0 then
+      player.has_just_parried = true
+      if player.other.animation == "baac" and player.action ~= 23 then player.has_just_parried = false end -- chun st.HP bug
+      log(player.prefix, "fight", "parry")
+      if debug_state_variables then print(string.format("%d - %s parried", frame_number, player.prefix)) end
+   end
+
+   player.has_just_red_parried = false
+   if previous_is_blocking and player.has_just_parried then
+      player.has_just_red_parried = true
+      player.has_just_ended_recovery = true
+   end
+
+   -- HITS
+   local previous_hit_count = player.hit_count or 0
+   player.hit_count = memory.readbyte(player.base + 0x189)
+   player.has_just_hit = player.hit_count > previous_hit_count
+   if player.has_just_hit then
+      log(player.prefix, "fight", "has hit")
+      if debug_state_variables then
+         print(string.format("%d - %s hit (%d > %d)", frame_number, player.prefix, previous_hit_count, player.hit_count))
       end
-    end
-  end
+   end
 
-  -- LANDING
-  local previous_is_in_jump_startup = player.is_in_jump_startup or false
-  player.is_in_jump_startup = player.movement_type2 == 0x0C and player.movement_type == 0x00 and not player.is_blocking
-  player.previous_standing_state = player.standing_state or 0
-  player.standing_state = memory.readbyte(player.base + 0x297)
-  player.has_just_landed = is_state_on_ground(player.standing_state, player) and not is_state_on_ground(player.previous_standing_state, player)
-  player.has_just_hit_ground = player.previous_standing_state ~= 0 and player.standing_state == 0 and player.pos_y == 0
-  if debug_state_variables and player.has_just_landed then print(string.format("%d - %s landed (%d > %d)", frame_number, player.prefix, player.previous_standing_state, player.standing_state)) end
-  if player.debug_standing_state and player.previous_standing_state ~= player.standing_state then print(string.format("%d - %s standing state changed (%d > %d)", frame_number, player.prefix, player.previous_standing_state, player.standing_state)) end
+   -- BLOCKS
+   local previous_connected_action_count = player.connected_action_count or 0
+   local previous_blocked_count = previous_connected_action_count - previous_hit_count
+   player.connected_action_count = memory.readbyte(player.base + 0x17B)
+   local blocked_count = player.connected_action_count - player.hit_count
+   player.has_just_been_blocked = blocked_count > previous_blocked_count
+   if debug_state_variables and player.has_just_been_blocked then
+      print(string.format("%d - %s blocked (%d > %d)", frame_number, player.prefix, previous_blocked_count,
+                          blocked_count))
+   end
 
-  -- AIR RECOVERY STATE
-  local debug_air_recovery = false
-  local previous_is_in_air_recovery = player.is_in_air_recovery or false
-  local r1 = memory.readbyte(player.base + 0x12F)
-  local r2 = memory.readbyte(player.base + 0x3C7)
-  player.is_in_air_recovery = player.standing_state == 0 and r1 == 0 and r2 == 0x06 and player.pos_y ~= 0
-  player.has_just_entered_air_recovery = not previous_is_in_air_recovery and player.is_in_air_recovery
+   player.just_connected = false
+   if player.connected_action_count > previous_connected_action_count then
+      player.just_connected = true
+      player.animation_connection_count = player.animation_connection_count + 1
+   end
 
-  if not previous_is_in_air_recovery and player.is_in_air_recovery then
-    log(player.prefix, "fight", string.format("air recovery 1"))
-    if debug_air_recovery then
-      print(string.format("%s entered air recovery", player.prefix))
-    end
-  end
-  if previous_is_in_air_recovery and not player.is_in_air_recovery then
-    log(player.prefix, "fight", string.format("air recovery 0"))
-    if debug_air_recovery then
-      print(string.format("%s exited air recovery", player.prefix))
-    end
-  end
+   local previous_animation_miss_count = player.animation_miss_count
 
+   -- update hit id
+   if player.animation_frame_data and player.superfreeze_decount == 0 then
+      local hit_frames = player.animation_frame_data.hit_frames
+      if hit_frames then
+         player.max_hit_id = #hit_frames
 
+         for i, hit_frame in ipairs(hit_frames) do
+            if i > player.current_hit_id then
+               if (player.animation_frame >= hit_frame[1] and player.animation_connection_count +
+                   player.animation_miss_count >= i) then
+                  player.current_hit_id = i
+               elseif player.animation_frame > hit_frame[2] then
+                  player.current_hit_id = i
+               end
+            end
+         end
+         for i, hit_frame in ipairs(hit_frames) do
+            if i > player.current_hit_id then
+               if player.animation_frame >= hit_frame[2] then
+                  player.animation_miss_count = player.animation_miss_count + 1
+               end
+            end
+         end
+      end
+   end
 
-  -- IS IDLE
-  local previous_is_idle = player.is_idle or false
-  player.idle_time = player.idle_time or 0
-  player.is_idle = (
-    not player.is_attacking and
---     not player.is_attacking_ext and --this seems to be set during some target combos. this value is never reset to 0 on some of elena's target combos'
-    not player.is_blocking and
-    not player.is_wakingup and
-    not player.is_fast_wakingup and
-    not player.is_being_thrown and
-    not player.is_in_jump_startup and
-    bit.band(player.busy_flag, 0xFF) == 0 and
-    player.recovery_time == player.previous_recovery_time and
-    player.remaining_freeze_frames == 0 and
-    player.input_capacity > 0
-  )
+   -- for turning off hitboxes on hit like necro's drills
+   if player.remaining_freeze_frames == 0 and not player.freeze_just_ended then
+      player.cooldown = math.max(player.cooldown - 1, 0)
+   end
 
-  player.just_recovered = player.previous_recovery_time > 0 and player.recovery_time == 0 and player.standing_state < 3
-  --[[
+   if player.just_connected then
+      if frame_data_meta[player.char_str] and frame_data_meta[player.char_str][player.animation] and
+          frame_data_meta[player.char_str][player.animation].cooldown then
+         player.cooldown = frame_data_meta[player.char_str][player.animation].cooldown
+      end
+   end
+
+   player.has_just_missed = false
+   if player.animation_miss_count > previous_animation_miss_count then player.has_just_missed = true end
+
+   -- LANDING
+   local previous_is_in_jump_startup = player.is_in_jump_startup or false
+   player.is_in_jump_startup = player.movement_type2 == 0x0C and player.movement_type == 0x00 and not player.is_blocking
+   player.has_just_landed = is_ground_state(player, player.standing_state) and
+                                not is_ground_state(player, player.previous_standing_state)
+   player.has_just_hit_ground = player.previous_standing_state ~= 0 and player.standing_state == 0 and player.pos_y == 0
+   if debug_state_variables and player.has_just_landed then
+      print(string.format("%d - %s landed (%d > %d)", frame_number, player.prefix, player.previous_standing_state,
+                          player.standing_state))
+   end
+   if player.debug_standing_state and player.previous_standing_state ~= player.standing_state then
+      print(string.format("%d - %s standing state changed (%d > %d)", frame_number, player.prefix,
+                          player.previous_standing_state, player.standing_state))
+   end
+
+   -- AIR RECOVERY STATE
+   local debug_air_recovery = false
+   local previous_is_in_air_recovery = player.is_in_air_recovery or false
+   local r1 = memory.readbyte(player.base + 0x12F)
+   local r2 = memory.readbyte(player.base + 0x3C7)
+   player.is_in_air_recovery = player.standing_state == 0 and r1 == 0 and r2 == 0x06 and player.pos_y ~= 0
+   player.has_just_entered_air_recovery = not previous_is_in_air_recovery and player.is_in_air_recovery
+
+   if not previous_is_in_air_recovery and player.is_in_air_recovery then
+      log(player.prefix, "fight", string.format("air recovery 1"))
+      if debug_air_recovery then print(string.format("%s entered air recovery", player.prefix)) end
+   end
+   if previous_is_in_air_recovery and not player.is_in_air_recovery then
+      log(player.prefix, "fight", string.format("air recovery 0"))
+      if debug_air_recovery then print(string.format("%s exited air recovery", player.prefix)) end
+   end
+
+   -- IS IDLE
+   local previous_is_idle = player.is_idle or false
+   player.idle_time = player.idle_time or 0
+   player.is_idle =
+       (not player.is_attacking and --     not player.is_attacking_ext and --this seems to be set during some target combos. this value is never reset to 0 on some of elena's target combos'
+       not player.is_blocking and not player.is_waking_up and not player.is_fast_wakingup and not player.is_being_thrown and
+           not player.is_in_jump_startup and bit.band(player.busy_flag, 0xFF) == 0 and player.recovery_time ==
+           player.previous_recovery_time and player.remaining_freeze_frames == 0 and player.input_capacity > 0)
+
+   player.just_became_idle = not previous_is_idle and player.is_idle
+   player.just_recovered = player.previous_recovery_time > 0 and player.recovery_time == 0 and player.standing_state < 3
+   --[[
   if player.id == 1 then
     print(string.format(
       "%d: %d, %d, %d, %d, %d, %d, %d, %04x, %d, %d, %04x",
-      to_bit(player.is_idle),
-      to_bit(player.is_attacking),
-      to_bit(player.is_attacking_ext),
-      to_bit(player.is_blocking),
-      to_bit(player.is_wakingup),
-      to_bit(player.is_fast_wakingup),
-      to_bit(player.is_being_thrown),
-      to_bit(player.is_in_jump_startup),
+      tools.to_bit(player.is_idle),
+      tools.to_bit(player.is_attacking),
+      tools.to_bit(player.is_attacking_ext),
+      tools.to_bit(player.is_blocking),
+      tools.to_bit(player.is_waking_up),
+      tools.to_bit(player.is_fast_wakingup),
+      tools.to_bit(player.is_being_thrown),
+      tools.to_bit(player.is_in_jump_startup),
       player.busy_flag,
       player.recovery_time,
       player.remaining_freeze_frames,
@@ -966,744 +945,822 @@ local function read_player_vars(player)
   end
   ]]
 
-  if player.is_idle then
-    player.idle_time = player.idle_time + 1
-  else
-    player.idle_time = 0
-  end
+   if player.is_idle then
+      player.idle_time = player.idle_time + 1
+   else
+      player.idle_time = 0
+   end
 
-  if previous_is_idle ~= player.is_idle then
-    log(player.prefix, "fight", string.format("idle %d", to_bit(player.is_idle)))
-  end
+   if previous_is_idle ~= player.is_idle then
+      log(player.prefix, "fight", string.format("idle %d", tools.to_bit(player.is_idle)))
+   end
 
+   if is_in_match then
 
-  if is_in_match then
+      -- WAKE UP
+      player.previous_can_fast_wakeup = player.can_fast_wakeup or 0
+      player.can_fast_wakeup = memory.readbyte(player.base + 0x402)
 
-    -- WAKE UP
-    player.previous_can_fast_wakeup = player.can_fast_wakeup or 0
-    player.can_fast_wakeup = memory.readbyte(player.base + 0x402)
+      local previous_fast_wakeup_flag = player.fast_wakeup_flag or 0
+      player.fast_wakeup_flag = memory.readbyte(player.base + 0x403)
 
-    local previous_fast_wakeup_flag = player.fast_wakeup_flag or 0
-    player.fast_wakeup_flag = memory.readbyte(player.base + 0x403)
+      player.is_flying_down_flag = memory.readbyte(player.base + 0x8D) -- does not reset to 0 after air reset landings, resets to 0 after jump start
 
-    local previous_is_flying_down_flag = player.is_flying_down_flag or 0
-    player.is_flying_down_flag = memory.readbyte(player.base + 0x8D) -- does not reset to 0 after air reset landings, resets to 0 after jump start
+      player.previous_is_wakingup = player.is_waking_up or false
+      player.is_waking_up = player.posture == 0x26
 
-    player.previous_is_wakingup = player.is_wakingup or false
-    player.is_wakingup = player.is_wakingup or false
-    player.wakeup_time = player.wakeup_time or 0
---[[     if previous_is_flying_down_flag == 1 and player.is_flying_down_flag == 0 and player.standing_state == 0 and
-      (
-        player.movement_type ~= 2 -- movement type 2 is hugo's running grab
-        and player.movement_type ~= 5 -- movement type 5 is ryu's reversal DP on landing
-      ) then ]]
-    if previous_posture ~= 0x26 and player.posture == 0x26 then
-      player.is_wakingup = true
-      player.is_past_wakeup_frame = false
-      player.wakeup_time = 0
-      player.wakeup_animation = player.animation
-    end
+      player.previous_is_fast_wakingup = player.is_fast_wakingup or false
+      player.is_fast_wakingup = player.is_fast_wakingup or false
 
-    player.previous_is_fast_wakingup = player.is_fast_wakingup or false
-    player.is_fast_wakingup = player.is_fast_wakingup or false
-    if player.is_wakingup and previous_fast_wakeup_flag == 1 and player.fast_wakeup_flag == 0 then
-      player.is_fast_wakingup = true
-      player.is_past_wakeup_frame = true
-      player.wakeup_time = 0
-      player.wakeup_animation = player.animation
-    end
+      if player.is_waking_up and previous_fast_wakeup_flag == 1 and player.fast_wakeup_flag == 0 then
+         player.is_fast_wakingup = true
+      end
+      if player.has_just_woke_up then player.is_fast_wakingup = false end
 
-    if player.previous_can_fast_wakeup ~= 0 and player.can_fast_wakeup == 0 then
-      player.is_past_wakeup_frame = true
-    end
+      player.has_just_started_wake_up = not player.previous_is_wakingup and player.is_waking_up
+      player.has_just_started_fast_wake_up = not player.previous_is_fast_wakingup and player.is_fast_wakingup
+      player.has_just_woke_up = player.previous_is_wakingup and not player.is_waking_up
 
-    if player.is_wakingup then
-      player.wakeup_time = player.wakeup_time + 1
-    end
+      if player.has_just_started_wake_up then log(player.prefix, "fight", string.format("wakeup 1")) end
+      if player.has_just_started_fast_wake_up then log(player.prefix, "fight", string.format("fwakeup 1")) end
+      if player.has_just_woke_up then log(player.prefix, "fight", string.format("wakeup 0")) end
+   end
 
-    if player.is_wakingup and previous_posture == 0x26 and player.posture ~= 0x26 then
-      player.is_wakingup = false
-      player.is_fast_wakingup = false
-      player.is_past_wakeup_frame = false
-    end
+   if not previous_is_in_jump_startup and player.is_in_jump_startup then
+      player.last_jump_startup_duration = 0
+      player.last_jump_startup_frame = frame_number
+   end
 
-    player.has_just_started_wake_up = not player.previous_is_wakingup and player.is_wakingup
-    player.has_just_started_fast_wake_up = not player.previous_is_fast_wakingup and player.is_fast_wakingup
-    player.has_just_woke_up = player.previous_is_wakingup and not player.is_wakingup
+   if player.is_in_jump_startup then player.last_jump_startup_duration = player.last_jump_startup_duration + 1 end
 
-    if player.has_just_started_wake_up then
-      log(player.prefix, "fight", string.format("wakeup 1"))
-    end
-    if player.has_just_started_fast_wake_up then
-      log(player.prefix, "fight", string.format("fwakeup 1"))
-    end
-    if player.has_just_woke_up then
-      log(player.prefix, "fight", string.format("wakeup 0"))
-    end
-  end
-
-  if not previous_is_in_jump_startup and player.is_in_jump_startup then
-    player.last_jump_startup_duration = 0
-    player.last_jump_startup_frame = frame_number
-  end
-
-  if player.is_in_jump_startup then
-    player.last_jump_startup_duration = player.last_jump_startup_duration + 1
-  end
-
-  -- TIMED SA
-  if character_specific[player.char_str].timed_sa[player.selected_sa] then
-    if player.superfreeze_decount > 0 then
-      player.is_in_timed_sa = true
-    elseif player.is_in_timed_sa and memory.readbyte(player.addresses.gauge) == 0 then
+   -- TIMED SA
+   if character_specific[player.char_str].timed_sa[player.selected_sa] then
+      if player.superfreeze_decount > 0 then
+         player.is_in_timed_sa = true
+      elseif player.is_in_timed_sa and memory.readbyte(player.addresses.gauge) == 0 then
+         player.is_in_timed_sa = false
+      end
+   else
       player.is_in_timed_sa = false
-    end
-  else
-    player.is_in_timed_sa = false
-  end
+   end
 
-  -- PARRY BUFFERS
-  -- global game consts
-  player.parry_forward = player.parry_forward or { name = "forward", max_validity = 10, max_cooldown = 23 }
-  player.parry_down = player.parry_down or { name = "down", max_validity = 10, max_cooldown = 23 }
-  player.parry_air = player.parry_air or { name = "air", max_validity = 7, max_cooldown = 20 }
-  player.parry_antiair = player.parry_antiair or { name = "anti_air", max_validity = 5, max_cooldown = 18 }
+   -- PARRY BUFFERS
+   -- global game consts
+   player.parry_forward = player.parry_forward or {name = "forward", max_validity = 10, max_cooldown = 21}
+   player.parry_down = player.parry_down or {name = "down", max_validity = 10, max_cooldown = 21}
+   player.parry_air = player.parry_air or {name = "air", max_validity = 7, max_cooldown = 18}
+   player.parry_antiair = player.parry_antiair or {name = "anti_air", max_validity = 5, max_cooldown = 16}
 
-  local function read_parry_state(parry_object, validity_addr, cooldown_addr)
-    parry_object.last_hit_or_block_frame = parry_object.last_hit_or_block_frame or 0
-    parry_object.last_attempt_frame = parry_object.last_attempt_frame or 0
-    if player.has_just_blocked or player.has_just_been_hit then
-      parry_object.last_hit_or_block_frame = frame_number
-    end
-    parry_object.last_validity_start_frame = parry_object.last_validity_start_frame or 0
-    parry_object.previous_validity_time = parry_object.validity_time or 0
-    parry_object.validity_time = memory.readbyte(validity_addr)
-    parry_object.cooldown_time = memory.readbyte(cooldown_addr)
-    if parry_object.cooldown_time == 0xFF then parry_object.cooldown_time = 0 end
-    if parry_object.previous_validity_time == 0 and parry_object.validity_time ~= 0 then
-      parry_object.last_validity_start_frame = frame_number
-      parry_object.delta = nil
-      parry_object.success = nil
-      parry_object.armed = true
-      log(player.prefix, "parry_training_"..parry_object.name, "armed")
-    end
+   local function read_parry_state(parry_object, validity_addr, cooldown_addr)
+      parry_object.last_hit_or_block_frame = parry_object.last_hit_or_block_frame or 0
+      parry_object.last_attempt_frame = parry_object.last_attempt_frame or 0
+      if player.has_just_blocked or player.has_just_been_hit then
+         parry_object.last_hit_or_block_frame = frame_number
+      end
+      parry_object.last_validity_start_frame = parry_object.last_validity_start_frame or 0
+      parry_object.previous_validity_time = parry_object.validity_time or 0
+      parry_object.validity_time = memory.readbyte(validity_addr)
+      parry_object.cooldown_time = memory.readbyte(cooldown_addr)
+      if parry_object.cooldown_time == 0xFF then parry_object.cooldown_time = 0 end
+      if parry_object.previous_validity_time == 0 and parry_object.validity_time ~= 0 then
+         parry_object.last_validity_start_frame = frame_number
+         parry_object.delta = nil
+         parry_object.success = nil
+         parry_object.armed = true
+         log(player.prefix, "parry_training_" .. parry_object.name, "armed")
+      end
 
-    -- check success/miss
-    if parry_object.armed then
-      local parry_type = get_parry_type(player)
+      -- check success/miss
+      if parry_object.armed then
+         local parry_type = get_parry_type(player)
 
-      if parry_type == "ground" and (parry_object.name == "forward" or parry_object.name == "down")
-      or parry_type == "air" and parry_object.name == "air"
-      or parry_type == "anti_air" and parry_object.name == "anti_air"
-      then
-        if player.has_just_parried then
-          -- right
-          parry_object.delta = frame_number - parry_object.last_validity_start_frame
-          parry_object.success = true
-          parry_object.armed = false
-          parry_object.last_hit_or_block_frame = 0
-          parry_object.last_attempt_frame = frame_number
-          log(player.prefix, "parry_training_"..parry_object.name, "success")
-        elseif parry_object.last_validity_start_frame == frame_number - 1 and (frame_number - parry_object.last_hit_or_block_frame) < 20 then
-          local delta = parry_object.last_hit_or_block_frame - frame_number + 1
-          if parry_object.delta == nil or math.abs(parry_object.delta) > math.abs(delta) then
-            parry_object.delta = delta
-            parry_object.success = false
+         if parry_type == "ground" and (parry_object.name == "forward" or parry_object.name == "down") or parry_type ==
+             "air" and parry_object.name == "air" or parry_type == "anti_air" and parry_object.name == "anti_air" then
             parry_object.last_attempt_frame = frame_number
-          end
-          log(player.prefix, "parry_training_"..parry_object.name, "late")
-        elseif player.has_just_blocked or player.has_just_been_hit then
-          local delta = frame_number - parry_object.last_validity_start_frame
-          if parry_object.delta == nil or math.abs(parry_object.delta) > math.abs(delta) then
-            parry_object.delta = delta
-            parry_object.success = false
-            parry_object.last_attempt_frame = frame_number
-          end
-          log(player.prefix, "parry_training_"..parry_object.name, "early")
-        end
+            if player.has_just_parried then
+               -- right
+               parry_object.delta = frame_number - parry_object.last_validity_start_frame
+               parry_object.success = true
+               parry_object.armed = false
+               parry_object.last_hit_or_block_frame = 0
+               log(player.prefix, "parry_training_" .. parry_object.name, "success")
+            elseif parry_object.last_validity_start_frame == frame_number - 1 and
+                (frame_number - parry_object.last_hit_or_block_frame) < 20 then
+               local delta = parry_object.last_hit_or_block_frame - frame_number + 1
+               if parry_object.delta == nil or math.abs(parry_object.delta) > math.abs(delta) then
+                  parry_object.delta = delta
+                  parry_object.success = false
+               end
+               log(player.prefix, "parry_training_" .. parry_object.name, "late")
+            elseif player.has_just_blocked or player.has_just_been_hit then
+               local delta = frame_number - parry_object.last_validity_start_frame
+               if parry_object.delta == nil or math.abs(parry_object.delta) > math.abs(delta) then
+                  parry_object.delta = delta
+                  parry_object.success = false
+               end
+               log(player.prefix, "parry_training_" .. parry_object.name, "early")
+            end
+         end
       end
-    end
-    if frame_number - parry_object.last_validity_start_frame > 30 and parry_object.armed then
-      parry_object.armed = false
-      parry_object.last_hit_or_block_frame = 0
-      log(player.prefix, "parry_training_"..parry_object.name, "reset")
-    end
-  end
+      if frame_number - parry_object.last_validity_start_frame > 30 and parry_object.armed then
+         parry_object.armed = false
+         parry_object.last_hit_or_block_frame = 0
+         log(player.prefix, "parry_training_" .. parry_object.name, "reset")
+      end
+   end
 
+   read_parry_state(player.parry_forward, player.addresses.parry_forward_validity_time,
+                    player.addresses.parry_forward_cooldown_time)
+   read_parry_state(player.parry_down, player.addresses.parry_down_validity_time,
+                    player.addresses.parry_down_cooldown_time)
+   read_parry_state(player.parry_air, player.addresses.parry_air_validity_time, player.addresses.parry_air_cooldown_time)
+   read_parry_state(player.parry_antiair, player.addresses.parry_antiair_validity_time,
+                    player.addresses.parry_antiair_cooldown_time)
 
+   -- LEGS STATE
+   -- global game consts
+   player.legs_state = {}
 
-  read_parry_state(player.parry_forward, player.addresses.parry_forward_validity_time, player.addresses.parry_forward_cooldown_time)
-  read_parry_state(player.parry_down, player.addresses.parry_down_validity_time, player.addresses.parry_down_cooldown_time)
-  read_parry_state(player.parry_air, player.addresses.parry_air_validity_time, player.addresses.parry_air_cooldown_time)
-  read_parry_state(player.parry_antiair, player.addresses.parry_antiair_validity_time, player.addresses.parry_antiair_cooldown_time)
+   player.legs_state.enabled = player.char_id == 16 -- chunli
+   player.legs_state.l_legs_count = memory.readbyte(player.addresses.kyaku_l_count)
+   player.legs_state.m_legs_count = memory.readbyte(player.addresses.kyaku_m_count)
+   player.legs_state.h_legs_count = memory.readbyte(player.addresses.kyaku_h_count)
+   player.legs_state.reset_time = memory.readbyte(player.addresses.kyaku_reset_time)
 
--- LEGS STATE
-  -- global game consts
-  player.legs_state = {}
+   -- CHARGE STATE
+   -- global game consts
+   player.charge_1 = player.charge_1 or {name = "Charge1", max_charge = 43, max_reset = 43, enabled = false}
+   player.charge_2 = player.charge_2 or {name = "Charge2", max_charge = 43, max_reset = 43, enabled = false}
+   player.charge_3 = player.charge_3 or {name = "Charge3", max_charge = 43, max_reset = 43, enabled = false}
 
-  player.legs_state.enabled = player.char_id == 16 -- chunli
-  player.legs_state.l_legs_count = memory.readbyte(player_addresses.kyaku_l_count)
-  player.legs_state.m_legs_count = memory.readbyte(player_addresses.kyaku_m_count)
-  player.legs_state.h_legs_count = memory.readbyte(player_addresses.kyaku_h_count)
-  player.legs_state.reset_time = memory.readbyte(player_addresses.kyaku_reset_time)
-
--- CHARGE STATE
-  -- global game consts
-  player.charge_1 = player.charge_1 or { name = "Charge1", max_charge = 43, max_reset = 43, enabled = false }
-  player.charge_2 = player.charge_2 or { name = "Charge2", max_charge = 43, max_reset = 43, enabled = false }
-  player.charge_3 = player.charge_3 or { name = "Charge3", max_charge = 43, max_reset = 43, enabled = false }
-
-
-  local function read_charge_state(charge_object, valid_charge, charge_addr, reset_addr)
-    if valid_charge == false then
-      charge_object.charge_time = 0
-      charge_object.reset_time = 0
-      charge_object.enabled = false
-      return
-    end
-    charge_object.overcharge = charge_object.overcharge or 0
-    charge_object.last_overcharge = charge_object.last_overcharge or 0
-    charge_object.overcharge_start = charge_object.overcharge_start or 0
-    charge_object.enabled = true
-    local previous_charge_time = charge_object.charge_time or 0
-    local previous_reset_time = charge_object.reset_time or 0
-    charge_object.charge_time = memory.readbyte(charge_addr)
-    charge_object.reset_time = memory.readbyte(reset_addr)
-    if charge_object.charge_time == 0xFF then charge_object.charge_time = 0 else charge_object.charge_time = charge_object.charge_time + 1 end
-    if charge_object.reset_time == 0xFF then charge_object.reset_time = 0 else charge_object.reset_time = charge_object.reset_time + 1 end
-    if charge_object.charge_time == 0 then
-      if charge_object.overcharge_start == 0 then
-        charge_object.overcharge_start = frame_number
+   local function read_charge_state(charge_object, valid_charge, charge_addr, reset_addr)
+      if valid_charge == false then
+         charge_object.charge_time = 0
+         charge_object.reset_time = 0
+         charge_object.enabled = false
+         return
+      end
+      charge_object.overcharge = charge_object.overcharge or 0
+      charge_object.last_overcharge = charge_object.last_overcharge or 0
+      charge_object.overcharge_start = charge_object.overcharge_start or 0
+      charge_object.enabled = true
+      local previous_charge_time = charge_object.charge_time or 0
+      local previous_reset_time = charge_object.reset_time or 0
+      charge_object.charge_time = memory.readbyte(charge_addr)
+      charge_object.reset_time = memory.readbyte(reset_addr)
+      if charge_object.charge_time == 0xFF then
+         charge_object.charge_time = 0
       else
-        charge_object.overcharge = frame_number - charge_object.overcharge_start
+         charge_object.charge_time = charge_object.charge_time + 1
       end
-    end
-    if charge_object.charge_time == charge_object.max_charge then
-      if charge_object.overcharge ~= 0 then charge_object.last_overcharge = charge_object.overcharge end
-        charge_object.overcharge = 0
-        charge_object.overcharge_start = 0
-    end -- reset overcharge
-  end
-
-  local charge_table = {
-    ["alex"] = { charge_1_addr = player.addresses.charge_1, reset_1_addr = player.addresses.charge_1_reset, name1 = "charge_slash_elbow", valid_1 = true,
-      charge_2_addr = player.addresses.charge_2, reset_2_addr = player.addresses.charge_2_reset, name2= "charge_air_stampede", valid_2 = true,
-      charge_3_addr = player.addresses.charge_3, reset_3_addr = player.addresses.charge_3_reset, valid_3 = false},
-    ["oro"] = { charge_1_addr = player.addresses.charge_3, reset_1_addr = player.addresses.charge_3_reset, name1= "charge_nichirin", valid_1 = true,
-      charge_2_addr = player.addresses.charge_5, reset_2_addr = player.addresses.charge_5_reset, name2= "charge_oniyanma", valid_2 = true,
-      charge_3_addr = player.addresses.charge_3, reset_3_addr = player.addresses.charge_3_reset, valid_3 = false},
-    ["urien"] = { charge_1_addr = player.addresses.charge_5, reset_1_addr = player.addresses.charge_5_reset, name1= "charge_chariot_tackle", valid_1 = true,
-      charge_2_addr = player.addresses.charge_2, reset_2_addr = player.addresses.charge_2_reset, name2= "charge_violence_kneedrop", valid_2 = true,
-      charge_3_addr = player.addresses.charge_4, reset_3_addr = player.addresses.charge_4_reset, name3= "charge_dangerous_headbutt", valid_3 = true},
-    ["remy"] = { charge_1_addr = player.addresses.charge_4, reset_1_addr = player.addresses.charge_4_reset, name1= "charge_lov_high", valid_1 = true,
-      charge_2_addr = player.addresses.charge_3, reset_2_addr = player.addresses.charge_3_reset, name2= "charge_lov_low", valid_2 = true,
-      charge_3_addr = player.addresses.charge_5, reset_3_addr = player.addresses.charge_5_reset, name3= "charge_rising_rage_flash", valid_3 = true},
-    ["q"] = { charge_1_addr = player.addresses.charge_5, reset_1_addr = player.addresses.charge_5_reset, name1= "charge_dashing_head_attack", valid_1 = true,
-      charge_2_addr = player.addresses.charge_4, reset_2_addr = player.addresses.charge_4_reset, name2= "charge_dashing_leg_attack", valid_2 = true,
-      charge_3_addr = player.addresses.charge_3, reset_3_addr = player.addresses.charge_3_reset, valid_3 = false},
-    ["chunli"] = { charge_1_addr = player.addresses.charge_5, reset_1_addr = player.addresses.charge_5_reset, name1= "charge_spinning_bird_kick", valid_1 = true,
-      charge_2_addr = player.addresses.charge_2, reset_2_addr = player.addresses.charge_2_reset, valid_2 = false,
-      charge_3_addr = player.addresses.charge_3, reset_3_addr = player.addresses.charge_3_reset, valid_3 = false}
-  }
-
-  if charge_table[player.char_str] then
-    player.charge_1.name= charge_table[player.char_str].name1
-    read_charge_state(player.charge_1, charge_table[player.char_str].valid_1, charge_table[player.char_str].charge_1_addr, charge_table[player.char_str].reset_1_addr)
-    if charge_table[player.char_str].name2 then player.charge_2.name= charge_table[player.char_str].name2 end
-    read_charge_state(player.charge_2, charge_table[player.char_str].valid_2, charge_table[player.char_str].charge_2_addr, charge_table[player.char_str].reset_2_addr)
-    if charge_table[player.char_str].name3 then player.charge_3.name= charge_table[player.char_str].name3 end
-    read_charge_state(player.charge_3, charge_table[player.char_str].valid_3, charge_table[player.char_str].charge_3_addr, charge_table[player.char_str].reset_3_addr)
-  else
-    read_charge_state(player.charge_1, false, player.addresses.charge_1, player.addresses.charge_1_reset)
-    read_charge_state(player.charge_2, false, player.addresses.charge_1, player.addresses.charge_1_reset)
-    read_charge_state(player.charge_3, false, player.addresses.charge_1, player.addresses.charge_1_reset)
-  end
-
-  --360 STATE
-  player.kaiten = player.kaiten or
-    {{name = "kaiten1", directions = {}, validity_time = 0, reset_time = 0, completed_360 = false, previous_completed_360 = false, max_reset = 31, enabled = false},
-    {name = "kaiten2", directions = {}, validity_time = 0, reset_time = 0, completed_360 = false, previous_completed_360 = false, max_reset = 31, enabled = false},
-    {name = "kaiten3", directions = {}, validity_time = 0, reset_time = 0, completed_360 = false, previous_completed_360 = false, max_reset = 31, enabled = false}}
-
-  local function read_kaiten_state(kaiten_object, valid_kaiten, kaiten_addr, reset_addr, kaiten_completed_addr, is_720)
-    if valid_kaiten == false then
-      kaiten_object.directions = {}
-      kaiten_object.validity_time = 0
-      kaiten_object.reset_time = 0
-      kaiten_object.completed_360 = false
-      kaiten_object.previous_completed_360 = false
-      kaiten_object.enabled = false
-      return
-    end
-
-    kaiten_object.enabled = true
-    local dir_data = memory.readbyte(kaiten_addr)
-
-    local left = bit.band(dir_data, 8) > 0 --technically forward/back not left/right
-    local right = bit.band(dir_data, 4) > 0
-    local down = bit.band(dir_data, 2) > 0
-    local up = bit.band(dir_data, 1) > 0
-
-    kaiten_object.completed_360 = memory.readbyte(kaiten_completed_addr) ~= 48
-    local just_completed_360 = dir_data == 15
-    if kaiten_object.name == "kaiten_moonsault_press" and not just_completed_360 then
-      if kaiten_object.completed_360 ~= kaiten_object.previous_completed_360 then
-        just_completed_360 = true
-      end
-    end
-    if just_completed_360 then
-      kaiten_object.validity_time = 9
-    elseif kaiten_object.validity_time > 0 then
-      kaiten_object.validity_time = kaiten_object.validity_time - 1
-    end
-    if is_720 then
-      if not kaiten_object.completed_360 then
-        if kaiten_object.validity_time > 0 then
-          kaiten_object.directions = {true, true, true, true, true, true, true, true}
-        else
-          kaiten_object.directions = {down, left, right, up, false, false, false, false}
-        end
+      if charge_object.reset_time == 0xFF then
+         charge_object.reset_time = 0
       else
-        kaiten_object.directions = {true, true, true, true, down, left, right, up}
+         charge_object.reset_time = charge_object.reset_time + 1
       end
-    else
-      if kaiten_object.validity_time > 0 then
-        kaiten_object.directions = {true, true, true, true}
+      if charge_object.charge_time == 0 then
+         if charge_object.overcharge_start == 0 then
+            charge_object.overcharge_start = frame_number
+         else
+            charge_object.overcharge = frame_number - charge_object.overcharge_start
+         end
+      end
+      if charge_object.charge_time == charge_object.max_charge then
+         if charge_object.overcharge ~= 0 then charge_object.last_overcharge = charge_object.overcharge end
+         charge_object.overcharge = 0
+         charge_object.overcharge_start = 0
+      end -- reset overcharge
+   end
+
+   local charge_table = {
+      ["alex"] = {
+         charge_1_addr = player.addresses.charge_1,
+         reset_1_addr = player.addresses.charge_1_reset,
+         name1 = "charge_slash_elbow",
+         valid_1 = true,
+         charge_2_addr = player.addresses.charge_2,
+         reset_2_addr = player.addresses.charge_2_reset,
+         name2 = "charge_air_stampede",
+         valid_2 = true,
+         charge_3_addr = player.addresses.charge_3,
+         reset_3_addr = player.addresses.charge_3_reset,
+         valid_3 = false
+      },
+      ["oro"] = {
+         charge_1_addr = player.addresses.charge_3,
+         reset_1_addr = player.addresses.charge_3_reset,
+         name1 = "charge_nichirin",
+         valid_1 = true,
+         charge_2_addr = player.addresses.charge_5,
+         reset_2_addr = player.addresses.charge_5_reset,
+         name2 = "charge_oniyanma",
+         valid_2 = true,
+         charge_3_addr = player.addresses.charge_3,
+         reset_3_addr = player.addresses.charge_3_reset,
+         valid_3 = false
+      },
+      ["urien"] = {
+         charge_1_addr = player.addresses.charge_5,
+         reset_1_addr = player.addresses.charge_5_reset,
+         name1 = "charge_chariot_tackle",
+         valid_1 = true,
+         charge_2_addr = player.addresses.charge_2,
+         reset_2_addr = player.addresses.charge_2_reset,
+         name2 = "charge_violence_kneedrop",
+         valid_2 = true,
+         charge_3_addr = player.addresses.charge_4,
+         reset_3_addr = player.addresses.charge_4_reset,
+         name3 = "charge_dangerous_headbutt",
+         valid_3 = true
+      },
+      ["remy"] = {
+         charge_1_addr = player.addresses.charge_4,
+         reset_1_addr = player.addresses.charge_4_reset,
+         name1 = "charge_lov_high",
+         valid_1 = true,
+         charge_2_addr = player.addresses.charge_3,
+         reset_2_addr = player.addresses.charge_3_reset,
+         name2 = "charge_lov_low",
+         valid_2 = true,
+         charge_3_addr = player.addresses.charge_5,
+         reset_3_addr = player.addresses.charge_5_reset,
+         name3 = "charge_rising_rage_flash",
+         valid_3 = true
+      },
+      ["q"] = {
+         charge_1_addr = player.addresses.charge_5,
+         reset_1_addr = player.addresses.charge_5_reset,
+         name1 = "charge_dashing_head_attack",
+         valid_1 = true,
+         charge_2_addr = player.addresses.charge_4,
+         reset_2_addr = player.addresses.charge_4_reset,
+         name2 = "charge_dashing_leg_attack",
+         valid_2 = true,
+         charge_3_addr = player.addresses.charge_3,
+         reset_3_addr = player.addresses.charge_3_reset,
+         valid_3 = false
+      },
+      ["chunli"] = {
+         charge_1_addr = player.addresses.charge_5,
+         reset_1_addr = player.addresses.charge_5_reset,
+         name1 = "charge_spinning_bird_kick",
+         valid_1 = true,
+         charge_2_addr = player.addresses.charge_2,
+         reset_2_addr = player.addresses.charge_2_reset,
+         valid_2 = false,
+         charge_3_addr = player.addresses.charge_3,
+         reset_3_addr = player.addresses.charge_3_reset,
+         valid_3 = false
+      }
+   }
+
+   if charge_table[player.char_str] then
+      if charge_table[player.char_str].name1 then player.charge_1.name = charge_table[player.char_str].name1 end
+      read_charge_state(player.charge_1, charge_table[player.char_str].valid_1,
+                        charge_table[player.char_str].charge_1_addr, charge_table[player.char_str].reset_1_addr)
+      if charge_table[player.char_str].name2 then player.charge_2.name = charge_table[player.char_str].name2 end
+      read_charge_state(player.charge_2, charge_table[player.char_str].valid_2,
+                        charge_table[player.char_str].charge_2_addr, charge_table[player.char_str].reset_2_addr)
+      if charge_table[player.char_str].name3 then player.charge_3.name = charge_table[player.char_str].name3 end
+      read_charge_state(player.charge_3, charge_table[player.char_str].valid_3,
+                        charge_table[player.char_str].charge_3_addr, charge_table[player.char_str].reset_3_addr)
+   else
+      read_charge_state(player.charge_1, false, player.addresses.charge_1, player.addresses.charge_1_reset)
+      read_charge_state(player.charge_2, false, player.addresses.charge_1, player.addresses.charge_1_reset)
+      read_charge_state(player.charge_3, false, player.addresses.charge_1, player.addresses.charge_1_reset)
+   end
+
+   -- 360 STATE
+   player.kaiten = player.kaiten or {
+      {
+         name = "kaiten1",
+         directions = {},
+         validity_time = 0,
+         reset_time = 0,
+         completed_360 = false,
+         previous_completed_360 = false,
+         max_reset = 31,
+         enabled = false
+      }, {
+         name = "kaiten2",
+         directions = {},
+         validity_time = 0,
+         reset_time = 0,
+         completed_360 = false,
+         previous_completed_360 = false,
+         max_reset = 31,
+         enabled = false
+      }, {
+         name = "kaiten3",
+         directions = {},
+         validity_time = 0,
+         reset_time = 0,
+         completed_360 = false,
+         previous_completed_360 = false,
+         max_reset = 31,
+         enabled = false
+      }
+   }
+
+   local function read_kaiten_state(kaiten_object, valid_kaiten, kaiten_addr, reset_addr, kaiten_completed_addr, is_720)
+      if valid_kaiten == false then
+         kaiten_object.directions = {}
+         kaiten_object.validity_time = 0
+         kaiten_object.reset_time = 0
+         kaiten_object.completed_360 = false
+         kaiten_object.previous_completed_360 = false
+         kaiten_object.enabled = false
+         return
+      end
+
+      kaiten_object.enabled = true
+      local dir_data = memory.readbyte(kaiten_addr)
+
+      local left = bit.band(dir_data, 8) > 0 -- technically forward/back not left/right
+      local right = bit.band(dir_data, 4) > 0
+      local down = bit.band(dir_data, 2) > 0
+      local up = bit.band(dir_data, 1) > 0
+
+      kaiten_object.completed_360 = memory.readbyte(kaiten_completed_addr) ~= 48
+      local just_completed_360 = dir_data == 15
+      if kaiten_object.name == "kaiten_moonsault_press" and not just_completed_360 then
+         if kaiten_object.completed_360 ~= kaiten_object.previous_completed_360 then just_completed_360 = true end
+      end
+      if just_completed_360 then
+         kaiten_object.validity_time = 9
+      elseif kaiten_object.validity_time > 0 then
+         kaiten_object.validity_time = kaiten_object.validity_time - 1
+      end
+      if is_720 then
+         if not kaiten_object.completed_360 then
+            if kaiten_object.validity_time > 0 then
+               kaiten_object.directions = {true, true, true, true, true, true, true, true}
+            else
+               kaiten_object.directions = {down, left, right, up, false, false, false, false}
+            end
+         else
+            kaiten_object.directions = {true, true, true, true, down, left, right, up}
+         end
       else
-        kaiten_object.directions = {down, left, right, up}
+         if kaiten_object.validity_time > 0 then
+            kaiten_object.directions = {true, true, true, true}
+         else
+            kaiten_object.directions = {down, left, right, up}
+         end
       end
-    end
 
-    kaiten_object.previous_completed_360 = kaiten_object.completed_360
-    kaiten_object.reset_time = math.max(memory.readbyte(reset_addr) - 1, 0)
-  end
+      kaiten_object.previous_completed_360 = kaiten_object.completed_360
+      kaiten_object.reset_time = math.max(memory.readbyte(reset_addr) - 1, 0)
+   end
 
-  local kaiten_table = {
-    ["alex"] = {
-      {kaiten_address = player.addresses.kaiten_1, reset_address = player.addresses.kaiten_1_reset_addr, kaiten_completed = player.addresses.kaiten_completed_360,  name = "kaiten_hyper_bomb", valid = true}
-    },
-    ["hugo"] = {
-      {kaiten_address = player.addresses.kaiten_1, reset_address = player.addresses.kaiten_1_reset_addr, kaiten_completed = player.addresses.kaiten_completed_360,  name= "kaiten_moonsault_press", valid = true},
-      {kaiten_address = player.addresses.kaiten_2, reset_address = player.addresses.kaiten_2_reset_addr, kaiten_completed = player.addresses.kaiten_completed_360,  name= "kaiten_meat_squasher", valid = true},
-      {kaiten_address = player.addresses.kaiten_1, reset_address = player.addresses.kaiten_1_reset_addr, kaiten_completed = player.addresses.kaiten_completed_360, name= "kaiten_gigas_breaker", valid = true, is_720 = true}
-    }
-  }
+   local kaiten_table = {
+      ["alex"] = {
+         {
+            kaiten_address = player.addresses.kaiten_1,
+            reset_address = player.addresses.kaiten_1_reset,
+            kaiten_completed = player.addresses.kaiten_completed_360,
+            name = "kaiten_hyper_bomb",
+            valid = true
+         }
+      },
+      ["hugo"] = {
+         {
+            kaiten_address = player.addresses.kaiten_1,
+            reset_address = player.addresses.kaiten_1_reset,
+            kaiten_completed = player.addresses.kaiten_completed_360,
+            name = "kaiten_moonsault_press",
+            valid = true
+         }, {
+            kaiten_address = player.addresses.kaiten_2,
+            reset_address = player.addresses.kaiten_2_reset,
+            kaiten_completed = player.addresses.kaiten_completed_360,
+            name = "kaiten_meat_squasher",
+            valid = true
+         }, {
+            kaiten_address = player.addresses.kaiten_1,
+            reset_address = player.addresses.kaiten_1_reset,
+            kaiten_completed = player.addresses.kaiten_completed_360,
+            name = "kaiten_gigas_breaker",
+            valid = true,
+            is_720 = true
+         }
+      }
+   }
 
-
-  if kaiten_table[player.char_str] then
-    for i = 1, #player.kaiten do
-      local kaiten = kaiten_table[player.char_str][i]
-      if kaiten then
-        player.kaiten[i].name = kaiten.name
-        read_kaiten_state(player.kaiten[i], kaiten.valid, kaiten.kaiten_address, kaiten.reset_address, kaiten.kaiten_completed_addr, kaiten.is_720)
-      else
-        player.kaiten[i] = {name = "kaiten" .. tostring(i), enabled = false}
+   if kaiten_table[player.char_str] then
+      for i = 1, #player.kaiten do
+         local kaiten = kaiten_table[player.char_str][i]
+         if kaiten then
+            player.kaiten[i].name = kaiten.name
+            read_kaiten_state(player.kaiten[i], kaiten.valid, kaiten.kaiten_address, kaiten.reset_address,
+                              kaiten.kaiten_completed, kaiten.is_720)
+         else
+            player.kaiten[i] = {name = "kaiten" .. tostring(i), enabled = false}
+         end
       end
-    end
-  end
+   end
 
+   -- STUN
+   player.stun_bar_max = memory.readbyte(player.addresses.stun_bar_max)
+   player.stun_activate = memory.readbyte(player.addresses.stun_activate)
+   player.stun_timer = memory.readbyte(player.addresses.stun_timer)
+   player.stun_bar_char = memory.readbyte(player.addresses.stun_bar_char)
+   player.stun_bar_mantissa = memory.readbyte(player.addresses.stun_bar_mantissa)
+   player.stun_bar = player.stun_bar_char + player.stun_bar_mantissa / 256
+   player.stun_just_began = false
+   player.stun_just_ended = false
 
-  -- STUN
-  player.stun_bar_max = memory.readbyte(player.addresses.stun_bar_max)
-  player.stun_activate = memory.readbyte(player.addresses.stun_activate)
-  player.stun_timer = memory.readbyte(player.addresses.stun_timer)
-  player.stun_bar_char = memory.readbyte(player.addresses.stun_bar_char)
-  player.stun_bar_mantissa = memory.readbyte(player.addresses.stun_bar_mantissa)
-  player.stun_bar = player.stun_bar_char + player.stun_bar_mantissa / 256
-  player.stun_just_began = false
-  player.stun_just_ended = false
+   -- for detecting stun from savestate
+   if player.previous_stun_timer and player.stun_timer < player.previous_stun_timer and player.stun_timer > 0 and
+       player.stun_timer < 250 then player.is_stunned = true end
+   if player.stun_activate == 1 then
+      player.is_stunned = true
+      if not player.previous_stunned then player.stun_just_began = true end
+   elseif player.is_stunned then
+      if player.received_connection or player.is_being_thrown or player.stun_timer == 0 or player.stun_timer >= 250 then
+         player.is_stunned = false
+         player.stun_just_ended = true
+      end
+   end
 
-  --for detecting stun from savestate
-  if player.previous_stun_timer and player.stun_timer < player.previous_stun_timer
-  and player.stun_timer > 0 and player.stun_timer < 250 then
-    player.is_stunned = true
-  end
-  if player.stun_activate == 1 then
-    player.is_stunned = true
-    if not player.previous_stunned then
-      player.stun_just_began = true
-    end
-  elseif player.is_stunned then
-    if player.received_connection
-    or player.is_being_thrown
-    or player.stun_timer == 0
-    or player.stun_timer >= 250 then
-      player.is_stunned = false
-      player.stun_just_ended = true
-    end
-  end
+   player.previous_stunned = player.is_stunned
+   player.previous_stun_timer = player.stun_timer
 
-  player.previous_stunned = player.is_stunned
-  player.previous_stun_timer = player.stun_timer
+   -- THROW INVULNERABILITY
+   player.throw_invulnerability_cooldown = math.max(player.throw_invulnerability_cooldown - 1, 0)
 
+   if player.has_just_woke_up then
+      player.throw_invulnerability_cooldown = 7
+   elseif player.has_just_ended_recovery then
+      player.throw_invulnerability_cooldown = 6
+   elseif player.is_in_recovery and player.recovery_time > 0 then
+      player.throw_invulnerability_cooldown = player.recovery_time + 7 + player.additional_recovery_time
+   elseif player.remaining_wakeup_time > 0 then
+      player.throw_invulnerability_cooldown = player.remaining_wakeup_time + 7
+   end
 end
+
+-- oro's throw's and nichirin
+local tengu_stone_invalid_anim = {["72c8"] = true, ["7438"] = true}
 
 local function update_tengu_stones()
-  if not (P1 and P1.char_str == "oro" and P1.selected_sa == 3)
-  and not (P2 and P2.char_str == "oro" and P2.selected_sa == 3)
-  then
-    return
-  end
+   if not (P1 and P1.char_str == "oro" and P1.selected_sa == 3) and
+       not (P2 and P2.char_str == "oro" and P2.selected_sa == 3) then return end
 
-  for _, proj in pairs(projectiles) do
-    if proj.projectile_type == "00_tenguishi" then
-      proj.tengu_state = memory.readbyte(proj.base + 41)
-      if proj.tengu_attack_queued then
-        if proj.tengu_state == 3 then
-          proj.tengu_attack_queued = false
-        end
-      else
-        if proj.tengu_state ~= 3 then
-          proj.cooldown = 99
-        else
-          proj.cooldown = 0
-        end
+   for _, proj in pairs(projectiles) do
+      if proj.projectile_type == "00_tenguishi" then
+         proj.tengu_state = memory.readbyte(proj.base + 41)
+         if proj.tengu_attack_queued then
+            if proj.tengu_state == 3 then proj.tengu_attack_queued = false end
+         else
+            if proj.tengu_state ~= 3 then
+               proj.cooldown = 99
+            else
+               proj.cooldown = 0
+            end
+         end
       end
-    end
-  end
+   end
 
-  for _, player in ipairs(player_objects) do
-    if player.char_str == "oro" then
-      if player.has_just_attacked then
-        local fdata = player.animation_frame_data
-        if fdata then
-          local next_hit_id = player.current_hit_id + 1
-          if fdata.hit_frames and fdata.hit_frames[next_hit_id] then
-            player.tengu_connect_frame = frame_number + fdata.hit_frames[next_hit_id][1] - player.animation_frame
-          end
-        end
+   for _, player in ipairs(player_objects) do
+      if player.char_str == "oro" then
+         if player.has_just_attacked and not tengu_stone_invalid_anim[player.animation] then
+            local fdata = player.animation_frame_data
+            if fdata then
+               local next_hit_id = player.current_hit_id + 1
+               if fdata.hit_frames and fdata.hit_frames[next_hit_id] then
+                  player.tengu_connect_frame = frame_number + fdata.hit_frames[next_hit_id][1] - player.animation_frame
+               end
+            end
+         end
+         if player.tengu_connect_frame and player.tengu_connect_frame > frame_number then
+            local delta = player.tengu_connect_frame - frame_number
+            for _, proj in pairs(projectiles) do
+               if proj.emitter_id == player.id and proj.projectile_type == "00_tenguishi" and
+                   (proj.tengu_state == 1 or proj.tengu_state == 2) and not proj.tengu_attack_queued then
+                  proj.cooldown = delta
+                  proj.tengu_attack_queued = true
+               end
+            end
+         end
       end
-      if player.tengu_connect_frame and player.tengu_connect_frame > frame_number then
-        local delta = player.tengu_connect_frame - frame_number
-        for _, proj in pairs(projectiles) do
-          if proj.emitter_id == player.id
-          and proj.projectile_type == "00_tenguishi"
-          and (proj.tengu_state == 1 or proj.tengu_state == 2)
-          and not proj.tengu_attack_queued
-          then
-            proj.cooldown = delta
-            proj.tengu_attack_queued = true
-          end
-        end
-      end
-    end
-  end
+   end
 
 end
 
+local seiei_initial_frame_id = 0x3f46
 local function update_seieienbu()
-  if not (P1 and P1.char_str == "yang" and P1.selected_sa == 3)
-  and not (P2 and P2.char_str == "yang" and P2.selected_sa == 3)
-  then
-    return
-  end
-  for _, player in ipairs(player_objects) do
-    if player.char_str == "yang" and player.is_in_timed_sa and player.has_just_attacked then
-      local fdata = player.animation_frame_data
-      if fdata then
-        local seiei_projectiles = {}
-        for _, proj in pairs(projectiles) do
-          if proj.emitter_id == player.id
-          and proj.projectile_type == "00_seieienbu"
-          then
-            table.insert(seiei_projectiles, proj)
-            proj.cooldown = 10
-            proj.seiei_animation = player.animation
-            proj.seiei_frame = player.animation_frame
-            -- insert_projectile(player, motion_data, predicted_hit)
-          end
-        end
+   if not (P1 and P1.char_str == "yang" and P1.selected_sa == 3) and
+       not (P2 and P2.char_str == "yang" and P2.selected_sa == 3) then return end
+
+   for _, player in ipairs(player_objects) do
+      if player.superfreeze_just_began and player.char_str == "yang" and player.selected_sa == 3 then
+         player.seiei_init = true
       end
-    end
-  end
+   end
+   for _, player in ipairs(player_objects) do
+      if player.char_str == "yang" and player.is_in_timed_sa then
+         local seiei_projectiles = {}
+         for _, proj in pairs(projectiles) do
+            if proj.emitter_id == player.id and proj.projectile_type == "00_seieienbu" then
+               if not proj.seiei_clone_order then proj.seiei_clone_order = 0 end
+               table.insert(seiei_projectiles, proj)
+            end
+         end
+         -- determine which clone acts first/second
+         if player.seiei_init then
+            local found = false
+            for _, seiei_proj in pairs(seiei_projectiles) do
+               if seiei_proj.animation_frame_id ~= seiei_initial_frame_id then
+                  seiei_proj.seiei_clone_order = 1
+                  player.seiei_init = false
+                  found = true
+               end
+            end
+            if found then
+               for _, seiei_proj in pairs(seiei_projectiles) do
+                  if seiei_proj.seiei_clone_order ~= 1 then seiei_proj.seiei_clone_order = 2 end
+               end
+            end
+         end
+         if player.has_just_attacked and player.animation_frame_data then
+            for _, seiei_proj in pairs(seiei_projectiles) do
+               seiei_proj.cooldown = 10 * seiei_proj.seiei_clone_order
+               seiei_proj.seiei_animation = player.animation
+               seiei_proj.seiei_frame = player.animation_frame
+            end
+         end
+      end
+   end
+end
+
+local function update_projectile_cooldown(obj)
+   local fdmeta = frame_data_meta["projectiles"][obj.projectile_type]
+   if fdmeta then
+      if fdmeta.cooldown then obj.cooldown = fdmeta.cooldown end
+      if fdmeta.hit_period then
+         obj.next_hit_at_lifetime = obj.remaining_lifetime -
+                                        (fdmeta.hit_period - (obj.start_lifetime - 1 - obj.remaining_lifetime) %
+                                            fdmeta.hit_period)
+      end
+   end
 end
 
 local max_objects = 30
 local function read_projectiles()
-  projectiles = projectiles or {}
+   projectiles = projectiles or {}
 
-  -- flag everything as expired by default, we will reset the flag it we update the projectile
-  for id, obj in pairs(projectiles) do
-    obj.expired = true
-    if obj.placeholder and obj.animation_start_frame <= frame_number then
-      projectiles[id] = nil
-    end
-  end
+   -- flag everything as expired by default, we will reset the flag it we update the projectile
+   for id, obj in pairs(projectiles) do
+      obj.expired = true
+      if obj.placeholder and obj.animation_start_frame <= frame_number then projectiles[id] = nil end
+   end
 
-  -- how we recover hitboxes data for each projectile is taken almost as is from the cps3-hitboxes.lua script
-  --object = {initial = 0x02028990, index = 0x02068A96},
-  local index = 0x02068A96
-  local initial = 0x02028990
-  local list = 3
-  local obj_index = memory.readwordsigned(index + (list * 2))
+   -- how we recover hitboxes data for each projectile is taken almost as is from the cps3-hitboxes.lua script
+   -- object = {initial = 0x02028990, index = 0x02068A96},
+   local index = 0x02068A96
+   local initial = 0x02028990
+   local list = 3
+   local obj_index = memory.readwordsigned(index + (list * 2))
 
-  local obj_slot = 1
-  while obj_slot <= max_objects and obj_index ~= -1 do
-    local base = initial + bit.lshift(obj_index, 11)
-    local id = string.format("%08X", base)
-    local obj = projectiles[id]
-    local is_initialization = false
-    if obj == nil then
-       obj = {base = base, projectile = obj_slot}
-       obj.id = id
-       obj.type = "projectile"
-       obj.is_forced_one_hit = true
-       obj.lifetime = 0
-       obj.start_lifetime = 0
-       obj.remaining_lifetime = 0
-       obj.has_activated = false
-       obj.animation_start_frame = frame_number
-       obj.animation_freeze_frames = 0
-       obj.cooldown = 0
-       obj.alive = true
-       obj.placeholder = false
-       is_initialization = true
-    end
-    if read_game_object(obj) and not obj.placeholder then
-      obj.emitter_id = memory.readbyte(obj.base + 0x2) + 1
-    
-      if is_initialization then
-        obj.initial_flip_x = obj.flip_x
-        obj.emitter_animation = player_objects[obj.emitter_id].animation
-      else
-        obj.lifetime = obj.lifetime + 1
+   local obj_slot = 1
+   while obj_slot <= max_objects and obj_index ~= -1 do
+      local base = initial + bit.lshift(obj_index, 11)
+      local id = string.format("%08X", base)
+      local obj = projectiles[id]
+      local is_initialization = false
+      if obj == nil then
+         obj = {base = base, projectile = obj_slot}
+         obj.id = id
+         obj.type = "projectile"
+         obj.is_forced_one_hit = true
+         obj.lifetime = 0
+         obj.start_lifetime = 0
+         obj.remaining_lifetime = 0
+         obj.has_activated = false
+         obj.animation_start_frame = frame_number
+         obj.animation_freeze_frames = 0
+         obj.cooldown = 0
+         obj.alive = true
+         obj.placeholder = false
+         is_initialization = true
       end
 
-      if #obj.boxes > 0 then
-        obj.has_activated = true
-      end
+      if read_game_object(obj) and not obj.placeholder then
+         obj.emitter_id = memory.readbyte(obj.base + 0x2) + 1
 
-      obj.expired = false
-      obj.is_converted = obj.flip_x ~= obj.initial_flip_x
-      obj.previous_remaining_hits = obj.remaining_hits or 0
-      obj.remaining_hits = memory.readbyte(obj.base + 0x9C + 2)
-      if obj.remaining_hits > 0 then
-        obj.is_forced_one_hit = false
-      end
-
-      obj.alive = memory.readbyte(obj.base + 39) ~= 2
-
-      obj.previous_remaining_freeze_frames = obj.remaining_freeze_frames
-      obj.remaining_freeze_frames = memory.readbyte(obj.base + 0x45)
-
-      obj.freeze_just_began = false
-      if obj.remaining_freeze_frames > 0 then
-        if obj.previous_remaining_freeze_frames == 0 then
-          obj.freeze_just_began = true
-        end
-        obj.animation_freeze_frames = obj.animation_freeze_frames + 1
-      elseif obj.cooldown > 0 then
-        obj.cooldown = obj.cooldown - 1
-      end
-
-      obj.remaining_lifetime = memory.readword(obj.base + 154)
-
-      local emitter = player_objects[obj.emitter_id]
-
-
-      obj.projectile_type = string.format("%02X", memory.readbyte(obj.base + 0x91))
-      if obj.projectile_type == "00" then
-        if emitter.char_str == "dudley" then
-          obj.projectile_type = "00_pa_dudley"
-        elseif emitter.char_str == "gouki" then
-          obj.projectile_type = "00_kkz"      
-        elseif emitter.char_str == "oro" then
-          obj.projectile_type = "00_tenguishi"
-        elseif emitter.char_str == "ryu" then
-          obj.projectile_type = "00_hadouken"         
-        elseif emitter.char_str == "sean" then
-          obj.projectile_type = "00_pa_sean"
-        elseif emitter.char_str == "yang" then
-          obj.projectile_type = "00_seieienbu"
-        end
-      end
-
-
-      if is_initialization then
-
-        if obj.projectile_type == "25" then --debug
-          P1_Current_search_adr = obj.base
-        end
-        --debug
-        if obj.projectile_type == "5B" or obj.projectile_type == "00_tenguishi" then
-          memory_view_start = obj.base
-        end
-        obj.projectile_start_type = obj.projectile_type -- type can change during projectile life (ex: aegis)
-        obj.animation_start_frame = frame_number
-        obj.start_lifetime = obj.remaining_lifetime
-      end
-
-
-      if obj.remaining_hits < obj.previous_remaining_hits then
-        local fdm = frame_data_meta["projectiles"][obj.projectile_type]
-        if fdm and fdm.cooldown then
-          obj.cooldown = fdm.cooldown
-        end
-          --temporary debug
-        if obj.projectile_type == "25"
-        or obj.projectile_type == "26"
-        or obj.projectile_type == "27"
-        or obj.projectile_type == "28"
-        or obj.projectile_type == "29"
-        or obj.projectile_type == "2A" then
-          obj.next_hit_at_lifetime = obj.remaining_lifetime - (4 - (obj.start_lifetime - 1 - obj.remaining_lifetime) % 4)
-        end
-      end
-
-      if obj.next_hit_at_lifetime then
-        obj.cooldown = obj.remaining_lifetime - obj.next_hit_at_lifetime
-      end
-
-      obj.animation_frame = frame_number - obj.animation_start_frame - obj.animation_freeze_frames
-
-      projectiles[obj.id] = obj
-
-      if frame_data["projectiles"] then
-        obj.animation_frame_data = frame_data["projectiles"][obj.projectile_type]
-      end
-
-      if obj.animation_frame_data ~= nil and not debug_settings.recording_framedata then
-        if obj.animation_frame_data.frames then
-          obj.animation_frame = math.min(obj.animation_frame, #obj.animation_frame_data.frames - 1)
-        end
-        -- resync animation
-        local frames = obj.animation_frame_data.frames
-        local current_frame = frames[obj.animation_frame + 1]
-        if current_frame then
-          local target_hash = obj.animation_frame_hash
-          local current_hash = current_frame.hash
-          if current_hash ~= nil
-          and current_hash ~= target_hash
-          and (obj.remaining_freeze_frames == 0 or obj.freeze_just_began)
-          then
-            local resync_target, target_hash = find_resync_target(obj, obj.animation_frame_data, obj.animation_frame_data.infinite_loop)
-
-            if resync_target ~= -1 then
-              -- print(string.format("%d: resynced %s to %s frame(%d -> %d) target %s", frame_number, current_frame.hash, obj.animation_frame_data.frames[resync_target + 1].hash, obj.animation_frame, resync_target, target_hash))
-              obj.animation_frame = resync_target
-              obj.animation_start_frame = frame_number - resync_target - obj.animation_freeze_frames
+         if is_initialization then
+            obj.initial_flip_x = obj.flip_x
+            obj.emitter_animation = player_objects[obj.emitter_id].animation
+            for proj_id, proj in pairs(projectiles) do
+               if proj.placeholder and proj.projectile_type == obj.projectile_type then obj.id = proj_id end
             end
-          end
-        end
-      end
-    end
-    -- Get the index to the next object in this list.
-    obj_index = memory.readwordsigned(obj.base + 0x1C)
-    obj_slot = obj_slot + 1
-  end
+         else
+            obj.lifetime = obj.lifetime + 1
+         end
 
-  update_tengu_stones()
-  update_seieienbu()
+         if #obj.boxes > 0 then obj.has_activated = true end
+
+         obj.expired = false
+         obj.is_converted = obj.flip_x ~= obj.initial_flip_x
+         obj.previous_remaining_hits = obj.remaining_hits or 0
+         obj.remaining_hits = memory.readbyte(obj.base + 0x9C + 2)
+         if obj.remaining_hits > 0 then obj.is_forced_one_hit = false end
+
+         obj.alive = memory.readbyte(obj.base + 39) ~= 2
+
+         obj.previous_remaining_freeze_frames = obj.remaining_freeze_frames
+         obj.remaining_freeze_frames = memory.readbyte(obj.base + 0x45)
+
+         obj.freeze_just_began = false
+         if obj.remaining_freeze_frames > 0 then
+            if obj.previous_remaining_freeze_frames == 0 then obj.freeze_just_began = true end
+            obj.animation_freeze_frames = obj.animation_freeze_frames + 1
+         elseif obj.cooldown > 0 then
+            obj.cooldown = obj.cooldown - 1
+         end
+
+         obj.remaining_lifetime = memory.readword(obj.base + 154)
+
+         local emitter = player_objects[obj.emitter_id]
+
+         obj.projectile_type = string.format("%02X", memory.readbyte(obj.base + 0x91))
+         if obj.projectile_type == "00" then
+            if emitter.char_str == "dudley" then
+               obj.projectile_type = "00_pa_dudley"
+            elseif emitter.char_str == "gouki" then
+               obj.projectile_type = "00_kkz"
+            elseif emitter.char_str == "oro" then
+               obj.projectile_type = "00_tenguishi"
+            elseif emitter.char_str == "ryu" then
+               obj.projectile_type = "00_hadouken"
+            elseif emitter.char_str == "sean" then
+               obj.projectile_type = "00_pa_sean"
+            elseif emitter.char_str == "twelve" then
+               obj.projectile_type = "00_ndl"
+            elseif emitter.char_str == "yang" then
+               obj.projectile_type = "00_seieienbu"
+            end
+         elseif obj.projectile_type == "01" then
+            if emitter.char_str == "twelve" then obj.projectile_type = "01_ndl" end
+         end
+
+         if is_initialization then
+            -- debug
+            if obj.projectile_type == "5B" or obj.projectile_type == "00_seieienbu" then
+               memory_view_start = obj.base
+            end
+            obj.projectile_start_type = obj.projectile_type -- type can change during projectile life (ex: aegis)
+            obj.animation_start_frame = frame_number
+            obj.start_lifetime = obj.remaining_lifetime
+         end
+
+         if obj.remaining_hits < obj.previous_remaining_hits then update_projectile_cooldown(obj) end
+
+         if obj.next_hit_at_lifetime then obj.cooldown = obj.remaining_lifetime - obj.next_hit_at_lifetime end
+
+         obj.animation_frame = frame_number - obj.animation_start_frame - obj.animation_freeze_frames
+
+         projectiles[obj.id] = obj
+
+         if frame_data["projectiles"] then
+            obj.animation_frame_data = frame_data["projectiles"][obj.projectile_type]
+         end
+
+         if obj.animation_frame_data ~= nil and not debug_settings.recording_framedata then
+            if obj.animation_frame_data.frames then
+               obj.animation_frame = math.min(obj.animation_frame, #obj.animation_frame_data.frames - 1)
+            end
+            -- resync animation
+            local frames = obj.animation_frame_data.frames
+            local current_frame = frames[obj.animation_frame + 1]
+            if current_frame then
+               local target_hash = obj.animation_frame_hash
+               local current_hash = current_frame.hash
+               if current_hash ~= nil and current_hash ~= target_hash then
+                  local resync_target = find_resync_target(obj, obj.animation_frame_data,
+                                                           obj.animation_frame_data.infinite_loop)
+
+                  if resync_target ~= -1 then
+                     -- print(string.format("%d: resynced %s to %s frame(%d -> %d) target %s", frame_number, current_frame.hash, obj.animation_frame_data.frames[resync_target + 1].hash, obj.animation_frame, resync_target, target_hash))
+                     obj.animation_frame = resync_target
+                     obj.animation_start_frame = frame_number - resync_target - obj.animation_freeze_frames
+                  end
+               end
+            end
+         end
+      end
+      -- Get the index to the next object in this list.
+      obj_index = memory.readwordsigned(obj.base + 0x1C)
+      obj_slot = obj_slot + 1
+   end
+
+   update_tengu_stones()
+   update_seieienbu()
 end
 
 local function remove_expired_projectiles()
-  -- if a projectile is still expired, we remove it
-  for id, obj in pairs(projectiles) do
-    if obj.expired then
-      log(player_objects[obj.emitter_id].prefix, "projectiles", string.format("projectile %s 0", id))
-      projectiles[id] = nil
-    end
-  end
+   -- if a projectile is still expired, we remove it
+   for id, obj in pairs(projectiles) do
+      if obj.expired then
+         log(player_objects[obj.emitter_id].prefix, "projectiles", string.format("projectile %s 0", id))
+         projectiles[id] = nil
+      end
+   end
 end
-
 
 local function update_flip_input(player, other_player)
-  if player.flip_input == nil then
-    player.flip_input = other_player.pos_x >= player.pos_x
-    return
-  end
+   if player.flip_input == nil then
+      player.flip_input = other_player.pos_x >= player.pos_x
+      return
+   end
 
-  local previous_flip_input = player.flip_input
---   local flip_hysteresis = 0 -- character_specific[other_player.char_str].half_width
-  local diff = other_player.pos_x - player.pos_x
---   if math.abs(diff) >= flip_hysteresis then
-    player.flip_input = other_player.pos_x >= player.pos_x
---   end
+   local previous_flip_input = player.flip_input
+   --   local flip_hysteresis = 0 -- character_specific[other_player.char_str].half_width
+   local diff = other_player.pos_x - player.pos_x
+   --   if math.abs(diff) >= flip_hysteresis then
+   -- player.flip_input = other_player.pos_x >= player.pos_x
+   player.flip_input = math.floor(other_player.pos_x) > math.floor(player.pos_x)
+   --   end
+   if previous_flip_input ~= player.flip_input then log(player.prefix, "fight", "flip input") end
 
-  if previous_flip_input ~= player.flip_input then
-    log(player.prefix, "fight", "flip input")
-  end
-
-  if diff == 0 then
-    player.flip_input = player.flip_x ~= 0
-  end
+   if diff == 0 then player.flip_input = player.flip_x ~= 0 end
 end
-
 
 local function gamestate_read()
-  read_game_vars()
+   read_game_vars()
 
-  read_player_vars(P1)
-  read_player_vars(P2)
+   read_player_vars(P1)
+   read_player_vars(P2)
 
-  read_projectiles()
+   read_projectiles()
 
-  if is_in_match then
-    update_received_hits(P1, P2)
-    update_received_hits(P2, P1)
+   if is_in_match then
+      update_received_hits(P1, P2)
+      update_received_hits(P2, P1)
 
-    remove_expired_projectiles()
-    
-    update_flip_input(P1, P2)
-    update_flip_input(P2, P1)
+      remove_expired_projectiles()
 
-    update_player_relationships(P1, P2)
-    update_player_relationships(P2, P1)
-  end
+      update_flip_input(P1, P2)
+      update_flip_input(P2, P1)
+
+      update_wakeup(P1, P2)
+      update_wakeup(P2, P1)
+   end
 end
-
 
 -- # initialize player objects
 reset_player_objects()
 
 local gamestate = {
-  reset_player_objects = reset_player_objects,
-  gamestate_read = gamestate_read,
-  is_state_on_ground = is_state_on_ground
+   reset_player_objects = reset_player_objects,
+   gamestate_read = gamestate_read,
+   is_ground_state = is_ground_state,
+   update_projectile_cooldown = update_projectile_cooldown
 }
 
 setmetatable(gamestate, {
-  __index = function(_, key)
-    if key == "frame_number" then
-      return frame_number
-    elseif key == "player_objects" then
-      return player_objects
-    elseif key == "P1" then
-      return P1
-    elseif key == "P2" then
-      return P2
-    elseif key == "projectiles" then
-      return projectiles
-    elseif key == "stage" then
-      return stage
-    elseif key == "is_in_match" then
-      return is_in_match
-    elseif key == "has_match_just_started" then
-      return has_match_just_started
-    end
-  end,
+   __index = function(_, key)
+      if key == "frame_number" then
+         return frame_number
+      elseif key == "player_objects" then
+         return player_objects
+      elseif key == "P1" then
+         return P1
+      elseif key == "P2" then
+         return P2
+      elseif key == "projectiles" then
+         return projectiles
+      elseif key == "stage" then
+         return stage
+      elseif key == "match_state" then
+         return match_state
+      elseif key == "is_in_character_select" then
+         return is_in_character_select
+      elseif key == "is_in_match" then
+         return is_in_match
+      elseif key == "is_before_curtain" then
+         return is_before_curtain
+      elseif key == "has_match_just_started" then
+         return has_match_just_started
+      end
+   end,
 
-  __newindex = function(_, key, value)
-    if key == "frame_number" then
-      frame_number = value
-    elseif key == "player_objects" then
-      player_objects = value
-    elseif key == "P1" then
-      P1 = value
-    elseif key == "P2" then
-      P2 = value
-    elseif key == "projectiles" then
-      projectiles = value
-    elseif key == "stage" then
-      stage = value
-    elseif key == "is_in_match" then
-      is_in_match = value
-    elseif key == "has_match_just_started" then
-      has_match_just_started = value
-    else
-      rawset(gamestate, key, value)
-    end
-  end
+   __newindex = function(_, key, value)
+      if key == "frame_number" then
+         frame_number = value
+      elseif key == "player_objects" then
+         player_objects = value
+      elseif key == "P1" then
+         P1 = value
+      elseif key == "P2" then
+         P2 = value
+      elseif key == "projectiles" then
+         projectiles = value
+      else
+         rawset(gamestate, key, value)
+      end
+   end
 })
 
 return gamestate

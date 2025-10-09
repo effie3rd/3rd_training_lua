@@ -656,7 +656,7 @@
   "guard_jump_back":
   {
     "en": "Guard Jump Back",
-    "jp": "後ろGジャン"
+    "jp": "後Gジャン"
   },
   "guard_jump_forward_air_parry":
   {
@@ -671,7 +671,7 @@
   "guard_jump_back_air_parry":
   {
     "en": "Guard Jump Back Parry",
-    "jp": "後ろGジャンブロ"
+    "jp": "後Gジャンブロ"
   },
   "crouch_tech":
   {

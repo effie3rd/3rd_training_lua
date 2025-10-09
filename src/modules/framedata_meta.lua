@@ -1,15 +1,19 @@
+local game_data = require("src.modules.game_data")
+
 local frame_data_meta = {}
 
-local frame_data_keys = copytable(Characters)
+local frame_data_keys = copytable(game_data.characters)
 table.insert(frame_data_keys, "projectiles")
 
 for _, char in pairs(frame_data_keys) do
   frame_data_meta[char] = {}
 end
---1 is high or low (default)
+
+--hit_type
+--1 high or low (default)
 --2 low
 --3 high
---type 4 is overhead
+--4 overhead
 
 --alex
 -- frame_data_meta["alex"]["a444"] = { hit_type = {3}}                              --LP
@@ -28,16 +32,16 @@ frame_data_meta["alex"]["babc"] = { hit_type = {2}}                             
 frame_data_meta["alex"]["af7c"] = { hit_type = {3}}                              --cl_MK
 frame_data_meta["alex"]["a694"] = { hit_type = {3}}                              --f_MP
 frame_data_meta["alex"]["a9fc"] = { hit_type = {3}}                              --f_HP
-frame_data_meta["alex"]["ad04"] = { hit_type = {3}, hit_throw = true, unparryable = true}                              --b_HP
-frame_data_meta["alex"]["bc0c"] = { hit_type = {3}}                              --u_LP
-frame_data_meta["alex"]["bd6c"] = { hit_type = {3}}                              --u_MP
-frame_data_meta["alex"]["be7c"] = { hit_type = {3}}                              --u_HP
-frame_data_meta["alex"]["bf94"] = { hit_type = {3}}                              --u_LK
-frame_data_meta["alex"]["c0e4"] = { hit_type = {3}}                              --u_MK
-frame_data_meta["alex"]["c1c4"] = { hit_type = {3}}                              --u_HK
+frame_data_meta["alex"]["ad04"] = { hit_type = {3}, hit_throw = true, unparryable = true}     --b_HP
+frame_data_meta["alex"]["bc0c"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["alex"]["bd6c"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["alex"]["be7c"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["alex"]["bf94"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["alex"]["c0e4"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["alex"]["c1c4"] = { hit_type = {4}}                             --u_HK
 frame_data_meta["alex"]["c9ec"] = { throw = true}                                --throw_neutral
 frame_data_meta["alex"]["72d4"] = { hit_type = {4}}                              --uoh
-frame_data_meta["alex"]["c324"] = { hit_type = {3}}                              --d_HP_air
+frame_data_meta["alex"]["c324"] = { hit_type = {4}}                              --d_HP_air
 frame_data_meta["alex"]["8bd4"] = { throw = true}                              --spiral_ddt
 frame_data_meta["alex"]["5944"] = { hit_type = {3}}                              --flash_chop_LP
 frame_data_meta["alex"]["5aec"] = { hit_type = {3}}                              --flash_chop_MP
@@ -54,10 +58,10 @@ frame_data_meta["alex"]["531c"] = { hit_type = {3}, hit_throw = true}           
 frame_data_meta["alex"]["54ac"] = { hit_type = {3}, hit_throw = true}                              --air_knee_smash_MK
 frame_data_meta["alex"]["5624"] = { hit_type = {3}, hit_throw = true}                              --air_knee_smash_HK
 frame_data_meta["alex"]["579c"] = { hit_type = {3}, hit_throw = true}                              --air_knee_smash_EXK
-frame_data_meta["alex"]["70e4"] = { hit_type = {3, 3}}                           --air_stampede_LK
-frame_data_meta["alex"]["7044"] = { hit_type = {3}}                              --air_stampede_LK_ext
-frame_data_meta["alex"]["7094"] = { hit_type = {3}}                              --air_stampede_MK_ext
-frame_data_meta["alex"]["7284"] = { hit_type = {3}}                              --air_stampede_EXK_ext
+frame_data_meta["alex"]["70e4"] = { hit_type = {4, 4}}                           --air_stampede_LK
+frame_data_meta["alex"]["7044"] = { hit_type = {4}}                              --air_stampede_LK_ext
+frame_data_meta["alex"]["7094"] = { hit_type = {4}}                              --air_stampede_MK_ext
+frame_data_meta["alex"]["7284"] = { hit_type = {4}}                              --air_stampede_EXK_ext
 
 frame_data_meta["alex"]["63a4"] = { throw = true}                              --hyper_bomb
 frame_data_meta["alex"]["64ec"] = { hit_type = {3, 3, 3, 3}}                   --boomerang_raid
@@ -85,27 +89,27 @@ frame_data_meta["chunli"]["c52c"] = { hit_type = {3}}                           
 frame_data_meta["chunli"]["c3b4"] = { hit_type = {3}}                            --f_MK
 frame_data_meta["chunli"]["b8bc"] = { hit_type = {3, 3}}                         --b_MP
 frame_data_meta["chunli"]["bc6c"] = { hit_type = {3}}                            --b_HP
-frame_data_meta["chunli"]["cfdc"] = { hit_type = {3}}                            --u_LP
-frame_data_meta["chunli"]["d0ec"] = { hit_type = {3}}                            --u_MP
-frame_data_meta["chunli"]["d1fc"] = { hit_type = {3}}                            --u_HP
-frame_data_meta["chunli"]["d38c"] = { hit_type = {3}}                            --u_LK
-frame_data_meta["chunli"]["d49c"] = { hit_type = {3}}                            --u_MK
-frame_data_meta["chunli"]["d5ac"] = { hit_type = {3}}                            --u_HK
-frame_data_meta["chunli"]["d68c"] = { hit_type = {3}}                            --uf_LP
-frame_data_meta["chunli"]["d72c"] = { hit_type = {3}}                            --uf_MP
-frame_data_meta["chunli"]["d7dc"] = { hit_type = {3, 3, 3}}                      --uf_HP
-frame_data_meta["chunli"]["dbbc"] = { hit_type = {3}}                            --uf_LK
-frame_data_meta["chunli"]["dc5c"] = { hit_type = {3}}                            --uf_MK
-frame_data_meta["chunli"]["debc"] = { hit_type = {3}}                            --uf_HK
+frame_data_meta["chunli"]["cfdc"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["chunli"]["d0ec"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["chunli"]["d1fc"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["chunli"]["d38c"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["chunli"]["d49c"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["chunli"]["d5ac"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["chunli"]["d68c"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["chunli"]["d72c"] = { hit_type = {4}}                             --uf_MP
+frame_data_meta["chunli"]["d7dc"] = { hit_type = {4, 4, 4}}                      --uf_HP
+frame_data_meta["chunli"]["dbbc"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["chunli"]["dc5c"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["chunli"]["debc"] = { hit_type = {4}}                             --uf_HK
 frame_data_meta["chunli"]["e484"] = { throw = true}                             --throw_neutral
 frame_data_meta["chunli"]["6a3c"] = { hit_type = {4}}                            --uoh
 frame_data_meta["chunli"]["ce8c"] = { hit_type = {3}}                            --df_HK
-frame_data_meta["chunli"]["da2c"] = { hit_type = {3}}                            --d_HP_air
-frame_data_meta["chunli"]["dd4c"] = { hit_type = {3}}                            --d_MK_air
-frame_data_meta["chunli"]["6aec"] = { hit_type = {3}}                            --hazanshuu_LK
-frame_data_meta["chunli"]["6e5c"] = { hit_type = {3}}                            --hazanshuu_MK
-frame_data_meta["chunli"]["71cc"] = { hit_type = {3}}                            --hazanshuu_HK
-frame_data_meta["chunli"]["753c"] = { hit_type = {3}}                            --hazanshuu_EXK
+frame_data_meta["chunli"]["da2c"] = { hit_type = {4}}                            --d_HP_air
+frame_data_meta["chunli"]["dd4c"] = { hit_type = {4}}                            --d_MK_air
+frame_data_meta["chunli"]["6aec"] = { hit_type = {4}}                            --hazanshuu_LK
+frame_data_meta["chunli"]["6e5c"] = { hit_type = {4}}                            --hazanshuu_MK
+frame_data_meta["chunli"]["71cc"] = { hit_type = {4}}                            --hazanshuu_HK
+frame_data_meta["chunli"]["753c"] = { hit_type = {4}}                            --hazanshuu_EXK
 frame_data_meta["chunli"]["458c"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_LK
 frame_data_meta["chunli"]["4644"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_MK
 frame_data_meta["chunli"]["46fc"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_HK
@@ -123,7 +127,7 @@ frame_data_meta["chunli"]["7f44"] = { hit_type = {3, 3, 3, 3}}                  
 frame_data_meta["chunli"]["44a4"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_EXK_ext
 -- frame_data_meta["chunli"]["5434"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}} --kikoushou
 frame_data_meta["chunli"]["5f54"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}} --houyokusen
-frame_data_meta["chunli"]["669c"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3}}    --tenseiranka
+frame_data_meta["chunli"]["669c"] = { hit_type = {3, 3, 3, 3, 3, 3, 4, 4, 4}}    --tenseiranka
 
 --dudley
 -- frame_data_meta["dudley"]["36d4"] = { hit_type = {3}}                            --LP
@@ -143,18 +147,18 @@ frame_data_meta["dudley"]["39d4"] = { hit_type = {3}}                           
 frame_data_meta["dudley"]["3cdc"] = { hit_type = {3}}                            --f_HP
 frame_data_meta["dudley"]["4124"] = { hit_type = {3}}                            --f_MK
 frame_data_meta["dudley"]["4394"] = { hit_type = {4}}                            --f_HK
-frame_data_meta["dudley"]["4ed4"] = { hit_type = {3}}                            --u_LP
-frame_data_meta["dudley"]["4fb4"] = { hit_type = {3}}                            --u_MP
-frame_data_meta["dudley"]["50b4"] = { hit_type = {3}}                            --u_HP
-frame_data_meta["dudley"]["51d4"] = { hit_type = {3}}                            --u_LK
-frame_data_meta["dudley"]["5314"] = { hit_type = {3}}                            --u_MK
-frame_data_meta["dudley"]["5454"] = { hit_type = {3}}                            --u_HK
-frame_data_meta["dudley"]["5584"] = { hit_type = {3}}                            --uf_LP
-frame_data_meta["dudley"]["5664"] = { hit_type = {3}}                            --uf_MP
-frame_data_meta["dudley"]["5764"] = { hit_type = {3}}                            --uf_HP
-frame_data_meta["dudley"]["5884"] = { hit_type = {3}}                            --uf_LK
-frame_data_meta["dudley"]["59c4"] = { hit_type = {3}}                            --uf_MK
-frame_data_meta["dudley"]["5b04"] = { hit_type = {3}}                            --uf_HK
+frame_data_meta["dudley"]["4ed4"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["dudley"]["4fb4"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["dudley"]["50b4"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["dudley"]["51d4"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["dudley"]["5314"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["dudley"]["5454"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["dudley"]["5584"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["dudley"]["5664"] = { hit_type = {4}}                             --uf_MP
+frame_data_meta["dudley"]["5764"] = { hit_type = {4}}                             --uf_HP
+frame_data_meta["dudley"]["5884"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["dudley"]["59c4"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["dudley"]["5b04"] = { hit_type = {4}}                             --uf_HK
 frame_data_meta["dudley"]["6cc4"] = { hit_type = {3}}                            --tc_2
 frame_data_meta["dudley"]["7294"] = { hit_type = {3}}                            --tc_1_ext
 frame_data_meta["dudley"]["6be4"] = { hit_type = {3, 3}}                         --tc_2_ext
@@ -207,22 +211,22 @@ frame_data_meta["elena"]["c1d8"] = { hit_type = {2}}                            
 frame_data_meta["elena"]["ab98"] = { hit_type = {3}}                             --f_MP
 frame_data_meta["elena"]["b430"] = { hit_type = {4}}                             --f_MK
 frame_data_meta["elena"]["b7e0"] = { hit_type = {3}}                             --b_HK
-frame_data_meta["elena"]["c690"] = { hit_type = {3}}                             --u_LP
-frame_data_meta["elena"]["c820"] = { hit_type = {3}}                             --u_MP
-frame_data_meta["elena"]["c9e0"] = { hit_type = {3}}                             --u_HP
-frame_data_meta["elena"]["cba0"] = { hit_type = {3}}                             --u_LK
-frame_data_meta["elena"]["cd30"] = { hit_type = {3}}                             --u_MK
-frame_data_meta["elena"]["cef0"] = { hit_type = {3, 3}}                          --u_HK
-frame_data_meta["elena"]["d0f8"] = { hit_type = {3}}                             --uf_LP
-frame_data_meta["elena"]["d288"] = { hit_type = {3}}                             --uf_MP
-frame_data_meta["elena"]["d448"] = { hit_type = {3}}                             --uf_HP
-frame_data_meta["elena"]["d608"] = { hit_type = {3}}                             --uf_LK
-frame_data_meta["elena"]["d798"] = { hit_type = {3}}                             --uf_MK
-frame_data_meta["elena"]["d958"] = { hit_type = {3, 3}}                          --uf_HK
+frame_data_meta["elena"]["c690"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["elena"]["c820"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["elena"]["c9e0"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["elena"]["cba0"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["elena"]["cd30"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["elena"]["cef0"] = { hit_type = {4, 4}}                          --u_HK
+frame_data_meta["elena"]["d0f8"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["elena"]["d288"] = { hit_type = {4}}                             --uf_MP
+frame_data_meta["elena"]["d448"] = { hit_type = {4}}                             --uf_HP
+frame_data_meta["elena"]["d608"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["elena"]["d798"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["elena"]["d958"] = { hit_type = {4, 4}}                          --uf_HK
 frame_data_meta["elena"]["e620"] = { hit_type = {3}}                             --tc_1_ext
 frame_data_meta["elena"]["e370"] = { hit_type = {3, 3}}                          --tc_2_ext
-frame_data_meta["elena"]["e068"] = { hit_type = {3}}                             --tc_3_ext
-frame_data_meta["elena"]["e1f8"] = { hit_type = {3}}                             --tc_4_ext
+frame_data_meta["elena"]["e068"] = { hit_type = {4}}                             --tc_3_ext
+frame_data_meta["elena"]["e1f8"] = { hit_type = {4}}                             --tc_4_ext
 frame_data_meta["elena"]["df50"] = { throw = true}                               --throw_neutral
 frame_data_meta["elena"]["6354"] = { hit_type = {4}}                             --uoh
 frame_data_meta["elena"]["63d4"] = { hit_type = {2, 1}}                          --pa
@@ -266,17 +270,17 @@ frame_data_meta["gill"]["5bb4"] = { hit_type = {2}}                             
 frame_data_meta["gill"]["5c74"] = { hit_type = {2}}                              --d_HK
 frame_data_meta["gill"]["51dc"] = { hit_type = {3}}                              --f_MK
 frame_data_meta["gill"]["4b8c"] = { hit_type = {3}}                              --b_MP
-frame_data_meta["gill"]["5dd4"] = { hit_type = {3}}                              --u_LP
-frame_data_meta["gill"]["5e94"] = { hit_type = {3}}                              --u_MP
-frame_data_meta["gill"]["5f64"] = { hit_type = {3}}                              --u_HP
-frame_data_meta["gill"]["6044"] = { hit_type = {3}}                              --u_LK
-frame_data_meta["gill"]["60e4"] = { hit_type = {3}}                              --u_MK
-frame_data_meta["gill"]["61a4"] = { hit_type = {3}}                              --u_HK
+frame_data_meta["gill"]["5dd4"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["gill"]["5e94"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["gill"]["5f64"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["gill"]["6044"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["gill"]["60e4"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["gill"]["61a4"] = { hit_type = {4}}                             --u_HK
 frame_data_meta["gill"]["66f4"] = { throw = true}                                --throw_neutral
 frame_data_meta["gill"]["cc64"] = { hit_type = {4}}                              --uoh
 frame_data_meta["gill"]["c30c"] = { hit_type = {3, 3}}                           --cyber_lariat
 frame_data_meta["gill"]["c96c"] = { hit_type = {3}}                              --psycho_headbutt
-frame_data_meta["gill"]["c0fc"] = { hit_type = {3}}                              --moonsault_kneedrop
+frame_data_meta["gill"]["c0fc"] = { hit_type = {4}}                              --moonsault_kneedrop
 
 --gouki
 -- frame_data_meta["gouki"]["1438"] = { hit_type = {3}}                             --LP
@@ -297,18 +301,18 @@ frame_data_meta["gouki"]["1728"] = { hit_type = {3}}                            
 frame_data_meta["gouki"]["1988"] = { hit_type = {3}}                             --cl_MK
 frame_data_meta["gouki"]["1b08"] = { hit_type = {4, 4}}                          --cl_HK
 frame_data_meta["gouki"]["1638"] = { hit_type = {4, 4}}                          --f_MP
-frame_data_meta["gouki"]["21c8"] = { hit_type = {3}}                             --u_LP
-frame_data_meta["gouki"]["22a8"] = { hit_type = {3}}                             --u_MP
-frame_data_meta["gouki"]["2388"] = { hit_type = {3}}                             --u_HP
-frame_data_meta["gouki"]["2448"] = { hit_type = {3}}                             --u_LK
-frame_data_meta["gouki"]["2558"] = { hit_type = {3}}                             --u_MK
-frame_data_meta["gouki"]["2628"] = { hit_type = {3}}                             --u_HK
-frame_data_meta["gouki"]["2708"] = { hit_type = {3}}                             --uf_LP
-frame_data_meta["gouki"]["2800"] = { hit_type = {3}}                             --uf_HP
-frame_data_meta["gouki"]["28e0"] = { hit_type = {3}}                             --uf_LK
-frame_data_meta["gouki"]["29c0"] = { hit_type = {3}}                             --uf_MK
-frame_data_meta["gouki"]["2b30"] = { hit_type = {3}}                             --uf_HK
-frame_data_meta["gouki"]["2aa0"] = { hit_type = {3}}                             --d_MK_air
+frame_data_meta["gouki"]["21c8"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["gouki"]["22a8"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["gouki"]["2388"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["gouki"]["2448"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["gouki"]["2558"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["gouki"]["2628"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["gouki"]["2708"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["gouki"]["2800"] = { hit_type = {4}}                             --uf_HP
+frame_data_meta["gouki"]["28e0"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["gouki"]["29c0"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["gouki"]["2b30"] = { hit_type = {4}}                             --uf_HK
+frame_data_meta["gouki"]["2aa0"] = { hit_type = {4}}                             --d_MK_air
 frame_data_meta["gouki"]["3850"] = { hit_type = {3, 3}}                          --tc_1_ext
 frame_data_meta["gouki"]["3768"] = { throw = true}                               --throw_neutral
 frame_data_meta["gouki"]["98f8"] = { hit_type = {4}}                             --uoh
@@ -320,7 +324,7 @@ frame_data_meta["gouki"]["8968"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3}}    
 frame_data_meta["gouki"]["af08"] = { hit_type = {2}}                             --hyakki
 frame_data_meta["gouki"]["b308"] = { throw = true}                               --hyakki_throw_ext
 frame_data_meta["gouki"]["b218"] = { hit_type = {3}}                             --hyakki_kick_ext
-frame_data_meta["gouki"]["b118"] = { hit_type = {3}}                             --hyakki_punch_ext
+frame_data_meta["gouki"]["b118"] = { hit_type = {4}}                             --hyakki_punch_ext
 -- frame_data_meta["gouki"]["84f8"] = { hit_type = {3}}                             --goshoryuken_LP
 -- frame_data_meta["gouki"]["85c8"] = { hit_type = {3, 3}}                          --goshoryuken_MP
 -- frame_data_meta["gouki"]["8658"] = { hit_type = {3, 3, 3}}                       --goshoryuken_HP
@@ -336,7 +340,7 @@ frame_data_meta["hugo"]["40b0"] = { hit_type = {3}}                             
 frame_data_meta["hugo"]["4200"] = { hit_type = {4}}                              --HP
 -- frame_data_meta["hugo"]["4820"] = { hit_type = {3}}                              --LK
 frame_data_meta["hugo"]["48d0"] = { hit_type = {3, 3}}                           --MK
-frame_data_meta["hugo"]["4c10"] = { hit_type = {3}}                              --HK
+frame_data_meta["hugo"]["4c10"] = { hit_type = {4}}                              --HK
 -- frame_data_meta["hugo"]["4e00"] = { hit_type = {2}}                              --d_LP
 -- frame_data_meta["hugo"]["4ec0"] = { hit_type = {2}}                              --d_MP
 -- frame_data_meta["hugo"]["4f60"] = { hit_type = {2}}                              --d_HP
@@ -344,12 +348,13 @@ frame_data_meta["hugo"]["5060"] = { hit_type = {2}}                             
 frame_data_meta["hugo"]["5110"] = { hit_type = {2}}                              --d_MK
 frame_data_meta["hugo"]["51d0"] = { hit_type = {4}}                              --d_HK
 frame_data_meta["hugo"]["4420"] = { hit_type = {3}}                              --f_HP
-frame_data_meta["hugo"]["52a0"] = { hit_type = {3}}                              --u_LP
-frame_data_meta["hugo"]["5370"] = { hit_type = {3}}                              --u_MP
-frame_data_meta["hugo"]["5440"] = { hit_type = {3}}                              --u_HP
-frame_data_meta["hugo"]["55f0"] = { hit_type = {3}}                              --u_LK
-frame_data_meta["hugo"]["56c0"] = { hit_type = {3}}                              --u_MK
-frame_data_meta["hugo"]["5790"] = { hit_type = {3}}                              --u_HK
+frame_data_meta["hugo"]["52a0"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["hugo"]["5370"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["hugo"]["5440"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["hugo"]["55f0"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["hugo"]["56c0"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["hugo"]["5790"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["hugo"]["5540"] = { hit_type = {4}}                             --d_HP_air
 frame_data_meta["hugo"]["5da8"] = { throw = true}                                --throw_neutral
 frame_data_meta["hugo"]["1cd4"] = { hit_type = {4}}                              --uoh
 frame_data_meta["hugo"]["efcc"] = { hit_type = {3}}                              --giant_palm_bomber_LP
@@ -400,19 +405,19 @@ frame_data_meta["ibuki"]["0748"] = { hit_type = {4}}                            
 frame_data_meta["ibuki"]["0d90"] = { hit_type = {3}}                             --f_HK
 frame_data_meta["ibuki"]["f838"] = { hit_type = {3, 3}}                          --b_MP
 frame_data_meta["ibuki"]["0398"] = { hit_type = {3}}                             --b_MK
-frame_data_meta["ibuki"]["1c10"] = { hit_type = {3}}                             --u_LP
-frame_data_meta["ibuki"]["1d10"] = { hit_type = {3}}                             --u_MP
-frame_data_meta["ibuki"]["1ee8"] = { hit_type = {3}}                             --u_HP
-frame_data_meta["ibuki"]["20f0"] = { hit_type = {3}}                             --u_LK
-frame_data_meta["ibuki"]["2210"] = { hit_type = {3}}                             --u_MK
-frame_data_meta["ibuki"]["2330"] = { hit_type = {3}}                             --u_HK
-frame_data_meta["ibuki"]["2450"] = { hit_type = {3}}                             --uf_LP
-frame_data_meta["ibuki"]["25b0"] = { hit_type = {3}}                             --uf_MP
-frame_data_meta["ibuki"]["2748"] = { hit_type = {3}}                             --uf_LK
-frame_data_meta["ibuki"]["2878"] = { hit_type = {3}}                             --uf_MK
-frame_data_meta["ibuki"]["29a8"] = { hit_type = {3}}                             --uf_HK
-frame_data_meta["ibuki"]["3480"] = { hit_type = {3, 3}}                          --tc_12_ext
-frame_data_meta["ibuki"]["3580"] = { hit_type = {3}}                             --tc_13_ext
+frame_data_meta["ibuki"]["1c10"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["ibuki"]["1d10"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["ibuki"]["1ee8"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["ibuki"]["20f0"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["ibuki"]["2210"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["ibuki"]["2330"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["ibuki"]["2450"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["ibuki"]["25b0"] = { hit_type = {4}}                             --uf_MP
+frame_data_meta["ibuki"]["2748"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["ibuki"]["2878"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["ibuki"]["29a8"] = { hit_type = {4}}                             --uf_HK
+frame_data_meta["ibuki"]["3480"] = { hit_type = {4, 4}}                          --tc_12_ext jump hp fmk
+frame_data_meta["ibuki"]["3580"] = { hit_type = {4}}                             --tc_13_ext jump lp fhp
 frame_data_meta["ibuki"]["3f28"] = { hit_type = {3, 3}}                          --tc_2
 frame_data_meta["ibuki"]["3828"] = { hit_type = {3}}                             --tc_3
 frame_data_meta["ibuki"]["3a48"] = { hit_type = {3, 3, 3}}                       --tc_2_ext
@@ -471,18 +476,18 @@ frame_data_meta["ken"]["a470"] = { hit_type = {3}}                              
 frame_data_meta["ken"]["a870"] = { hit_type = {3}}                               --f_MK
 frame_data_meta["ken"]["abe8"] = { hit_type = {4}}                               --f_HK
 frame_data_meta["ken"]["a980"] = { hit_type = {4, 4}}                            --b_MK
-frame_data_meta["ken"]["b2a8"] = { hit_type = {3}}                               --u_LP
-frame_data_meta["ken"]["b388"] = { hit_type = {3}}                               --u_MP
-frame_data_meta["ken"]["b468"] = { hit_type = {3}}                               --u_HP
-frame_data_meta["ken"]["b528"] = { hit_type = {3}}                               --u_LK
-frame_data_meta["ken"]["b638"] = { hit_type = {3}}                               --u_MK
-frame_data_meta["ken"]["b708"] = { hit_type = {3}}                               --u_HK
-frame_data_meta["ken"]["b7e8"] = { hit_type = {3}}                               --uf_LP
-frame_data_meta["ken"]["b8c8"] = { hit_type = {3}}                               --uf_MP
-frame_data_meta["ken"]["b9a8"] = { hit_type = {3}}                               --uf_HP
-frame_data_meta["ken"]["ba88"] = { hit_type = {3}}                               --uf_LK
-frame_data_meta["ken"]["bb68"] = { hit_type = {3}}                               --uf_MK
-frame_data_meta["ken"]["bc48"] = { hit_type = {3}}                               --uf_HK
+frame_data_meta["ken"]["b2a8"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["ken"]["b388"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["ken"]["b468"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["ken"]["b528"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["ken"]["b638"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["ken"]["b708"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["ken"]["b7e8"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["ken"]["b8c8"] = { hit_type = {4}}                             --uf_MP
+frame_data_meta["ken"]["b9a8"] = { hit_type = {4}}                             --uf_HP
+frame_data_meta["ken"]["ba88"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["ken"]["bb68"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["ken"]["bc48"] = { hit_type = {4}}                             --uf_HK
 frame_data_meta["ken"]["c188"] = { hit_type = {3}}                               --tc_1_ext
 frame_data_meta["ken"]["bff8"] = { throw = true}                                 --throw_neutral
 frame_data_meta["ken"]["23ec"] = { hit_type = {4}}                               --uoh
@@ -521,24 +526,24 @@ frame_data_meta["makoto"]["1fc0"] = { hit_type = {3}}                           
 -- frame_data_meta["makoto"]["24e0"] = { hit_type = {3}}                            --f_LK
 frame_data_meta["makoto"]["2720"] = { hit_type = {3}}                            --f_MK
 frame_data_meta["makoto"]["2a20"] = { hit_type = {2}}                            --f_HK
-frame_data_meta["makoto"]["31e0"] = { hit_type = {3}}                            --u_LP
-frame_data_meta["makoto"]["32c0"] = { hit_type = {3}}                            --u_MP
-frame_data_meta["makoto"]["3380"] = { hit_type = {3}}                            --u_HP
-frame_data_meta["makoto"]["3460"] = { hit_type = {3}}                            --u_LK
-frame_data_meta["makoto"]["3520"] = { hit_type = {3}}                            --u_MK
-frame_data_meta["makoto"]["3610"] = { hit_type = {3}}                            --u_HK
-frame_data_meta["makoto"]["3720"] = { hit_type = {3}}                            --uf_LP
-frame_data_meta["makoto"]["37e0"] = { hit_type = {3}}                            --uf_MP
-frame_data_meta["makoto"]["38e0"] = { hit_type = {3}}                            --uf_HP
-frame_data_meta["makoto"]["3a50"] = { hit_type = {3}}                            --uf_LK
-frame_data_meta["makoto"]["3b10"] = { hit_type = {3}}                            --uf_MK
-frame_data_meta["makoto"]["3c00"] = { hit_type = {3}}                            --uf_HK
-frame_data_meta["makoto"]["3d10"] = { hit_type = {3}}                            --ub_LP
-frame_data_meta["makoto"]["3dd0"] = { hit_type = {3}}                            --ub_MP
-frame_data_meta["makoto"]["3ed0"] = { hit_type = {3}}                            --ub_HP
-frame_data_meta["makoto"]["4040"] = { hit_type = {3}}                            --ub_LK
-frame_data_meta["makoto"]["4100"] = { hit_type = {3}}                            --ub_MK
-frame_data_meta["makoto"]["41f0"] = { hit_type = {3}}                            --ub_HK
+frame_data_meta["makoto"]["31e0"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["makoto"]["32c0"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["makoto"]["3380"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["makoto"]["3460"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["makoto"]["3520"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["makoto"]["3610"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["makoto"]["3720"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["makoto"]["37e0"] = { hit_type = {4}}                             --uf_MP
+frame_data_meta["makoto"]["38e0"] = { hit_type = {4}}                             --uf_HP
+frame_data_meta["makoto"]["3a50"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["makoto"]["3b10"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["makoto"]["3c00"] = { hit_type = {4}}                             --uf_HK
+frame_data_meta["makoto"]["3d10"] = { hit_type = {4}}                             --ub_LP
+frame_data_meta["makoto"]["3dd0"] = { hit_type = {4}}                             --ub_MP
+frame_data_meta["makoto"]["3ed0"] = { hit_type = {4}}                             --ub_HP
+frame_data_meta["makoto"]["4040"] = { hit_type = {4}}                             --ub_LK
+frame_data_meta["makoto"]["4100"] = { hit_type = {4}}                             --ub_MK
+frame_data_meta["makoto"]["41f0"] = { hit_type = {4}}                             --ub_HK
 frame_data_meta["makoto"]["2220"] = { hit_type = {3}}                            --tc_2
 frame_data_meta["makoto"]["4a68"] = { hit_type = {3, 3}}                         --tc_1_ext
 frame_data_meta["makoto"]["48a8"] = { hit_type = {3, 3, 3, 3}}                   --tc_2_ext
@@ -559,15 +564,15 @@ frame_data_meta["makoto"]["ef98"] = { hit_type = {4}}                           
 -- frame_data_meta["makoto"]["f3e8"] = { hit_type = {3}}                            --fukiage_MP
 -- frame_data_meta["makoto"]["f518"] = { hit_type = {3}}                            --fukiage_HP
 -- frame_data_meta["makoto"]["f648"] = { hit_type = {3}}                            --fukiage_EXP
-frame_data_meta["makoto"]["2190"] = { hit_type = {3}}                            --tsurugi_LK
-frame_data_meta["makoto"]["2310"] = { hit_type = {3}}                            --tsurugi_MK
-frame_data_meta["makoto"]["2410"] = { hit_type = {3}}                            --tsurugi_HK
-frame_data_meta["makoto"]["2510"] = { hit_type = {3, 3}}                         --tsurugi_EXK
+frame_data_meta["makoto"]["2190"] = { hit_type = {4}}                            --tsurugi_LK
+frame_data_meta["makoto"]["2310"] = { hit_type = {4}}                            --tsurugi_MK
+frame_data_meta["makoto"]["2410"] = { hit_type = {4}}                            --tsurugi_HK
+frame_data_meta["makoto"]["2510"] = { hit_type = {4, 4}}                         --tsurugi_EXK
 frame_data_meta["makoto"]["0c10"] = { throw = true}                              --karakusa_LK
 frame_data_meta["makoto"]["0d90"] = { throw = true}                              --karakusa_MK
 frame_data_meta["makoto"]["0e60"] = { throw = true}                              --karakusa_HK
 -- frame_data_meta["makoto"]["1438"] = { hit_type = {3}}                            --seichusengodanzuki
-frame_data_meta["makoto"]["0290"] = { hit_type = {3, 3, 1}}                      --abaretosanami_LK                                                                                  
+frame_data_meta["makoto"]["0290"] = { hit_type = {4, 3, 1}}                      --abaretosanami_LK                                                                                  
 frame_data_meta["makoto"]["fde8"] = { hit_type = {3}}                            --abaretosanami_LK_ext                                                                              
 frame_data_meta["makoto"]["fec8"] = { hit_type = {3}}                            --abaretosanami_MK_ext    
 frame_data_meta["makoto"]["ffa8"] = { hit_type = {3}}                            --abaretosanami_HK_ext                                                                              
@@ -592,23 +597,23 @@ frame_data_meta["necro"]["cdc4"] = { hit_type = {3}}                            
 frame_data_meta["necro"]["d6fc"] = { hit_type = {3}}                             --b_MK
 frame_data_meta["necro"]["dadc"] = { hit_type = {3}}                             --b_HK
 -- frame_data_meta["necro"]["e01c"] = { hit_type = {3}}                             --db_HP
-frame_data_meta["necro"]["e5e4"] = { hit_type = {3}}                             --u_LP
-frame_data_meta["necro"]["e6b4"] = { hit_type = {3}}                             --u_MP
-frame_data_meta["necro"]["e7a4"] = { hit_type = {3}}                             --u_HP
-frame_data_meta["necro"]["e954"] = { hit_type = {3}}                             --u_LK
-frame_data_meta["necro"]["ec34"] = { hit_type = {3}}                             --u_MK
-frame_data_meta["necro"]["ed74"] = { hit_type = {3}}                             --u_HK
-frame_data_meta["necro"]["eef4"] = { hit_type = {3}}                             --uf_LP
-frame_data_meta["necro"]["efa4"] = { hit_type = {3}}                             --uf_MP
-frame_data_meta["necro"]["f084"] = { hit_type = {3}}                             --uf_HP
-frame_data_meta["necro"]["f224"] = { hit_type = {3}}                             --uf_LK
+frame_data_meta["necro"]["e5e4"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["necro"]["e6b4"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["necro"]["e7a4"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["necro"]["e954"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["necro"]["ec34"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["necro"]["ed74"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["necro"]["eef4"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["necro"]["efa4"] = { hit_type = {4}}                             --uf_MP
+frame_data_meta["necro"]["f084"] = { hit_type = {4}}                             --uf_HP
+frame_data_meta["necro"]["f224"] = { hit_type = {4}}                             --uf_LK
 frame_data_meta["necro"]["fd04"] = { hit_type = {3}}                             --tc_1_ext
 frame_data_meta["necro"]["fbbc"] = { throw = true}                               --throw_neutral
 frame_data_meta["necro"]["7cf4"] = { hit_type = {4}}                             --uoh
 -- frame_data_meta["necro"]["8574"] = { hit_type = {3, 3, 3, 3, 3, 3}}              --pa
--- frame_data_meta["necro"]["e9e4"] = { hit_type = {3}}                             --drill_LK
--- frame_data_meta["necro"]["f2cc"] = { hit_type = {3}}                             --drill_MK
--- frame_data_meta["necro"]["f51c"] = { hit_type = {3}}                             --drill_HK
+frame_data_meta["necro"]["e9e4"] = { hit_type = {1}, cooldown = 7}               --drill_LK
+frame_data_meta["necro"]["f2cc"] = { hit_type = {1}, cooldown = 7}               --drill_MK
+frame_data_meta["necro"]["f51c"] = { hit_type = {1}, cooldown = 7}               --drill_HK
 frame_data_meta["necro"]["7274"] = { hit_type = {2}, hit_throw = true, unparryable = true}                             --snake_fang_LK
 frame_data_meta["necro"]["7374"] = { hit_type = {2}, hit_throw = true, unparryable = true}                             --snake_fang_MK
 frame_data_meta["necro"]["7474"] = { hit_type = {2}, hit_throw = true, unparryable = true}                             --snake_fang_HK
@@ -648,18 +653,18 @@ frame_data_meta["oro"]["4a80"] = { hit_type = {3, 3}}                           
 -- frame_data_meta["oro"]["5188"] = { hit_type = {3}}                               --cl_LK
 frame_data_meta["oro"]["5378"] = { hit_type = {3}}                               --cl_MK
 frame_data_meta["oro"]["4d30"] = { hit_type = {3}}                               --f_MP
-frame_data_meta["oro"]["5fc0"] = { hit_type = {3}}                               --u_LP
-frame_data_meta["oro"]["60d0"] = { hit_type = {3}}                               --u_MP
-frame_data_meta["oro"]["6200"] = { hit_type = {3}}                               --u_HP
-frame_data_meta["oro"]["6300"] = { hit_type = {3}}                               --u_LK
-frame_data_meta["oro"]["6460"] = { hit_type = {3}}                               --u_MK
-frame_data_meta["oro"]["6590"] = { hit_type = {3}}                               --u_HK
-frame_data_meta["oro"]["6708"] = { hit_type = {3}}                               --uf_LP
-frame_data_meta["oro"]["6888"] = { hit_type = {3}}                               --uf_MP
-frame_data_meta["oro"]["6a08"] = { hit_type = {3, 3}}                            --uf_HP
-frame_data_meta["oro"]["6bf8"] = { hit_type = {3}}                               --uf_LK
-frame_data_meta["oro"]["6d08"] = { hit_type = {3}}                               --uf_MK
-frame_data_meta["oro"]["6ef8"] = { hit_type = {3}}                               --uf_HK
+frame_data_meta["oro"]["5fc0"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["oro"]["60d0"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["oro"]["6200"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["oro"]["6300"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["oro"]["6460"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["oro"]["6590"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["oro"]["6708"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["oro"]["6888"] = { hit_type = {4}}                             --uf_MP
+frame_data_meta["oro"]["6a08"] = { hit_type = {4, 4}}                          --uf_HP
+frame_data_meta["oro"]["6bf8"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["oro"]["6d08"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["oro"]["6ef8"] = { hit_type = {4}}                             --uf_HK
 frame_data_meta["oro"]["7a18"] = { hit_type = {3}}                               --tc_1_ext
 frame_data_meta["oro"]["72c8"] = { throw = true}                                 --throw_neutral
 frame_data_meta["oro"]["73c8"] = { throw = true}                                 --throw_back
@@ -675,8 +680,8 @@ frame_data_meta["oro"]["08bc"] = { hit_type = {4, 4}}                           
 frame_data_meta["oro"]["0b2c"] = { hit_type = {4, 4}}                            --hitobashira_MK
 frame_data_meta["oro"]["0c9c"] = { hit_type = {4, 4}}                            --hitobashira_HK
 frame_data_meta["oro"]["0e0c"] = { hit_type = {4, 4, 4}}                         --hitobashira_EXK
-frame_data_meta["oro"]["012c"] = { hit_type = {3, 3}}                            --hitobashira_air
-frame_data_meta["oro"]["041c"] = { hit_type = {3, 3}}                            --hitobashira_airEXK
+frame_data_meta["oro"]["012c"] = { hit_type = {4, 4}}                            --hitobashira_air
+frame_data_meta["oro"]["041c"] = { hit_type = {4, 4}}                            --hitobashira_airEXK
 frame_data_meta["oro"]["74f8"] = { throw = true}                                 --kishinriki
 frame_data_meta["oro"]["fd04"] = { throw = true}                                 --kishinriki_EXP
 
@@ -698,17 +703,17 @@ frame_data_meta["q"]["ea14"] = { hit_type = {2}}                                
 frame_data_meta["q"]["d524"] = { hit_type = {3}}                                 --b_MP
 frame_data_meta["q"]["da24"] = { hit_type = {3}}                                 --b_HP
 -- frame_data_meta["q"]["e1f4"] = { hit_type = {3}}                                 --b_HK
-frame_data_meta["q"]["ec04"] = { hit_type = {3}}                                 --u_LP
-frame_data_meta["q"]["eca4"] = { hit_type = {3}}                                 --u_MP
-frame_data_meta["q"]["eda4"] = { hit_type = {3}}                                 --u_HP
-frame_data_meta["q"]["eea4"] = { hit_type = {3}}                                 --u_LK
-frame_data_meta["q"]["ef94"] = { hit_type = {3}}                                 --u_MK
-frame_data_meta["q"]["f074"] = { hit_type = {3}}                                 --u_HK
-frame_data_meta["q"]["f194"] = { hit_type = {3}}                                 --uf_LP
-frame_data_meta["q"]["f234"] = { hit_type = {3}}                                 --uf_MP
-frame_data_meta["q"]["f334"] = { hit_type = {3}}                                 --uf_HP
-frame_data_meta["q"]["f494"] = { hit_type = {3}}                                 --ub_MP
-frame_data_meta["q"]["f594"] = { hit_type = {3}}                                 --ub_HP
+frame_data_meta["q"]["ec04"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["q"]["eca4"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["q"]["eda4"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["q"]["eea4"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["q"]["ef94"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["q"]["f074"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["q"]["f194"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["q"]["f234"] = { hit_type = {4}}                             --uf_MP
+frame_data_meta["q"]["f334"] = { hit_type = {4}}                             --uf_HP
+frame_data_meta["q"]["f494"] = { hit_type = {4}}                             --ub_MP
+frame_data_meta["q"]["f594"] = { hit_type = {4}}                             --ub_HP
 frame_data_meta["q"]["f9ac"] = { throw = true}                                   --throw_neutral
 frame_data_meta["q"]["faf4"] = { throw = true}                                   --throw_forward
 frame_data_meta["q"]["fc3c"] = { throw = true}                                   --throw_back
@@ -759,11 +764,11 @@ frame_data_meta["remy"]["9ff0"] = { hit_type = {3}}                             
 frame_data_meta["remy"]["a330"] = { hit_type = {3}}                              --cl_MK
 frame_data_meta["remy"]["a5b0"] = { hit_type = {3, 3}}                           --cl_HK
 frame_data_meta["remy"]["a4b0"] = { hit_type = {4}}                              --f_MK
-frame_data_meta["remy"]["af40"] = { hit_type = {3}}                              --u_LP
-frame_data_meta["remy"]["b040"] = { hit_type = {3}}                              --u_MP
-frame_data_meta["remy"]["b140"] = { hit_type = {3}}                              --u_HP
-frame_data_meta["remy"]["b270"] = { hit_type = {3}}                              --u_LK
-frame_data_meta["remy"]["b370"] = { hit_type = {3}}                              --u_MK
+frame_data_meta["remy"]["af40"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["remy"]["b040"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["remy"]["b140"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["remy"]["b270"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["remy"]["b370"] = { hit_type = {4}}                             --u_MK
 frame_data_meta["remy"]["bbf0"] = { hit_type = {3, 3}}                           --tc_1_ext
 frame_data_meta["remy"]["b860"] = { throw = true}                                --throw_neutral
 frame_data_meta["remy"]["b940"] = { throw = true}                                --throw_forward
@@ -802,18 +807,18 @@ frame_data_meta["ryu"]["1a54"] = { hit_type = {3}}                              
 frame_data_meta["ryu"]["1e04"] = { hit_type = {3}}                               --cl_MK
 frame_data_meta["ryu"]["1984"] = { hit_type = {4, 4}}                            --f_MP
 frame_data_meta["ryu"]["1c34"] = { hit_type = {3, 3}}                            --f_HP
-frame_data_meta["ryu"]["2564"] = { hit_type = {3}}                               --u_LP
-frame_data_meta["ryu"]["2644"] = { hit_type = {3}}                               --u_MP
-frame_data_meta["ryu"]["2724"] = { hit_type = {3}}                               --u_HP
-frame_data_meta["ryu"]["27e4"] = { hit_type = {3}}                               --u_LK
-frame_data_meta["ryu"]["28f4"] = { hit_type = {3}}                               --u_MK
-frame_data_meta["ryu"]["29c4"] = { hit_type = {3}}                               --u_HK
-frame_data_meta["ryu"]["2aa4"] = { hit_type = {3}}                               --uf_LP
-frame_data_meta["ryu"]["2b84"] = { hit_type = {3, 3}}                            --uf_MP
-frame_data_meta["ryu"]["2c84"] = { hit_type = {3}}                               --uf_HP
-frame_data_meta["ryu"]["2d64"] = { hit_type = {3}}                               --uf_LK
-frame_data_meta["ryu"]["2e44"] = { hit_type = {3}}                               --uf_MK
-frame_data_meta["ryu"]["2f24"] = { hit_type = {3}}                               --uf_HK
+frame_data_meta["ryu"]["2564"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["ryu"]["2644"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["ryu"]["2724"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["ryu"]["27e4"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["ryu"]["28f4"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["ryu"]["29c4"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["ryu"]["2aa4"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["ryu"]["2b84"] = { hit_type = {4, 4}}                            --uf_MP
+frame_data_meta["ryu"]["2c84"] = { hit_type = {4}}                             --uf_HP
+frame_data_meta["ryu"]["2d64"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["ryu"]["2e44"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["ryu"]["2f24"] = { hit_type = {4}}                             --uf_HK
 frame_data_meta["ryu"]["33fc"] = { hit_type = {3, 3}}                            --tc_1_ext
 frame_data_meta["ryu"]["3324"] = { throw = true}                                 --throw_neutral
 frame_data_meta["ryu"]["80dc"] = { hit_type = {4}}                               --uoh
@@ -853,18 +858,18 @@ frame_data_meta["sean"]["c06c"] = { hit_type = {3}}                             
 frame_data_meta["sean"]["c50c"] = { hit_type = {3}}                              --cl_HK
 frame_data_meta["sean"]["c25c"] = { hit_type = {4, 4}}                           --f_HP
 frame_data_meta["sean"]["c6ec"] = { hit_type = {3}}                              --f_HK
-frame_data_meta["sean"]["cc9c"] = { hit_type = {3}}                              --u_LP
-frame_data_meta["sean"]["cd7c"] = { hit_type = {3}}                              --u_MP
-frame_data_meta["sean"]["ce5c"] = { hit_type = {3}}                              --u_HP
-frame_data_meta["sean"]["cf1c"] = { hit_type = {3}}                              --u_LK
-frame_data_meta["sean"]["d02c"] = { hit_type = {3}}                              --u_MK
-frame_data_meta["sean"]["d0fc"] = { hit_type = {3}}                              --u_HK
-frame_data_meta["sean"]["d1dc"] = { hit_type = {3}}                              --uf_LP
-frame_data_meta["sean"]["d2bc"] = { hit_type = {3}}                              --uf_MP
-frame_data_meta["sean"]["d39c"] = { hit_type = {3}}                              --uf_HP
-frame_data_meta["sean"]["d47c"] = { hit_type = {3}}                              --uf_LK
-frame_data_meta["sean"]["d55c"] = { hit_type = {3}}                              --uf_MK
-frame_data_meta["sean"]["d63c"] = { hit_type = {3}}                              --uf_HK
+frame_data_meta["sean"]["cc9c"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["sean"]["cd7c"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["sean"]["ce5c"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["sean"]["cf1c"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["sean"]["d02c"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["sean"]["d0fc"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["sean"]["d1dc"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["sean"]["d2bc"] = { hit_type = {4}}                             --uf_MP
+frame_data_meta["sean"]["d39c"] = { hit_type = {4}}                             --uf_HP
+frame_data_meta["sean"]["d47c"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["sean"]["d55c"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["sean"]["d63c"] = { hit_type = {4}}                             --uf_HK
 frame_data_meta["sean"]["dad4"] = { hit_type = {3}}                              --tc_1_ext
 frame_data_meta["sean"]["dc7c"] = { hit_type = {4, 4}}                           --tc_2_ext
 frame_data_meta["sean"]["d9ec"] = { throw = true}                               --throw_neutral
@@ -904,18 +909,18 @@ frame_data_meta["shingouki"]["4704"] = { hit_type = {3}}                        
 frame_data_meta["shingouki"]["4954"] = { hit_type = {3}}                         --cl_HP
 frame_data_meta["shingouki"]["4ba4"] = { hit_type = {3}}                         --cl_MK
 frame_data_meta["shingouki"]["4864"] = { hit_type = {4, 4}}                      --f_MP
-frame_data_meta["shingouki"]["541c"] = { hit_type = {3}}                         --u_LP
-frame_data_meta["shingouki"]["5594"] = { hit_type = {3}}                         --u_MP
-frame_data_meta["shingouki"]["573c"] = { hit_type = {3}}                         --u_HP
-frame_data_meta["shingouki"]["58e4"] = { hit_type = {3}}                         --u_LK
-frame_data_meta["shingouki"]["5a74"] = { hit_type = {3}}                         --u_MK
-frame_data_meta["shingouki"]["5bec"] = { hit_type = {3}}                         --u_HK
-frame_data_meta["shingouki"]["5d34"] = { hit_type = {3}}                         --uf_LP
-frame_data_meta["shingouki"]["5ec4"] = { hit_type = {3}}                         --uf_HP
-frame_data_meta["shingouki"]["600c"] = { hit_type = {3}}                         --uf_LK
-frame_data_meta["shingouki"]["6154"] = { hit_type = {3}}                         --uf_MK
-frame_data_meta["shingouki"]["6304"] = { hit_type = {3}}                         --uf_HK
-frame_data_meta["shingouki"]["6284"] = { hit_type = {3}}                         --d_MK_air
+frame_data_meta["shingouki"]["541c"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["shingouki"]["5594"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["shingouki"]["573c"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["shingouki"]["58e4"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["shingouki"]["5a74"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["shingouki"]["5bec"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["shingouki"]["5d34"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["shingouki"]["5ec4"] = { hit_type = {4}}                             --uf_HP
+frame_data_meta["shingouki"]["600c"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["shingouki"]["6154"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["shingouki"]["6304"] = { hit_type = {4}}                             --uf_HK
+frame_data_meta["shingouki"]["6284"] = { hit_type = {4}}                         --d_MK_air
 frame_data_meta["shingouki"]["7314"] = { hit_type = {3, 3}}                      --tc_1_ext
 frame_data_meta["shingouki"]["6fa4"] = { throw = true}                           --throw_neutral
 frame_data_meta["shingouki"]["d628"] = { hit_type = {4}}                         --uoh
@@ -948,28 +953,28 @@ frame_data_meta["twelve"]["46fc"] = { hit_type = {2}}                           
 frame_data_meta["twelve"]["480c"] = { hit_type = {2, 2, 2}}                      --d_HK
 frame_data_meta["twelve"]["3394"] = { hit_type = {3}}                            --cl_MP
 -- frame_data_meta["twelve"]["3934"] = { hit_type = {3, 3}}                         --b_MK
-frame_data_meta["twelve"]["4a2c"] = { hit_type = {3}}                            --u_LP
-frame_data_meta["twelve"]["4aec"] = { hit_type = {3}}                            --u_MP
-frame_data_meta["twelve"]["4bac"] = { hit_type = {3}}                            --u_HP
-frame_data_meta["twelve"]["4ccc"] = { hit_type = {3}}                            --u_LK
-frame_data_meta["twelve"]["4d9c"] = { hit_type = {3}}                            --u_MK
-frame_data_meta["twelve"]["4e9c"] = { hit_type = {3}}                            --u_HK
-frame_data_meta["twelve"]["4f8c"] = { hit_type = {3}}                            --uf_LP
-frame_data_meta["twelve"]["504c"] = { hit_type = {3}}                            --uf_MP
-frame_data_meta["twelve"]["510c"] = { hit_type = {3}}                            --uf_HP
-frame_data_meta["twelve"]["522c"] = { hit_type = {3}}                            --uf_LK
-frame_data_meta["twelve"]["52fc"] = { hit_type = {3}}                            --uf_MK
-frame_data_meta["twelve"]["53fc"] = { hit_type = {3}}                            --uf_HK
+frame_data_meta["twelve"]["4a2c"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["twelve"]["4aec"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["twelve"]["4bac"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["twelve"]["4ccc"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["twelve"]["4d9c"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["twelve"]["4e9c"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["twelve"]["4f8c"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["twelve"]["504c"] = { hit_type = {4}}                             --uf_MP
+frame_data_meta["twelve"]["510c"] = { hit_type = {4}}                             --uf_HP
+frame_data_meta["twelve"]["522c"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["twelve"]["52fc"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["twelve"]["53fc"] = { hit_type = {4}}                             --uf_HK
 frame_data_meta["twelve"]["58dc"] = { throw = true}                              --throw_neutral
 frame_data_meta["twelve"]["e1b4"] = { hit_type = {4}}                            --uoh
 frame_data_meta["twelve"]["b574"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3}}       --axe_LP
 frame_data_meta["twelve"]["b9c4"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3}}    --axe_MP
 frame_data_meta["twelve"]["bd94"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}} --axe_HP
 frame_data_meta["twelve"]["c174"] = { hit_type = {3, 3, 3, 3, 3, 3}}             --axe_EXP
-frame_data_meta["twelve"]["a9dc"] = { hit_type = {3}}                            --dra_LK
-frame_data_meta["twelve"]["b1f4"] = { hit_type = {3}}                            --dra_EXK
-frame_data_meta["twelve"]["af94"] = { hit_type = {3}}                            --dra_HK_ext
-frame_data_meta["twelve"]["ad34"] = { hit_type = {3}}                            --dra_MK_ext
+frame_data_meta["twelve"]["a9dc"] = { hit_type = {4}}                            --dra_LK
+frame_data_meta["twelve"]["b1f4"] = { hit_type = {4}}                            --dra_EXK
+frame_data_meta["twelve"]["af94"] = { hit_type = {4}}                            --dra_HK_ext
+frame_data_meta["twelve"]["ad34"] = { hit_type = {4}}                            --dra_MK_ext
 frame_data_meta["twelve"]["cd94"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3}}    --axe_air_LP
 frame_data_meta["twelve"]["d114"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3}}    --axe_air_MP
 frame_data_meta["twelve"]["d494"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3}}    --axe_air_HP
@@ -992,12 +997,12 @@ frame_data_meta["urien"]["ec84"] = { hit_type = {2}}                            
 frame_data_meta["urien"]["d994"] = { hit_type = {3}}                             --f_MP
 frame_data_meta["urien"]["dc1c"] = { hit_type = {3}}                             --f_HP
 frame_data_meta["urien"]["df0c"] = { hit_type = {3}}                             --f_MK
-frame_data_meta["urien"]["ee14"] = { hit_type = {3}}                             --u_LP
-frame_data_meta["urien"]["eeb4"] = { hit_type = {3}}                             --u_MP
-frame_data_meta["urien"]["ef94"] = { hit_type = {3}}                             --u_HP
-frame_data_meta["urien"]["f074"] = { hit_type = {3}}                             --u_LK
-frame_data_meta["urien"]["f114"] = { hit_type = {3}}                             --u_MK
-frame_data_meta["urien"]["f1f4"] = { hit_type = {3}}                             --u_HK
+frame_data_meta["urien"]["ee14"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["urien"]["eeb4"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["urien"]["ef94"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["urien"]["f074"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["urien"]["f114"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["urien"]["f1f4"] = { hit_type = {4}}                             --u_HK
 frame_data_meta["urien"]["fa84"] = { hit_type = {3}}                             --tc_1_ext
 frame_data_meta["urien"]["fbb4"] = { hit_type = {4}}                             --tc_2_ext
 frame_data_meta["urien"]["f764"] = { throw = true}                               --throw_neutral
@@ -1034,18 +1039,18 @@ frame_data_meta["yang"]["c224"] = { hit_type = {3}}                             
 frame_data_meta["yang"]["c3a4"] = { hit_type = {3, 3}}                           --cl_HP
 frame_data_meta["yang"]["c79c"] = { hit_type = {3, 3}}                           --cl_MK
 frame_data_meta["yang"]["caa4"] = { hit_type = {4}}                              --f_MK
-frame_data_meta["yang"]["d8ac"] = { hit_type = {3}}                              --u_LP
-frame_data_meta["yang"]["d99c"] = { hit_type = {3}}                              --u_MP
-frame_data_meta["yang"]["da8c"] = { hit_type = {3}}                              --u_HP
-frame_data_meta["yang"]["dbfc"] = { hit_type = {3}}                              --u_LK
-frame_data_meta["yang"]["dd3c"] = { hit_type = {3}}                              --u_MK
-frame_data_meta["yang"]["de8c"] = { hit_type = {3}}                              --u_HK
-frame_data_meta["yang"]["df8c"] = { hit_type = {3}}                              --uf_LP
-frame_data_meta["yang"]["e08c"] = { hit_type = {3}}                              --uf_MP
-frame_data_meta["yang"]["e17c"] = { hit_type = {3}}                              --uf_HP
-frame_data_meta["yang"]["e25c"] = { hit_type = {3}}                              --uf_LK
-frame_data_meta["yang"]["e44c"] = { hit_type = {3}}                              --uf_MK
-frame_data_meta["yang"]["e65c"] = { hit_type = {3}}                              --uf_HK
+frame_data_meta["yang"]["d8ac"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["yang"]["d99c"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["yang"]["da8c"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["yang"]["dbfc"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["yang"]["dd3c"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["yang"]["de8c"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["yang"]["df8c"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["yang"]["e08c"] = { hit_type = {4}}                             --uf_MP
+frame_data_meta["yang"]["e17c"] = { hit_type = {4}}                             --uf_HP
+frame_data_meta["yang"]["e25c"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["yang"]["e44c"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["yang"]["e65c"] = { hit_type = {4}}                             --uf_HK
 frame_data_meta["yang"]["f0fc"] = { hit_type = {3, 3}}                           --tc_1
 frame_data_meta["yang"]["ef0c"] = { hit_type = {3}}                              --tc_1_ext
 frame_data_meta["yang"]["f50c"] = { hit_type = {3}}                              --tc_3
@@ -1058,9 +1063,9 @@ frame_data_meta["yang"]["dd18"] = { hit_type = {4}}                             
 -- frame_data_meta["yang"]["e288"] = { hit_type = {3}}                              --pa
 frame_data_meta["yang"]["94d8"] = { hit_type = {3}}                              --byakko
 frame_data_meta["yang"]["c830"] = { throw = true}                                --zenpou
-frame_data_meta["yang"]["e39c"] = { hit_type = {3}}                              --raigeki_LK
-frame_data_meta["yang"]["e5ac"] = { hit_type = {3}}                              --raigeki_MK
-frame_data_meta["yang"]["e75c"] = { hit_type = {3}}                              --raigeki_HK
+frame_data_meta["yang"]["e39c"] = { hit_type = {4}}                              --raigeki_LK
+frame_data_meta["yang"]["e5ac"] = { hit_type = {4}}                              --raigeki_MK
+frame_data_meta["yang"]["e75c"] = { hit_type = {4}}                              --raigeki_HK
 frame_data_meta["yang"]["a498"] = { hit_type = {3, 3, 3}}                        --tourouzan_LP
 frame_data_meta["yang"]["aa18"] = { hit_type = {3, 3, 3}}                        --tourouzan_MP
 frame_data_meta["yang"]["af98"] = { hit_type = {3, 3, 3}}                        --tourouzan_HP
@@ -1092,18 +1097,18 @@ frame_data_meta["yun"]["42a4"] = { hit_type = {3, 3}}                           
 frame_data_meta["yun"]["4a04"] = { hit_type = {3}}                               --cl_MK
 frame_data_meta["yun"]["4654"] = { hit_type = {3}}                               --f_HP
 frame_data_meta["yun"]["4d2c"] = { hit_type = {4}}                               --f_MK
-frame_data_meta["yun"]["580c"] = { hit_type = {3}}                               --u_LP
-frame_data_meta["yun"]["590c"] = { hit_type = {3}}                               --u_MP
-frame_data_meta["yun"]["59fc"] = { hit_type = {3}}                               --u_HP
-frame_data_meta["yun"]["5b6c"] = { hit_type = {3}}                               --u_LK
-frame_data_meta["yun"]["5cac"] = { hit_type = {3}}                               --u_MK
-frame_data_meta["yun"]["5dfc"] = { hit_type = {3}}                               --u_HK
-frame_data_meta["yun"]["5efc"] = { hit_type = {3}}                               --uf_LP
-frame_data_meta["yun"]["5ffc"] = { hit_type = {3}}                               --uf_MP
-frame_data_meta["yun"]["60ec"] = { hit_type = {3}}                               --uf_HP
-frame_data_meta["yun"]["61cc"] = { hit_type = {3}}                               --uf_LK
-frame_data_meta["yun"]["63bc"] = { hit_type = {3}}                               --uf_MK
-frame_data_meta["yun"]["65bc"] = { hit_type = {3}}                               --uf_HK
+frame_data_meta["yun"]["580c"] = { hit_type = {4}}                             --u_LP
+frame_data_meta["yun"]["590c"] = { hit_type = {4}}                             --u_MP
+frame_data_meta["yun"]["59fc"] = { hit_type = {4}}                             --u_HP
+frame_data_meta["yun"]["5b6c"] = { hit_type = {4}}                             --u_LK
+frame_data_meta["yun"]["5cac"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["yun"]["5dfc"] = { hit_type = {4}}                             --u_HK
+frame_data_meta["yun"]["5efc"] = { hit_type = {4}}                             --uf_LP
+frame_data_meta["yun"]["5ffc"] = { hit_type = {4}}                             --uf_MP
+frame_data_meta["yun"]["60ec"] = { hit_type = {4}}                             --uf_HP
+frame_data_meta["yun"]["61cc"] = { hit_type = {4}}                             --uf_LK
+frame_data_meta["yun"]["63bc"] = { hit_type = {4}}                             --uf_MK
+frame_data_meta["yun"]["65bc"] = { hit_type = {4}}                             --uf_HK
 frame_data_meta["yun"]["75a4"] = { hit_type = {3}}                               --tc_1
 frame_data_meta["yun"]["6e14"] = { hit_type = {3, 3}}                            --tc_2
 frame_data_meta["yun"]["748c"] = { hit_type = {3, 3}}                            --tc_1_ext
@@ -1134,25 +1139,25 @@ frame_data_meta["yun"]["8a04"] = { hit_type = {2}}                              
 -- frame_data_meta["yun"]["87b4"] = { hit_type = {2}}                               --d_MP_geneijin
 frame_data_meta["yun"]["7d64"] = { hit_type = {3}}                               --f_HP_geneijin
 frame_data_meta["yun"]["83ec"] = { hit_type = {4}}                               --f_MK_geneijin
-frame_data_meta["yun"]["920c"] = { hit_type = {3}}                               --u_HK_geneijin
-frame_data_meta["yun"]["8e4c"] = { hit_type = {3}}                               --u_HP_geneijin
-frame_data_meta["yun"]["8f9c"] = { hit_type = {3}}                               --u_LK_geneijin
-frame_data_meta["yun"]["8c8c"] = { hit_type = {3}}                               --u_LP_geneijin
-frame_data_meta["yun"]["976c"] = { hit_type = {3}}                               --u_MK_geneijin
-frame_data_meta["yun"]["8d6c"] = { hit_type = {3}}                               --u_MP_geneijin
+frame_data_meta["yun"]["920c"] = { hit_type = {4}}                             --u_HK_geneijin
+frame_data_meta["yun"]["8e4c"] = { hit_type = {4}}                             --u_HP_geneijin
+frame_data_meta["yun"]["8f9c"] = { hit_type = {4}}                             --u_LK_geneijin
+frame_data_meta["yun"]["8c8c"] = { hit_type = {4}}                             --u_LP_geneijin
+frame_data_meta["yun"]["976c"] = { hit_type = {4}}                             --u_MK_geneijin
+frame_data_meta["yun"]["8d6c"] = { hit_type = {4}}                             --u_MP_geneijin
 frame_data_meta["yun"]["7a2c"] = { hit_type = {3, 3}}                            --cl_HP_geneijin
 -- frame_data_meta["yun"]["a3dc"] = { hit_type = {3}}                               --cl_LP_geneijin
 frame_data_meta["yun"]["80b4"] = { hit_type = {3}}                               --cl_MK_geneijin
 frame_data_meta["yun"]["77b4"] = { hit_type = {3}}                               --cl_MP_geneijin
-frame_data_meta["yun"]["994c"] = { hit_type = {3}}                               --uf_HK_geneijin
-frame_data_meta["yun"]["94cc"] = { hit_type = {3}}                               --uf_HP_geneijin
-frame_data_meta["yun"]["959c"] = { hit_type = {3}}                               --uf_LK_geneijin
-frame_data_meta["yun"]["92fc"] = { hit_type = {3}}                               --uf_LP_geneijin
-frame_data_meta["yun"]["93ec"] = { hit_type = {3}}                               --uf_MP_geneijin
+frame_data_meta["yun"]["994c"] = { hit_type = {4}}                             --uf_HK_geneijin
+frame_data_meta["yun"]["94cc"] = { hit_type = {4}}                             --uf_HP_geneijin
+frame_data_meta["yun"]["959c"] = { hit_type = {4}}                             --uf_LK_geneijin
+frame_data_meta["yun"]["92fc"] = { hit_type = {4}}                             --uf_LP_geneijin
+frame_data_meta["yun"]["93ec"] = { hit_type = {4}}                             --uf_MP_geneijin
 frame_data_meta["yun"]["5f40"] = { throw = true}                                 --zenpou_geneijin
-frame_data_meta["yun"]["630c"] = { hit_type = {3}}                               --raigeki_LK
-frame_data_meta["yun"]["650c"] = { hit_type = {3}}                               --raigeki_MK
-frame_data_meta["yun"]["66bc"] = { hit_type = {3}}                               --raigeki_HK
+frame_data_meta["yun"]["630c"] = { hit_type = {4}}                               --raigeki_LK
+frame_data_meta["yun"]["650c"] = { hit_type = {4}}                               --raigeki_MK
+frame_data_meta["yun"]["66bc"] = { hit_type = {4}}                               --raigeki_HK
 frame_data_meta["yun"]["3620"] = { hit_type = {3}}                               --zesshou_LP
 frame_data_meta["yun"]["3840"] = { hit_type = {3}}                               --zesshou_MP
 frame_data_meta["yun"]["3a60"] = { hit_type = {3}}                               --zesshou_HP
@@ -1163,9 +1168,9 @@ frame_data_meta["yun"]["5c30"] = { hit_type = {3, 3, 3}}                        
 -- frame_data_meta["yun"]["6ce0"] = { hit_type = {3}}                               --tetsuzan_HP
 -- frame_data_meta["yun"]["6f48"] = { hit_type = {3, 3}}                            --tetsuzan_EXP
 frame_data_meta["yun"]["59f8"] = { hit_type = {3}}                               --kobokushi_geneijin
-frame_data_meta["yun"]["9a3c"] = { hit_type = {3}}                               --raigeki_HK_geneijin
-frame_data_meta["yun"]["96cc"] = { hit_type = {3}}                               --raigeki_LK_geneijin
-frame_data_meta["yun"]["98ac"] = { hit_type = {3}}                               --raigeki_MK_geneijin
+frame_data_meta["yun"]["9a3c"] = { hit_type = {4}}                               --raigeki_HK_geneijin
+frame_data_meta["yun"]["96cc"] = { hit_type = {4}}                               --raigeki_LK_geneijin
+frame_data_meta["yun"]["98ac"] = { hit_type = {4}}                               --raigeki_MK_geneijin
 -- frame_data_meta["yun"]["7938"] = { hit_type = {3, 3}}                            --tetsuzan_HP_geneijin
 -- frame_data_meta["yun"]["7468"] = { hit_type = {3, 3}}                            --tetsuzan_LP_geneijin
 -- frame_data_meta["yun"]["76d0"] = { hit_type = {3, 3}}                            --tetsuzan_MP_geneijin
@@ -1225,40 +1230,40 @@ frame_data_meta["projectiles"]["55"] = { hit_type = {3}}                        
 frame_data_meta["projectiles"]["0C"] = { hit_type = {3}}                         --nichirin_LP
 frame_data_meta["projectiles"]["0D"] = { hit_type = {3}}                         --nichirin_MP
 frame_data_meta["projectiles"]["0E"] = { hit_type = {3}}                         --nichirin_HP
-frame_data_meta["projectiles"]["0F"] = { hit_type = {3}}                         --nichirin_EXP
+frame_data_meta["projectiles"]["0F"] = { hit_type = {3}, cooldown = 1}           --nichirin_EXP
 frame_data_meta["projectiles"]["00"] = { hit_type = {3}, unparryable = true}     --seraphic_wing
-frame_data_meta["projectiles"]["53"] = { hit_type = {3}}                         --temporal_thunder
+frame_data_meta["projectiles"]["53"] = { hit_type = {3}, cooldown = 3}           --temporal_thunder
 frame_data_meta["projectiles"]["6A"] = { hit_type = {3}}                         --gohadouken_LP
 frame_data_meta["projectiles"]["6B"] = { hit_type = {3}}                         --gohadouken_MP
 frame_data_meta["projectiles"]["6C"] = { hit_type = {3}}                         --gohadouken_HP
 frame_data_meta["projectiles"]["59"] = { hit_type = {3}}                         --shakunetsu_LP
 frame_data_meta["projectiles"]["5A"] = { hit_type = {3}}                         --shakunetsu_MP
 frame_data_meta["projectiles"]["5B"] = { hit_type = {3}}                         --shakunetsu_HP
--- frame_data_meta["projectiles"]["14"] = { hit_type = {3}}                         --yagyoudama_LP
--- frame_data_meta["projectiles"]["15"] = { hit_type = {3}}                         --yagyoudama_MP
--- frame_data_meta["projectiles"]["16"] = { hit_type = {3}}                         --yagyoudama_HP
--- frame_data_meta["projectiles"]["72"] = { hit_type = {3}}                         --yagyoudama_EXP
+frame_data_meta["projectiles"]["14"] = { hit_type = {1}, cooldown = 3}           --yagyoudama_LP
+frame_data_meta["projectiles"]["15"] = { hit_type = {1}, cooldown = 3}           --yagyoudama_MP
+frame_data_meta["projectiles"]["16"] = { hit_type = {1}, cooldown = 3}           --yagyoudama_HP
+frame_data_meta["projectiles"]["72"] = { hit_type = {1}}                         --yagyoudama_EXP
 frame_data_meta["projectiles"]["37"] = { hit_type = {3}}                         --pyrokinesis_LP
 frame_data_meta["projectiles"]["38"] = { hit_type = {3}}                         --pyrokinesis_MP
 frame_data_meta["projectiles"]["39"] = { hit_type = {3}}                         --pyrokinesis_HP
-frame_data_meta["projectiles"]["25"] = { hit_type = {3}}                         --kasumisuzaku_LP
-frame_data_meta["projectiles"]["26"] = { hit_type = {3}}                         --kasumisuzaku_LP
-frame_data_meta["projectiles"]["27"] = { hit_type = {3}}                         --kasumisuzaku_LP
-frame_data_meta["projectiles"]["28"] = { hit_type = {3}}                         --kasumisuzaku_LP
-frame_data_meta["projectiles"]["29"] = { hit_type = {3}}                         --kasumisuzaku_LP
-frame_data_meta["projectiles"]["2A"] = { hit_type = {3}}                         --kasumisuzaku_LP
-frame_data_meta["projectiles"]["2B"] = { hit_type = {3}}                         --kasumisuzaku_MP
-frame_data_meta["projectiles"]["2C"] = { hit_type = {3}}                         --kasumisuzaku_MP
-frame_data_meta["projectiles"]["2D"] = { hit_type = {3}}                         --kasumisuzaku_MP
-frame_data_meta["projectiles"]["2E"] = { hit_type = {3}}                         --kasumisuzaku_MP
-frame_data_meta["projectiles"]["2F"] = { hit_type = {3}}                         --kasumisuzaku_MP
-frame_data_meta["projectiles"]["30"] = { hit_type = {3}}                         --kasumisuzaku_MP
-frame_data_meta["projectiles"]["31"] = { hit_type = {3}}                         --kasumisuzaku_HP
-frame_data_meta["projectiles"]["32"] = { hit_type = {3}}                         --kasumisuzaku_HP
-frame_data_meta["projectiles"]["33"] = { hit_type = {3}}                         --kasumisuzaku_HP
-frame_data_meta["projectiles"]["34"] = { hit_type = {3}}                         --kasumisuzaku_HP
-frame_data_meta["projectiles"]["35"] = { hit_type = {3}}                         --kasumisuzaku_HP
-frame_data_meta["projectiles"]["36"] = { hit_type = {3}}                         --kasumisuzaku_HP
+frame_data_meta["projectiles"]["25"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_LP
+frame_data_meta["projectiles"]["26"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_LP
+frame_data_meta["projectiles"]["27"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_LP
+frame_data_meta["projectiles"]["28"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_LP
+frame_data_meta["projectiles"]["29"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_LP
+frame_data_meta["projectiles"]["2A"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_LP
+frame_data_meta["projectiles"]["2B"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_MP
+frame_data_meta["projectiles"]["2C"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_MP
+frame_data_meta["projectiles"]["2D"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_MP
+frame_data_meta["projectiles"]["2E"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_MP
+frame_data_meta["projectiles"]["2F"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_MP
+frame_data_meta["projectiles"]["30"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_MP
+frame_data_meta["projectiles"]["31"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_HP
+frame_data_meta["projectiles"]["32"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_HP
+frame_data_meta["projectiles"]["33"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_HP
+frame_data_meta["projectiles"]["34"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_HP
+frame_data_meta["projectiles"]["35"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_HP
+frame_data_meta["projectiles"]["36"] = { hit_type = {3}, hit_period = 4}         --kasumisuzaku_HP
 frame_data_meta["projectiles"]["5D"] = { hit_type = {3}}                         --gohadouken_air_LP
 frame_data_meta["projectiles"]["5E"] = { hit_type = {3}}                         --gohadouken_air_MP
 frame_data_meta["projectiles"]["5F"] = { hit_type = {3}}                         --gohadouken_air_HP
@@ -1279,7 +1284,7 @@ frame_data_meta["projectiles"]["7F"] = { hit_type = {3}}                        
 frame_data_meta["projectiles"]["80"] = { hit_type = {3}}                         --light_of_virtue_EXP
 frame_data_meta["projectiles"]["87"] = { hit_type = {3}}                         --light_of_virtue_EXK_ext
 frame_data_meta["projectiles"]["81"] = { hit_type = {3}}                         --light_of_virtue_EXP_ext
--- frame_data_meta["projectiles"]["85"] = { hit_type = {1}}                         --light_of_virtue_EXK
+frame_data_meta["projectiles"]["85"] = { hit_type = {2}}                         --light_of_virtue_EXK
 -- frame_data_meta["projectiles"]["86"] = { hit_type = {1}}                         --light_of_virtue_EXK
 -- frame_data_meta["projectiles"]["65"] = { hit_type = {3}}                         --aegis_reflector_LP
 -- frame_data_meta["projectiles"]["66"] = { hit_type = {3}}                         --aegis_reflector_MP
@@ -1294,7 +1299,7 @@ frame_data_meta["projectiles"]["20"] = { hit_type = {3}}                        
 frame_data_meta["projectiles"]["3E"] = { hit_type = {3}}                         --metallic_sphere_LP
 frame_data_meta["projectiles"]["3F"] = { hit_type = {3}}                         --metallic_sphere_MP
 frame_data_meta["projectiles"]["40"] = { hit_type = {3}}                         --metallic_sphere_HP
-frame_data_meta["projectiles"]["6E"] = { hit_type = {3}}                         --metallic_sphere_EXP
+frame_data_meta["projectiles"]["6E"] = { hit_type = {3}, cooldown = 2}           --metallic_sphere_EXP
 frame_data_meta["projectiles"]["61"] = { hit_type = {3}}                         --messatsu_gouhadou_air
 
 return {

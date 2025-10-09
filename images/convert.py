@@ -11,9 +11,6 @@ menu_dir = cwd + "/menu"
 base_path = "images/menu/"
 colors = {
     "white": "white"
-    # "red": "#FF0000",
-    # "green": "#00FF00",
-    # "grey": "#999999"
     }
 with open("../data/image_map.json") as f:
     data = json.load(f)
@@ -62,6 +59,15 @@ for color,color_code in colors.items():
         subprocess.Popen(["bash", "./text_to_image.sh",char,filename,size,color_code,"jp_8_ext"], cwd=cwd)
         data.setdefault(key, {})
         data[key]["jp_8"] = base_path + filename + ".png"
+
+    for char in utf["score"]:
+        ucode = ord(char)
+        key = f"utf_{ucode}"
+        size = "10"
+        filename = f"{key}_score_{size}_{color}"
+        subprocess.Popen(["bash", "./text_to_image.sh",char,filename,size,color_code,"score"], cwd=cwd)
+        data.setdefault(key, {})
+        data[key]["score"] = base_path + filename + ".png"
 
 
 

@@ -9,7 +9,7 @@ local character_select = require("src.control.character_select")
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local frame_data_meta = fdm.frame_data_meta
 
-hadou_matsuri_savestate = savestate.create("data/"..rom_name.."/savestates/hadou_matsuri.fs")
+hadou_matsuri_savestate = savestate.create("data/"..game_data.rom_name.."/savestates/hadou_matsuri.fs")
 
 
 local motion_hadou_lp = {{"down"},{"down","forward"},{"forward","LP"}}
@@ -486,13 +486,13 @@ function debug_challenge()
 end
 
 function hadou_matsuri_save_ss()
-  hadou_matsuri_savestate = savestate.create("data/"..rom_name.."/savestates/hadou_matsuri.fs")
+  hadou_matsuri_savestate = savestate.create("data/"..game_data.rom_name.."/savestates/hadou_matsuri.fs")
   full_gauge(gamestate.P2)
   zero_gauge(gamestate.P1)
   savestate.save(hadou_matsuri_savestate)
 end
 function hadou_matsuri_load_ss()
-  hadou_matsuri_savestate = savestate.create("data/"..rom_name.."/savestates/hadou_matsuri.fs")
+  hadou_matsuri_savestate = savestate.create("data/"..game_data.rom_name.."/savestates/hadou_matsuri.fs")
   savestate.load(hadou_matsuri_savestate)
 end
 

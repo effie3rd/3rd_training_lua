@@ -1,11 +1,12 @@
-# 3rd_training_lua_effie
-Training mode for Street Fighter III: 3rd Strike
+# effie's 3rd training lua
+_Let's raise the level of 3rd Strike._
 
 ## No Dummy Update / 脳ダミーアップデート 
 
 ### Main Features
   - Prediction system completely rewritten
   - Framedata model improved and re-recorded from scratch
+  - Special training modes
   - Several new options and displays
   - UI redesign
   
@@ -25,12 +26,13 @@ Training mode for Street Fighter III: 3rd Strike
   - Japanese language support
 
 ### New Options
+  - Block after first hit
   - Prefer down parry
   - Red parry every n attacks
   - Counterattack after n attacks
   - Counterattack delay
   - Mash inputs - get out of stuns and holds
-  - Cheat parrying, Universal cancel, Infinite juggle, Infinite projectiles
+  - Auto parry, Universal cancel, Infinite juggle, Infinite projectiles
 
 ### New Displays
   - Attack Bars: Compact display for comparing the damage/stun of the last two attacks
@@ -45,30 +47,33 @@ Training mode for Street Fighter III: 3rd Strike
     - Compact display for parry display
     - 360/720 and Denjin displays added
   
-### Miscellaneous
-  - Load time improvements: Frame data now loads asynchronously once the game starts; the game window now pops up half a second faster.
-  - Random Character Select
-  - Force Stage Select
-  - Stun value displayed in attack data now reflects the amount of stun the opponent recovered during the attack. e.g. All versions of Alex's power bomb do 19 stun when the opponent starts with 0 stun. However, when the opponent starts with some stun, the opponent recovers stun during the power bomb animation resulting in LP power bomb effectively doing 16.55 stun and HP power bomb doing 15.91 stun.
-  
-### Training Modes
-  - Tick throws
+### Special Training Modes
+  - Defense
   - Genei Jin
   - Footsies
   - Anti air
   - Unblockables
-
+  
+### Miscellaneous
+  - Load time improvements: Frame data now loads asynchronously once the game starts; the game window now pops up half a second faster.
+  - Random Character Select
+  - Force Stage Select
+  - Fixed an issue regarding recording replay consistency. (Screen darkening sometimes occurs 1 frame later, desynchronizing the playback)
+  - Stun value displayed in attack data now reflects the amount of stun the opponent recovered during the attack.
+  
 ### Challenge
-
+  - Work in progress
+  
 ### Technical Stuff
+  - Refactored
   - Added memory addresses
     - Velocity
     - Acceleration
     - Stun state, fractional stun value
     - Graphics mode
     - 360 charge (P1+P2)
-    - Air timer P1
-    - Denjin charge P1
+    - Air timer (P1+P2)
+    - Denjin charge (P1+P2)
   - Framedata now uses the following fields:
     - animation level: name, frames, hit_frames, idle_frames, loops, pushback, advantage, uses_velocity, air, infinite_loop, max_hits, cooldown, self_chain, exceptions
     - frame level: hash, boxes, movement, velocity, acceleration, loop, next_anim, optional_anim, wakeup, bypass_freeze
@@ -79,6 +84,7 @@ Training mode for Street Fighter III: 3rd Strike
   - Blocking of multi-hit attacks and supers
   - The same move performed in frame perfect succession was not blocked
   - Jumping attacks that hit behind a cornered opponent were not blocked
+  - Improved consistency of reversal execution for charge/360 moves.
 
 ### Notes
-  - Dummy blocking is imperfect, so if you absolutely need something parried then enable the cheat parrying option. Be aware that it will parry things that are normally impossible to parry.
+  - Dummy blocking is imperfect, so if you absolutely need something parried then enable the auto parrying option. Be aware that it might parry things that are normally impossible to parry.

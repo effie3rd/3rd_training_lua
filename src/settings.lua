@@ -1,56 +1,100 @@
---interacts with settings file
+-- interacts with settings files
+local game_data = require("src.modules.game_data")
+local tools = require("src.tools")
+
 local saved_path = "saved/"
+local data_path = "data/" .. game_data.rom_name .. "/"
+local framedata_path = data_path .. "framedata/"
+local framedata_file_ext = "_framedata.json"
 local recordings_path = "saved/recordings/"
 local training_settings_file = "training_settings.json"
+local special_training_settings_file = "special_training_settings.json"
+local training_settings_default_file = "training_settings_default.json"
+local special_training_default_settings_file = "special_training_settings_default.json"
+local themes_path = "data/themes.json"
+local recordings_file = "recordings.json"
 
 local training = {}
+local special_training = {}
+local recordings = {}
+
+local lang_code = {"en", "jp"}
 
 local function save_training_data()
-  if not write_object_to_json_file(training, saved_path..training_settings_file, true) then
-    print(string.format("Error: Failed to save training settings to \"%s\"", training_settings_file))
-  end
+   if not tools.write_object_to_json_file(training, saved_path .. training_settings_file, true) then
+      print(string.format("Error: Failed to save training settings to \"%s\"", training_settings_file))
+   end
+   if not tools.write_object_to_json_file(special_training, saved_path .. special_training_settings_file, true) then
+      print(string.format("Error: Failed to save training settings to \"%s\"", special_training_settings_file))
+   end
+   if not tools.write_object_to_json_file(recordings, saved_path .. recordings_file, true) then
+      print(string.format("Error: Failed to save training settings to \"%s\"", recordings_file))
+   end
 end
 
 local function load_training_data()
-  local settings = read_object_from_json_file(saved_path..training_settings_file)
+   local training_settings = tools.read_object_from_json_file(saved_path .. training_settings_file)
+   -- no file then create defaults
+   if training_settings == nil then
+      training_settings = tools.read_object_from_json_file(saved_path .. training_settings_default_file)
+      if training_settings == nil then training_settings = {} end
+   end
 
-  if settings == nil then
-    settings = {}
-  end
+   -- training_settings.version ~=
 
-  for key, value in pairs(settings) do
-    training[key] = value
-  end
+   for key, value in pairs(training_settings) do training[key] = value end
+
+   local special_training_settings = tools.read_object_from_json_file(saved_path .. special_training_settings_file)
+   -- no file then create defaults
+   if special_training_settings == nil then special_training_settings = {} end
+   for key, value in pairs(special_training_settings) do special_training[key] = value end
+
+   recordings = tools.read_object_from_json_file(saved_path .. recordings_file)
+   -- no file then create defaults
+   if recordings == nil then recordings = {} end
 end
-
 
 load_training_data()
 
 local settings_module = {
-  load_training_data = load_training_data,
-  save_training_data = save_training_data,
-  saved_path = saved_path,
-  recordings_path = recordings_path,
+   saved_path = saved_path,
+   data_path = data_path,
+   framedata_path = framedata_path,
+   framedata_file_ext = framedata_file_ext,
+   recordings_path = recordings_path,
+   themes_path = themes_path,
+   load_training_data = load_training_data,
+   save_training_data = save_training_data
 }
 
 setmetatable(settings_module, {
-  __index = function(_, key)
-    if key == "training" then
-      return training
-    elseif key == "counter_attack" then
-      return training.counter_attack
-    end
-  end,
+   __index = function(_, key)
+      if key == "training" then
+         return training
+      elseif key == "special_training" then
+         return special_training
+      elseif key == "recordings" then
+         return recordings
+      elseif key == "counter_attack" then
+         return training.counter_attack
+      elseif key == "language" then
+         return lang_code[training.language]
+      end
+   end,
 
-  __newindex = function(_, key, value)
-    if key == "training" then
-      training = value
-    elseif key == "counter_attack" then
-      training.counter_attack = value
-    else
-      rawset(settings_module, key, value)
-    end
-  end
+   __newindex = function(_, key, value)
+      if key == "training" then
+         training = value
+      elseif key == "special_training" then
+         special_training = value
+      elseif key == "recordings" then
+         recordings = value
+      elseif key == "counter_attack" then
+         training.counter_attack = value
+      else
+         rawset(settings_module, key, value)
+      end
+   end
 })
 
 return settings_module

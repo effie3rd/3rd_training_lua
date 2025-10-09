@@ -1,45 +1,27 @@
+local game_data = require("src.modules.game_data")
+local tools = require("src.tools")
+
 local frame_data = {}
 
-local slow_jumpers =
-{
-  "alex",
-  "necro",
-  "urien",
-  "remy",
-  "twelve",
-  "oro"
-}
+local slow_jumpers = {"alex", "necro", "urien", "remy", "twelve", "oro"}
 
-local really_slow_jumpers =
-{
-  "q",
-  "hugo"
-}
+local really_slow_jumpers = {"q", "hugo"}
 
 local function is_slow_jumper(str)
-  for i = 1, #slow_jumpers do
-    if str == slow_jumpers[i] then
-      return true
-    end
-  end
-  return false
+   for i = 1, #slow_jumpers do if str == slow_jumpers[i] then return true end end
+   return false
 end
 
 local function is_really_slow_jumper(str)
-  for i = 1, #really_slow_jumpers do
-    if str == really_slow_jumpers[i] then
-      return true
-    end
-  end
-  return false
+   for i = 1, #really_slow_jumpers do if str == really_slow_jumpers[i] then return true end end
+   return false
 end
-
 
 -- # Character specific stuff
 local character_specific = {}
-for i = 1, #Characters do
-  character_specific[Characters[i]] = {}
-  character_specific[Characters[i]].timed_sa = {false, false, false}
+for i = 1, #game_data.characters do
+   character_specific[game_data.characters[i]] = {}
+   character_specific[game_data.characters[i]].timed_sa = {false, false, false}
 end
 -- ## Character approximate dimensions
 character_specific.alex.half_width = 45
@@ -58,33 +40,33 @@ character_specific.q.half_width = 25
 character_specific.remy.half_width = 32
 character_specific.ryu.half_width = 31
 character_specific.sean.half_width = 29
+character_specific.shingouki.half_width = 33
 character_specific.twelve.half_width = 33
 character_specific.urien.half_width = 36
 character_specific.yang.half_width = 41
 character_specific.yun.half_width = 37
-character_specific.shingouki.half_width = 33
 
-character_specific.alex.height = 104
-character_specific.chunli.height = 97
-character_specific.dudley.height = 109
-character_specific.elena.height = 88
-character_specific.gill.height = 121
-character_specific.gouki.height = 107
-character_specific.hugo.height = 137
-character_specific.ibuki.height = 92
-character_specific.ken.height = 107
-character_specific.makoto.height = 90
-character_specific.necro.height = 89
-character_specific.oro.height = 88
-character_specific.q.height = 130
-character_specific.remy.height = 114
-character_specific.ryu.height = 101
-character_specific.sean.height = 103
-character_specific.twelve.height = 91
-character_specific.urien.height = 121
-character_specific.yang.height = 89
-character_specific.yun.height = 89
-character_specific.shingouki.height = 107
+character_specific.alex.height = {crouching = {min = 68, max = 68}, standing = {min = 100, max = 107}}
+character_specific.chunli.height = {crouching = {min = 59, max = 59}, standing = {min = 96, max = 96}}
+character_specific.dudley.height = {crouching = {min = 70, max = 73}, standing = {min = 102, max = 109}}
+character_specific.elena.height = {crouching = {min = 59, max = 59}, standing = {min = 78, max = 100}}
+character_specific.gill.height = {crouching = {min = 74, max = 74}, standing = {min = 120, max = 123}}
+character_specific.gouki.height = {crouching = {min = 68, max = 70}, standing = {min = 101, max = 110}}
+character_specific.hugo.height = {crouching = {min = 96, max = 96}, standing = {min = 136, max = 141}}
+character_specific.ibuki.height = {crouching = {min = 60, max = 60}, standing = {min = 89, max = 91}}
+character_specific.ken.height = {crouching = {min = 66, max = 68}, standing = {min = 98, max = 106}}
+character_specific.makoto.height = {crouching = {min = 65, max = 65}, standing = {min = 84, max = 89}}
+character_specific.necro.height = {crouching = {min = 65, max = 66}, standing = {min = 84, max = 91}}
+character_specific.oro.height = {crouching = {min = 59, max = 59}, standing = {min = 87, max = 91}}
+character_specific.q.height = {crouching = {min = 70, max = 77}, standing = {min = 127, max = 134}}
+character_specific.remy.height = {crouching = {min = 67, max = 69}, standing = {min = 113, max = 116}}
+character_specific.ryu.height = {crouching = {min = 65, max = 68}, standing = {min = 99, max = 107}}
+character_specific.sean.height = {crouching = {min = 67, max = 69}, standing = {min = 101, max = 108}}
+character_specific.shingouki.height = {crouching = {min = 68, max = 68}, standing = {min = 102, max = 102}}
+character_specific.twelve.height = {crouching = {min = 65, max = 65}, standing = {min = 83, max = 92}}
+character_specific.urien.height = {crouching = {min = 72, max = 76}, standing = {min = 120, max = 123}}
+character_specific.yang.height = {crouching = {min = 63, max = 63}, standing = {min = 85, max = 92}}
+character_specific.yun.height = {crouching = {min = 63, max = 63}, standing = {min = 84, max = 91}}
 
 character_specific.alex.corner_offset_left = 32
 character_specific.alex.corner_offset_right = 31
@@ -118,6 +100,8 @@ character_specific.ryu.corner_offset_left = 28
 character_specific.ryu.corner_offset_right = 27
 character_specific.sean.corner_offset_left = 28
 character_specific.sean.corner_offset_right = 27
+character_specific.shingouki.corner_offset_left = 30
+character_specific.shingouki.corner_offset_right = 29
 character_specific.twelve.corner_offset_left = 36
 character_specific.twelve.corner_offset_right = 35
 character_specific.urien.corner_offset_left = 32
@@ -126,8 +110,28 @@ character_specific.yang.corner_offset_left = 24
 character_specific.yang.corner_offset_right = 23
 character_specific.yun.corner_offset_left = 24
 character_specific.yun.corner_offset_right = 23
-character_specific.shingouki.corner_offset_left = 30
-character_specific.shingouki.corner_offset_right = 29
+
+character_specific.alex.pushbox_width = 56
+character_specific.chunli.pushbox_width = 44
+character_specific.dudley.pushbox_width = 50
+character_specific.elena.pushbox_width = 46
+character_specific.gill.pushbox_width = 48
+character_specific.gouki.pushbox_width = 50
+character_specific.hugo.pushbox_width = 60
+character_specific.ibuki.pushbox_width = 48
+character_specific.ken.pushbox_width = 50
+character_specific.makoto.pushbox_width = 50
+character_specific.necro.pushbox_width = 46
+character_specific.oro.pushbox_width = 48
+character_specific.q.pushbox_width = 44
+character_specific.remy.pushbox_width = 42
+character_specific.ryu.pushbox_width = 50
+character_specific.sean.pushbox_width = 50
+character_specific.shingouki.pushbox_width = 50
+character_specific.twelve.pushbox_width = 50
+character_specific.urien.pushbox_width = 48
+character_specific.yang.pushbox_width = 42
+character_specific.yun.pushbox_width = 42
 
 character_specific.alex.push_value = 22
 character_specific.chunli.push_value = 17
@@ -145,19 +149,70 @@ character_specific.q.push_value = 19
 character_specific.remy.push_value = 17
 character_specific.ryu.push_value = 20
 character_specific.sean.push_value = 20
+character_specific.shingouki.push_value = 20
 character_specific.twelve.push_value = 20
 character_specific.urien.push_value = 19
 character_specific.yang.push_value = 16
 character_specific.yun.push_value = 16
-character_specific.shingouki.push_value = 20
 
--- ## Characters standing states
-character_specific.oro.additional_standing_states = { 3 } -- 3 is crouching
-character_specific.dudley.additional_standing_states = { 6 } -- 6 is crouching
-character_specific.makoto.additional_standing_states = { 7 } -- 7 happens during Oroshi
-character_specific.necro.additional_standing_states = { 13 } -- 13 happens during CrLK
+character_specific.alex.forward_walk_speed = 2.5
+character_specific.chunli.forward_walk_speed = 3.6875
+character_specific.dudley.forward_walk_speed = 3.75
+character_specific.elena.forward_walk_speed = 3.5
+character_specific.gill.forward_walk_speed = 3.1875
+character_specific.gouki.forward_walk_speed = 3.3125
+character_specific.hugo.forward_walk_speed = 2.125
+character_specific.ibuki.forward_walk_speed = 4
+character_specific.ken.forward_walk_speed = 3.4375
+character_specific.makoto.forward_walk_speed = 1.75
+character_specific.necro.forward_walk_speed = 2.75
+character_specific.oro.forward_walk_speed = 2.875
+character_specific.q.forward_walk_speed = 2.3125
+character_specific.remy.forward_walk_speed = 3.25
+character_specific.ryu.forward_walk_speed = 3.25
+character_specific.sean.forward_walk_speed = 3.375
+character_specific.shingouki.forward_walk_speed = 3.5
+character_specific.twelve.forward_walk_speed = 2.75
+character_specific.urien.forward_walk_speed = 3.1875
+character_specific.yang.forward_walk_speed = 3.875
+character_specific.yun.forward_walk_speed = 3.75
 
--- ## Characters timed SA
+character_specific.alex.backward_walk_speed = -2.125
+character_specific.chunli.backward_walk_speed = -3
+character_specific.dudley.backward_walk_speed = -2.75
+character_specific.elena.backward_walk_speed = -3.125
+character_specific.gill.backward_walk_speed = -2.8125
+character_specific.gouki.backward_walk_speed = -2.5
+character_specific.hugo.backward_walk_speed = -1.625
+character_specific.ibuki.backward_walk_speed = -3
+character_specific.ken.backward_walk_speed = -2.625
+character_specific.makoto.backward_walk_speed = -1.375
+character_specific.necro.backward_walk_speed = -2.25
+character_specific.oro.backward_walk_speed = -2.5
+character_specific.q.backward_walk_speed = -2
+character_specific.remy.backward_walk_speed = -2.5
+character_specific.ryu.backward_walk_speed = -2.5
+character_specific.sean.backward_walk_speed = -2.75
+character_specific.shingouki.backward_walk_speed = -2.6875
+character_specific.twelve.backward_walk_speed = -2.25
+character_specific.urien.backward_walk_speed = -2.8125
+character_specific.yang.backward_walk_speed = -2.8125
+character_specific.yun.backward_walk_speed = -2.75
+
+-- ## game_data.characters standing states
+-- todo: find all ground and air states
+character_specific.makoto.standing_states = {3,7,11,13} -- 7 happens during Oroshi
+
+character_specific.oro.crouching_states = {3} -- 3 is crouching
+character_specific.dudley.crouching_states = {6} -- 6 is crouching
+character_specific.necro.crouching_states = {13} -- 13 happens during CrLK
+
+character_specific.oro.air_states = {4, 10}
+character_specific.dudley.air_states = {8}
+character_specific.makoto.air_states = {4}
+
+
+-- ## game_data.characters timed SA
 character_specific.oro.timed_sa[1] = true;
 character_specific.oro.timed_sa[3] = true;
 character_specific.q.timed_sa[3] = true;
@@ -166,181 +221,230 @@ character_specific.twelve.timed_sa[3] = true;
 character_specific.yang.timed_sa[3] = true;
 character_specific.yun.timed_sa[3] = true;
 
+local function patch_frame_data()
+   if frame_data["alex"] then
+      frame_data["alex"]["80d4"].max_hits = 0 -- PA
+   end
+   if frame_data["ibuki"] then
+      frame_data["ibuki"]["75f0"].frames[12].bypass_freeze = true -- HK Kazekiri
+      frame_data["ibuki"]["75f0"].frames[13].bypass_freeze = true
+      frame_data["ibuki"]["75f0"].frames[14].bypass_freeze = true
+      frame_data["ibuki"]["75f0"].frames[15].bypass_freeze = true
+      frame_data["ibuki"]["75f0"].frames[16].bypass_freeze = true
+      frame_data["ibuki"]["75f0"].frames[17].bypass_freeze = true
+      frame_data["ibuki"]["75f0"].frames[18].bypass_freeze = true
+      frame_data["ibuki"]["75f0"].frames[19].bypass_freeze = true
 
-local function test_collision(defender_x, defender_y, defender_flip_x, defender_boxes, attacker_x, attacker_y, attacker_flip_x, attacker_boxes, box_type_matches, defender_hurtbox_dilation_x, defender_hurtbox_dilation_y, attacker_hitbox_dilation_x, attacker_hitbox_dilation_y)
--- to_draw_collision = {}
-  local debug = false
-  if (defender_hurtbox_dilation_x == nil) then defender_hurtbox_dilation_x = 0 end
-  if (defender_hurtbox_dilation_y == nil) then defender_hurtbox_dilation_y = 0 end
-  if (attacker_hitbox_dilation_x == nil) then attacker_hitbox_dilation_x = 0 end
-  if (attacker_hitbox_dilation_y == nil) then attacker_hitbox_dilation_y = 0 end
-  if (box_type_matches == nil) then box_type_matches = {{{"vulnerability", "ext. vulnerability"}, {"attack"}}} end
+      frame_data["ibuki"]["7888"].frames[8].bypass_freeze = true -- EX Kazekiri
+      frame_data["ibuki"]["7888"].frames[9].bypass_freeze = true
+      frame_data["ibuki"]["7888"].frames[10].bypass_freeze = true
+      frame_data["ibuki"]["7888"].frames[11].bypass_freeze = true
+      frame_data["ibuki"]["7888"].frames[12].bypass_freeze = true
+      frame_data["ibuki"]["7888"].frames[13].bypass_freeze = true
+      frame_data["ibuki"]["7888"].frames[14].bypass_freeze = true
+      frame_data["ibuki"]["7888"].frames[15].bypass_freeze = true
+   end
+   if frame_data["makoto"] then
+      frame_data["makoto"]["eb28"].frames[7].optional_anim = nil
+   end
+   if frame_data["necro"] then
+      frame_data["necro"]["e9e4"].max_hits = 2 -- LK Drill
+      frame_data["necro"]["f2cc"].max_hits = 2 -- MK Drill
+      frame_data["necro"]["f51c"].max_hits = 2 -- HK Drill
+      frame_data["necro"]["8574"].max_hits = 999 -- PA
+   end
+   if frame_data["twelve"] then
+      frame_data["twelve"]["b1f4"].max_hits = 2 -- EX D.R.A.
+   end
+   -- position prediction of urien's headbutts in the corners are incorrect due to changing pushbox size
+   -- hack to fix it for now
+   if frame_data["urien"] then
+      frame_data["urien"]["6254"].frames[7].boxes[1] = {1, 48, 63, -44, 144}
+      frame_data["urien"]["6254"].frames[8].boxes[1] = {1, 48, 63, -44, 144}
 
-  if (#box_type_matches == 0 ) then return false end
-  if (#defender_boxes == 0 ) then return false end
-  if (#attacker_boxes == 0 ) then return false end
-  if debug then print(string.format("   %d defender boxes, %d attacker boxes", #defender_boxes, #attacker_boxes)) end
-  for k = 1, #box_type_matches do
-    local box_type_match = box_type_matches[k]
-    for i = 1, #defender_boxes do
-      local d_box = format_box(defender_boxes[i])
+      frame_data["urien"]["6314"].frames[9].boxes[1] = {1, 48, 63, -44, 144}
+      frame_data["urien"]["6314"].frames[10].boxes[1] = {1, 48, 63, -44, 144}
+      frame_data["urien"]["6314"].frames[11].boxes[1] = {1, 48, 63, -44, 144}
+      frame_data["urien"]["6314"].frames[12].boxes[1] = {1, 48, 63, -44, 144}
 
-      --print("d "..d_box.type)
+      frame_data["urien"]["63d4"].frames[12].boxes[1] = {1, 48, 63, -44, 144}
+      frame_data["urien"]["63d4"].frames[13].boxes[1] = {1, 48, 63, -44, 144}
+      frame_data["urien"]["63d4"].frames[14].boxes[1] = {1, 48, 63, -44, 144}
+      frame_data["urien"]["63d4"].frames[15].boxes[1] = {1, 48, 63, -44, 144}
+      frame_data["urien"]["63d4"].frames[16].boxes[1] = {1, 48, 63, -44, 144}
+      frame_data["urien"]["63d4"].frames[17].boxes[1] = {1, 48, 63, -44, 144}
 
-      local defender_box_match = false
-      for _, value in ipairs(box_type_match[1]) do
-        if value == d_box.type then
-          defender_box_match = true
-          break
-        end
-      end
-      if defender_box_match then
-        -- compute defender box bounds
-        local d_l
-        if defender_flip_x == 0 then
-          d_l = defender_x + d_box.left
-        else
-          d_l = defender_x - d_box.left - d_box.width
-        end
-        local d_r = d_l + d_box.width
-        local d_b = defender_y + d_box.bottom
-        local d_t = d_b + d_box.height
-
-        d_l = d_l - defender_hurtbox_dilation_x
-        d_r = d_r + defender_hurtbox_dilation_x
-        d_b = d_b - defender_hurtbox_dilation_y
-        d_t = d_t + defender_hurtbox_dilation_y
-
-        for j = 1, #attacker_boxes do
-          local a_box = format_box(attacker_boxes[j])
-
-          local attacker_box_match = false
-          for _, value in ipairs(box_type_match[2]) do
-            if value == a_box.type then
-              attacker_box_match = true
-              break
-            end
-          end
-
-          if attacker_box_match then
-            -- compute attacker box bounds
-            local a_l
-            if attacker_flip_x == 0 then
-              a_l = attacker_x + a_box.left
-            else
-              a_l = attacker_x - a_box.left - a_box.width
-            end
-            local a_r = a_l + a_box.width
-            local a_b = attacker_y + a_box.bottom
-            local a_t = a_b + a_box.height
-
-            a_l = a_l - attacker_hitbox_dilation_x
-            a_r = a_r + attacker_hitbox_dilation_x
-            a_b = a_b - attacker_hitbox_dilation_y
-            a_t = a_t + attacker_hitbox_dilation_y
-            -- table.insert(to_draw_collision, {d_l, d_r, d_b, d_t})
-            -- table.insert(to_draw_collision, {a_l, a_r, a_b, a_t})
---             print(gamestate.frame_number, defender_x, d_box.left, d_box.width, d_box.bottom, d_box.height)
-
-            if debug then print(string.format("   testing (%d,%d,%d,%d)(%s) against (%d,%d,%d,%d)(%s)", d_t, d_r, d_b, d_l, d_box.type, a_t, a_r, a_b, a_l, a_box.type)) end
-
-            -- check collision
-            if
-            (a_l < d_r) and
-            (a_r > d_l) and
-            (a_b < d_t) and
-            (a_t > d_b)
-            then
-              return true
-            end
-          end
-        end
-      end
-    end
-  end
-
-  return false
+      frame_data["urien"]["6494"].frames[9].boxes[1] = {1, 48, 63, -44, 144}
+      frame_data["urien"]["6494"].frames[10].boxes[1] = {1, 48, 63, -44, 144}
+      frame_data["urien"]["6494"].frames[11].boxes[1] = {1, 48, 63, -44, 144}
+      frame_data["urien"]["6494"].frames[12].boxes[1] = {1, 48, 63, -44, 144}
+   end
+   if frame_data["yang"] then
+      frame_data["yang"]["c79c"].hit_frames = {{5, 9}} -- cl. MK
+   end
+   if frame_data["yun"] then
+      frame_data["yun"]["63d0"].max_hits = 999 -- PA
+   end
 end
 
 local max_wakeup_time = 100
-local function get_wakeup_time(char, anim, frame)
-  if not frame_data[char] or not frame_data[char][anim] then
-    return 0
-  end
-  local i = 1
-  local wakeup_time = 0
-  local frame_to_check = frame + 1
-  local fdata = frame_data[char][anim]
-  local frames = fdata.frames
-  local used_next_anim = false
-  while i <= max_wakeup_time do
-    if frames then
-      used_next_anim = false
-      if frames[frame_to_check].next_anim then
-        local a = frames[frame_to_check].next_anim[1][1]
-        local f = frames[frame_to_check].next_anim[1][2]
-        fdata = frame_data[char][a]
-        if fdata then
-          frames = fdata.frames
-          frame_to_check = f + 1
-          used_next_anim = true
-        else
-          return wakeup_time
-        end
-      end
+local function get_wakeup_time(char_str, anim, frame)
+   if not frame_data[char_str] or not frame_data[char_str][anim] then return 0 end
+   local i = 1
+   local wakeup_time = 0
+   local frame_to_check = frame + 1
+   local fdata = frame_data[char_str][anim]
+   local frames = fdata.frames
+   local used_next_anim = false
+   while i <= max_wakeup_time do
+      if frames then
+         used_next_anim = false
+         if frames[frame_to_check].next_anim then
+            local a = frames[frame_to_check].next_anim[1][1]
+            local f = frames[frame_to_check].next_anim[1][2]
+            fdata = frame_data[char_str][a]
+            if fdata then
+               frames = fdata.frames
+               frame_to_check = f + 1
+               used_next_anim = true
+            else
+               return wakeup_time
+            end
+         end
 
-      wakeup_time = wakeup_time + 1
+         wakeup_time = wakeup_time + 1
 
-      if not used_next_anim then
-        i = i + 1
-        frame_to_check = frame_to_check + 1
-      end
+         if not used_next_anim then
+            i = i + 1
+            frame_to_check = frame_to_check + 1
+         end
 
-      if frames and frames[frame_to_check].wakeup then
-        return wakeup_time
+         if frames and frames[frame_to_check].wakeup then return wakeup_time end
       end
-    end
-  end
-  return wakeup_time
-end
-
-local function find_frame_data_by_name(char, name)
-  local fdata = frame_data[char]
-  if fdata then
-    for k, data in pairs(fdata) do
-      if data.name == name then
-        return k, data
-      end
-    end
-  end
-  return nil
+   end
+   return wakeup_time
 end
 
 local function find_move_frame_data(char_str, animation_id)
-  if not frame_data[char_str] then return nil end
-  return frame_data[char_str][animation_id]
+   if not frame_data[char_str] then return nil end
+   return frame_data[char_str][animation_id]
 end
 
-local function get_hurtboxes(char, anim, frame)
-  if  frame_data[char][anim]
-  and frame_data[char][anim].frames
-  and frame_data[char][anim].frames[frame + 1]
-  and frame_data[char][anim].frames[frame + 1].boxes
-  and has_boxes(frame_data[char][anim].frames[frame + 1].boxes, {"vulnerability", "ext. vulnerability"})
-  then
-    return frame_data[char][anim].frames[frame + 1].boxes
-  end
-  return nil
+local function find_frame_data_by_name(char_str, name)
+   local fdata = frame_data[char_str]
+   if fdata then for k, data in pairs(fdata) do if data.name == name then return k, data end end end
+   return nil
+end
+
+local function get_kara_distance_by_name(char_str, name)
+   local anim, fdata = find_frame_data_by_name(char_str, name)
+   if fdata and fdata.frames then if fdata.frames[1].movement then return fdata.frames[1].movement[1] end end
+   return 0
+end
+
+local function get_first_hit_frame_by_name(char_str, name)
+   local hf = 0
+   local anim, fdata = find_frame_data_by_name(char_str, name)
+   if fdata and fdata.hit_frames then hf = fdata.hit_frames[1][1] end
+   return hf
+end
+
+local function get_first_idle_frame_by_name(char_str, name)
+   local hf = 0
+   local anim, fdata = find_frame_data_by_name(char_str, name)
+   if fdata and fdata.idle_frames then hf = fdata.idle_frames[1][1] end
+   return hf
+end
+
+local function get_first_hit_frame(char_str, anim)
+   local hf = 0
+   local fdata = find_move_frame_data(char_str, anim)
+   if fdata and fdata.hit_frames and fdata.hit_frames[1] then hf = fdata.hit_frames[1][1] end
+   return hf
+end
+
+local function get_next_hit_frame(char_str, anim, hit_id)
+   local hf = 0
+   local fdata = find_move_frame_data(char_str, anim)
+   if fdata and fdata.hit_frames and fdata.hit_frames[hit_id + 1] then hf = fdata.hit_frames[hit_id + 1][1] end
+   return hf
+end
+
+local function get_last_hit_frame(char_str, anim)
+   local hf = 0
+   local fdata = find_move_frame_data(char_str, anim)
+   if fdata and fdata.hit_frames then hf = fdata.hit_frames[#fdata.hit_frames][2] end
+   return hf
+end
+
+local function get_hurtboxes(char_str, anim, frame)
+   if frame_data[char_str][anim] and frame_data[char_str][anim].frames and frame_data[char_str][anim].frames[frame + 1] and
+       frame_data[char_str][anim].frames[frame + 1].boxes and
+       tools.has_boxes(frame_data[char_str][anim].frames[frame + 1].boxes, {"vulnerability", "ext. vulnerability"}) then
+      return frame_data[char_str][anim].frames[frame + 1].boxes
+   end
+   return {}
+end
+
+local function get_hitbox_max_range(char_str, anim, hit_id)
+   hit_id = hit_id or 1
+   local fdata = frame_data[char_str][anim]
+   if fdata and fdata.hit_frames and fdata.hit_frames[hit_id] then
+      local total_movement = 0
+      local velocity = 0
+      local acceleration = 0
+      for i = 1, fdata.hit_frames[hit_id][2] + 1 do
+         velocity = velocity + acceleration
+         total_movement = total_movement + velocity
+         if fdata.frames.movement then total_movement = total_movement + fdata.frames.movement[1] end
+         if fdata.frames.velocity then velocity = velocity + fdata.frames.velocity[1] end
+         if fdata.frames.acceleration then acceleration = acceleration + fdata.frames.acceleration[1] end
+      end
+      local farthest_box = 0
+      for i = fdata.hit_frames[hit_id][1] + 1, fdata.hit_frames[hit_id][2] + 1 do
+         if fdata.frames[i].boxes then
+            for _, box in pairs(fdata.frames[i].boxes) do
+               local b = tools.format_box(box)
+               if b.type == "attack" or b.type == "throw" then
+                  local dist = b.left * -1
+                  if dist > farthest_box then farthest_box = dist end
+               end
+            end
+         end
+      end
+      return total_movement + farthest_box
+   end
+   return 0
+end
+
+local function get_hitbox_max_range_by_name(char_str, name, hit_id)
+   local anim, fdata = find_frame_data_by_name(char_str, name)
+   if fdata then return get_hitbox_max_range(char_str, anim, hit_id) end
+   return 0
+end
+
+local function get_contact_distance(player)
+   return
+       (character_specific[player.char_str].pushbox_width + character_specific[player.other.char_str].pushbox_width) / 2
 end
 
 return {
-  frame_data = frame_data,
-  character_specific = character_specific,
-  is_slow_jumper = is_slow_jumper,
-  is_really_slow_jumper = is_really_slow_jumper,
-  test_collision = test_collision,
-  get_wakeup_time = get_wakeup_time,
-  find_frame_data_by_name = find_frame_data_by_name,
-  find_move_frame_data = find_move_frame_data,
-  get_hurtboxes = get_hurtboxes
+   frame_data = frame_data,
+   character_specific = character_specific,
+   is_slow_jumper = is_slow_jumper,
+   is_really_slow_jumper = is_really_slow_jumper,
+   patch_frame_data = patch_frame_data,
+   get_wakeup_time = get_wakeup_time,
+   find_frame_data_by_name = find_frame_data_by_name,
+   get_kara_distance_by_name = get_kara_distance_by_name,
+   get_first_hit_frame_by_name = get_first_hit_frame_by_name,
+   get_first_idle_frame_by_name = get_first_idle_frame_by_name,
+   get_first_hit_frame = get_first_hit_frame,
+   get_next_hit_frame = get_next_hit_frame,
+   get_last_hit_frame = get_last_hit_frame,
+   find_move_frame_data = find_move_frame_data,
+   get_hurtboxes = get_hurtboxes,
+   get_hitbox_max_range = get_hitbox_max_range,
+   get_hitbox_max_range_by_name = get_hitbox_max_range_by_name,
+   get_contact_distance = get_contact_distance
 }
