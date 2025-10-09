@@ -1,7 +1,4 @@
 # effie's 3rd training lua
-_Let's raise the level of 3rd Strike._
-
-## No Dummy Update / 脳ダミーアップデート 
 
 ### Main Features
   - Prediction system completely rewritten
