@@ -623,7 +623,7 @@ frame_data_meta["necro"]["6b1c"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
 frame_data_meta["necro"]["7574"] = { hit_type = {4}}                             --flying_viper_LP
 frame_data_meta["necro"]["7674"] = { hit_type = {4}}                             --flying_viper_MP
 frame_data_meta["necro"]["7774"] = { hit_type = {4}}                             --flying_viper_HP
-frame_data_meta["necro"]["7874"] = { hit_type = {4}}                             --flying_viper_EXP
+frame_data_meta["necro"]["7874"] = { hit_type = {4, 4}}                          --flying_viper_EXP
 frame_data_meta["necro"]["7d94"] = { hit_type = {4}}                             --rising_cobra_LK
 frame_data_meta["necro"]["7f24"] = { hit_type = {4}}                             --rising_cobra_MK
 frame_data_meta["necro"]["80b4"] = { hit_type = {4}}                             --rising_cobra_HK
@@ -769,6 +769,7 @@ frame_data_meta["remy"]["b040"] = { hit_type = {4}}                             
 frame_data_meta["remy"]["b140"] = { hit_type = {4}}                             --u_HP
 frame_data_meta["remy"]["b270"] = { hit_type = {4}}                             --u_LK
 frame_data_meta["remy"]["b370"] = { hit_type = {4}}                             --u_MK
+frame_data_meta["remy"]["b450"] = { hit_type = {4}}                             --u_HK
 frame_data_meta["remy"]["bbf0"] = { hit_type = {3, 3}}                           --tc_1_ext
 frame_data_meta["remy"]["b860"] = { throw = true}                                --throw_neutral
 frame_data_meta["remy"]["b940"] = { throw = true}                                --throw_forward

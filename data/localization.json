@@ -163,9 +163,9 @@
     "en": "Character Select",
     "jp": "キャラクターセレクト"
   },
-  "swap_dummy":{
+  "swap_dummy": {
     "en": "Swap Dummy",
-    "jp": "ダミー交換"    
+    "jp": "ダミー交換"
   },
   "force_stage": {
     "en": "Force Stage",
@@ -203,7 +203,7 @@
     "en": "Ibuki",
     "jp": "いぶき"
   },
-   "menu_elena": {
+  "menu_elena": {
     "en": "Elena",
     "jp": "エレナ"
   },
@@ -271,10 +271,6 @@
     "en": "Hurtbox",
     "jp": "食らい判定"
   },
-  "display_attack_info": {
-    "en": "Display Attack Info",
-    "jp": "攻撃情報表示"
-  },
   "display_charge": {
     "en": "Display Charge",
     "jp": "ため表示"
@@ -298,7 +294,7 @@
   "display_stun_timer": {
     "en": "Display Stun Timer",
     "jp": "スタンタイマー表示"
-  },  
+  },
   "display_air_time": {
     "en": "Display Air Time",
     "jp": "空中時間表示"
@@ -436,7 +432,7 @@
     "jp": "前ステ"
   },
   "followup_back_dash": {
-    "en": "back dash", 
+    "en": "back dash",
     "jp": "バクステ"
   },
   "followup_forward_down": {
@@ -687,33 +683,27 @@
     "en": "Replay Mode",
     "jp": "再生モード"
   },
-  "replay_normal":
-  {
+  "replay_normal": {
     "en": "normal",
     "jp": "普通"
   },
-  "replay_random":
-  {
+  "replay_random": {
     "en": "random",
     "jp": "ランダム"
   },
-  "replay_ordered":
-  {
+  "replay_ordered": {
     "en": "ordered",
     "jp": "順序"
   },
-  "replay_repeat":
-  {
+  "replay_repeat": {
     "en": "repeat",
     "jp": "繰り返し"
   },
-  "replay_repeat_random":
-  {
+  "replay_repeat_random": {
     "en": "repeat random",
     "jp": "ランダム繰り返し"
   },
-  "replay_repeat_ordered":
-  {
+  "replay_repeat_ordered": {
     "en": "repeat ordered",
     "jp": "順序繰り返し"
   },
@@ -749,7 +739,7 @@
     "en": "Display Gauge Numbers",
     "jp": "ゲージ数字"
   },
-   "display_bonuses": {
+  "display_bonuses": {
     "en": "Display Bonuses",
     "jp": "ボーナス表示"
   },
@@ -817,7 +807,7 @@
     "en": "Slot",
     "jp_8": "スロット"
   },
-   "hud_wait_for_recording": {
+  "hud_wait_for_recording": {
     "en": "Waiting for recording",
     "jp_8": "記録待ち中"
   },
@@ -844,6 +834,26 @@
   "hud_p2": {
     "en": "P2",
     "jp_8": "P2"
+  },
+  "hud_startup": {
+    "en": "startup",
+    "jp_8": "発生"
+  },
+  "hud_hit_frame": {
+    "en": "hit frame",
+    "jp_8": "当たり"
+  },
+  "hud_advantage": {
+    "en": "advantage",
+    "jp_8": "有料"
+  },
+  "hud_active": {
+    "en": "active",
+    "jp_8": "持続"
+  },
+  "hud_duration": {
+    "en": "duration",
+    "jp_8": "期間"
   },
   "famicom": {
     "en": "famicom",
@@ -1144,7 +1154,7 @@
   "gauge_always_max": {
     "en": "always max",
     "jp": "必ずMAX"
-  },  
+  },
   "infinite_super_art_time": {
     "en": "Infinite Super Art Time",
     "jp": "無限SA時間"

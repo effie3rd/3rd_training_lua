@@ -1,16 +1,17 @@
 local gamestate = require("src.gamestate")
 local draw = require("src.ui.draw")
 local tools = require("src.tools")
+local text  = require("src.ui.text")
+local colors= require("src.ui.colors")
+
+local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text,
+                                                                                             text.render_text_multiple,
+                                                                                             text.get_text_dimensions,
+                                                                                             text.get_text_dimensions_multiple
 
 local move_advantage = {}
 
 local jumping_states = {[14] = true, [15] = true, [16] = true, [20] = true, [21] = true, [22] = true}
-
-local player = gamestate.P1
-if player.is_idle and not jumping_states[player.action] then end
-
--- player.just_attacked start
--- conn hit
 
 local function frame_advantage_update(attacker, defender)
 
@@ -130,29 +131,35 @@ local function frame_advantage_display()
        move_advantage.hitbox_start_frame == nil then return end
 
    local y = 49
-   local text_default_border_color = 0x000000FF
-   local function display_line(text, value, color)
-      color = color or 0xF7FFF7FF
-      local text_width = draw.get_text_width(text)
+   local function display_line(str, value, color)
+      color = color or colors.hud_text.default
+      local lang = require("src.settings").language
+      local w, h, size
+      local y_offset = 0
+      if lang == "jp" then
+         size = 8
+         y_offset = 1
+      end
+      w, h = get_text_dimensions_multiple({str, ": "}, lang, size)
       local x = 0
       if move_advantage.player_id == 1 then
          x = 51
       elseif move_advantage.player_id == 2 then
-         x = draw.SCREEN_WIDTH - 65 - text_width
+         x = draw.SCREEN_WIDTH - 65 - w
       end
 
-      gui.text(x, y, string.format(text))
-      gui.text(x + text_width, y, string.format("%d", value), color, text_default_border_color)
-      y = y + 10
+      render_text_multiple(x, y, {str, ": "}, lang, size, colors.hud_text.default)
+      render_text(x + w, y + y_offset, value, "en", nil, color)
+      y = y + h
    end
 
    local startup = move_advantage.hitbox_start_frame - move_advantage.start_frame
 
-   display_line("startup: ", string.format("%d", startup))
+   display_line("hud_startup", string.format("%d", startup))
 
    if move_advantage.hit_frame ~= nil then
       local hit_frame = move_advantage.hit_frame - move_advantage.start_frame + 1
-      display_line("hit frame: ", string.format("%d", hit_frame))
+      display_line("hud_hit_frame", string.format("%d", hit_frame))
    end
 
    if move_advantage.hit_frame ~= nil and move_advantage.end_frame ~= nil and move_advantage.opponent_end_frame ~= nil then
@@ -161,20 +168,20 @@ local function frame_advantage_display()
       local sign = ""
       if advantage > 0 then sign = "+" end
 
-      local color = 0xFFFB63FF
+      local color = colors.hud_text.default
       if advantage < 0 then
-         color = 0xE70000FF
+         color = colors.hud_text.failure
       elseif advantage > 0 then
-         color = 0x10FB00FF
+         color = colors.hud_text.success
       end
 
-      display_line("advantage: ", string.format("%s%d", sign, advantage), color)
+      display_line("hud_advantage", string.format("%s%d", sign, advantage), color)
    else
       if move_advantage.hitbox_start_frame ~= nil and move_advantage.hitbox_end_frame ~= nil then
-         display_line("active: ",
+         display_line("hud_active",
                       string.format("%d", move_advantage.hitbox_end_frame - move_advantage.hitbox_start_frame))
       end
-      display_line("duration: ", string.format("%d", move_advantage.end_frame - move_advantage.start_frame))
+      display_line("hud_duration", string.format("%d", move_advantage.end_frame - move_advantage.start_frame))
    end
 end
 

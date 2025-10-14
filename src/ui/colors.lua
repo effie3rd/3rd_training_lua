@@ -12,6 +12,11 @@ local colors = {
       disabled = 0x909090FF,
       button_activated = 0x10FF10FF
    },
+   hud_text = {
+      default = 0xFFFFFFFF,
+      success = 0x10FF10FF,
+      failure = 0xFF1010FF
+   },
    gui_text = {default = 0xFFFFFFFF, default_border = 0x000000FF},
    menu = {
       background = 0x1F1F1FF0,

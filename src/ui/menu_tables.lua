@@ -51,7 +51,7 @@ local display_attack_bars_mode = {"menu_off", "menu_1_line", "menu_2_lines"}
 local language = {"english", "japanese"}
 
 local special_training_mode = {
-   "training_defense", "training_footsies", "training_jumpins", "training_geneijin", "training_unblockables",
+   "training_defense", "training_jumpins", "training_footsies", "training_unblockables", "training_geneijin",
    "training_denjin"
 }
 

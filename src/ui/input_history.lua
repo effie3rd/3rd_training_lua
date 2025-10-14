@@ -112,6 +112,21 @@ local function input_history_draw(player, x, y, is_right, style)
    end
 end
 
+local function input_history_display(mode, style)
+   if mode == 5 then -- moving
+      if gamestate.P1.pos_x < 320 then
+         input_history_draw(gamestate.P1, draw.SCREEN_WIDTH - 4, 49, true, style)
+      else
+         input_history_draw(gamestate.P1, 4, 49, false, style)
+      end
+   else
+      if mode == 2 or mode == 4 then input_history_draw(gamestate.P1, 4, 49, false, style) end
+      if mode == 3 or mode == 4 then
+         input_history_draw(gamestate.P2, draw.SCREEN_WIDTH - 4, 49, true, style)
+      end
+   end
+end
+
 local function clear_input_history()
    input_history[1] = {}
    input_history[2] = {}
@@ -120,6 +135,6 @@ end
 return {
    make_input_history_entry = make_input_history_entry,
    input_history_update = input_history_update,
-   input_history_draw = input_history_draw,
+   input_history_display = input_history_display,
    clear_input_history = clear_input_history
 }

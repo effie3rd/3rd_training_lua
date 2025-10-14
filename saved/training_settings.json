@@ -31,7 +31,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "yang":{
@@ -39,7 +39,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "alex":{
@@ -47,7 +47,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "elena":{
@@ -55,7 +55,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "twelve":{
@@ -63,7 +63,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "ibuki":{
@@ -71,7 +71,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "shingouki":{
@@ -79,7 +79,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "gill":{
@@ -87,7 +87,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "hugo":{
@@ -95,7 +95,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "q":{
@@ -103,7 +103,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "dudley":{
@@ -111,7 +111,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "remy":{
@@ -119,7 +119,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "chunli":{
@@ -127,7 +127,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "sean":{
@@ -135,7 +135,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "makoto":{
@@ -143,7 +143,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "necro":{
@@ -151,7 +151,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "ryu":{
@@ -159,7 +159,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "gouki":{
@@ -167,7 +167,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "ken":{
@@ -175,7 +175,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "urien":{
@@ -183,7 +183,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     },
     "yun":{
@@ -191,7 +191,7 @@
       "option_select":1,
       "normal_button":1,
       "special":1,
-      "ca_type":1,
+      "type":1,
       "motion":1
     }
   },

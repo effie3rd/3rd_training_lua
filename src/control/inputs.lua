@@ -251,14 +251,14 @@ end
 
 local function create_counter_attack_input_sequence(counter_attack_data)
    -- recording
-   if counter_attack_data.ca_type == 5 then return nil end
+   if counter_attack_data.type == 5 then return nil end
 
    local sequence = {}
    local offset = 0
 
    local name = counter_attack_data.name
 
-   if counter_attack_data.ca_type == 2 then
+   if counter_attack_data.type == 2 then
 
       local stick = counter_attack_data.motion
       local button = counter_attack_data.button
@@ -339,7 +339,7 @@ local function create_counter_attack_input_sequence(counter_attack_data)
          end
          table.insert(sequence[#sequence], button)
       end
-   elseif counter_attack_data.ca_type == 3 then
+   elseif counter_attack_data.type == 3 then
       sequence = tools.deepcopy(counter_attack_data.inputs)
       if name == "kara_capture_and_deadly_blow" then
          offset = 1
@@ -356,7 +356,7 @@ local function create_counter_attack_input_sequence(counter_attack_data)
       elseif name == "kara_niouriki" then
          offset = 1
       end
-   elseif counter_attack_data.ca_type == 4 then
+   elseif counter_attack_data.type == 4 then
       if name == "guard_jump_back" then
          sequence = {
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
@@ -544,7 +544,7 @@ end
 
 local function block_input(id, setting) block_input_settings[id] = setting end
 
-local function unblock_input(id) block_input_settings[id] = nil end
+local function unblock_input(id) block_input_settings[id] = "" end
 
 local function update_input(input)
    input = input or input_object

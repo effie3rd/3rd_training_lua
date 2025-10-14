@@ -705,7 +705,7 @@ local last_hit_history_size = 2
 
 local function last_hit_bars_reset() last_hit_history = nil end
 
-local function last_hit_bars()
+local function last_hit_bars_display()
    if settings.training.display_attack_bars > 1 then
       if settings.training.display_attack_bars == 2 then
          last_hit_history_size = 1
@@ -725,7 +725,6 @@ local function last_hit_bars()
       if attack_data.data then
          if last_hit_history then
             if attack_data.data.id == last_hit_history[1].id then
-
                last_hit_history[1] = tools.deepcopy(attack_data.data)
             else
                table.insert(last_hit_history, 1, tools.deepcopy(attack_data.data))
@@ -903,65 +902,6 @@ local function player_label_display()
          render_text(x - tools.round(w / 2), y - h, state.label, nil, nil, nil, opacity)
       end
    end
-end
-
-local function attack_data_display()
-   local text_width1 = draw.get_text_width("damage: ")
-   local text_width2 = draw.get_text_width("stun: ")
-   local text_width3 = draw.get_text_width("combo: ")
-   local text_width4 = draw.get_text_width("total damage: ")
-   local text_width5 = draw.get_text_width("total stun: ")
-   local text_width6 = draw.get_text_width("max combo: ")
-
-   local x1 = 0
-   local x2 = 0
-   local x3 = 0
-   local x4 = 0
-   local x5 = 0
-   local x6 = 0
-   local y = 49
-
-   local x_spacing = 80
-
-   local data = attack_data.data
-
-   if data.player_id == 1 then
-      local base = draw.SCREEN_WIDTH - 138
-      x1 = base - text_width1
-      x2 = base - text_width2
-      x3 = base - text_width3
-      local base2 = base + x_spacing
-      x4 = base2 - text_width4
-      x5 = base2 - text_width5
-      x6 = base2 - text_width6
-   elseif data.player_id == 2 then
-      local base = 82
-      x1 = base - text_width1
-      x2 = base - text_width2
-      x3 = base - text_width3
-      local base2 = base + x_spacing
-      x4 = base2 - text_width4
-      x5 = base2 - text_width5
-      x6 = base2 - text_width6
-   end
-
-   gui.text(x1, y, string.format("damage: "))
-   gui.text(x1 + text_width1, y, string.format("%d", data.damage))
-
-   gui.text(x2, y + 10, string.format("stun: "))
-   gui.text(x2 + text_width2, y + 10, string.format("%d", data.stun))
-
-   gui.text(x3, y + 20, string.format("combo: "))
-   gui.text(x3 + text_width3, y + 20, string.format("%d", data.combo))
-
-   gui.text(x4, y, string.format("total damage: "))
-   gui.text(x4 + text_width4, y, string.format("%d", data.total_damage))
-
-   gui.text(x5, y + 10, string.format("total stun: "))
-   gui.text(x5 + text_width5, y + 10, string.format("%d", data.total_stun))
-
-   gui.text(x6, y + 20, string.format("max combo: "))
-   gui.text(x6 + text_width6, y + 20, string.format("%d", data.max_combo))
 end
 
 local blocking_direction_history = {}
@@ -1349,8 +1289,8 @@ local function recording_display(dummy)
    end
 end
 
-local is_please_wait_display_open = false
-local function show_please_wait_display(bool) is_please_wait_display_open = bool end
+local is_please_wait_display_on = false
+local function show_please_wait_display(bool) is_please_wait_display_on = bool end
 
 local function please_wait_display()
    local x, y = 0, 45
@@ -1466,6 +1406,21 @@ local function player_position_display()
    gui.image(x - 4, y, images.img_dir_small[8])
 end
 
+local draw_list = {}
+local function register_draw(func)
+   draw_list[func] = func
+end
+
+local function unregister_draw(func)
+   draw_list[func] = nil
+end
+
+local function draw_registered_functions()
+   for _, func in pairs(draw_list) do
+      func()
+   end
+end
+
 local function reset_hud()
    attack_range_display_reset()
    blocking_direction_display_reset()
@@ -1476,7 +1431,7 @@ local function reset_hud()
    clear_fading_text()
    clear_score_text()
 
-   is_please_wait_display_open = false
+   is_please_wait_display_on = false
 end
 
 local function draw_hud(player, dummy)
@@ -1484,7 +1439,7 @@ local function draw_hud(player, dummy)
 
    if settings.training.display_hitboxes then hitboxes_display() end
 
-   last_hit_bars()
+   last_hit_bars_display()
 
    if settings.training.display_red_parry_miss then red_parry_miss_display(player) end
    if settings.training.display_blocking_direction then blocking_direction_display(player, dummy) end
@@ -1492,7 +1447,6 @@ local function draw_hud(player, dummy)
       stun_timer_display(player)
       stun_timer_display(dummy)
    end
-   if settings.training.display_attack_data then attack_data_display() end
    if settings.training.display_parry then
       parry_gauge_display(player.other) -- debug
    end
@@ -1523,9 +1477,7 @@ local function draw_hud(player, dummy)
                              settings.training.p2_distances_reference_point)
    end
 
-   if show_jumpins_display then jumpins_display(player) end
-
-   if is_please_wait_display_open then please_wait_display() end
+   if is_please_wait_display_on then please_wait_display() end
 
    info_text_display()
 
@@ -1536,11 +1488,14 @@ local function draw_hud(player, dummy)
 
    player_label_display()
 
+   draw_registered_functions()
 end
 
 return {
    draw_hud = draw_hud,
    reset_hud = reset_hud,
+   register_draw = register_draw,
+   unregister_draw = unregister_draw,
    add_player_label = add_player_label,
    update_blocking_direction = update_blocking_direction,
    show_please_wait_display = show_please_wait_display,

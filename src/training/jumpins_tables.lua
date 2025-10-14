@@ -7,6 +7,7 @@ local prediction = require("src.modules.prediction")
 local write_memory = require("src.control.write_memory")
 local advanced_control = require("src.control.advanced_control")
 local inputs = require("src.control.inputs")
+local tools = require("src.tools")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local find_frame_data_by_name = fd.find_frame_data_by_name
@@ -22,29 +23,31 @@ local queue_input_sequence_and_wait, all_commands_complete = advanced_control.qu
 local move_list = move_data.move_list
 
 local jumps
+local second_jumps
 local jumps_default = {"jump_forward", "jump_neutral", "jump_back", "sjump_forward", "sjump_neutral", "sjump_back"}
-local additional_jumps = {"air_dash_low", "air_dash_high"}
+local oro_jumps = {"jump_forward", "jump_neutral", "jump_back"}
+local twelve_jumps = {"air_dash_forward", "air_dash_back"}
 local moves
-local moves_default = {"none", "lp", "mp", "hp", "lk", "mk", "hk", "throw"}
+local moves_default = {"none", "LP", "MP", "HP", "LK", "MK", "HK", "throw"}
 local additional_moves = {
-   alex = {"d_hp"},
-   chunli = {"d_hp", "d_mk", "hp_hp"},
-   elena = {"lp_mk", "mp_hp"},
-   gouki = {"d_mk", "gohadouken_lp", "gohadouken_mp", "gohadouken_hp"},
-   hugo = {"d_hp"},
-   ibuki = {"lp_f_hp", "hp_f_mk", "lk_f_mk", "kunai_lp", "kunai_mp", "kunai_hp", "kunai_ex"},
-   makoto = {"tsurugi_lk", "tsurugi_mk", "tsurugi_hk", "tsurugi_ex"},
-   necro = {"drill_lk", "drill_mk", "drill_hk"},
-   oro = {"hitobashira", "hitobashira_ex"},
-   shingouki = {"d_mk", "gohadouken_lp", "gohadouken_mp", "gohadouken_hp"},
-   twelve = {"axe_lp", "axe_mp", "axe_hp", "axe_ex", "dra_lk", "dra_mk", "dra_hk", "dra_ex"},
-   yang = {"mk_raigeki_mk", "raigeki_lk", "raigeki_mk", "raigeki_hk"},
-   yun = {"lp_f_hp", "raigeki_lk", "raigeki_mk", "raigeki_hk"}
+   alex = {"d_HP"},
+   chunli = {"d_HP", "d_MK", "HP_HP"},
+   elena = {"LP_MK", "MP_HP"},
+   gouki = {"d_MK", "gohadouken_LP", "gohadouken_MP", "gohadouken_HP"},
+   hugo = {"d_HP"},
+   ibuki = {"LP_f_HP", "HP_f_MK", "LK_f_MK", "kunai_LP", "kunai_MP", "kunai_HP", "kunai_EX"},
+   makoto = {"tsurugi_LK", "tsurugi_MK", "tsurugi_HK", "tsurugi_EX"},
+   necro = {"drill_LK", "drill_MK", "drill_HK"},
+   oro = {"hitobashira", "hitobashira_EX"},
+   shingouki = {"d_MK", "gohadouken_LP", "gohadouken_MP", "gohadouken_HP"},
+   twelve = {"axe_LP", "axe_MP", "axe_HP", "axe_EX", "dra_LK", "dra_MK", "dra_HK", "dra_EX"},
+   yang = {"MK_raigeki_MK", "raigeki_LK", "raigeki_MK", "raigeki_HK"},
+   yun = {"LP_f_HP", "raigeki_LK", "raigeki_MK", "raigeki_HK"}
 }
 
 local move_inputs
 
-local target_combos = {hp_hp = true, lp_mk = true, mp_hp = true, lp_f_hp = true, hp_f_mk = true, lk_f_mk = true}
+local target_combos = {HP_HP = true, LP_MK = true, MP_HP = true, LP_f_HP = true, HP_f_MK = true, LK_f_MK = true}
 
 local jump_inputs = {
    jump_forward = {{"up", "forward"}, {"up", "forward"}, {"up", "forward"}},
@@ -62,7 +65,11 @@ local jump_inputs = {
 
 local function update_character(char_str)
    jumps = copytable(jumps_default)
-   if char_str == "twelve" then for _, name in ipairs(additional_jumps) do table.insert(jumps, name) end end
+   if char_str == "oro" then
+      second_jumps = oro_jumps
+   elseif char_str == "twelve" then
+      second_jumps = twelve_jumps
+   end
    moves = copytable(moves_default)
    if additional_moves[char_str] then for _, name in ipairs(additional_moves) do table.insert(moves, name) end end
 end
@@ -71,49 +78,49 @@ local function init(char_str)
    update_character(char_str)
    move_inputs = {
       none = {{}},
-      lp = {{"LP"}},
-      mp = {{"MP"}},
-      hp = {{"HP"}},
-      lk = {{"LK"}},
-      mk = {{"MK"}},
-      hk = {{"HK"}},
+      LP = {{"LP"}},
+      MP = {{"MP"}},
+      HP = {{"HP"}},
+      LK = {{"LK"}},
+      MK = {{"MK"}},
+      HK = {{"HK"}},
       throw = {{"LP", "LK"}},
-      d_hp = {{"down", "HP"}},
-      d_mk = {{"down", "MK"}},
-      hp_hp = {{"HP"}, {"HP"}},
-      lp_mk = {{"LP"}, {"MK"}},
-      mp_hp = {{"MP"}, {"HP"}},
-      gohadouken_lp = move_data.get_move_inputs_by_name("gouki", "gohadouken", "LP"),
-      gohadouken_mp = move_data.get_move_inputs_by_name("gouki", "gohadouken", "MP"),
-      gohadouken_hp = move_data.get_move_inputs_by_name("gouki", "gohadouken", "HP"),
-      lp_f_hp = {{"LP"}, {"forward", "HP"}},
-      hp_f_mk = {{"HP"}, {"forward", "MK"}},
-      lk_f_mk = {{"LK"}, {"forward", "MK"}},
-      kunai_lp = move_data.get_move_inputs_by_name("ibuki", "kunai", "LP"),
-      kunai_mp = move_data.get_move_inputs_by_name("ibuki", "kunai", "MP"),
-      kunai_hp = move_data.get_move_inputs_by_name("ibuki", "kunai", "HP"),
-      kunai_ex = move_data.get_move_inputs_by_name("ibuki", "kunai", "EX"),
-      tsurugi_lk = move_data.get_move_inputs_by_name("makoto", "tsurugi", "LK"),
-      tsurugi_mk = move_data.get_move_inputs_by_name("makoto", "tsurugi", "MK"),
-      tsurugi_hk = move_data.get_move_inputs_by_name("makoto", "tsurugi", "HK"),
-      tsurugi_ex = move_data.get_move_inputs_by_name("makoto", "tsurugi", "EX"),
-      drill_lk = {{"down", "LK"}},
-      drill_mk = {{"down", "MK"}},
-      drill_hk = {{"down", "HK"}},
-      hitobashira = move_data.get_move_inputs_by_name("oro", "hitobashira", "LK"),
-      hitobashira_ex = move_data.get_move_inputs_by_name("oro", "hitobashira", "EX"),
-      axe_lp = move_data.get_move_inputs_by_name("twelve", "axe", "LP"),
-      axe_mp = move_data.get_move_inputs_by_name("twelve", "axe", "MP"),
-      axe_hp = move_data.get_move_inputs_by_name("twelve", "axe", "HP"),
-      axe_ex = move_data.get_move_inputs_by_name("twelve", "axe", "EX"),
-      dra_lk = move_data.get_move_inputs_by_name("twelve", "dra", "LK"),
-      dra_mk = move_data.get_move_inputs_by_name("twelve", "dra", "MK"),
-      dra_hk = move_data.get_move_inputs_by_name("twelve", "dra", "HK"),
-      dra_ex = move_data.get_move_inputs_by_name("twelve", "dra", "EX"),
-      mk_raigeki_mk = {{"MK"}, {"down", "forward", "MK"}},
-      raigeki_lk = {{"down", "forward", "LK"}},
-      raigeki_mk = {{"down", "forward", "MK"}},
-      raigeki_hk = {{"down", "forward", "HK"}}
+      d_HP = {{"down", "HP"}},
+      d_MK = {{"down", "MK"}},
+      HP_HP = {{"HP"}, {"HP"}},
+      LP_MK = {{"LP"}, {"MK"}},
+      MP_HP = {{"MP"}, {"HP"}},
+      gohadouken_air_LP = move_data.get_move_inputs_by_name("gouki", "gohadouken", "LP"),
+      gohadouken_air_MP = move_data.get_move_inputs_by_name("gouki", "gohadouken", "MP"),
+      gohadouken_air_HP = move_data.get_move_inputs_by_name("gouki", "gohadouken", "HP"),
+      LP_f_HP = {{"LP"}, {"forward", "HP"}},
+      HP_f_MK = {{"HP"}, {"forward", "MK"}},
+      LK_f_MK = {{"LK"}, {"forward", "MK"}},
+      kunai_LP = move_data.get_move_inputs_by_name("ibuki", "kunai", "LP"),
+      kunai_MP = move_data.get_move_inputs_by_name("ibuki", "kunai", "MP"),
+      kunai_HP = move_data.get_move_inputs_by_name("ibuki", "kunai", "HP"),
+      kunai_EXP = move_data.get_move_inputs_by_name("ibuki", "kunai", "EXP"),
+      tsurugi_LK = move_data.get_move_inputs_by_name("makoto", "tsurugi", "LK"),
+      tsurugi_MK = move_data.get_move_inputs_by_name("makoto", "tsurugi", "MK"),
+      tsurugi_HK = move_data.get_move_inputs_by_name("makoto", "tsurugi", "HK"),
+      tsurugi_EXK = move_data.get_move_inputs_by_name("makoto", "tsurugi", "EXK"),
+      drill_LK = {{"down", "LK"}},
+      drill_MK = {{"down", "MK"}},
+      drill_HK = {{"down", "HK"}},
+      hitobashira_air = move_data.get_move_inputs_by_name("oro", "hitobashira", "LK"),
+      hitobashira_air_EXK = move_data.get_move_inputs_by_name("oro", "hitobashira", "EXK"),
+      axe_air_LP = move_data.get_move_inputs_by_name("twelve", "axe", "LP"),
+      axe_air_MP = move_data.get_move_inputs_by_name("twelve", "axe", "MP"),
+      axe_air_HP = move_data.get_move_inputs_by_name("twelve", "axe", "HP"),
+      axe_air_EXP = move_data.get_move_inputs_by_name("twelve", "axe", "EXP"),
+      dra_LK = move_data.get_move_inputs_by_name("twelve", "dra", "LK"),
+      dra_MK = move_data.get_move_inputs_by_name("twelve", "dra", "MK"),
+      dra_HK = move_data.get_move_inputs_by_name("twelve", "dra", "HK"),
+      dra_EXK = move_data.get_move_inputs_by_name("twelve", "dra", "EXK"),
+      MK_raigeki_MK = {{"MK"}, {"down", "forward", "MK"}},
+      raigeki_LK = {{"down", "forward", "LK"}},
+      raigeki_MK = {{"down", "forward", "MK"}},
+      raigeki_HK = {{"down", "forward", "HK"}}
    }
 end
 
@@ -135,8 +142,38 @@ local function get_move_inputs(name)
    return move_inputs[name], is_target_combo
 end
 
-local function get_jump_inputs(name)
-   return jump_inputs[name]
+local function get_jump_inputs(name) return jump_inputs[name] end
+
+local function get_move_framedata(char_str, jump_name, move_name)
+   if move_name == "throw" then
+      if char_str == "chunli" or char_str == "ibuki" or char_str == "oro" then
+         return find_frame_data_by_name(char_str, "throw_air")
+      else
+         move_name = "LP"
+      end
+   elseif tools.table_contains({"HP_HP", "LP_MK", "MP_HP", "LP_f_HP", "HP_f_MK", "LK_f_MK", "MK_raigeki_MK"}, move_name) then
+      move_name = move_inputs[move_name][1][1]
+   end
+   local jump_prefix = "uf_"
+   if jump_name == "jump_neutral" or jump_name == "sjump_neutral" then jump_prefix = "u_" end
+   if tools.table_contains({"LP", "MP", "HP", "LK", "MK", "HK"}, move_name) then
+      local search_name = jump_prefix .. move_name
+      local anim, fdata = find_frame_data_by_name(char_str, search_name)
+      if not fdata then
+         if jump_prefix == "uf_" then
+            jump_prefix = "u_"
+         else
+            jump_prefix = "uf_"
+         end
+         search_name = jump_prefix .. move_name
+         anim, fdata = find_frame_data_by_name(char_str, search_name)
+      end
+      return anim, fdata
+   elseif move_name == "d_HP" or move_name == "d_MK" then
+      return find_frame_data_by_name(char_str, move_name .. "_air")
+   else
+      return find_frame_data_by_name(char_str, move_name)
+   end
 end
 
 return {
@@ -144,5 +181,6 @@ return {
    get_jump_names = get_jump_names,
    get_move_names = get_move_names,
    get_move_inputs = get_move_inputs,
-   get_jump_inputs = get_jump_inputs
+   get_jump_inputs = get_jump_inputs,
+   get_move_framedata = get_move_framedata
 }

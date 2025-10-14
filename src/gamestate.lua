@@ -214,13 +214,6 @@ local function is_ground_state(player, state)
    return is_standing_state(player, state) or is_crouching_state(player, state)
 end
 
-local function is_airborne_state_exception(player, state)
-   if character_specific[player.char_str] and character_specific[player.char_str].air_states then
-      return tools.table_contains(character_specific[player.char_str].air_states, state)
-   end
-   return false
-end
-
 local function get_additional_recovery_delay(char_str, crouching)
    if crouching then
       if (char_str == "q" or char_str == "ryu" or char_str == "chunli") then return 2 end
@@ -235,7 +228,7 @@ local function get_parry_type(player)
    local opponent_airborne = player.other.posture >= 20 and player.other.posture <= 30
    local parry_type = "ground"
 
-   if player.other.just_connected then -- if other player connected, then attack is not a projectile
+   if player.other.has_just_connected then -- if other player connected, then attack is not a projectile
       if player_airborne then
          parry_type = "air"
       elseif opponent_airborne then
@@ -484,11 +477,20 @@ local function read_player_vars(player)
          player.remaining_freeze_frames = 256 - player.remaining_freeze_frames
       end
    end
-   local remaining_freeze_frame_diff = player.remaining_freeze_frames - player.previous_remaining_freeze_frames
-   if remaining_freeze_frame_diff > 0 then
-      log(player.prefix, "fight", string.format("freeze %d", player.remaining_freeze_frames))
-      -- print(string.format("%d: %d(%d)",  player.id, player.remaining_freeze_frames, player.freeze_type))
-   end
+
+   player.superfreeze_decount = player.superfreeze_decount or 0
+   local previous_superfreeze_decount = player.superfreeze_decount
+
+   player.max_meter_gauge = memory.readbyte(player.addresses.max_meter_gauge)
+   player.max_meter_count = memory.readbyte(player.addresses.max_meter_count)
+   player.selected_sa = memory.readbyte(player.addresses.selected_sa) + 1
+   player.superfreeze_decount = memory.readbyte(player.addresses.superfreeze_decount)
+
+   player.superfreeze_just_began = false
+   if player.superfreeze_decount > 0 and previous_superfreeze_decount == 0 then player.superfreeze_just_began = true end
+
+   player.superfreeze_just_ended = false
+   if player.superfreeze_decount == 0 and previous_superfreeze_decount > 0 then player.superfreeze_just_ended = true end
 
    local previous_action = player.action or 0x00
 
@@ -517,7 +519,7 @@ local function read_player_vars(player)
    player.previous_standing_state = player.standing_state or 0
    player.standing_state = memory.readbyte(player.base + 0x297)
    player.is_standing = player.posture == 0x0 and player.pos_y == 0
-   player.is_crouching = player.posture == 0x20
+   player.is_crouching = player.posture == 0x20 or player.posture == 0x21
    player.is_jumping = jump_postures[player.posture] or false
    player.is_airborne = player.is_jumping or (player.posture == 0 and player.pos_y ~= 0) -- maybe a memory location exists for distinguishing these states
    player.is_grounded = player.is_standing or player.is_crouching or movement_postures[player.posture] or
@@ -535,11 +537,13 @@ local function read_player_vars(player)
        player.standing_state <= 2 and previous_recovery_flag == 2 and player.recovery_flag ~= 2
 
    player.additional_recovery_time = player.additional_recovery_time or 0
-   if player.recovery_time > player.previous_recovery_time then
+   if player.has_just_ended_recovery or (previous_recovery_flag ~= 1 and player.recovery_flag == 1) then
+      player.is_in_recovery = false
+   end
+
+   if player.freeze_just_ended and player.character_state_byte == 1 then
       player.additional_recovery_time = get_additional_recovery_delay(player.char_str, player.is_crouching)
       player.is_in_recovery = true
-   elseif player.has_just_ended_recovery or player.recovery_flag == 1 then
-      player.is_in_recovery = false
    end
 
    if player.ends_recovery_next_frame then
@@ -557,20 +561,6 @@ local function read_player_vars(player)
 
    player.meter_gauge = memory.readbyte(player.addresses.gauge)
    player.meter_count = memory.readbyte(player.addresses.meter_master)
-
-   player.superfreeze_decount = player.superfreeze_decount or 0
-   local previous_superfreeze_decount = player.superfreeze_decount
-
-   player.max_meter_gauge = memory.readbyte(player.addresses.max_meter_gauge)
-   player.max_meter_count = memory.readbyte(player.addresses.max_meter_count)
-   player.selected_sa = memory.readbyte(player.addresses.selected_sa) + 1
-   player.superfreeze_decount = memory.readbyte(player.addresses.superfreeze_decount)
-
-   player.superfreeze_just_began = false
-   if player.superfreeze_decount > 0 and previous_superfreeze_decount == 0 then player.superfreeze_just_began = true end
-
-   player.superfreeze_just_ended = false
-   if player.superfreeze_decount == 0 and previous_superfreeze_decount > 0 then player.superfreeze_just_ended = true end
 
    -- LIFE
    player.life = memory.readbyte(player.addresses.life)
@@ -833,9 +823,9 @@ local function read_player_vars(player)
                           blocked_count))
    end
 
-   player.just_connected = false
+   player.has_just_connected = false
    if player.connected_action_count > previous_connected_action_count then
-      player.just_connected = true
+      player.has_just_connected = true
       player.animation_connection_count = player.animation_connection_count + 1
    end
 
@@ -872,7 +862,7 @@ local function read_player_vars(player)
       player.cooldown = math.max(player.cooldown - 1, 0)
    end
 
-   if player.just_connected then
+   if player.has_just_connected then
       if frame_data_meta[player.char_str] and frame_data_meta[player.char_str][player.animation] and
           frame_data_meta[player.char_str][player.animation].cooldown then
          player.cooldown = frame_data_meta[player.char_str][player.animation].cooldown
@@ -975,7 +965,15 @@ local function read_player_vars(player)
       if player.is_waking_up and previous_fast_wakeup_flag == 1 and player.fast_wakeup_flag == 0 then
          player.is_fast_wakingup = true
       end
-      if player.has_just_woke_up then player.is_fast_wakingup = false end
+
+      if player.previous_can_fast_wakeup ~= 0 and player.can_fast_wakeup == 0 then
+         player.is_past_fast_wakeup_frame = true
+      end
+
+      if player.has_just_woke_up then
+         player.is_fast_wakingup = false
+         player.is_past_fast_wakeup_frame = false
+      end
 
       player.has_just_started_wake_up = not player.previous_is_wakingup and player.is_waking_up
       player.has_just_started_fast_wake_up = not player.previous_is_fast_wakingup and player.is_fast_wakingup
@@ -1445,49 +1443,65 @@ local function update_tengu_stones()
          end
       end
    end
-
 end
 
-local seiei_initial_frame_id = 0x3f46
 local function update_seieienbu()
    if not (P1 and P1.char_str == "yang" and P1.selected_sa == 3) and
        not (P2 and P2.char_str == "yang" and P2.selected_sa == 3) then return end
 
    for _, player in ipairs(player_objects) do
-      if player.superfreeze_just_began and player.char_str == "yang" and player.selected_sa == 3 then
-         player.seiei_init = true
-      end
-   end
-   for _, player in ipairs(player_objects) do
       if player.char_str == "yang" and player.is_in_timed_sa then
-         local seiei_projectiles = {}
-         for _, proj in pairs(projectiles) do
-            if proj.emitter_id == player.id and proj.projectile_type == "00_seieienbu" then
-               if not proj.seiei_clone_order then proj.seiei_clone_order = 0 end
-               table.insert(seiei_projectiles, proj)
-            end
-         end
-         -- determine which clone acts first/second
-         if player.seiei_init then
-            local found = false
-            for _, seiei_proj in pairs(seiei_projectiles) do
-               if seiei_proj.animation_frame_id ~= seiei_initial_frame_id then
-                  seiei_proj.seiei_clone_order = 1
-                  player.seiei_init = false
-                  found = true
+         if player.character_state_byte == 4 and player.animation_frame_data then
+            local attack_boxes = tools.get_boxes(player.boxes, {"attack", "throw"})
+            if #attack_boxes > 0 or player.has_just_connected then
+               if player.animation_frame_data and player.animation_frame_data.hit_frames then
+                  local hit_id = player.current_hit_id
+                  if not player.has_just_connected then hit_id = hit_id + 1 end
+                  hit_id = tools.clamp(hit_id, 1, #player.animation_frame_data.hit_frames)
+                  local seiei_frame = player.animation_frame_data.hit_frames[hit_id][1]
+                  if player.has_just_connected then
+                     if player.animation_frame_data.frames and player.animation_frame_data.frames[seiei_frame + 1] and
+                         player.animation_frame_data.frames[seiei_frame + 1].boxes then
+                        attack_boxes = tools.get_boxes(player.animation_frame_data.frames[seiei_frame + 1].boxes,
+                                                       {"attack", "throw"})
+                     end
+                  end
                end
-            end
-            if found then
-               for _, seiei_proj in pairs(seiei_projectiles) do
-                  if seiei_proj.seiei_clone_order ~= 1 then seiei_proj.seiei_clone_order = 2 end
+               if #attack_boxes > 0 then
+                  for i = 1, 2 do
+                     local projectile = {
+                        id = "seieienbu_" .. player.id .. "_" .. i,
+                        emitter_id = player.id,
+                        alive = true,
+                        projectile_type = "seieienbu",
+                        projectile_start_type = "seieienbu",
+                        pos_x = player.pos_x,
+                        pos_y = player.pos_y,
+                        velocity_x = 0,
+                        velocity_y = 0,
+                        acceleration_x = 0,
+                        acceleration_y = 0,
+                        flip_x = player.flip_x,
+                        boxes = attack_boxes,
+                        expired = false,
+                        previous_remaining_hits = 99,
+                        remaining_hits = 99,
+                        is_forced_one_hit = false,
+                        has_activated = false,
+                        animation_start_frame = frame_number + i * 10,
+                        animation_frame = 0,
+                        animation_frame_id = player.animation_frame_id,
+                        animation_freeze_frames = 0,
+                        remaining_freeze_frames = 0,
+                        remaining_lifetime = 0,
+                        cooldown = 0,
+                        placeholder = true,
+                        seiei_animation = player.animation,
+                        seiei_hit_id = player.current_hit_id
+                     }
+                     projectiles[projectile.id .. "_" .. tostring(frame_number)] = projectile
+                  end
                end
-            end
-         end
-         if player.has_just_attacked and player.animation_frame_data then
-            for _, seiei_proj in pairs(seiei_projectiles) do
-               seiei_proj.cooldown = 10 * seiei_proj.seiei_clone_order
-               seiei_proj.seiei_animation = player.animation
-               seiei_proj.seiei_frame = player.animation_frame
             end
          end
       end
@@ -1512,8 +1526,11 @@ local function read_projectiles()
 
    -- flag everything as expired by default, we will reset the flag it we update the projectile
    for id, obj in pairs(projectiles) do
-      obj.expired = true
-      if obj.placeholder and obj.animation_start_frame <= frame_number then projectiles[id] = nil end
+      if obj.placeholder then
+         if obj.animation_start_frame <= frame_number then obj.expired = true end
+      else
+         obj.expired = true
+      end
    end
 
    -- how we recover hitboxes data for each projectile is taken almost as is from the cps3-hitboxes.lua script
@@ -1546,7 +1563,7 @@ local function read_projectiles()
          is_initialization = true
       end
 
-      if read_game_object(obj) and not obj.placeholder then
+      if not obj.placeholder and read_game_object(obj) then
          obj.emitter_id = memory.readbyte(obj.base + 0x2) + 1
 
          if is_initialization then
@@ -1608,7 +1625,7 @@ local function read_projectiles()
          if is_initialization then
             -- debug
             if obj.projectile_type == "5B" or obj.projectile_type == "00_seieienbu" then
-               memory_view_start = obj.base
+               memory_view_start = obj.base + 0x202
             end
             obj.projectile_start_type = obj.projectile_type -- type can change during projectile life (ex: aegis)
             obj.animation_start_frame = frame_number

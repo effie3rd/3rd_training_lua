@@ -1,9 +1,9 @@
 -- for loading big stuff like framedata and images
+local json = require("src.libs.dkjson")
 local tools = require("src.tools")
 local colors = require("src.ui.colors")
 local text = require("src.ui.text")
 local fd = require("src.modules.framedata")
-local gamestate = require("src.gamestate")
 local game_data = require("src.modules.game_data")
 local settings = require("src.settings")
 local menu_tables = require("src.ui.menu_tables")
@@ -13,8 +13,7 @@ local frame_data = fd.frame_data
 
 ---@type table|nil
 local image_map_json_data = tools.read_object_from_json_file("data/image_map.json")
-local frame_data_file_list = tools.read_object_from_json_file(settings.framedata_path .. "file_names.json")
-
+local framedata_size = tools.read_number_from_file(settings.framedata_path .. "file_size.json")
 local frame_data_keys = copytable(game_data.characters)
 table.insert(frame_data_keys, "projectiles")
 
@@ -96,34 +95,33 @@ local function load_text_image(data, code)
       image_map[code][lang][text.selected_color] = image_map[code][lang][text.selected_color]:gdStr()
       image_map[code][lang][text.inactive_color] = image_map[code][lang][text.inactive_color]:gdStr()
 
-
    end
 end
 
-local n_fd_loaded_this_frame = 0
-local n_fd_chunks_per_frame = 1
-local frame_time = 1 / 60
-local frame_time_margin = 0.90
+local function get_total_files() return framedata_size end
 
-local function get_total_files()
-   local n_im_json_data = 0
-   if image_map_json_data then for _, v in pairs(image_map_json_data) do n_im_json_data = n_im_json_data + 1 end end
-   return n_im_json_data + #frame_data_file_list * 40
-end
+local frame_time_margin = 0.80
+local frame_time = (1 / 60) * frame_time_margin
 
 local function estimate_chunks_per_frame(elapsed, chunks_loaded)
    local rate = elapsed / chunks_loaded
    return math.max(math.floor(frame_time * frame_time_margin / rate), 1)
 end
 
+local fd_load_margin = 1
+local function estimate_load_rate(elapsed, n_loaded)
+   if elapsed == 0 then
+      return fd_load_margin
+   end
+   return math.min(n_loaded / (elapsed * 1000000) * fd_load_margin, 1)
+end
+
 local n_im_loaded_this_frame = 0
 local n_im_chunks_per_frame = 20
-local loading_perf_timer = tools.Perf_timer:new()
-
 local function load_text_images_async()
    if image_map_json_data then
       local keys = {}
-      for k in pairs(image_map_json_data) do keys[#keys+1] = k end
+      for k in pairs(image_map_json_data) do keys[#keys + 1] = k end
       for i = 1, #keys do
          local code = keys[i]
          load_text_image(image_map_json_data[code], code)
@@ -138,18 +136,28 @@ local function load_text_images_async()
    image_map_json_data = nil
 end
 
-local p = tools.Perf_timer:new() -- debug
-
+local load_timer = tools.Perf_timer:new()
+local fd_load_rate = 1
+local fd_loaded_this_frame = 0
 local function load_frame_data_async()
    for _, char in ipairs(frame_data_keys) do
-      p:reset()
-      local file_path = settings.framedata_path .. "@" .. char .. settings.framedata_file_ext
-      frame_data[char] = tools.read_object_from_json_file(file_path) or {}
-      n_fd_loaded_this_frame = n_fd_loaded_this_frame + 1
-      print(gamestate.frame_number, char, p:elapsed(), n_fd_chunks_per_frame) --debug
-      if n_fd_loaded_this_frame >= n_fd_chunks_per_frame then
-         coroutine.yield(n_fd_loaded_this_frame)
-         n_fd_loaded_this_frame = 0
+      local fd_load_start_time = os.clock()
+      frame_data[char] = {}
+      local file_path = settings.framedata_path .. char .. settings.framedata_file_ext
+      local file = io.open(file_path, "r")
+      if not file then error("Cannot open " .. file_path) end
+      for line in file:lines() do
+         local id, load_time, json_str = line:match("([^,]+),(%d+):(.+)")
+         load_time = tonumber(load_time)
+         if (frame_time - (os.clock() - fd_load_start_time)) * 1000000 * fd_load_rate > load_time then
+            frame_data[char][id] = json.decode(json_str)
+         else
+            coroutine.yield(fd_loaded_this_frame)
+            fd_load_start_time = os.clock()
+            fd_loaded_this_frame = 0
+            frame_data[char][id] = json.decode(json_str)
+         end
+         fd_loaded_this_frame = fd_loaded_this_frame + load_time
       end
    end
 end
@@ -167,17 +175,11 @@ local function load_all()
       current_co = load_frame_data_co
    end
    local n_loaded = 0
-   loading_perf_timer:reset()
+   load_timer:reset()
    local status = coroutine.status(current_co)
    if status == "suspended" then
       local pass, n = coroutine.resume(current_co)
-      if pass and n then
-         if current_co == load_text_images_co then
-            n_loaded = n
-         elseif current_co == load_frame_data_co then
-            n_loaded = n * 40
-         end
-      end
+      if pass and n then n_loaded = n end
    elseif status == "dead" then
       if current_co == load_text_images_co then
          text_images_loaded = true
@@ -187,10 +189,10 @@ local function load_all()
       end
    end
    if current_co == load_text_images_co then
-      local elapsed = loading_perf_timer:elapsed()
+      local elapsed = load_timer:elapsed()
       n_im_chunks_per_frame = estimate_chunks_per_frame(elapsed, n_im_chunks_per_frame)
    else
-      n_fd_chunks_per_frame = estimate_chunks_per_frame(loading_perf_timer:elapsed(), n_fd_chunks_per_frame)
+      fd_load_rate = estimate_load_rate(load_timer:elapsed(), fd_loaded_this_frame)
    end
    return n_loaded
 end

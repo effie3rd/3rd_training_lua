@@ -25,7 +25,7 @@ local function update(attacker, defender)
    end
 
    local function check_chip_damage(player)
-      if player.previous_life - current_life > 0 then
+      if player.previous_life - defender.life > 0 then
          data.total_damage = 0
          data.total_stun = 0
          data.start_life = player.previous_life
@@ -49,7 +49,7 @@ local function update(attacker, defender)
 
    if attacker.combo == 0 then data.last_hit_combo = 0 end
 
-   if attacker.has_just_hit or defender.has_just_been_hit then
+   if defender.has_just_been_hit then
       if data.finished then
          data.total_damage = 0
          data.total_stun = 0
@@ -79,7 +79,6 @@ local function update(attacker, defender)
       data.total_damage = data.start_life - current_life
       if not attacker.has_just_been_blocked then
          update_stun(defender)
-         --       Queue_Command(gamestate.frame_number + 1, update_stun, {defender})
       end
    end
    defender.previous_life = current_life

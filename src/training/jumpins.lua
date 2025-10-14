@@ -12,6 +12,8 @@ local inputs = require("src.control.inputs")
 local jumpins_tables = require("src.training.jumpins_tables")
 local draw = require("src.ui.draw")
 local utils = require("src.modules.utils")
+local tools = require("src.tools")
+local hud = require("src.ui.hud")
 local frame_data, character_specific = fd.frame_data, fd.character_specific
 local find_frame_data_by_name = fd.find_frame_data_by_name
 local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_slow_jumper
@@ -25,7 +27,7 @@ local queue_input_sequence_and_wait, all_commands_complete = advanced_control.qu
                                                              advanced_control.all_commands_complete
 local move_list = move_data.move_list
 
-local max_jumps = 5
+local max_jumps = 8
 local jumps = {
 
    -- char:
@@ -34,6 +36,8 @@ local jumps = {
    --    dummy reset offset range
    --    reset type
    --    jump
+   -- second jump
+   -- second jump delay
    --    attack
    --    delay}
    --    followup
@@ -42,7 +46,7 @@ local jumps = {
 -- jump type
 -- jump dir
 -- distance
--- point 不動点
+-- point 不動点 定点
 -- range (type)　範囲
 -- min max
 -- button
@@ -65,11 +69,12 @@ local dummy_reset_range = {918, 918}
 local jumpins_player = gamestate.P1
 local jumpins_dummy = gamestate.P2
 
-states = {
-   EDIT = 1
-}
+local current_jump_arc
 
-show_jumpins_display = false
+local states = {EDIT = 1}
+
+local edit_points = {PLAYER = 1, DUMMY_OFFSET_1 = 2, DUMMY_OFFSET_2 = 3}
+
 local jump_arcs = {}
 
 local dot_cache = {}
@@ -90,6 +95,17 @@ local function get_up_arrow(color)
       up_arrow_cache[color] = colors.substitute_color_gdstr(img, colors.gd_white, gd_color)
    end
    return up_arrow_cache[color]
+end
+
+local function update_limits()
+
+end
+
+local function bound_positions()
+
+end
+
+local function move_player_left(selected_player, dist)
 end
 
 local function move_left(selected_player, dist)
@@ -128,61 +144,162 @@ local function move_right(selected_player, dist)
    end
 end
 
-
-function init_jumpins()
-   jump_arcs = {}
-   show_jumpins_display = true
-end
-
--- init_jumpins()
-
-function jumpins_display(player)
-   if gamestate.is_in_match then
-      player_position_display()
-      local name = "jump_forward"
-      if gamestate.frame_number % 50 == 0 then
-         local player_mdata, dummy_mdata = simulate_jump(player, "jump_forward", player.pos_x)
-         jump_arcs[name] = create_jump_arc(player_mdata)
+local function add_jump_arc(jump_arc, player, player_line, player_motion_data)
+   for i = 1, #player_motion_data do
+      local fdata = fd.find_move_frame_data(player.char_str, player_line[i].animation)
+      local frame = player_line[i].frame + 1
+      local y_offset
+      if fdata and fdata.frames[frame] and fdata.frames[frame].boxes then
+         if tools.has_boxes(fdata.frames[frame].boxes, {"push"}) then
+            local box_bottom = tools.get_boxes_lowest_position(fdata.frames[frame].boxes, {"push"})
+            if box_bottom then y_offset = box_bottom end
+         end
       end
-      draw_jump_arcs(jump_arcs)
+      if not y_offset then
+         if jump_arc[#jump_arc - 1] then
+            y_offset = jump_arc[#jump_arc - 1][3]
+         else
+            y_offset = 0
+         end
+      end
+      -- print(player_motion_data[i].pos_x, player_motion_data[i].pos_y, y_offset, player_motion_data[i].flip_x) --debug
+      table.insert(jump_arc, {player_motion_data[i].pos_x, player_motion_data[i].pos_y, y_offset, y_offset})
    end
 end
 
-function create_jump_arc(mdata)
-   local jump_arc = {}
-   for i = 1, #mdata do
-      local x, y = draw.game_to_screen_space(mdata[i].pos_x, mdata[i].pos_y)
-      table.insert(jump_arc, {x, y})
-   end
-   return jump_arc
-end
+-- before jumping sim
 
 local max_sim_time = 100
-function simulate_jump(player, jump_type, start_x, attack, attack_frame)
+local function simulate_jump(player, start_x, first_jump_name, second_jump_name, second_jump_delay, attack_name,
+                             attack_delay)
+   local jump_arc = {}
    local dummy = player.other
    start_x = start_x or player.pos_x
    local startup_type = "jump_startup"
-   local anim, fdata = find_frame_data_by_name(player.char_str, startup_type)
-   local jump_startup_length = #fdata.frames
-   local jump_startup = predict_frames_branching(player, anim, 0, jump_startup_length, true)[1]
-   local anim, fdata = find_frame_data_by_name(player.char_str, jump_type)
+   if first_jump_name == "sjump_forward" or first_jump_name == "sjump_neutral" or first_jump_name == "sjump_back" then
+      startup_type = "sjump_startup"
+   end
 
-   local player_motion_data = prediction.init_motion_data_zero(player)
-   player_motion_data[0].pos_x = start_x
+   local startup_anim, startup_fdata = find_frame_data_by_name(player.char_str, startup_type)
+   local first_jump_anim, first_jump_fdata = find_frame_data_by_name(player.char_str, first_jump_name)
+   local second_jump_anim, second_jump_fdata, attack_anim, attack_fdata
+   if second_jump_name then
+      second_jump_anim, second_jump_fdata = find_frame_data_by_name(player.char_str, second_jump_name)
+   end
+   if attack_name then attack_anim, attack_fdata = find_frame_data_by_name(player.char_str, attack_name) end
+   if startup_fdata and first_jump_fdata then
+      local first_jump_sim_time = max_sim_time
+      if second_jump_name then
+         first_jump_sim_time = second_jump_delay
+      elseif attack_name then
+         first_jump_sim_time = attack_delay
+      end
+      local jump_startup_length = #startup_fdata.frames
+      local startup_player_motion_data = prediction.init_motion_data_zero(player)
+      startup_player_motion_data[0].pos_x = start_x
 
-   local dummy_motion_data = prediction.init_motion_data(dummy)
-   local predicted_state = prediction.predict_player_movement(player, nil, nil, nil, player.other, nil, nil, nil,
-                                                                 max_sim_time)
+      local startup_dummy_motion_data = prediction.init_motion_data(dummy)
+      local startup_state = prediction.predict_movement_until_landing(player, nil, nil, startup_player_motion_data,
+                                                                      player.other, nil, nil, startup_dummy_motion_data,
+                                                                      jump_startup_length)
+      add_jump_arc(jump_arc, player, startup_state.player_line, startup_state.player_motion_data)
+      local first_jump_dummy_anim, first_jump_dummy_frame = startup_state.dummy_line[#startup_state.dummy_line]
+                                                                .animation,
+                                                            startup_state.dummy_line[#startup_state.dummy_line].frame +
+                                                                1
+      local first_jump_player_motion_data = {[0] = startup_state.player_motion_data[#startup_state.player_motion_data]}
+      local first_jump_dummy_motion_data = {[0] = startup_state.dummy_motion_data[#startup_state.dummy_motion_data]}
+      local first_jump_state = prediction.predict_movement_until_landing(player, first_jump_anim, 0,
+                                                                         first_jump_player_motion_data, player.other,
+                                                                         first_jump_dummy_anim, first_jump_dummy_frame,
+                                                                         first_jump_dummy_motion_data,
+                                                                         first_jump_sim_time)
+      add_jump_arc(jump_arc, player, first_jump_state.player_line, first_jump_state.player_motion_data)
 
-   return player_motion_data, dummy_motion_data
+      local last_state = first_jump_state
+      if second_jump_name then
+         local second_jump_sim_time = max_sim_time
+         if second_jump_name == "jump_forward" or second_jump_name == "jump_neutral" or second_jump_name == "jump_back" then
+            local second_startup_anim, second_startup_fdata =
+                find_frame_data_by_name(player.char_str, "air_jump_startup")
+            if second_startup_fdata then second_jump_sim_time = #second_startup_fdata.frames end
+            local second_startup_dummy_anim, second_startup_dummy_frame =
+                startup_state.dummy_line[#startup_state.dummy_line].animation,
+                startup_state.dummy_line[#startup_state.dummy_line].frame + 1
+            local second_startup_player_motion_data = {
+               [0] = startup_state.player_motion_data[#startup_state.player_motion_data]
+            }
+            local second_startup_dummy_motion_data = {
+               [0] = startup_state.dummy_motion_data[#startup_state.dummy_motion_data]
+            }
+            local second_startup_state = prediction.predict_movement_until_landing(player, second_startup_anim, 0,
+                                                                                   second_startup_player_motion_data,
+                                                                                   player.other,
+                                                                                   second_startup_dummy_anim,
+                                                                                   second_startup_dummy_frame,
+                                                                                   second_startup_dummy_motion_data,
+                                                                                   second_jump_sim_time)
+            add_jump_arc(jump_arc, player, second_startup_state.player_line, second_startup_state.player_motion_data)
+            last_state = second_startup_state
+         end
+         if attack_name then second_jump_sim_time = attack_delay end
+         local second_jump_dummy_anim, second_jump_dummy_frame =
+             last_state.dummy_line[#last_state.dummy_line].animation,
+             last_state.dummy_line[#last_state.dummy_line].frame
+         local second_jump_player_motion_data = {
+            [0] = last_state.player_motion_data[#last_state.player_motion_data]
+         }
+         local second_jump_dummy_motion_data = {
+            [0] = last_state.dummy_motion_data[#last_state.dummy_motion_data]
+         }
+         local second_jump_state = prediction.predict_movement_until_landing(player, second_jump_anim, 0,
+                                                                             second_jump_player_motion_data,
+                                                                             player.other, second_jump_dummy_anim,
+                                                                             second_jump_dummy_frame,
+                                                                             second_jump_dummy_motion_data,
+                                                                             second_jump_sim_time)
+         add_jump_arc(jump_arc, player, second_jump_state.player_line, second_jump_state.player_motion_data)
+         last_state = second_jump_state
+      end
+      if attack_name then
+         local attack_dummy_anim, attack_dummy_frame = last_state.dummy_line[#last_state.dummy_line].animation,
+                                                       last_state.dummy_line[#last_state.dummy_line].frame
+         local attack_player_motion_data = {[0] = last_state.player_motion_data[#last_state.player_motion_data]}
+         local attack_dummy_motion_data = {[0] = last_state.dummy_motion_data[#last_state.dummy_motion_data]}
+         local attack_state = prediction.predict_movement_until_landing(player, attack_anim, 0,
+                                                                        attack_player_motion_data, player.other,
+                                                                        attack_dummy_anim, attack_dummy_frame,
+                                                                        attack_dummy_motion_data, max_sim_time)
+         add_jump_arc(jump_arc, player, attack_state.player_line, attack_state.player_motion_data)
+      end
+   end
+
+   return jump_arc
 end
 
-function draw_jump_arcs(jump_arcs)
-   -- t:{x,y}
-   for _, jump_arc in pairs(jump_arcs) do
-      -- print("draw", #jump_arc)
-      for i = 1, #jump_arc do gui.image(jump_arc[i][1] - 1, jump_arc[i][2] - 1, image_tables.img_dot) end
+local function draw_player_distances(player)
+   local dist = math.floor(math.abs(player.pos_x - player.other.pos_x))
+   local px, py = draw.game_to_screen_space(player.pos_x, 0)
+   local dx, dy = draw.game_to_screen_space(player.other.pos_x, 0)
+   draw.draw_horizontal_text_segment(px, dx, py, dist, colors.gui_text.default, 2, "up", "en")
+end
+
+local function draw_jump_arc(jump_arc)
+   for i, point in pairs(jump_arc) do
+      local x, y = draw.game_to_screen_space(point[1], point[2] + point[3])
+      gui.image(x - 1, y - 1, image_tables.img_dot)
    end
+--[[    for i = 2, #jump_arc  do
+      local x, y = draw.game_to_screen_space(jump_arc[i][1], jump_arc[i][2] + jump_arc[i][3])
+      local dx, dy = draw.game_to_screen_space(jump_arc[i-1][1], jump_arc[i-1][2] + jump_arc[i-1][3])
+      -- gui.image(x - 1, y - 1, image_tables.img_dot)
+      gui.line(x, y, dx, dy, colors.gui_text.default)
+   end ]]
+end
+
+local function jumpins_display()
+   draw_jump_arc(current_jump_arc)
+   draw_player_distances(gamestate.P1)
 end
 
 local function reset_positions(player, dummy)
@@ -212,12 +329,17 @@ local function execute_jump(player, jump_name, attack_name, delay)
             condition = function() return attack_delay:is_complete() end,
             action = function() queue_input_sequence_and_wait(player, attack_input[1]) end
          }, {
-            condition = function() return player.just_connected end,
+            condition = function() return player.has_just_connected end,
             action = function() queue_input_sequence_and_wait(player, attack_input[2]) end
          }
       }
    end
    advanced_control.queue_programmed_movement(player, command)
+end
+
+local function debug_jump()
+   current_jump_arc = simulate_jump(gamestate.P1, gamestate.P1.pos_x, "jump_forward", nil, nil, nil, nil)
+   hud.register_draw(jumpins_display)
 end
 
 local timer = Delay:new(2)
@@ -275,4 +397,4 @@ local function test_jump()
    end
 end
 
-return {test_jump = test_jump}
+return {test_jump = test_jump, debug_jump = debug_jump}

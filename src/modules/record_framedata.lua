@@ -503,7 +503,7 @@ local framedata_path = data_path .. "framedata/"
 local frame_data_file_ext = "_framedata.json"
 local final_props = {
    "name", "frames", "hit_frames", "idle_frames", "loops", "pushback", "advantage", "uses_velocity", "air",
-   "infinite_loop", "max_hits", "cooldown", "self_chain", "exceptions"
+   "infinite_loop", "max_hits", "cooldown", "self_chain", "exceptions", "landing_height"
 }
 local final_frame_props = {
    "hash", "boxes", "movement", "velocity", "acceleration", "loop", "next_anim", "optional_anim", "wakeup",
@@ -524,10 +524,13 @@ local function save_frame_data()
             fdata.walk_forward = ""
             fdata.walk_back = ""
             fdata.walk_transition = ""
+            fdata.jump_recovery = ""
             fdata.block_high = ""
             fdata.block_high_proximity = ""
             fdata.block_low = ""
             fdata.block_low_proximity = ""
+            fdata.block_high_air = ""
+            fdata.block_high_air_proximity = ""
             fdata.parry_high = ""
             fdata.parry_low = ""
             fdata.parry_air = ""
@@ -555,6 +558,8 @@ local function save_frame_data()
                         fdata.walk_back = id
                      elseif v == "walk_transition" then
                         fdata.walk_transition = id
+                     elseif v == "jump_recovery" then
+                        fdata.jump_recovery = id
                      elseif v == "block_high" then
                         fdata.block_high = id
                      elseif v == "block_high_proximity" then
@@ -563,6 +568,10 @@ local function save_frame_data()
                         fdata.block_low = id
                      elseif v == "block_low_proximity" then
                         fdata.block_low_proximity = id
+                     elseif v == "block_high_air" then
+                        fdata.block_high_air = id
+                     elseif v == "block_high_air_proximity" then
+                        fdata.block_high_air_proximity = id
                      elseif v == "parry_high" then
                         fdata.parry_high = id
                      elseif v == "parry_low" then
@@ -684,7 +693,9 @@ local function is_hit_frame(frame)
 end
 
 local next_anim_types = {"next_anim", "optional_anim"}
-local props_to_copy = {"self_freeze", "opponent_freeze", "opponent_recovery", "pushback", "wakeup", "bypass_freeze", "projectile"}
+local props_to_copy = {
+   "self_freeze", "opponent_freeze", "opponent_recovery", "pushback", "wakeup", "bypass_freeze", "projectile"
+}
 
 local function copy_props(source_frame, dest_frame, props_to_copy)
    for _, prop in pairs(props_to_copy) do if source_frame[prop] then dest_frame[prop] = source_frame[prop] end end
@@ -752,44 +763,6 @@ local function calculate_ranges(list, predicate)
    return ranges
 end
 
-local function pack_ffd(items, capacity)
-   local sorted = {}
-   for i, v in ipairs(items) do sorted[i] = v end
-   table.sort(sorted, function(a, b) return a.size > b.size end)
-
-   local bins = {}
-   local bin_of_item = {}
-   setmetatable(bin_of_item, {__index = function() return 0 end})
-
-   local function new_bin()
-      if bins then bins[#bins + 1] = {load = 0, items = {}} end
-      return #bins
-   end
-
-   for _, item in ipairs(sorted) do
-      local placed = false
-      for k = 1, #bins do
-         if bins[k].load + item.size <= capacity then
-            bins[k].load = bins[k].load + item.size
-            table.insert(bins[k].items, item)
-            bin_of_item[item] = k
-            placed = true
-            break
-         end
-      end
-      if not placed then
-         local k = new_bin()
-         bins[k].load = bins[k].load + item.size
-         table.insert(bins[k].items, item)
-         bin_of_item[item] = k
-      end
-   end
-
-   local ordered_bins = {}
-   for k = 1, #bins do ordered_bins[k] = bins[k].items end
-   return ordered_bins, bin_of_item
-end
-
 local function estimate_decode_time(json_str, decode_fn, trials)
    trials = trials or 5
    local total = 0
@@ -808,51 +781,49 @@ local function estimate_decode_time(json_str, decode_fn, trials)
 end
 
 local function span_frame_data()
-   local decode_times = {}
-   local file_names = {}
-   local key_list = tools.deepcopy(frame_data_keys)
-   table.sort(key_list)
-   local char = "dudley" -- for key, char in ipairs(key_list) do
-   decode_times[char] = {}
-   file_names[char] = {}
-   local fdata = frame_data[char]
-   for id, data in pairs(fdata) do
-      local obj = {}
-      obj[id] = data
-      local str = json.encode(obj)
-      local stats = estimate_decode_time(str, json.decode, 10)
-      table.insert(decode_times, {object = obj, size = stats.average_time})
-      print(string.format("%s: %.16f", id, stats.average_time))
-   end
-   local bins, _ = pack_ffd(decode_times, 1 / 60 / 10)
-   for k, bin in ipairs(bins) do
-      for _, item in ipairs(bin) do
-         local file_name = char .. k .. ".json"
-         local file_path = framedata_path .. file_name
-         table.insert(file_names[char], file_name)
-         if not tools.write_object_to_json_file(item.object, file_path, false) then
-            print(string.format("Error: Failed to write frame data to \"%s\"", file_path))
-         else
-            print(string.format("Saved frame data to \"%s\"", file_path))
-         end
+   for key, char in ipairs(frame_data_keys) do
+      local fdata = frame_data[char]
+      local file_path = framedata_path .. char .. settings.framedata_file_ext
+      local file = io.open(file_path, "w")
+      if not file then error("Cannot open " .. file_path) end
+      for id, data in pairs(fdata) do
+         -- local stats = estimate_decode_time(str, json.decode, 10)
+         local tag = id .. ",0:"
+         file:write(tag .. json.encode(data) .. "\n")
       end
+      file:close()
    end
-   -- end
-   local file_path = framedata_path .. "file_names.json"
-   if not tools.write_object_to_json_file(file_names, file_path, false) then
-      print(string.format("Error: Failed to write frame data to \"%s\"", file_path))
-   else
-      print(string.format("Saved frame data to \"%s\"", file_path))
+   local total_size = 0
+   for key, char in ipairs(frame_data_keys) do
+      local file_path = framedata_path .. char .. settings.framedata_file_ext
+      local file = io.open(file_path, "r")
+      local new_data = {}
+      local line_start_time = os.clock()
+      if not file then error("Cannot open " .. file_path) end
+      for line in file:lines() do
+         local id, load_time, json_str = line:match("([^,]+),(%d+):(.+)")
+         local line_read_time = os.clock() - line_start_time
+         load_time = estimate_decode_time(json_str, json.decode, 10).average_time
+         local size = math.ceil((line_read_time + load_time) * 1000000)
+         total_size = total_size + size
+         table.insert(new_data, {id, size, json_str})
+         line_start_time = os.clock()
+      end
+      file:close()
+      file = io.open(file_path, "w")
+      if not file then error("Cannot open " .. file_path) end
+      for i = 1, #new_data do
+         local line_str = new_data[i][1] .. "," .. new_data[i][2] .. ":" .. new_data[i][3]
+         if i ~= #new_data then line_str = line_str .. "\n" end
+         file:write(line_str)
+      end
+      file:close()
    end
-
-   for _, file in ipairs(file_names[char]) do
-      local file_path = framedata_path .. file
-      local f = io.open(file_path, "r")
-      local stats = estimate_decode_time(f:read("*all"), json.decode, 10)
-      f:close()
-      print(
-          string.format("%.06fs - %.06f error", stats.average_time, (1 / 60 / 10 - stats.average_time) / (1 / 60 / 10)))
-   end
+   local file_path = framedata_path .. "file_size.json"
+   local file = io.open(file_path, "w")
+   if not file then error("Cannot open " .. file_path) end
+   file:write(total_size)
+   file:close()
 end
 
 local function index_of_projectile(list, proj)
@@ -1322,16 +1293,8 @@ local function end_recording(player, projectiles, name)
 
       if fdata then
          if rec.recording_options.hit_type == "block" or rec.recording_options.self_chain then
-            --[[         for j = 1, #new_frames - 1 do
-          local str = "0000000000"
-          if fdata.frames[j] then
-            str = fdata.frames[j].hash
-          end
-          print(j-1, str, new_frames[j].hash)
-        end ]]
             for j = 1, #new_frames - 1 do
                if index_of_hash(fdata.frames, new_frames[j].hash) == 0 then
-                  -- local index_of_next_frame = find_exception_position(fdata.frames, new_frames, j + 1) - 1 - 1
                   local index = find_exceptions(fdata.frames, new_frames, j)
                   if index > 0 then
                      if not fdata.exceptions then fdata.exceptions = {} end
@@ -1339,12 +1302,11 @@ local function end_recording(player, projectiles, name)
                   end
                end
             end
-
-            --[[         local exceptions = find_exceptions(fdata.frames, new_frames)
-        if not tools.deep_equal(exceptions, {}) then
-          fdata.exceptions = exceptions
-          print(fdata.exceptions)
-        end ]]
+         end
+         if rec.recording_options.recording_landing then
+            if current_recording_anim_list[i].landing_height then
+               fdata.landing_height = current_recording_anim_list[i].landing_height
+            end
          end
       end
 
@@ -1578,16 +1540,21 @@ local function record_framedata(player, projectiles, name)
          if player.velocity_x ~= 0 or player.velocity_y ~= 0 or player.acceleration_x ~= 0 or player.acceleration_y ~= 0 then
             additional_props.uses_velocity = true
          end
-         if (not rec.recording_options.recording_movement and frame == 0 and not player.is_attacking and
-             player.posture == 0) or
-             (rec.recording_options.recording_movement and frame == 0 and not player.is_attacking and
-                 player.posture == 0) then
+         if (frame == 0 and not player.is_attacking and player.posture == 0 and player.pos_y == 0) then
             -- recovery animation (landing, after dash, etc)
             write_memory.clear_motion_data(player)
             additional_props.uses_velocity = false
             additional_props.landing_frame = true
+            local jump_actions = {[14] = true, [15] = true, [16] = true, [20] = true, [21] = true, [22] = true}
+            if jump_actions[player.action] then current_recording_animation.name = "jump_recovery" end
+            if rec.recording_options.recording_landing then
+               if current_recording_anim_list[#current_recording_anim_list - 1] then
+                  current_recording_anim_list[#current_recording_anim_list - 1].landing_height = player.previous_pos_y
+                  print(current_recording_anim_list[#current_recording_anim_list - 1].name,
+                        current_recording_anim_list[#current_recording_anim_list - 1].landing_height)
+               end
+            end
          end
-
          local movement_x = (player.pos_x - player.previous_pos_x) * sign
          local movement_y = player.pos_y - player.previous_pos_y
 
@@ -1643,9 +1610,12 @@ local function record_framedata(player, projectiles, name)
              rec.recording_options.recording_idle then
             table.insert(wanted_boxes, "vulnerability")
             table.insert(wanted_boxes, "throwable")
+            table.insert(wanted_boxes, "push")
          end
 
-         if rec.recording_options.record_pushboxes then table.insert(wanted_boxes, "push") end
+         if rec.recording_options.record_pushboxes or current_recording_animation.air then
+            table.insert(wanted_boxes, "push")
+         end
 
          for __, box in ipairs(player.boxes) do
             local type = tools.convert_box_types[box[1]]
@@ -1961,8 +1931,9 @@ end
 
 local movement_list = {
    "walk_forward", "walk_back", "dash_forward", "dash_back", "standing_turn", "crouching_turn", "jump_forward",
-   "jump_neutral", "jump_back", "sjump_forward", "sjump_neutral", "sjump_back", "air_dash", "block_high_proximity",
-   "block_low_proximity", "parry_high", "parry_low", "parry_air"
+   "jump_neutral", "jump_back", "sjump_forward", "sjump_neutral", "sjump_back", "air_jump_forward", "air_jump_neutral",
+   "air_jump_back", "air_dash", "block_high_proximity", "block_low_proximity", "block_high_air_proximity",
+   "block_high_air", "parry_high", "parry_low", "parry_air"
 }
 local i_movement_list = 1
 local m_player_reset_pos = {440, 0}
@@ -2007,6 +1978,13 @@ local function record_movement(player)
             if player.action == 30 then new_recording(player, {}, name) end
          elseif name == "block_low_proximity" then
             if player.action == 31 then new_recording(player, {}, name) end
+         elseif name == "block_high_air_proximity" then
+            if tools.table_contains({"gill", "hugo", "urien"}, player.char_str) then
+               if player.action == 30 then new_recording(player, {}, name) end
+            end
+            if player.action == 29 then new_recording(player, {}, name) end
+         elseif name == "block_high_air" then
+            if player.action == 65536 then new_recording(player, {}, name) end
          elseif name == "parry_high" then
             if player.action == 24 or player.action == 25 then new_recording(player, {}, name) end
          elseif name == "parry_low" then
@@ -2022,6 +2000,12 @@ local function record_movement(player)
          elseif name == "sjump_forward" or name == "sjump_neutral" or name == "sjump_back" then
             if player.action == 13 then
                name = "sjump_startup"
+               rec.recording_options.record_next_anim = true
+               new_recording(player, {}, name)
+            end
+         elseif name == "air_jump_forward" or name == "air_jump_neutral" or name == "air_jump_back" then
+            if player.action == 49 then
+               name = "air_jump_startup"
                rec.recording_options.record_next_anim = true
                new_recording(player, {}, name)
             end
@@ -2054,12 +2038,16 @@ local function record_movement(player)
                name = "block_high"
             elseif player.action == 65538 then
                name = "block_low"
+            elseif player.action == 65536 then
+               name = "block_high_air"
             end
             new_animation(player, {}, name)
          end
       end
       if state == "ready" then
-         if player.is_idle and dummy.is_idle and player.action == 0 then state = "queue_move" end
+         if player.is_idle and dummy.is_idle and player.action == 0 and dummy.action == 0 then
+            state = "queue_move"
+         end
       elseif state == "wait_for_match_start" then
          if gamestate.has_match_just_started then state = "queue_move" end
       end
@@ -2127,6 +2115,42 @@ local function record_movement(player)
             elseif name == "sjump_back" then
                is_jump = true
                sequence = {{"down"}, {"up", "back"}, {"up", "back"}, {"up", "back"}, {}, {}, {}, {}}
+            elseif name == "air_jump_forward" then
+               if player.char_str == "oro" then
+                  is_jump = true
+                  sequence = {
+                     {"up"}, {"up"}, {"up"}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+                     {"up", "forward"}, {"up", "forward"}, {"up", "forward"}
+                  }
+               else
+                  i_movement_list = i_movement_list + 1
+                  state = "queue_move"
+                  return
+               end
+            elseif name == "air_jump_neutral" then
+               if player.char_str == "oro" then
+                  is_jump = true
+                  sequence = {
+                     {"up"}, {"up"}, {"up"}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {"up"},
+                     {"up"}, {"up"}
+                  }
+               else
+                  i_movement_list = i_movement_list + 1
+                  state = "queue_move"
+                  return
+               end
+            elseif name == "air_jump_back" then
+               if player.char_str == "oro" then
+                  is_jump = true
+                  sequence = {
+                     {"up"}, {"up"}, {"up"}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+                     {"up", "back"}, {"up", "back"}, {"up", "back"}
+                  }
+               else
+                  i_movement_list = i_movement_list + 1
+                  state = "queue_move"
+                  return
+               end
             elseif name == "air_dash" then
                if player.char_str == "twelve" then
                   sequence = {
@@ -2152,6 +2176,27 @@ local function record_movement(player)
                   table.insert(sequence, {"down", "back"})
                   Queue_Command(gamestate.frame_number + i, write_memory.clear_motion_data, {player})
                end
+            elseif name == "block_high_air_proximity" then
+               rec.recording_options.ignore_movement = true
+               allow_dummy_movement = true
+               local h = character_specific[player.char_str].height.standing.min - 50
+               m_dummy_reset_pos_offset = {80, h}
+               inputs.queue_input_sequence(dummy, {{"up"}, {"up"}, {}, {}, {}, {}, {"HK"}})
+               for i = 1, 30 do
+                  table.insert(sequence, {"back"})
+                  Queue_Command(gamestate.frame_number + i, write_memory.clear_motion_data, {player})
+               end
+               Queue_Command(gamestate.frame_number + 60, land_player, {dummy})
+            elseif name == "block_high_air" then
+               rec.recording_options.ignore_movement = true
+               local h = character_specific[player.char_str].height.standing.min - 56
+               m_dummy_reset_pos_offset = {80, h}
+               inputs.queue_input_sequence(dummy, {{"up"}, {"up"}, {}, {}, {}, {}, {"HK"}})
+               for i = 1, 30 do
+                  table.insert(sequence, {"back"})
+                  Queue_Command(gamestate.frame_number + i, write_memory.clear_motion_data, {player})
+               end
+               Queue_Command(gamestate.frame_number + 80, land_player, {dummy})
             elseif name == "parry_high" then
                inputs.queue_input_sequence(dummy, {{"MK"}})
                Queue_Command(gamestate.frame_number + 1, inputs.queue_input_sequence, {player, {{"forward"}}})
@@ -2193,7 +2238,7 @@ local function record_movement(player)
             return
          end
       end
-      if setup then
+      if setup and (state == "wait_for_initial_anim" or rec.recording) then
          if not allow_dummy_movement then
             write_memory.write_pos(dummy, player.pos_x + m_dummy_reset_pos_offset[1],
                                    player.pos_y + m_dummy_reset_pos_offset[2])
@@ -2294,225 +2339,124 @@ local function record_wakeups(player)
    end
 end
 
-local landing_recording = {animation = 0, frame = 0, max_frames = 0, act_frame_number = 0, sequence = {}}
-
-local landing_categories = {}
-local i_landing_categories = 1
-local i_landings = 1
-local current_landing_category = {}
-local empty_jumps = {
-   {name = "jump_forward", sequence = {{"up", "forward"}, {"up", "forward"}, {"up", "forward"}}},
-   {name = "jump_neutral", sequence = {{"up"}, {"up"}, {"up"}}},
-   {name = "jump_back", sequence = {{"up", "back"}, {"up", "back"}, {"up", "back"}}},
-   {name = "sjump_forward", sequence = {{"down"}, {"up", "forward"}, {"up", "forward"}, {"up", "forward"}}},
-   {name = "sjump_neutral", sequence = {{"down"}, {"up"}, {"up"}, {"up"}}},
-   {name = "sjump_back", sequence = {{"down"}, {"up", "back"}, {"up", "back"}, {"up", "back"}}}
+local landing_list = {
+   "jump_forward", "jump_neutral", "jump_back", "sjump_forward", "sjump_neutral", "sjump_back", "air_dash"
 }
-local landing_j_normals = {
-   {name = "jump_forward", sequence = {{"up", "forward"}, {"up", "forward"}, {"up", "forward"}}}
-}
-local jumping_target_combos = {}
-local air_specials = {}
+local i_landing_list = 1
 
-local lo, hi = -100, 60
-local landing_height = hi
-local n_no_data = 0
+local function record_landing(player)
+   local dummy = player.other
+   if gamestate.is_in_match and debug_settings.recording_framedata then
+      if player.action == 0 or player.action == 7 then
+         if rec.recording then
+            if player.has_animation_just_changed then
+               end_recording(player, {}, name)
+               i_landing_list = i_landing_list + 1
+            end
+         end
+      elseif state == "wait_for_initial_anim" and player.has_animation_just_changed then
+         if name == "jump_forward" or name == "jump_neutral" or name == "jump_back" then
+            if player.action == 12 then
+               name = "jump_startup"
+               new_recording(player, {}, name)
+            end
+         elseif name == "sjump_forward" or name == "sjump_neutral" or name == "sjump_back" then
+            if player.action == 13 then
+               name = "sjump_startup"
+               new_recording(player, {}, name)
+            end
+         elseif name == "air_dash" then
+            if player.animation == "b394" then new_recording(player, {}, name) end
+         else
+            new_recording(player, {}, name)
+         end
+      elseif rec.recording then
+         if player.has_animation_just_changed then
+            if player.action == 14 then
+               name = "jump_forward"
+            elseif player.action == 15 then
+               name = "jump_neutral"
+            elseif player.action == 16 then
+               name = "jump_back"
+            elseif player.action == 20 then
+               name = "sjump_forward"
+            elseif player.action == 21 then
+               name = "sjump_neutral"
+            elseif player.action == 22 then
+               name = "sjump_back"
+            end
+            new_animation(player, {}, name)
+         end
+      end
+      if state == "ready" then
+         if player.is_idle and dummy.is_idle and player.action == 0 then state = "queue_move" end
+      elseif state == "wait_for_match_start" then
+         if gamestate.has_match_just_started then state = "queue_move" end
+      end
 
-landing_ss = savestate.create("data/" .. game_data.rom_name .. "/savestates/landing.fs")
+      if not setup and state == "start" then
+         setup = true
+         state = "ready"
+      end
 
-local function setup_landing_state(player, sequence, jump_offset)
-   inputs.queue_input_sequence(player, sequence)
-   write_memory.write_pos(player, 400, 0)
-   Queue_Command(gamestate.frame_number + jump_offset - 1 - 1, write_memory.clear_motion_data, {player})
-   Queue_Command(gamestate.frame_number + jump_offset - 1 - 1, write_memory.write_pos, {player, 400, 100})
-   Queue_Command(gamestate.frame_number + jump_offset - 1, savestate.save, {landing_ss})
-   Queue_Command(gamestate.frame_number + jump_offset - 1, function() print("save ss", gamestate.frame_number) end)
-   Queue_Command(gamestate.frame_number + jump_offset, function() state = "setup_landing" end)
-   landing_recording.act_frame_number = gamestate.frame_number + jump_offset
-   print(gamestate.frame_number, landing_recording.act_frame_number)
-end
+      if state == "make_sure_action_is_0" then
+         -- remy turns around slow
+         if player.action == 0 then state = "wait_for_initial_anim" end
+      end
 
-local function print_info() print(">", gamestate.frame_number, gamestate.P1.animation, gamestate.P1.animation_frame_hash) end
+      if state == "queue_move" then
+         state = "wait_for_initial_anim"
+         if i_landing_list <= #landing_list then
+            rec.recording_options = {recording_landing = true}
+            allow_dummy_movement = false
+            name = landing_list[i_landing_list]
+            local sequence = {}
+            m_player_reset_pos = {440, 0}
+            m_dummy_reset_pos_offset = {100, 0}
+            if name == "jump_forward" then
+               sequence = {{"up", "forward"}, {"up", "forward"}, {"up", "forward"}, {}, {}, {}, {}}
+            elseif name == "jump_neutral" then
+               sequence = {{"up"}, {"up"}, {"up"}, {}, {}, {}, {}}
+            elseif name == "jump_back" then
+               sequence = {{"up", "back"}, {"up", "back"}, {"up", "back"}, {}, {}, {}, {}}
+            elseif name == "sjump_forward" then
+               sequence = {{"down"}, {"up", "forward"}, {"up", "forward"}, {"up", "forward"}, {}, {}, {}, {}}
+            elseif name == "sjump_neutral" then
+               sequence = {{"down"}, {"up"}, {"up"}, {"up"}, {}, {}, {}, {}}
+            elseif name == "sjump_back" then
+               sequence = {{"down"}, {"up", "back"}, {"up", "back"}, {"up", "back"}, {}, {}, {}, {}}
+            elseif name == "air_dash" then
+               if player.char_str == "twelve" then
+                  sequence = {
+                     {"down"}, {"up", "back"}, {"up", "back"}, {"up", "back"}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+                     {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {"forward"}, {}, {"forward"}
+                  }
+               else
+                  i_landing_list = i_landing_list + 1
+                  state = "queue_move"
+                  return
+               end
+            end
 
-local function landing_write_player_pos_y(y)
-   write_memory.clear_motion_data(gamestate.P1)
-   write_memory.write_pos_y(gamestate.P1, y)
-end
-
-local function landing_reset_player_pos()
-   write_memory.clear_motion_data(gamestate.P1)
-   write_memory.write_pos(gamestate.P1, 400, 100)
-end
-
-local function guess_landing_height()
-   local player = gamestate.P1
-   local result = player.posture == 0
-   if result then
-      lo = landing_height
-   else
-      hi = landing_height
-   end
-   if hi - lo == 1 then
-      state = "finished_guess"
-      return true
-   end
-   if lo <= hi then landing_height = lo + math.floor((hi - lo) / 2) end
-   state = "setup_landing"
-   return false
-end
-
-local function landing_queue_guess()
-   Queue_Command(gamestate.frame_number + landing_recording.act_offset + 1, guess_landing_height)
-end
-
-local function increment_landing_ss()
-   savestate.save(landing_ss)
-   Queue_Command(gamestate.frame_number + 1, function() state = "setup_landing" end)
-   -- Queue_Command(gamestate.frame_number + delta + 1, function() print("save ss", gamestate.frame_number) end})
-end
-
-local function landing_queue_write_pos(val)
-   local delta = landing_recording.act_frame_number - gamestate.frame_number
-   Queue_Command(delta, write_memory.write_pos, {gamestate.P1, val})
-end
-
-local function queue_landing_move(sequence) inputs.queue_input_sequence(gamestate.P1, sequence) end
-
-local function queue_guess_landing_height() Queue_Command(gamestate.frame_number + 1, guess_landing_height) end
-
-local function record_landing()
-   local player = gamestate.P1
-   local dummy = gamestate.P2
-   if state == "start" and not setup and gamestate.has_match_just_started then
-      write_memory.make_invulnerable(player.other, true)
-
-      landing_categories = {
-         {name = "empty_jumps", list = empty_jumps}, {name = "jumping_normals", list = landing_j_normals},
-         {name = "jumping_target_combos", list = jumping_target_combos}, {name = "air_specials", list = air_specials}
-      }
-      setup = true
-      state = "queue_move"
-   end
-   if state == "queue_move" then
-      -- jumps
-      -- normals
-      -- specials
-
-      if i_landings <= #landing_categories[i_landing_categories].list then
-         current_landing_category = landing_categories[i_landing_categories]
-      else
-         if i_landing_categories >= #landing_categories then
+            write_memory.write_pos(player, m_player_reset_pos[1], m_player_reset_pos[2])
+            write_memory.write_pos(dummy, player.pos_x + m_dummy_reset_pos_offset[1],
+                                   player.pos_y + m_dummy_reset_pos_offset[2])
+            write_memory.fix_screen_pos(player, dummy, gamestate.stage)
+            write_memory.clear_motion_data(player)
+            inputs.queue_input_sequence(player, sequence)
+            print(name)
+         else
             state = "finished"
-            i_landings = 1
-            i_landing_categories = 1
-            current_landing_category = {}
-            write_memory.make_invulnerable(dummy, false)
+            i_landing_list = 1
             return
          end
-         i_landing_categories = i_landing_categories + 1
-         i_landings = 1
-         current_landing_category = landing_categories[i_landing_categories]
-         if #landing_categories[i_landing_categories].list == 0 then
-            i_landing_categories = i_landing_categories + 1
-            state = "finished"
+      end
+      if setup then
+         if not allow_dummy_movement then
+            write_memory.write_pos(dummy, player.pos_x + m_dummy_reset_pos_offset[1],
+                                   player.pos_y + m_dummy_reset_pos_offset[2])
          end
-         return
-      end
-
-      landing_recording = {
-         animation = 0,
-         frame = 0,
-         max_frames = 0,
-         act_frame_number = 0,
-         act_offset = 0,
-         sequence = {}
-      }
-
-      if current_landing_category.name == "empty_jumps" then
-         current_attack = tools.deepcopy(empty_jumps[i_landings])
-         local _, startup
-         if current_attack.name == "jump_forward" or current_attack.name == "jump_neutral" or current_attack.name ==
-             "jump_back" then _, startup = find_frame_data_by_name(player.char_str, "jump_startup") end
-
-         if current_attack.name == "sjump_forward" or current_attack.name == "sjump_neutral" or current_attack.name ==
-             "sjump_back" then _, startup = find_frame_data_by_name(player.char_str, "sjump_startup") end
-         if startup then current_attack.initial_jump_offset = #startup.frames + 2 end
-         landing_recording.act_offset = 0
-      elseif current_landing_category.name == "jumping_normals" then
-         -- current_attack = tools.deepcopy(landing_j_normals[i_landings])
-         current_attack = {name = "uf_HP"}
-
-         local sequence = {{"up", "forward"}, {"up", "forward"}, {"up", "forward"}, {}, {}, {}}
-         current_attack.sequence = sequence
-         landing_recording.sequence = {{"HP"}}
-         current_attack.offset = #landing_recording.sequence
-         landing_recording.act_offset = #landing_recording.sequence
-      end
-      local key, fd = find_frame_data_by_name(player.char_str, current_attack.name)
-      if fd then
-         landing_recording.animation = key
-         landing_recording.max_frames = #fd.frames
-      else
-         print(current_attack.name, "framedata not found")
-      end
-
-      print(current_attack.name)
-      setup_landing_state(player, current_attack.sequence, current_attack.initial_jump_offset)
-      n_no_data = 0
-      state = "setting_up"
-   end
-
-   if state == "next_landing_frame" then
-      if landing_recording.frame <= 1 then
-         Register_After_Load_State(queue_landing_move, {landing_recording.sequence})
-      end
-      landing_recording.frame = landing_recording.frame + 1
-      landing_recording.act_frame_number = landing_recording.act_frame_number + 1
-      Register_After_Load_State(landing_reset_player_pos)
-      Register_After_Load_State(increment_landing_ss)
-      savestate.load(landing_ss)
-      state = "setting_up"
-   end
-
-   if state == "setup_landing" then
-      if landing_recording.frame == 0 then
-         Register_After_Load_State(queue_landing_move, {landing_recording.sequence})
-         Register_After_Load_State(landing_write_player_pos_y, {landing_height})
-         Register_After_Load_State(landing_queue_guess)
-         -- Register_After_Load_State(print_info})
-
-         savestate.load(landing_ss)
-         state = "wait_for_setup"
-      else
-         Register_After_Load_State(landing_write_player_pos_y, {landing_height})
-         Register_After_Load_State(landing_queue_guess)
-         -- Register_After_Load_State(print_info})
-         savestate.load(landing_ss)
-         state = "wait_for_setup"
-      end
-   end
-
-   if state == "finished_guess" then
-      if hi - 1 == 0 then
-         n_no_data = n_no_data + 1
-      else
-         n_no_data = 0
-      end
-      if n_no_data > 15 then
-         i_landings = i_landings + 1
-         state = "queue_move"
-         return
-      end
-      -- frame_data[player.char_str][landing_recording.animation].frames[landing_recording.frame].landing = -hi
-      print(current_attack.name, landing_recording.frame, hi - 1, gamestate.P1.animation,
-            gamestate.P1.animation_frame_hash)
-      lo, hi = -100, 60
-      landing_height = hi
-      if landing_recording.frame < landing_recording.max_frames then
-         state = "next_landing_frame"
-      else
-         i_landings = i_landings + 1
-         state = "queue_move"
+         record_framedata(player, {}, name)
       end
    end
 end
@@ -2525,6 +2469,7 @@ end
 local function populate_moves(player)
    local moves = tools.deepcopy(move_list[player.char_str])
    local i = 1
+   rec.throw_uoh_pa = tools.deepcopy(throw_uoh_pa)
    rec.specials = {}
    rec.supers = {}
    rec.block_pattern = nil
@@ -2696,13 +2641,17 @@ local function populate_moves(player)
       table.insert(rec.supers, move)
    end
 
+   if player.char_str == "chunli" or player.char_str == "ibuki" or player.char_str == "oro" then
+      table.insert(rec.throw_uoh_pa, {sequence = {{"LP", "LK"}}, name = "throw_air", air = true})
+   end
+
    normals = normals_list[player.char_str]
    other_normals = other_normals_list[player.char_str]
    target_combos = target_combos_list[player.char_str]
    rec.attack_categories = {
       {name = "normals", list = normals}, {name = "jumping_normals", list = jumping_normals},
       {name = "other_normals", list = other_normals}, {name = "target_combos", list = target_combos},
-      {name = "throw_uoh_pa", list = throw_uoh_pa}, {name = "specials", list = rec.specials},
+      {name = "throw_uoh_pa", list = rec.throw_uoh_pa}, {name = "specials", list = rec.specials},
       {name = "supers", list = rec.supers}
    }
 end
@@ -2721,9 +2670,7 @@ local function record_attacks(player, projectiles)
                   end_recording(player, projectiles, name)
                end
             end
-            if state == "requeue_move" then
-               state = "queue_move"
-            end
+            if state == "requeue_move" then state = "queue_move" end
          end
       elseif state == "wait_for_initial_anim" and player.has_animation_just_changed then
          if player.is_attacking or player.is_throwing then
@@ -3060,7 +3007,7 @@ local function record_attacks(player, projectiles)
 
             state = "wait_for_initial_anim"
          elseif rec.current_attack_category.name == "throw_uoh_pa" then
-            current_attack = tools.deepcopy(throw_uoh_pa[rec.i_attacks])
+            current_attack = tools.deepcopy(rec.throw_uoh_pa[rec.i_attacks])
             current_attack.reset_pos_x = rec.reset_pos_x
             local sequence = current_attack.sequence
             current_attack.attack_start_frame = #sequence
@@ -3084,6 +3031,14 @@ local function record_attacks(player, projectiles)
                current_attack.throw = true
                if rec.recording_options.hit_type == "block" then
                   for i = 1, 6 do table.insert(sequence, 1, {}) end
+               end
+            end
+            if current_attack.name == "throw_air" then
+               current_attack.throw = true
+               if rec.recording_options.hit_type == "block" then
+                  inputs.queue_input_sequence(dummy, {{"up"}, {"up"}, {"up"}, {"up"}, {"up"}})
+                  Queue_Command(gamestate.frame_number + #sequence + 6, write_memory.write_pos,
+                                {dummy, current_attack.reset_pos_x + 30, 45})
                end
             end
 
@@ -3988,7 +3943,7 @@ local function record_attacks(player, projectiles)
                end
                if base_name == "hitobashira_air" then
                   current_attack.name = base_name
-                  if button == "EXK" then current_attack.name = base_name .. button end
+                  if button == "EXK" then current_attack.name = base_name .. "_" .. button end
                   current_attack.reset_pos_x = 150
                   rec.dummy_offset_x = 80
                   current_attack.max_hits = 2
@@ -4067,6 +4022,7 @@ local function record_attacks(player, projectiles)
                   if button == "EXK" then current_attack.max_hits = 2 end
                end
                if base_name == "cold_blue_kick" then
+                  rec.recording_options.record_pushboxes = true
                   rec.dummy_offset_x = 150
                   if button == "EXK" then
                      current_attack.max_hits = 2
@@ -5651,7 +5607,7 @@ local function record_all_characters(player, projectiles)
          elseif i_record == 4 then
             record_attacks(player, projectiles)
          elseif i_record == 5 then
-            record_landing()
+            record_landing(player)
          end
 
          if state == "finished" then
@@ -5661,7 +5617,7 @@ local function record_all_characters(player, projectiles)
             i_record = i_record + 1
             -- i_characters = 99
          end
-         if i_record > 4 then
+         if i_record > 5 then
             i_record = 1
             i_characters = i_characters + 1
             record_char_state = "new_character"
@@ -5680,7 +5636,11 @@ end
 
 local function update_framedata_recording(player, projectiles) record_all_characters(player, projectiles) end
 
-local record_framedata = {save_frame_data = save_frame_data, update_framedata_recording = update_framedata_recording}
+local record_framedata = {
+   save_frame_data = save_frame_data,
+   span_frame_data = span_frame_data,
+   update_framedata_recording = update_framedata_recording
+}
 
 setmetatable(record_framedata, {
    __index = function(_, key) if key == "state" then return state end end,

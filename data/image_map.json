@@ -2155,6 +2155,14 @@
     "en": "images/menu/houyokusen_en_5_white.png",
     "jp": "images/menu/houyokusen_jp_10_white.png"
   },
+  "hud_active": {
+    "en": "images/menu/hud_active_en_5_white.png",
+    "jp": "images/menu/hud_active_jp_8_white.png"
+  },
+  "hud_advantage": {
+    "en": "images/menu/hud_advantage_en_5_white.png",
+    "jp": "images/menu/hud_advantage_jp_8_white.png"
+  },
   "hud_cpu": {
     "en": "images/menu/hud_cpu_en_5_white.png",
     "jp": "images/menu/hud_cpu_jp_8_white.png"
@@ -2163,9 +2171,17 @@
     "en": "images/menu/hud_dummy_en_5_white.png",
     "jp": "images/menu/hud_dummy_jp_8_white.png"
   },
+  "hud_duration": {
+    "en": "images/menu/hud_duration_en_5_white.png",
+    "jp": "images/menu/hud_duration_jp_8_white.png"
+  },
   "hud_f": {
     "en": "images/menu/hud_f_en_5_white.png",
     "jp": "images/menu/hud_f_jp_8_white.png"
+  },
+  "hud_hit_frame": {
+    "en": "images/menu/hud_hit_frame_en_5_white.png",
+    "jp": "images/menu/hud_hit_frame_jp_8_white.png"
   },
   "hud_p1": {
     "en": "images/menu/hud_p1_en_5_white.png",
@@ -2186,6 +2202,10 @@
   "hud_slot": {
     "en": "images/menu/hud_slot_en_5_white.png",
     "jp": "images/menu/hud_slot_jp_8_white.png"
+  },
+  "hud_startup": {
+    "en": "images/menu/hud_startup_en_5_white.png",
+    "jp": "images/menu/hud_startup_jp_8_white.png"
   },
   "hud_wait_for_recording": {
     "en": "images/menu/hud_wait_for_recording_en_5_white.png",

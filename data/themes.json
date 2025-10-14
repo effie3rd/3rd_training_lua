@@ -9,6 +9,11 @@
         "disabled": "0x504f55FF",
         "button_activated": "0x9333EAFF"
       },
+      "hud_text": {
+        "default": "0xFFFFFFFF",
+        "success": "0x10FF10FF",
+        "failure": "0xFF1010FF"
+      },
       "gui_text": {
         "default": "0xFFFFFFFF",
         "default_border": "0x000000FF"
@@ -73,6 +78,11 @@
         "inactive": "0x375483FF",
         "disabled": "0x192a44FF",
         "button_activated": "0x4819e3FF"
+      },
+      "hud_text": {
+        "default": "0xFFFFFFFF",
+        "success": "0x10FF10FF",
+        "failure": "0xFF1010FF"
       },
       "gui_text": {
         "default": "0xFFFFFFFF",
@@ -139,6 +149,11 @@
         "disabled": "0x454877FF",
         "button_activated": "0x6047dcFF"
       },
+      "hud_text": {
+        "default": "0xFFFFFFFF",
+        "success": "0x10FF10FF",
+        "failure": "0xFF1010FF"
+      },
       "gui_text": {
         "default": "0xFFFFFFFF",
         "default_border": "0x000000FF"
@@ -203,6 +218,11 @@
         "inactive": "0x319cc0FF",
         "disabled": "0x23728fFF",
         "button_activated": "0x5541a6FF"
+      },
+      "hud_text": {
+        "default": "0xFFFFFFFF",
+        "success": "0x10FF10FF",
+        "failure": "0xFF1010FF"
       },
       "gui_text": {
         "default": "0xFFFFFFFF",
@@ -269,6 +289,11 @@
         "disabled": "0x3a71b1FF",
         "button_activated": "0x10FF10FF"
       },
+      "hud_text": {
+        "default": "0xFFFFFFFF",
+        "success": "0x10FF10FF",
+        "failure": "0xFF1010FF"
+      },
       "gui_text": {
         "default": "0xFFFFFFFF",
         "default_border": "0x000000FF"
@@ -325,6 +350,76 @@
     }
   },
   {
+    "name": "abyss",
+    "colors": {
+      "text": {
+        "default": "0xFFFFFFFF",
+        "selected": "0x6527ffFF",
+        "inactive": "0x90c4a4FF",
+        "disabled": "0x3f4BA8FF",
+        "button_activated": "0xddf8d0FF"
+      },
+      "hud_text": {
+        "default": "0xFFFFFFFF",
+        "success": "0x10FF10FF",
+        "failure": "0xFF1010FF"
+      },
+      "gui_text": {
+        "default": "0xFFFFFFFF",
+        "default_border": "0x000000FF"
+      },
+      "menu": {
+        "background": "0x121019E8",
+        "outline": "0x5429c2F0",
+        "divider": "0x5429c20F",
+        "gauge_background": "0xFFFFFF22",
+        "gauge_border": "0x000000FF"
+      },
+      "gauges": {
+        "outline": "0x000000FF",
+        "background": "0x00000044",
+        "valid_fill": "0x3c9691FF",
+        "cooldown_fill": "0x531750FF",
+        "life": "0x00CD4CFF",
+        "stun": "0xE60000FF",
+        "meter": "0x00E6F7FF"
+      },
+      "parry": {
+        "text_validity": "0xFFFFFFFF",
+        "text_success": "0x10FF10FF",
+        "text_failure": "0xFF1010FF"
+      },
+      "charge": {
+        "text_validity": "0xFFFFFFFF",
+        "text_success": "0x10FF10FF",
+        "text_failure": "0xFF1010FF",
+        "overcharge": "0x4900FF80"
+      },
+      "last_hit_bars": {
+        "life": "0xFFFFFFFF",
+        "stun": "0xE60000FF"
+      },
+      "red_parry_miss": "0xFF5941FF",
+      "bonuses": {
+        "damage": "0xFF7184FF",
+        "defense": "0xD6E3EFFF",
+        "stun": "0xD6E3EFFF"
+      },
+      "hitboxes": {
+        "vulnerability": "0x0000FFFF",
+        "attack": "0xFF0000FF",
+        "throwable": "0x00FF00FF",
+        "throw": "0xFFFF00FF",
+        "push": "0xFF00FFFF",
+        "extvulnerability": "0x00FFFFFF"
+      },
+      "score": {
+        "plus": "0x40C7FFFF",
+        "minus": "0x9652FFFF"
+      }
+    }
+  },
+  {
     "name": "glass",
     "colors": {
       "text": {
@@ -333,6 +428,11 @@
         "inactive": "0x909090FF",
         "disabled": "0x5b5b5bFF",
         "button_activated": "0xef7b55FF"
+      },
+      "hud_text": {
+        "default": "0xFFFFFFFF",
+        "success": "0x10FF10FF",
+        "failure": "0xFF1010FF"
       },
       "gui_text": {
         "default": "0xFFFFFFFF",
@@ -399,6 +499,11 @@
         "disabled": "0x909090FF",
         "button_activated": "0x10FF10FF"
       },
+      "hud_text": {
+        "default": "0xFFFFFFFF",
+        "success": "0x10FF10FF",
+        "failure": "0xFF1010FF"
+      },
       "gui_text": {
         "default": "0xFFFFFFFF",
         "default_border": "0x000000FF"
@@ -464,6 +569,11 @@
         "disabled": "0x4b4948FF",
         "button_activated": "0x10FF10FF"
       },
+      "hud_text": {
+        "default": "0xFFFFFFFF",
+        "success": "0x10FF10FF",
+        "failure": "0xFF1010FF"
+      },
       "gui_text": {
         "default": "0xFFFFFFFF",
         "default_border": "0x000000FF"
@@ -528,6 +638,11 @@
         "inactive": "0x83868aFF",
         "disabled": "0x414246FF",
         "button_activated": "0x10FF10FF"
+      },
+      "hud_text": {
+        "default": "0xFFFFFFFF",
+        "success": "0x10FF10FF",
+        "failure": "0xFF1010FF"
       },
       "gui_text": {
         "default": "0xFFFFFFFF",

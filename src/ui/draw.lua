@@ -237,17 +237,30 @@ local function draw_vertical_line(x, y_start, y_end, color, thickness)
    gui.box(l, b, r, t, color, 0x00000000)
 end
 
-local function draw_horizontal_text_segment(p1_x, p2_x, y, text, line_color, edges_height)
-
-   edges_height = edges_height or 3
-   local half_distance_str_width = get_text_width(text) * 0.5
+local function draw_horizontal_text_segment(p1_x, p2_x, y, str, line_color, edges_height, edges_style, lang)
 
    local center_x = (p1_x + p2_x) * 0.5
+   edges_height = edges_height or 3
+   local half_distance_str_width
+   if lang then
+      local h
+      half_distance_str_width, h = get_text_dimensions(str, lang)
+      half_distance_str_width = half_distance_str_width * 0.5
+      render_text(center_x - half_distance_str_width, y - h / 2 + 1, str, lang, nil, colors.gui_text.default)
+   else
+      half_distance_str_width = get_text_width(str) * 0.5
+      gui.text(center_x - half_distance_str_width, y - 3, str, colors.gui_text.default, colors.gui_text.default_border)
+   end
    draw_horizontal_line(math.min(p1_x, p2_x), center_x - half_distance_str_width - 3, y, line_color, 1)
    draw_horizontal_line(center_x + half_distance_str_width + 3, math.max(p1_x, p2_x), y, line_color, 1)
-   gui.text(center_x - half_distance_str_width, y - 3, text, colors.gui_text.default, colors.gui_text.default_border)
 
-   if edges_height > 0 then
+   if edges_style == "up" then
+      draw_vertical_line(p1_x, y - edges_height, y, line_color, 1)
+      draw_vertical_line(p2_x, y - edges_height, y, line_color, 1)
+   elseif edges_style == "down" then
+      draw_vertical_line(p1_x, y, y + edges_height, line_color, 1)
+      draw_vertical_line(p2_x, y, y + edges_height, line_color, 1)
+   else
       draw_vertical_line(p1_x, y - edges_height, y + edges_height, line_color, 1)
       draw_vertical_line(p2_x, y - edges_height, y + edges_height, line_color, 1)
    end

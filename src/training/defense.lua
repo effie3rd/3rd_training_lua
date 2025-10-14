@@ -63,10 +63,11 @@ local player_reset_x = 0
 local dummy_reset_x = 0
 
 local should_hard_setup = true
+local should_block_input = false
 local hard_setup_delay = 16
 local soft_setup_delay = 16
 local setup_timeout = 100
-local position_speed = 8
+local min_position_speed = 8
 
 local setup_wakeup_start_frame = 0
 local screen_shake_delay = 16
@@ -131,18 +132,19 @@ local function restore_training_settings()
    training.disable_dummy = {false, false}
 end
 
-local function reselect_followups()
-   for i = i_actions, #action_queue do
-      action_queue[i] = nil
-      actions[i] = nil
+local function reselect_followups(index)
+   index = index + 1
+   while action_queue[index] do
+      table.remove(action_queue, index)
+      table.remove(actions, index)
    end
    local followups = action_queue[#action_queue].action:followups()
 
    while followups do
       local selected_followups = {}
       for i, p_followup in ipairs(followups) do
-         if p_followup.active and p_followup.action:is_valid(dummy, gamestate.stage, actions, i_actions) and
-             p_followup.action:should_execute(dummy, gamestate.stage, actions, i_actions) then
+         if p_followup.active and p_followup.action:is_valid(dummy, gamestate.stage, actions, index) and
+             p_followup.action:should_execute(dummy, gamestate.stage, actions, index) then
             table.insert(selected_followups, p_followup)
          end
       end
@@ -154,6 +156,7 @@ local function reselect_followups()
       else
          followups = nil
       end
+      index = index + 1
    end
 end
 
@@ -271,6 +274,12 @@ end
 local function move_players(should_move_player, should_move_dummy)
    if should_move_player then
       local player_sign = tools.sign(player_reset_x - player.pos_x)
+      local position_speed = min_position_speed
+      if player.is_waking_up and player.remaining_wakeup_time > 0 then
+         local dist = math.abs(player_reset_x - player.pos_x)
+         position_speed =
+             math.max(math.floor(dist / math.max(player.remaining_wakeup_time - 10, 1)), min_position_speed)
+      end
       local next_player_pos = player.pos_x + player_sign * position_speed
       if player_sign > 0 then
          next_player_pos = math.min(next_player_pos, player_reset_x)
@@ -282,7 +291,7 @@ local function move_players(should_move_player, should_move_dummy)
 
    if should_move_dummy then
       local dummy_sign = tools.sign(dummy_reset_x - dummy.pos_x)
-      local next_dummy_pos = dummy.pos_x + dummy_sign * position_speed
+      local next_dummy_pos = dummy.pos_x + dummy_sign * min_position_speed
       if dummy_sign > 0 then
          next_dummy_pos = math.min(next_dummy_pos, dummy_reset_x)
       else
@@ -296,7 +305,9 @@ local function soft_setup()
    local setup = action_queue[1].action
    if setup_state == setup_states.INIT then
       setup_start_frame = gamestate.frame_number
-      advanced_control.queue_programmed_movement(dummy, defense_data.close_distance.action:setup(dummy))
+      if defense_data.close_distance.action:should_execute(dummy, gamestate.stage, actions, i_actions) then
+         advanced_control.queue_programmed_movement(dummy, defense_data.close_distance.action:setup(dummy))
+      end
       setup_state = setup_states.SET_POSITIONS
    elseif setup_state == setup_states.SET_POSITIONS then
       if advanced_control.all_commands_complete(dummy) and not inputs.is_playing_input_sequence(dummy) then
@@ -390,6 +401,7 @@ local function start_character_select()
       is_active = true
       player = gamestate.P1
       dummy = gamestate.P2
+      training.swap_characters = false
       ensure_training_settings()
       apply_settings()
       defense_tables.reset_weights(opponent)
@@ -473,10 +485,10 @@ local function update()
                if selected_setup == defense_data.wakeup then should_hard_setup = true end
             end
 
+            should_block_input = false
+
             if selected_setup ~= defense_data.wakeup then
-               print("bl inp")
-               inputs.block_input(1, "all")
-               inputs.block_input(2, "all")
+               should_block_input = true
             end
 
             table.insert(action_queue, selected_setup)
@@ -506,6 +518,15 @@ local function update()
          end
 
          if state == states.SETUP then
+            if should_block_input then
+               inputs.block_input(1, "all")
+               inputs.block_input(2, "all")
+               training.disable_dummy = {true, true}
+            end
+            if player.is_waking_up and not player.is_past_fast_wakeup_frame then
+               inputs.unblock_input(1)
+               training.disable_dummy = {false, true}
+            end
             if should_hard_setup then
                hard_setup()
             else
@@ -515,7 +536,6 @@ local function update()
             if player.is_waking_up then move_players(true, false) end
             if advanced_control.all_commands_complete(dummy) and not inputs.is_playing_input_sequence(dummy) then
                inputs.unblock_input(1)
-               inputs.unblock_input(2)
                training.disable_dummy = {false, true}
                labels = {}
                i_labels = 1
@@ -533,8 +553,8 @@ local function update()
             if followup then
                print(followup.action.name) -- debug
                if not followup.action:should_execute(dummy, gamestate.stage, actions, i_actions) then
-                  reselect_followups()
                   i_actions = i_actions - 1
+                  reselect_followups(i_actions)
 
                   print(">")
                   update()
@@ -561,10 +581,8 @@ local function update()
                      replace_followups(i_actions + 1, defense_data.punish)
                   elseif result.should_block then
                      replace_followups(i_actions + 1, defense_data.block)
-                  elseif result.should_cancel then
-                     remove_followups(i_actions)
-                     i_actions = i_actions - 1
-                     i_labels = i_actions
+                  elseif result.should_reselect then
+                     reselect_followups(i_actions)
                      update()
                      return
                   elseif result.should_walk_in then
@@ -614,6 +632,9 @@ local function update()
             hud.add_info_text(labels, dummy.id)
 
             score = math.max(score + delta_score, 0)
+            if score > settings.special_training.defense.characters[opponent].score then
+               settings.special_training.defense.characters[opponent].score = score
+            end
             display_delta_score(delta_score)
             print("end score", delta_score)
             if should_adjust_weights then
@@ -679,15 +700,15 @@ local function update()
             end
             if gamestate.frame_number >= end_frame + end_frame_extension and
                 not (player.posture == 24 or player.posture == 32 or player.is_being_thrown) then
-               print(player.posture == 24, player.posture == 32, player.is_being_thrown)
                inputs.block_input(1, "all")
-               inputs.block_input(2, "all")
             end
             if gamestate.frame_number >= end_frame + end_frame_extension + end_wait_delay then
                should_hard_setup = false
                local hit_with_super = memory.readbyte(player.addresses.hit_with_super) > 0
                local hit_with_super_throw = memory.readbyte(player.addresses.hit_with_super_throw) > 0
-               if hit_with_super or hit_with_super_throw or player.superfreeze_decount > 0 then should_hard_setup = true end
+               if hit_with_super or hit_with_super_throw or player.superfreeze_decount > 0 then
+                  should_hard_setup = true
+               end
                if is_in_attack then
                   if dummy.superfreeze_decount > 0 then should_hard_setup = true end
                elseif is_being_hit_or_blocking then

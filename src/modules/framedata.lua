@@ -225,6 +225,22 @@ local function patch_frame_data()
    if frame_data["alex"] then
       frame_data["alex"]["80d4"].max_hits = 0 -- PA
    end
+   if frame_data["chunli"] then
+      frame_data["chunli"]["d5ac"].landing_height = -8 --u_HK
+   end
+   if frame_data["dudley"] then
+      frame_data["dudley"]["51d4"].landing_height = -12 --u_LK
+      frame_data["dudley"]["5314"].landing_height = -12 --u_MK
+      frame_data["dudley"]["5884"].landing_height = -20 --uf_LK
+      frame_data["dudley"]["59c4"].landing_height = -20 --uf_MK
+      frame_data["dudley"]["5b04"].landing_height = -30 --u_HK
+      frame_data["dudley"]["5764"].landing_height = -30 --u_HP
+   end
+   if frame_data["hugo"] then
+      frame_data["hugo"]["4c10"].landing_height = -40 --HK
+      frame_data["hugo"]["5540"].landing_height = -40 --d_HP_air
+      frame_data["hugo"]["5790"].landing_height = -10 --u_HK
+   end
    if frame_data["ibuki"] then
       frame_data["ibuki"]["75f0"].frames[12].bypass_freeze = true -- HK Kazekiri
       frame_data["ibuki"]["75f0"].frames[13].bypass_freeze = true
@@ -251,10 +267,24 @@ local function patch_frame_data()
       frame_data["necro"]["e9e4"].max_hits = 2 -- LK Drill
       frame_data["necro"]["f2cc"].max_hits = 2 -- MK Drill
       frame_data["necro"]["f51c"].max_hits = 2 -- HK Drill
+      frame_data["necro"]["7574"].landing_height = -26 --LP Flying Viper
+      frame_data["necro"]["7674"].landing_height = -20 --MP Flying Viper
+      frame_data["necro"]["7774"].landing_height = -24 --HP Flying Viper
+      frame_data["necro"]["7874"].landing_height = -24 --EX Flying Viper
       frame_data["necro"]["8574"].max_hits = 999 -- PA
+   end
+   if frame_data["remy"] then
+      frame_data["remy"]["09f8"].landing_height = -30 --LK Cold Blue
+      frame_data["remy"]["0af8"].landing_height = -12 --MK Cold Blue
+      frame_data["remy"]["0c08"].landing_height = -8  --HK Cold Blue
+      frame_data["remy"]["0d18"].landing_height = -6  --EX Cold Blue
    end
    if frame_data["twelve"] then
       frame_data["twelve"]["b1f4"].max_hits = 2 -- EX D.R.A.
+      frame_data["twelve"]["a9dc"].landing_height = -40 --LK D.R.A.
+      frame_data["twelve"]["ad34"].landing_height = -40 --MK D.R.A.
+      frame_data["twelve"]["af94"].landing_height = -40 --HK D.R.A.
+      frame_data["twelve"]["b1f4"].landing_height = -14 --EX D.R.A.
    end
    -- position prediction of urien's headbutts in the corners are incorrect due to changing pushbox size
    -- hack to fix it for now

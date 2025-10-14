@@ -46,6 +46,7 @@ local training = require("src.training")
 local advanced_control = require("src.control.advanced_control")
 local defense = require("src.training.defense")
 local unblockables = require("src.training.unblockables")
+local jumpins = require("src.training.jumpins")
 local dummy_control = require("src.control.dummy_control")
 local draw = require("src.ui.draw")
 local hud = require("src.ui.hud")
@@ -96,18 +97,23 @@ local function hotkey6() -- debug
 end
 
 local function hotkey7() -- debug
-   -- debug.start_debug = true
-   memory_view_start = gamestate.P2.base + 0x20E
+   debug.start_debug = true
+   -- memory_view_start = gamestate.P2.base + 0x20E
+   jumpins.debug_jump()
+end
+local function hotkey8() -- debug
+   require("src.modules.record_framedata").span_frame_data()
 end
 
-input.registerhotkey(1, hotkey1)
 if game_data.rom_name == "sfiii3nr1" then
+   input.registerhotkey(1, hotkey1)
    input.registerhotkey(2, hotkey2)
    input.registerhotkey(3, hotkey3)
    input.registerhotkey(4, hotkey4)
    input.registerhotkey(5, hotkey5)
    input.registerhotkey(6, hotkey6)
    input.registerhotkey(7, hotkey7)
+   input.registerhotkey(8, hotkey8)
 end
 
 function Register_After_Load_State(command, args, delay)
@@ -168,7 +174,14 @@ local function on_load_state()
 
    recording.reset_recording_state()
 
-   for _, mode in ipairs(special_training_modes) do if not (Load_State_Caller == mode.module_name) then mode.stop() end end
+   for _, mode in ipairs(special_training_modes) do
+      if not (Load_State_Caller == mode.module_name) then mode.stop() end
+   end
+
+   if Load_State_Caller == "" then --player loaded savestate
+      inputs.unblock_input(1)
+      inputs.unblock_input(2)
+   end
 
    dummy_control.reset()
 
@@ -225,13 +238,12 @@ local function before_frame()
 
    -- input
    inputs.input = joypad.get()
+   if gamestate.is_in_match and not menu.is_open and training.swap_characters then inputs.swap_inputs() end
    inputs.update_input()
    joypad.set(inputs.input)
 
    if gamestate.is_in_character_select then character_select.update_character_select(inputs.input) end
    character_select.update_fast_forward_intro(settings.training.fast_forward_intro)
-
-   if gamestate.is_in_match and not menu.is_open and training.swap_characters then inputs.swap_inputs() end
 
    local gesture = inputs.interpret_gesture(gamestate.P1)
 
@@ -331,25 +343,8 @@ local function on_gui()
    if loading.text_images_loaded then
       if gamestate.is_in_match and not disable_display then
          -- input history
-         if settings.training.display_input_history == 5 then -- moving
-            if gamestate.P1.pos_x < 320 then
-               input_history.input_history_draw(gamestate.P1, draw.SCREEN_WIDTH - 4, 49, true,
-                                                draw.controller_styles[settings.training.controller_style])
-            else
-               input_history.input_history_draw(gamestate.P1, 4, 49, false,
-                                                draw.controller_styles[settings.training.controller_style])
-            end
-         else
-            if settings.training.display_input_history == 2 or settings.training.display_input_history == 4 then
-               input_history.input_history_draw(gamestate.P1, 4, 49, false,
-                                                draw.controller_styles[settings.training.controller_style])
-            end
-            if settings.training.display_input_history == 3 or settings.training.display_input_history == 4 then
-               input_history.input_history_draw(gamestate.P2, draw.SCREEN_WIDTH - 4, 49, true,
-                                                draw.controller_styles[settings.training.controller_style])
-            end
-         end
-
+         input_history.input_history_display(settings.training.display_input_history,
+                                             draw.controller_styles[settings.training.controller_style])
          -- controllers
          if settings.training.display_input then
             local p1 = input_history.make_input_history_entry("P1", inputs.input)
@@ -359,14 +354,12 @@ local function on_gui()
          end
 
          if debug_settings.developer_mode then debug.draw_debug() end
+         if debug_settings.log_enabled then debug.log_draw() end
 
          hud.draw_hud(training.player, training.dummy)
 
          if settings.training.display_frame_advantage then frame_advantage.frame_advantage_display() end
-
       end
-
-      if debug_settings.log_enabled then debug.log_draw() end
 
       menu.handle_input()
 

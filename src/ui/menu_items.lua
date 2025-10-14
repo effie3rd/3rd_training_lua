@@ -595,6 +595,32 @@ end
 
 function Check_Box_Grid_Item:legend() return "legend_lp_mp_select_reset" end
 
+local Slider_Item = {}
+Slider_Item.__index = Slider_Item
+Slider_Item.__name = "Slider_Item"
+
+function Slider_Item:new(name, object, points, min, max)
+   local obj = {name = name, object = object, indent = false, points = points, min = min, max = max}
+
+   setmetatable(obj, self)
+   obj:calc_dimensions()
+   return obj
+end
+
+function Slider_Item:draw(x, y) end
+
+function Slider_Item:calc_dimensions() end
+
+function Slider_Item:left() end
+
+function Slider_Item:right() end
+
+function Slider_Item:validate(input) end
+
+function Slider_Item:reset(input) end
+
+function Slider_Item:legend() return "legend_lp_mp_select_reset" end
+
 local Motion_list_Menu_Item = {}
 Motion_list_Menu_Item.__index = Motion_list_Menu_Item
 
@@ -791,7 +817,7 @@ function Move_Input_Display_Menu_Item:draw(x, y)
    local move_inputs = self.object.inputs
    local style = draw.controller_styles[settings.training.controller_style]
 
-   if counter_attack_type[self.object.ca_type] == "special_sa" then
+   if counter_attack_type[self.object.type] == "special_sa" then
       for i = 1, #move_inputs do
          local dirs = {forward = false, down = false, back = false, up = false}
          local added = 0
@@ -976,7 +1002,7 @@ function Move_Input_Display_Menu_Item:draw(x, y)
          offset_x = offset_x + 9
       end
 
-   elseif counter_attack_type[self.object.ca_type] == "option_select" then
+   elseif counter_attack_type[self.object.type] == "option_select" then
    end
 end
 
@@ -1513,7 +1539,7 @@ function Multitab_Menu:update(input)
       local entries = self:current_tab().entries
       for i = 1, #entries do
          if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
-             (entries[i].is_visible and entries[i]:is_visible())) then return i end
+             (entries[i].is_visible and not entries[i]:is_visible())) then return i end
       end
       return 1
    end
@@ -1522,7 +1548,7 @@ function Multitab_Menu:update(input)
       local entries = self:current_tab().entries
       for i = #entries, 1, -1 do
          if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
-             (entries[i].is_visible and entries[i]:is_visible())) then return i end
+             (entries[i].is_visible and not entries[i]:is_visible())) then return i end
       end
       return #entries
    end
@@ -1533,7 +1559,7 @@ function Multitab_Menu:update(input)
       i = i + 1
       while i <= #entries do
          if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
-             (entries[i].is_visible and entries[i]:is_visible())) then break end
+             (entries[i].is_visible and not entries[i]:is_visible())) then break end
          i = i + 1
       end
       return math.min(i, #entries)
@@ -1545,7 +1571,7 @@ function Multitab_Menu:update(input)
       i = i - 1
       while i >= 1 do
          if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
-             (entries[i].is_visible and entries[i]:is_visible())) then break end
+             (entries[i].is_visible and not entries[i]:is_visible())) then break end
          i = i - 1
       end
       return math.max(i, 1)
@@ -1557,7 +1583,7 @@ function Multitab_Menu:update(input)
       local i = #entries
       while i >= 1 do
          if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
-             (entries[i].is_visible and entries[i]:is_visible())) then
+             (entries[i].is_visible and not entries[i]:is_visible())) then
             if total_height + entries[i].height + self.menu_item_spacing <= self.content_area_height then
                total_height = total_height + entries[i].height + self.menu_item_spacing
             else
@@ -1575,7 +1601,7 @@ function Multitab_Menu:update(input)
       local i = self:current_tab().top_entry_index
       while i <= #entries do
          if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
-             (entries[i].is_visible and entries[i]:is_visible())) then
+             (entries[i].is_visible and not entries[i]:is_visible())) then
             if total_height + entries[i].height + self.menu_item_spacing <= self.content_area_height then
                total_height = total_height + entries[i].height + self.menu_item_spacing
             else
@@ -1592,7 +1618,7 @@ function Multitab_Menu:update(input)
       local i = self.sub_menu_selected_index
       while i <= #entries do
          if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
-             (entries[i].is_visible and entries[i]:is_visible())) then break end
+             (entries[i].is_visible and not entries[i]:is_visible())) then break end
          i = i + 1
       end
       return math.min(i, get_bottom_page_position())
@@ -1604,7 +1630,7 @@ function Multitab_Menu:update(input)
       local i = self.sub_menu_selected_index
       while i >= 1 do
          if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
-             (entries[i].is_visible and entries[i]:is_visible())) then
+             (entries[i].is_visible and not entries[i]:is_visible())) then
             if total_height + entries[i].height + self.menu_item_spacing <= self.content_area_height then
                total_height = total_height + entries[i].height + self.menu_item_spacing
             else
@@ -1617,7 +1643,7 @@ function Multitab_Menu:update(input)
    end
 
    while (self:current_entry().is_unselectable and self:current_entry():is_unselectable()) or
-       (self:current_entry().is_visible and self:current_entry():is_visible()) do
+       (self:current_entry().is_visible and not self:current_entry():is_visible()) do
       self.sub_menu_selected_index = previous_selectable_entry()
       if self.sub_menu_selected_index == 0 then
          self.is_main_menu_selected = true
@@ -1660,7 +1686,7 @@ function Multitab_Menu:update(input)
             end
          until (self.is_main_menu_selected or
              not (self:current_entry().is_unselectable and self:current_entry():is_unselectable()) and
-             (self:current_entry().is_visible == nil or not self:current_entry():is_visible()))
+             (self:current_entry().is_visible == nil or self:current_entry():is_visible()))
       end
    end
 
@@ -1690,13 +1716,14 @@ function Multitab_Menu:update(input)
             end
          until (self.is_main_menu_selected or
              not (self:current_entry().is_unselectable and self:current_entry():is_unselectable()) and
-             (self:current_entry().is_visible == nil or not self:current_entry():is_visible()))
+             (self:current_entry().is_visible == nil or self:current_entry():is_visible()))
       end
    end
 
    if input.left then
       if self.is_main_menu_selected then
          self.main_menu_selected_index = self.main_menu_selected_index - 1
+         self.sub_menu_selected_index = 1
          if self.main_menu_selected_index == 0 then self.main_menu_selected_index = #self.content end
       elseif self:current_entry() ~= nil then
          if self:current_entry().left ~= nil then
@@ -1709,6 +1736,7 @@ function Multitab_Menu:update(input)
    if input.right then
       if self.is_main_menu_selected then
          self.main_menu_selected_index = self.main_menu_selected_index + 1
+         self.sub_menu_selected_index = 1
          if self.main_menu_selected_index > #self.content then self.main_menu_selected_index = 1 end
       elseif self:current_entry() ~= nil then
          if self:current_entry().right ~= nil then
@@ -1815,7 +1843,7 @@ function Multitab_Menu:draw()
    for i = 1, #self.content[self.main_menu_selected_index].entries do
       if i >= self.content[self.main_menu_selected_index].top_entry_index and
           (self.content[self.main_menu_selected_index].entries[i].is_visible == nil or
-              not self.content[self.main_menu_selected_index].entries[i]:is_visible()) then
+              self.content[self.main_menu_selected_index].entries[i]:is_visible()) then
          if self.content[self.main_menu_selected_index].entries[i].inline and (i - 1) >= 1 then
             local x_offset = self.content[self.main_menu_selected_index].entries[i - 1].width + 8
             if settings.language == "jp" then x_offset = x_offset + 2 end
@@ -1898,7 +1926,7 @@ function Menu:update(input)
          repeat
             self.selected_index = self.selected_index - 1
             if self.selected_index == 0 then self.selected_index = #self.content end
-         until self.content[self.selected_index].is_visible == nil or not self.content[self.selected_index]:is_visible()
+         until self.content[self.selected_index].is_visible == nil or self.content[self.selected_index]:is_visible()
       end
    end
 
@@ -1909,7 +1937,7 @@ function Menu:update(input)
          repeat
             self.selected_index = self.selected_index + 1
             if self.selected_index == #self.content + 1 then self.selected_index = 1 end
-         until self.content[self.selected_index].is_visible == nil or not self.content[self.selected_index]:is_visible()
+         until self.content[self.selected_index].is_visible == nil or self.content[self.selected_index]:is_visible()
       end
    end
 
@@ -1965,7 +1993,7 @@ function Menu:draw()
    if settings.language == "jp" then menu_item_spacing = 1 end
    local y_offset = 0
    for i = 1, #self.content do
-      if (self.content[i].is_visible == nil or not self.content[i]:is_visible()) then
+      if (self.content[i].is_visible == nil or self.content[i]:is_visible()) then
          if self.content[i].inline and (i - 1) >= 1 then
             local x_offset = self.content[i - 1].width + 8
             if settings.language == "jp" then x_offset = x_offset + 2 end

@@ -109,6 +109,12 @@ function Perf_timer:elapsed()
    return elapsed
 end
 
+local function read_number_from_file(file_path)
+   local f = io.open(file_path, "r")
+   if not f then error("Cannot open " .. file_path) end
+   return tonumber(f:read("*l"))
+end
+
 local function read_object_from_json_file(file_path)
    local f = io.open(file_path, "r")
    if f == nil then return {} end
@@ -389,6 +395,7 @@ return {
    clamp = clamp,
    check_input_down_autofire = check_input_down_autofire,
    Perf_timer = Perf_timer,
+   read_number_from_file = read_number_from_file,
    read_object_from_json_file = read_object_from_json_file,
    write_object_to_json_file = write_object_to_json_file,
    print_memory_line = print_memory_line,

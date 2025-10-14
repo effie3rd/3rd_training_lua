@@ -156,7 +156,7 @@ end
 
 function Delay:delay_after_connection(player)
    if self.first_run then
-      if player.just_connected then
+      if player.has_just_connected then
          self.end_frame = gamestate.frame_number + self.delay
          self.first_run = false
          if self.delay == 0 then return true end

@@ -30,7 +30,7 @@ local save_recording_slot_popup, load_recording_slot_popup, controller_style_men
       parry_every_n_item, prefer_down_parry_item, counter_attack_motion_item, counter_attack_normal_button_item,
       counter_attack_special_item, counter_attack_special_button_item, counter_attack_type_item,
       counter_attack_input_display_item, counter_attack_option_select_item, hits_before_counter_attack,
-      change_characters_item, p1_distances_reference_point_item, p2_distances_reference_point_item,
+      character_select_item, p1_distances_reference_point_item, p2_distances_reference_point_item,
       mid_distance_height_item, air_time_player_coloring_item, attack_range_display_max_item,
       attack_bars_show_decimal_item, display_hitboxes_opacity_item, language_item, play_challenge_item,
       select_char_challenge_item, start_unblockables_item, unblockables_type_item, unblockables_followup_item
@@ -90,8 +90,8 @@ end
 
 local function update_counter_attack_data()
    local char_str = training.dummy.char_str
-   local ca_type = counter_attack_settings.ca_type
-   local ca_data = {char_str = char_str, ca_type = ca_type, name = "normal", button = nil}
+   local ca_type = counter_attack_settings.type
+   local ca_data = {char_str = char_str, type = ca_type, name = "normal", button = nil}
    if ca_type == 2 then
       ca_data.motion = menu_tables.counter_attack_motion[counter_attack_settings.motion]
       ca_data.button = counter_attack_normal_buttons[counter_attack_settings.normal_button]
@@ -219,6 +219,8 @@ local function update_defense_items()
       if saved_player ~= "" then start_defense_item.name = {"menu_start", "  (", "menu_" .. saved_player, ")"} end
    end
 
+   defense_score_item.object = settings.special_training.defense.characters[opponent]
+   defense_setup_item.object = settings.special_training.defense.characters[opponent].setups
    defense_learning_item.object = settings.special_training.defense.characters[opponent]
 
    defense_sub_menu_entries[1] = training_mode_item
@@ -230,7 +232,7 @@ local function update_defense_items()
    local i = 1
    while i <= #defense_followup_check_box_grids do
       defense_sub_menu_entries[6 + i] = defense_followup_check_box_grids[i]
-      defense_sub_menu_entries[6 + i].is_visible = function() return false end
+      defense_sub_menu_entries[6 + i].is_visible = function() return true end
       i = i + 1
    end
    defense_sub_menu_entries[6 + i] = defense_learning_item
@@ -365,6 +367,78 @@ local function create_recording_popup()
    })
 end
 
+local function create_jumpins_edit_menu(jumpins_edit_settings)
+   jumpins_edit = {}
+   jumpins_edit.jump_type_item = menu_items.List_Menu_Item:new("menu_jump_type", jumpins_edit_settings, "type",
+                                                               counter_attack_type, 1, update_counter_attack_items)
+
+   jumpins_edit.player_reset_position_item = nil
+   jumpins_edit.dummy_reset_offset_item = nil
+
+   jumpins_edit.second_jump_type_item = menu_items.List_Menu_Item:new("menu_second_jump_type", jumpins_edit_settings,
+                                                                      "type", counter_attack_type, 1,
+                                                                      update_counter_attack_items)
+
+   jumpins_edit.second_jump_delay_item = menu_items.Integer_Menu_Item:new("counter_attack_delay", settings.training,
+                                                                          "counter_attack_delay", 0, 40, false, 0)
+
+   jumpins_edit.attack_type_item = menu_items.List_Menu_Item:new("menu_second_jump_type", jumpins_edit_settings, "type",
+                                                                 counter_attack_type, 1, update_counter_attack_items)
+   jumpins_edit.attack_delay_item = menu_items.Integer_Menu_Item:new("counter_attack_delay", settings.training,
+                                                                     "counter_attack_delay", 0, 40, false, 0)
+
+   jumpins_edit.type_item = menu_items.List_Menu_Item:new("menu_followup", jumpins_edit_settings, "type",
+                                                          counter_attack_type, 1, update_counter_attack_items)
+
+   jumpins_edit.motion_item = menu_items.Motion_list_Menu_Item:new("counter_attack_motion", jumpins_edit_settings,
+                                                                   "motion", counter_attack_motion_input, 1,
+                                                                   update_counter_attack_items)
+   jumpins_edit.motion_item.indent = true
+   jumpins_edit.motion_item.is_visible = function() return jumpins_edit_settings.type == 2 end
+
+   jumpins_edit.normal_button_item = menu_items.List_Menu_Item:new("counter_attack_button", jumpins_edit_settings,
+                                                                   "normal_button", counter_attack_normal_buttons, 1,
+                                                                   update_counter_attack_items)
+   jumpins_edit.normal_button_item.indent = true
+   jumpins_edit.normal_button_item.is_visible = function()
+      return jumpins_edit_settings.type == 2 and #counter_attack_normal_button_item.list > 0
+   end
+
+   jumpins_edit.special_item = menu_items.List_Menu_Item:new("counter_attack_special", jumpins_edit_settings, "special",
+                                                             counter_attack_special_names, 1,
+                                                             update_counter_attack_items)
+   jumpins_edit.special_item.indent = true
+   jumpins_edit.special_item.is_visible = function() return jumpins_edit_settings.type == 3 end
+
+   jumpins_edit.special_button_item = menu_items.List_Menu_Item:new("counter_attack_button", jumpins_edit_settings,
+                                                                    "special_button", counter_attack_special_buttons, 1,
+                                                                    update_counter_attack_items)
+   jumpins_edit.special_button_item.indent = true
+   jumpins_edit.special_button_item.is_visible = function()
+      return jumpins_edit_settings.type == 3 and #counter_attack_special_button_item.list > 0
+   end
+
+   jumpins_edit.input_display_item = menu_items.Move_Input_Display_Menu_Item:new("move_input",
+                                                                                 counter_attack_move_input_data)
+   jumpins_edit.input_display_item.inline = true
+   jumpins_edit.input_display_item.is_visible = function()
+      return jumpins_edit_settings.type == 3 or jumpins_edit_settings.type == 4
+   end
+
+   jumpins_edit.option_select_item = menu_items.List_Menu_Item:new("counter_attack_option_select_names",
+                                                                   jumpins_edit_settings, "option_select",
+                                                                   counter_attack_option_select_names, 1,
+                                                                   update_counter_attack_items)
+   jumpins_edit.option_select_item.indent = true
+   jumpins_edit.option_select_item.is_visible = function() return jumpins_edit_settings.type == 4 end
+   jumpins_edit.followup_delay_item = menu_items.Integer_Menu_Item:new("counter_attack_delay", settings.training,
+                                                                       "counter_attack_delay", -40, 40, false, 0)
+
+   jumpins_edit_menu = menu_items.Menu:new(0, 0, 150, 122, {
+      jumpins_edit.player_reset_position_item, jumpins_edit.dummy_reset_offset_item
+   })
+end
+
 local function create_dummy_tab()
    blocking_item = menu_items.List_Menu_Item:new("blocking", settings.training, "blocking_mode",
                                                  menu_tables.blocking_mode)
@@ -374,55 +448,55 @@ local function create_dummy_tab()
                                                                      settings.training, "red_parry_hit_count", 0, 20,
                                                                      true, 1)
    hits_before_red_parry_item.indent = true
-   hits_before_red_parry_item.is_visible = function() return settings.training.blocking_style ~= 3 end
+   hits_before_red_parry_item.is_visible = function() return settings.training.blocking_style == 3 end
 
    parry_every_n_item = menu_items.Hits_Before_Menu_Item:new("parry_every_prefix", "parry_every_suffix",
                                                              settings.training, "parry_every_n_count", 0, 10, true, 1)
    parry_every_n_item.indent = true
-   parry_every_n_item.is_visible = function() return settings.training.blocking_style ~= 3 end
+   parry_every_n_item.is_visible = function() return settings.training.blocking_style == 3 end
 
    prefer_down_parry_item = menu_items.On_Off_Menu_Item:new("prefer_down_parry", settings.training, "prefer_down_parry")
    prefer_down_parry_item.indent = true
    prefer_down_parry_item.is_visible = function()
-      return not (settings.training.blocking_style == 2 or settings.training.blocking_style == 3)
+      return settings.training.blocking_style == 2 or settings.training.blocking_style == 3
    end
 
-   counter_attack_type_item = menu_items.List_Menu_Item:new("counter_attack_type", counter_attack_settings, "ca_type",
+   counter_attack_type_item = menu_items.List_Menu_Item:new("counter_attack_type", counter_attack_settings, "type",
                                                             counter_attack_type, 1, update_counter_attack_items)
 
    counter_attack_motion_item = menu_items.Motion_list_Menu_Item:new("counter_attack_motion", counter_attack_settings,
                                                                      "motion", counter_attack_motion_input, 1,
                                                                      update_counter_attack_items)
    counter_attack_motion_item.indent = true
-   counter_attack_motion_item.is_visible = function() return counter_attack_settings.ca_type ~= 2 end
+   counter_attack_motion_item.is_visible = function() return counter_attack_settings.type == 2 end
 
    counter_attack_normal_button_item = menu_items.List_Menu_Item:new("counter_attack_button", counter_attack_settings,
                                                                      "normal_button", counter_attack_normal_buttons, 1,
                                                                      update_counter_attack_items)
    counter_attack_normal_button_item.indent = true
    counter_attack_normal_button_item.is_visible = function()
-      return counter_attack_settings.ca_type ~= 2 or #counter_attack_normal_button_item.list == 0
+      return counter_attack_settings.type == 2 and #counter_attack_normal_button_item.list > 0
    end
 
    counter_attack_special_item = menu_items.List_Menu_Item:new("counter_attack_special", counter_attack_settings,
                                                                "special", counter_attack_special_names, 1,
                                                                update_counter_attack_items)
    counter_attack_special_item.indent = true
-   counter_attack_special_item.is_visible = function() return counter_attack_settings.ca_type ~= 3 end
+   counter_attack_special_item.is_visible = function() return counter_attack_settings.type == 3 end
 
    counter_attack_special_button_item = menu_items.List_Menu_Item:new("counter_attack_button", counter_attack_settings,
                                                                       "special_button", counter_attack_special_buttons,
                                                                       1, update_counter_attack_items)
    counter_attack_special_button_item.indent = true
    counter_attack_special_button_item.is_visible = function()
-      return counter_attack_settings.ca_type ~= 3 or #counter_attack_special_button_item.list == 0
+      return counter_attack_settings.type == 3 and #counter_attack_special_button_item.list > 0
    end
 
    counter_attack_input_display_item = menu_items.Move_Input_Display_Menu_Item:new("move_input",
                                                                                    counter_attack_move_input_data)
    counter_attack_input_display_item.inline = true
    counter_attack_input_display_item.is_visible = function()
-      return not (counter_attack_settings.ca_type == 3 or counter_attack_settings.ca_type == 4)
+      return counter_attack_settings.type == 3 or counter_attack_settings.type == 4
    end
 
    counter_attack_option_select_item = menu_items.List_Menu_Item:new("counter_attack_option_select_names",
@@ -430,18 +504,18 @@ local function create_dummy_tab()
                                                                      counter_attack_option_select_names, 1,
                                                                      update_counter_attack_items)
    counter_attack_option_select_item.indent = true
-   counter_attack_option_select_item.is_visible = function() return counter_attack_settings.ca_type ~= 4 end
+   counter_attack_option_select_item.is_visible = function() return counter_attack_settings.type == 4 end
 
    hits_before_counter_attack = menu_items.Hits_Before_Menu_Item:new("hits_before_ca_prefix", "hits_before_ca_suffix",
                                                                      settings.training,
                                                                      "hits_before_counter_attack_count", 0, 20, true)
    hits_before_counter_attack.indent = true
-   hits_before_counter_attack.is_visible = function() return counter_attack_settings.ca_type == 1 end
+   hits_before_counter_attack.is_visible = function() return counter_attack_settings.type ~= 1 end
 
    counter_attack_delay_item = menu_items.Integer_Menu_Item:new("counter_attack_delay", settings.training,
                                                                 "counter_attack_delay", -40, 40, false, 0)
    counter_attack_delay_item.indent = true
-   counter_attack_delay_item.is_visible = function() return counter_attack_settings.ca_type == 1 end
+   counter_attack_delay_item.is_visible = function() return counter_attack_settings.type ~= 1 end
 
    return {
       header = menu_items.Header_Menu_Item:new("menu_title_dummy"),
@@ -488,8 +562,9 @@ local function create_recording_tab()
          menu_items.Integer_Menu_Item:new("menu_slot", settings.training, "current_recording_slot", 1,
                                           recording.recording_slot_count, true, 1, 1, 10,
                                           recording.update_current_recording_slot_frames),
-         menu_items.Label_Menu_Item:new("recording_slot_frames", {"value", " ","menu_frames"}, recording.current_recording_slot_frames, "frames", true),
-         slot_weight_item, recording_delay_item, recording_random_deviation_item,
+         menu_items.Label_Menu_Item:new("recording_slot_frames", {"value", " ", "menu_frames"},
+                                        recording.current_recording_slot_frames, "frames", true), slot_weight_item,
+         recording_delay_item, recording_random_deviation_item,
          menu_items.Button_Menu_Item:new("clear_slot", function()
             recording.clear_slot()
             recording.update_current_recording_slot_frames()
@@ -506,62 +581,62 @@ local function create_display_tab()
    controller_style_menu_item = menu_items.Controller_Style_Item:new("controller_style", settings.training,
                                                                      "controller_style", draw.controller_styles)
    controller_style_menu_item.is_visible = function()
-      return not settings.training.display_input and settings.training.display_input_history == 1
+      return settings.training.display_input or settings.training.display_input_history ~= 1
    end
 
    attack_bars_show_decimal_item = menu_items.On_Off_Menu_Item:new("show_decimal", settings.training,
                                                                    "attack_bars_show_decimal")
    attack_bars_show_decimal_item.indent = true
-   attack_bars_show_decimal_item.is_visible = function() return not (settings.training.display_attack_bars > 1) end
+   attack_bars_show_decimal_item.is_visible = function() return settings.training.display_attack_bars > 1 end
 
    display_hitboxes_opacity_item = menu_items.Integer_Menu_Item:new("display_hitboxes_opacity", settings.training,
                                                                     "display_hitboxes_opacity", 5, 100, false, 100, 5)
    display_hitboxes_opacity_item.indent = true
-   display_hitboxes_opacity_item.is_visible = function() return not settings.training.display_hitboxes end
+   display_hitboxes_opacity_item.is_visible = function() return settings.training.display_hitboxes end
 
    mid_distance_height_item = menu_items.Integer_Menu_Item:new("mid_distance_height", settings.training,
                                                                "mid_distance_height", 0, 200, false, 10)
-   mid_distance_height_item.is_visible = function() return not settings.training.display_distances end
+   mid_distance_height_item.is_visible = function() return settings.training.display_distances end
 
    p1_distances_reference_point_item = menu_items.List_Menu_Item:new("p1_distance_reference_point", settings.training,
                                                                      "p1_distances_reference_point",
                                                                      menu_tables.distance_display_reference_point)
-   p1_distances_reference_point_item.is_visible = function() return not settings.training.display_distances end
+   p1_distances_reference_point_item.is_visible = function() return settings.training.display_distances end
 
    p2_distances_reference_point_item = menu_items.List_Menu_Item:new("p2_distance_reference_point", settings.training,
                                                                      "p2_distances_reference_point",
                                                                      menu_tables.distance_display_reference_point)
-   p2_distances_reference_point_item.is_visible = function() return not settings.training.display_distances end
+   p2_distances_reference_point_item.is_visible = function() return settings.training.display_distances end
 
    air_time_player_coloring_item = menu_items.On_Off_Menu_Item:new("display_air_time_player_coloring",
                                                                    settings.training, "display_air_time_player_coloring")
    air_time_player_coloring_item.indent = true
-   air_time_player_coloring_item.is_visible = function() return not settings.training.display_air_time end
+   air_time_player_coloring_item.is_visible = function() return settings.training.display_air_time end
 
    charge_overcharge_on_item = menu_items.On_Off_Menu_Item:new("display_overcharge", settings.training,
                                                                "charge_overcharge_on")
    charge_overcharge_on_item.indent = true
-   charge_overcharge_on_item.is_visible = function() return not settings.training.display_charge end
+   charge_overcharge_on_item.is_visible = function() return settings.training.display_charge end
 
    charge_follow_player_item = menu_items.On_Off_Menu_Item:new("menu_follow_player", settings.training,
                                                                "charge_follow_player")
    charge_follow_player_item.indent = true
-   charge_follow_player_item.is_visible = function() return not settings.training.display_charge end
+   charge_follow_player_item.is_visible = function() return settings.training.display_charge end
 
    parry_follow_player_item = menu_items.On_Off_Menu_Item:new("menu_follow_player", settings.training,
                                                               "parry_follow_player")
    parry_follow_player_item.indent = true
-   parry_follow_player_item.is_visible = function() return not settings.training.display_parry end
+   parry_follow_player_item.is_visible = function() return settings.training.display_parry end
 
    display_parry_compact_item = menu_items.On_Off_Menu_Item:new("display_parry_compact", settings.training,
                                                                 "display_parry_compact")
    display_parry_compact_item.indent = true
-   display_parry_compact_item.is_visible = function() return not settings.training.display_parry end
+   display_parry_compact_item.is_visible = function() return settings.training.display_parry end
 
    attack_range_display_max_item = menu_items.Integer_Menu_Item:new("attack_range_max_attacks", settings.training,
                                                                     "attack_range_display_max_attacks", 1, 3, true, 1)
    attack_range_display_max_item.indent = true
-   attack_range_display_max_item.is_visible = function() return settings.training.display_attack_range == 1 end
+   attack_range_display_max_item.is_visible = function() return settings.training.display_attack_range ~= 1 end
 
    language_item = menu_items.List_Menu_Item:new("language", settings.training, "language", menu_tables.language, 1,
                                                  function() main_menu:update_dimensions() end)
@@ -575,7 +650,6 @@ local function create_display_tab()
                                        menu_tables.display_input_history_mode, 1),
          menu_items.On_Off_Menu_Item:new("display_gauge_numbers", settings.training, "display_gauges", false),
          menu_items.On_Off_Menu_Item:new("display_bonuses", settings.training, "display_bonuses", true),
-         menu_items.On_Off_Menu_Item:new("display_attack_info", settings.training, "display_attack_data"),
          menu_items.List_Menu_Item:new("display_attack_bars", settings.training, "display_attack_bars",
                                        menu_tables.display_attack_bars_mode, 3), attack_bars_show_decimal_item,
          menu_items.On_Off_Menu_Item:new("display_frame_advantage", settings.training, "display_frame_advantage"),
@@ -603,8 +677,8 @@ local function create_display_tab()
 end
 
 local function create_rules_tab()
-   change_characters_item = menu_items.Button_Menu_Item:new("character_select",
-                                                            character_select.start_character_select_sequence)
+   character_select_item = menu_items.Button_Menu_Item:new("character_select",
+                                                           character_select.start_character_select_sequence)
 
    p1_life_reset_value_gauge_item = menu_items.Gauge_Menu_Item:new("p1_life_reset_value", settings.training,
                                                                    "p1_life_reset_value", 1, colors.gauges.life, 160)
@@ -617,10 +691,10 @@ local function create_rules_tab()
    p2_life_reset_value_gauge_item.indent = true
    life_reset_delay_item.indent = true
 
-   p1_life_reset_value_gauge_item.is_visible = function() return settings.training.life_mode ~= 2 end
+   p1_life_reset_value_gauge_item.is_visible = function() return settings.training.life_mode == 2 end
    p2_life_reset_value_gauge_item.is_visible = p1_life_reset_value_gauge_item.is_visible
    life_reset_delay_item.is_visible = function()
-      return settings.training.life_mode == 1 or settings.training.life_mode == 5
+      return not (settings.training.life_mode == 1 or settings.training.life_mode == 5)
    end
 
    p1_stun_reset_value_gauge_item = menu_items.Gauge_Menu_Item:new("p1_stun_reset_value", settings.training,
@@ -634,10 +708,10 @@ local function create_rules_tab()
    p2_stun_reset_value_gauge_item.indent = true
    stun_reset_delay_item.indent = true
 
-   p1_stun_reset_value_gauge_item.is_visible = function() return settings.training.stun_mode ~= 2 end
+   p1_stun_reset_value_gauge_item.is_visible = function() return settings.training.stun_mode == 2 end
    p2_stun_reset_value_gauge_item.is_visible = p1_stun_reset_value_gauge_item.is_visible
    stun_reset_delay_item.is_visible = function()
-      return settings.training.stun_mode == 1 or settings.training.stun_mode == 5
+      return not (settings.training.stun_mode == 1 or settings.training.stun_mode == 5)
    end
 
    p1_meter_reset_value_gauge_item = menu_items.Gauge_Menu_Item:new("p1_meter_reset_value", settings.training,
@@ -651,16 +725,16 @@ local function create_rules_tab()
    p2_meter_reset_value_gauge_item.indent = true
    meter_reset_delay_item.indent = true
 
-   p1_meter_reset_value_gauge_item.is_visible = function() return settings.training.meter_mode ~= 2 end
+   p1_meter_reset_value_gauge_item.is_visible = function() return settings.training.meter_mode == 2 end
    p2_meter_reset_value_gauge_item.is_visible = p1_meter_reset_value_gauge_item.is_visible
    meter_reset_delay_item.is_visible = function()
-      return settings.training.meter_mode == 1 or settings.training.meter_mode == 5
+      return not (settings.training.meter_mode == 1 or settings.training.meter_mode == 5)
    end
 
    return {
       header = menu_items.Header_Menu_Item:new("menu_title_rules"),
       entries = {
-         change_characters_item,
+         character_select_item,
          menu_items.List_Menu_Item:new("force_stage", settings.training, "force_stage", menu_tables.stage_list, 1),
          menu_items.On_Off_Menu_Item:new("infinite_time", settings.training, "infinite_time"),
          menu_items.List_Menu_Item:new("life_refill_mode", settings.training, "life_mode", menu_tables.life_mode, 4,
@@ -688,20 +762,23 @@ local function create_training_tab()
    training_mode_item = menu_items.List_Menu_Item:new("menu_mode", settings.training, "special_training_mode",
                                                       menu_tables.special_training_mode, 1)
 
+   local opponent = defense_tables.opponents[settings.special_training.defense.opponent]
+
    start_defense_item = menu_items.Button_Menu_Item:new("menu_start", function()
-      local opponent = defense_tables.opponents[settings.special_training.defense.opponent]
-      defense.start(gamestate.P1.char_str, opponent)
+      local start_opponent = defense_tables.opponents[settings.special_training.defense.opponent]
+      defense.start(gamestate.P1.char_str, start_opponent)
       close_menu()
    end)
 
    start_defense_item.is_unselectable = function() return not defense_at_least_one_selected end
 
-   defense_score_item = menu_items.Label_Menu_Item:new("menu_score", {"menu_score", ": ", "value"}, settings.special_training.defense, "score", true)
+   defense_score_item = menu_items.Label_Menu_Item:new("menu_score", {"menu_score", ": ", "value"},
+                                                       settings.special_training.defense.characters[opponent], "score",
+                                                       true)
 
    defense_opponent_item = menu_items.List_Menu_Item:new("menu_opponent", settings.special_training.defense, "opponent",
                                                          defense_tables.opponents_menu, 1, update_defense_items)
 
-   local opponent = defense_tables.opponents[settings.special_training.defense.opponent]
    defense_setup_item = menu_items.Check_Box_Grid_Item:new("menu_setup",
                                                            settings.special_training.defense.characters[opponent].setups,
                                                            defense_tables.get_setup_names(opponent), 4)
@@ -747,32 +824,38 @@ local function create_training_tab()
       main_menu:select_item(unblockables_followup_item)
    end
 
+   local start_jumpins_edit_item = menu_items.Button_Menu_Item:new("menu_start", function()
+      local start_opponent = defense_tables.opponents[settings.special_training.defense.opponent]
+      defense.start(gamestate.P1.char_str, start_opponent)
+      close_menu()
+   end)
+   local start_jumpins_item = menu_items.Button_Menu_Item:new("menu_start", function()
+      local start_opponent = defense_tables.opponents[settings.special_training.defense.opponent]
+      defense.start(gamestate.P1.char_str, start_opponent)
+      close_menu()
+   end)
+
    training_sub_menus = {
       {name = "training_defense", entries = {training_mode_item}}, {
-         name = "training_footsies",
+         name = "training_jumpins",
+         entries = {training_mode_item, start_jumpins_item, start_jumpins_edit_item, character_select_item}
+      }, {name = "training_footsies", entries = {training_mode_item}}, {
+         name = "training_unblockables",
          entries = {
-            training_mode_item, menu_items.Button_Menu_Item:new("character_select", require("src.modules.record_framedata").save_frame_data)
-         }
-      }, {
-         name = "training_antiair",
-         entries = {
-            training_mode_item, menu_items.Button_Menu_Item:new("character_select", require("src.modules.record_framedata").save_frame_data)
+            training_mode_item, start_unblockables_item, unblockables_type_item, unblockables_followup_item,
+            menu_items.Button_Menu_Item:new("character_select", unblockables_character_select)
          }
       }, {
          name = "training_geneijin",
          entries = {
-            training_mode_item, menu_items.Button_Menu_Item:new("character_select", require("src.modules.record_framedata").save_frame_data)
-         }
-      }, {
-         name = "training_unblockables",
-         entries = {
-            training_mode_item, unblockables_type_item, unblockables_followup_item,
-            menu_items.Button_Menu_Item:new("character_select", unblockables_character_select), start_unblockables_item
+            training_mode_item,
+            menu_items.Button_Menu_Item:new("character_select", require("src.modules.record_framedata").save_frame_data)
          }
       }, {
          name = "training_denjin",
          entries = {
-            training_mode_item, menu_items.Button_Menu_Item:new("character_select", require("src.modules.record_framedata").save_frame_data)
+            training_mode_item,
+            menu_items.Button_Menu_Item:new("character_select", require("src.modules.record_framedata").save_frame_data)
          }
       }
    }
@@ -808,7 +891,8 @@ local function create_debug_tab()
          menu_items.On_Off_Menu_Item:new("show_predicted_hitboxes", debug_settings, "show_predicted_hitbox"),
          menu_items.Button_Menu_Item:new("record_frame_data", function()
             debug_settings.recording_framedata = true
-         end), menu_items.Button_Menu_Item:new("save_frame_data", require("src.modules.record_framedata").save_frame_data)
+         end),
+         menu_items.Button_Menu_Item:new("save_frame_data", require("src.modules.record_framedata").save_frame_data)
       }
    }
 end
