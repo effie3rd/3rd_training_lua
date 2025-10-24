@@ -100,25 +100,30 @@ end
 local function hotkey8() -- debug
    -- memory_view_start = gamestate.P2.base + 0x33E
    -- memory_view_start = 0x020154A7
-   timer:reset()
    local mp = require("src.libs.message_pack")
    -- local binary = mp.pack(require("src.modules.framedata").frame_data)
    -- print(timer:elapsed())
    -- local file = io.open("data.msgpack", "wb")
    -- file:write(binary)
    -- file:close()
-   require("src.modules.framedata").frame_data = nil
-
-   loading.load_framedata_human_readable()
-   -- local file = io.open("data.msgpack", "rb")
-   -- require("src.modules.framedata").frame_data = mp.unpack(file:read("*all"))
-   -- file:close()
-   print(timer:elapsed())
-
+   local fd = require("src.modules.framedata").frame_data
+   local frame_data_keys = copytable(game_data.characters)
+   table.insert(frame_data_keys, "projectiles")
+   for _, char in ipairs(frame_data_keys) do fd[char] = {} end
+   local reader = mp.Msg_Pack_Reader.new(settings.framedata_path .. settings.framedata_bin_file)
+   timer:reset()
+   
+   print(reader:get_length(), reader:read())
+   while true do
+      local obj = reader:read()
+      if not obj then break end
+      fd[obj.char][obj.id] = obj.data
+   end
+   reader:close()
 end
 local function hotkey9() -- debug
-   -- require("src.modules.record_framedata").process_framedata_and_save()
-   jumpins.single_jump()
+   require("src.modules.record_framedata").process_framedata_and_save()
+   -- jumpins.single_jump()
 end
 
 if game_data.rom_name == "sfiii3nr1" then

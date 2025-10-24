@@ -782,50 +782,30 @@ local function estimate_decode_time(json_str, decode_fn, trials)
    return {total_time = total, average_time = avg, time_per_kb = avg * 1024 / len, trials = trials, length = len}
 end
 
-local function span_frame_data()
-   for key, char in ipairs(frame_data_keys) do
-      local fdata = frame_data[char]
-      local file_path = framedata_path .. char .. settings.framedata_file_ext
-      local file = io.open(file_path, "w")
-      if not file then error("Cannot open " .. file_path) end
-      for id, data in pairs(fdata) do
-         -- local stats = estimate_decode_time(str, json.decode, 10)
-         local tag = id .. ",0:"
-         file:write(tag .. json.encode(data) .. "\n")
-      end
-      file:close()
-   end
+local function serialize_framedata()
+   local file_path = framedata_path .. settings.framedata_bin_file
+   local mp = require("src.libs.message_pack")
+   local writer = mp.Msg_Pack_Writer.new(file_path)
    local total_size = 0
-   for key, char in ipairs(frame_data_keys) do
-      local file_path = framedata_path .. char .. settings.framedata_file_ext
-      local file = io.open(file_path, "r")
-      local new_data = {}
-      local line_start_time = os.clock()
-      if not file then error("Cannot open " .. file_path) end
-      for line in file:lines() do
-         local id, load_time, json_str = line:match("([^,]+),(%d+):(.+)")
-         local line_read_time = os.clock() - line_start_time
-         load_time = estimate_decode_time(json_str, json.decode, 10).average_time
-         local size = math.ceil((line_read_time + load_time) * 1000000)
-         total_size = total_size + size
-         table.insert(new_data, {id, size, json_str})
-         line_start_time = os.clock()
+   for _, char in ipairs(frame_data_keys) do
+      for id, data in pairs(frame_data[char]) do
+         local obj = {char = char, id = id, data = data}
+         writer:write(obj)
+         total_size = total_size + writer.len
       end
-      file:close()
-      file = io.open(file_path, "w")
-      if not file then error("Cannot open " .. file_path) end
-      for i = 1, #new_data do
-         local line_str = new_data[i][1] .. "," .. new_data[i][2] .. ":" .. new_data[i][3]
-         if i ~= #new_data then line_str = line_str .. "\n" end
-         file:write(line_str)
-      end
+   end
+   writer:close()
+   local file = io.open(file_path, "rb")
+   local data = file and file:read("*a") or ""
+   if file then file:close() end
+   writer = mp.Msg_Pack_Writer.new(file_path)
+   writer:write(total_size)
+   writer:close()
+   file = io.open(file_path, "ab")
+   if file then
+      file:write(data)
       file:close()
    end
-   local file_path = framedata_path .. "file_size.json"
-   local file = io.open(file_path, "w")
-   if not file then error("Cannot open " .. file_path) end
-   file:write(total_size)
-   file:close()
 end
 
 local function index_of_projectile(list, proj)
@@ -1374,9 +1354,6 @@ local function end_recording(player, projectiles, name)
    for id, _ in pairs(ids) do
       local anim = frame_data[player.char_str][id]
       local frames = frame_data[player.char_str][id].frames
-      if anim.name == "standing" then
-print(id, "start", frames[1].movement[1], frames[1])
-      end
       local hit_frames = calculate_ranges(frames, is_hit_frame)
       if #hit_frames > 0 then
          -- make 0 index
@@ -1443,9 +1420,6 @@ print(id, "start", frames[1].movement[1], frames[1])
                frames[l_end + 1].loop = l_start
             end
          end
-      end
-            if anim.name == "standing" then
-print(id, "end", frames[1].movement[1], frames[1])
       end
    end
 
@@ -5618,7 +5592,7 @@ end
 local function process_framedata_and_save()
    loading.load_framedata_human_readable()
    fd.patch_frame_data()
-   span_frame_data()
+   serialize_framedata()
 end
 
 local i_record = 1
@@ -5701,7 +5675,7 @@ local function update_framedata_recording(player, projectiles) record_all_charac
 
 local record_framedata = {
    save_frame_data = save_frame_data,
-   span_frame_data = span_frame_data,
+   serialize_framedata = serialize_framedata,
    process_framedata_and_save = process_framedata_and_save,
    update_framedata_recording = update_framedata_recording
 }

@@ -1,21 +1,22 @@
 -- for loading big stuff like framedata and images
 local json = require("src.libs.dkjson")
+local mp = require("src.libs.message_pack")
 local tools = require("src.tools")
 local colors = require("src.ui.colors")
 local text = require("src.ui.text")
-local fd = require("src.modules.framedata")
-local game_data = require("src.modules.game_data")
 local settings = require("src.settings")
 local menu_tables = require("src.ui.menu_tables")
+local framedata = require("src.modules.framedata")
 
 local image_map = text.image_map
-local frame_data = fd.frame_data
+local frame_data = framedata.frame_data
 
 ---@type table|nil
 local image_map_json_data = tools.read_object_from_json_file("data/image_map.json")
-local framedata_size = tools.read_number_from_file(settings.framedata_path .. "file_size.json")
-local frame_data_keys = copytable(game_data.characters)
-table.insert(frame_data_keys, "projectiles")
+
+local reader = mp.Msg_Pack_Reader.new(settings.framedata_path .. settings.framedata_bin_file)
+local framedata_size = reader:read()
+reader:close()
 
 -- cache default, selected, and disabled colors. everything is recolored in real time
 local function load_text_images(filepath)
@@ -109,10 +110,14 @@ local function estimate_chunks_per_frame(elapsed, chunks_loaded)
 end
 
 local fd_load_margin = 1
-local function estimate_load_rate(elapsed, n_loaded)
+local function estimate_load_rate(n_loaded, elapsed)
    if elapsed == 0 then return fd_load_margin end
    return math.min(n_loaded / (elapsed * 1000000) * fd_load_margin, 1)
 end
+
+local load_timer = tools.Perf_timer:new()
+local load_rate = math.huge
+local n_loaded_this_frame = 0
 
 local n_im_loaded_this_frame = 0
 local n_im_chunks_per_frame = 20
@@ -126,6 +131,7 @@ local function load_text_images_async()
          n_im_loaded_this_frame = n_im_loaded_this_frame + 1
          if n_im_loaded_this_frame >= n_im_chunks_per_frame then
             coroutine.yield(n_im_loaded_this_frame)
+            load_timer:reset()
             n_im_loaded_this_frame = 0
          end
       end
@@ -134,34 +140,33 @@ local function load_text_images_async()
    image_map_json_data = nil
 end
 
-local load_timer = tools.Perf_timer:new()
-local fd_load_rate = 1
-local fd_loaded_this_frame = 0
+
 local function load_frame_data_async()
-   for _, char in ipairs(frame_data_keys) do
-      local fd_load_start_time = os.clock()
-      frame_data[char] = {}
-      local file_path = settings.framedata_path .. char .. settings.framedata_file_ext
-      local file = io.open(file_path, "r")
-      if not file then error("Cannot open " .. file_path) end
-      for line in file:lines() do
-         local id, load_time, json_str = line:match("([^,]+),(%d+):(.+)")
-         load_time = tonumber(load_time)
-         if (frame_time - (os.clock() - fd_load_start_time)) * 1000000 * fd_load_rate > load_time then
-            frame_data[char][id] = json.decode(json_str)
-         else
-            coroutine.yield(fd_loaded_this_frame)
-            fd_load_start_time = os.clock()
-            fd_loaded_this_frame = 0
-            frame_data[char][id] = json.decode(json_str)
-         end
-         fd_loaded_this_frame = fd_loaded_this_frame + load_time
+   framedata.clear_frame_data()
+   reader = mp.Msg_Pack_Reader.new(settings.framedata_path .. settings.framedata_bin_file)
+   framedata_size = reader:read()
+   load_timer:reset()
+   repeat
+      local size = reader:get_length()
+      -- print(load_rate , (frame_time - load_timer:elapsed()) , size, load_rate * (frame_time - load_timer:elapsed()) < size)
+      if load_rate * (frame_time - load_timer:elapsed()) < size then
+         coroutine.yield(n_loaded_this_frame)
+         load_timer:reset()
+         n_loaded_this_frame = 0
       end
-   end
+      local obj = reader:read()
+      if obj then
+         framedata.frame_data[obj.char][obj.id] = obj.data
+         n_loaded_this_frame = n_loaded_this_frame + size
+         load_rate = n_loaded_this_frame / load_timer:elapsed()
+      end
+   until obj == nil
+   reader:close()
+   coroutine.yield(n_loaded_this_frame)
 end
 
 local function load_framedata_human_readable()
-   for _, char in ipairs(frame_data_keys) do
+   for _, char in ipairs(framedata.frame_data_keys) do
       local file_path = settings.framedata_path .. "@" .. char .. settings.framedata_file_ext
       frame_data[char] = tools.read_object_from_json_file(file_path)
    end
@@ -169,34 +174,30 @@ end
 
 local load_frame_data_co = coroutine.create(load_frame_data_async)
 local load_text_images_co = coroutine.create(load_text_images_async)
-local current_co = load_frame_data_co
+local current_loader = load_frame_data_co
 local text_images_loaded = false
 local frame_data_loaded = false
 
 local function load_all()
    if not text_images_loaded then
-      current_co = load_text_images_co
+      current_loader = load_text_images_co
    elseif not frame_data_loaded then
-      current_co = load_frame_data_co
+      current_loader = load_frame_data_co
    end
    local n_loaded = 0
-   load_timer:reset()
-   local status = coroutine.status(current_co)
+   local status = coroutine.status(current_loader)
    if status == "suspended" then
-      local pass, n = coroutine.resume(current_co)
+      local pass, n = coroutine.resume(current_loader)
       if pass and n then n_loaded = n end
    elseif status == "dead" then
-      if current_co == load_text_images_co then
+      if current_loader == load_text_images_co then
          text_images_loaded = true
       else
          frame_data_loaded = true
       end
    end
-   if current_co == load_text_images_co then
-      local elapsed = load_timer:elapsed()
-      n_im_chunks_per_frame = estimate_chunks_per_frame(elapsed, n_im_chunks_per_frame)
-   else
-      fd_load_rate = estimate_load_rate(load_timer:elapsed(), fd_loaded_this_frame)
+   if current_loader == load_text_images_co then
+      n_im_chunks_per_frame = estimate_chunks_per_frame(load_timer:elapsed(), n_im_chunks_per_frame)
    end
    return n_loaded
 end

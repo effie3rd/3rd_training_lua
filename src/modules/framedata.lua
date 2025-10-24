@@ -2,10 +2,18 @@ local game_data = require("src.modules.game_data")
 local tools = require("src.tools")
 
 local frame_data = {}
+local frame_data_keys = copytable(game_data.characters)
+table.insert(frame_data_keys, "projectiles")
 
 local slow_jumpers = {"alex", "necro", "urien", "remy", "twelve", "oro"}
 
 local really_slow_jumpers = {"q", "hugo"}
+
+local function clear_frame_data()
+   for _, char in ipairs(frame_data_keys) do
+      frame_data[char] = {}
+   end
+end
 
 local function is_slow_jumper(str)
    for i = 1, #slow_jumpers do if str == slow_jumpers[i] then return true end end
@@ -583,6 +591,8 @@ end
 return {
    frame_data = frame_data,
    character_specific = character_specific,
+   frame_data_keys = frame_data_keys,
+   clear_frame_data = clear_frame_data,
    is_slow_jumper = is_slow_jumper,
    is_really_slow_jumper = is_really_slow_jumper,
    patch_frame_data = patch_frame_data,

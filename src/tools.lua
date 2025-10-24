@@ -99,15 +99,8 @@ function Perf_timer:new()
    obj.start = os.clock()
    return setmetatable(obj, self)
 end
-
 function Perf_timer:reset() self.start = os.clock() end
-
-function Perf_timer:elapsed()
-   local s = os.clock()
-   local elapsed = s - self.start
-   self:reset()
-   return elapsed
-end
+function Perf_timer:elapsed() return os.clock() - self.start end
 
 local function read_number_from_file(file_path)
    local f = io.open(file_path, "r")
