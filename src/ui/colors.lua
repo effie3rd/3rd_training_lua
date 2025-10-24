@@ -32,7 +32,8 @@ local colors = {
       cooldown_fill = 0x6800b5FF,
       life = 0x00CD4CFF,
       stun = 0xE60000FF,
-      meter = 0x00E6F7FF
+      meter = 0x00E6F7FF,
+      denijn = 0xc200c8FF
    },
    parry = {text_validity = 0xFFFFFFFF, text_success = 0x10FF10FF, text_failure = 0xFF1010FF},
    charge = {text_validity = 0xFFFFFFFF, text_success = 0x10FF10FF, text_failure = 0xFF1010FF, overcharge = 0x4900FF80},

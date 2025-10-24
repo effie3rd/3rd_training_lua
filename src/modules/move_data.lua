@@ -1,6 +1,7 @@
 local tools = require("src.tools")
 
-local move_list = tools.read_object_from_json_file("data/move_list.json")
+local move_list = tools.read_object_from_json_file("data/move_list.json") or {}
+local kara_command_throws = {"kara_power_bomb", "kara_karakusa_lk", "kara_karakusa_hk", "kara_capture_and_deadly_blow", "kara_zenpou_yang", "kara_zenpou_yun"}
 
 local function get_move_inputs_by_name(char, name, button)
    local sequence = {}
@@ -89,6 +90,7 @@ end
 
 return {
    move_list = move_list,
+   kara_command_throws = kara_command_throws,
    get_move_inputs_by_name = get_move_inputs_by_name,
    get_special_and_sa_names = get_special_and_sa_names,
    get_option_select_names = get_option_select_names,

@@ -4,6 +4,7 @@ local game_data = require("src.modules.game_data")
 local sd = require("src.modules.stage_data")
 local inputs = require("src.control.inputs")
 local memory_addresses = require("src.control.memory_addresses")
+local tools = require("src.tools")
 
 local module_name = "character_select"
 
@@ -13,7 +14,7 @@ local character_select_start_frame = 0
 local clear_buttons_until_frame = 0
 local character_select_coroutines = {}
 local selecting_random_character = false
-local disable_select_boss = false
+local disable_boss_select = false
 local last_player_id = 1
 local p1_forced_select = false
 local p2_forced_select = false
@@ -84,25 +85,26 @@ local function co_delay_load_savestate(input)
    co_wait_x_frames(1)
    character_select_sequence_state = 1
    Register_After_Load_State(after_character_select_loaded)
-   Load_State_Caller = module_name
+   Load_State_Caller = tools.get_calling_module_name() or module_name
    savestate.load(character_select_savestate)
 end
 
-local function start_character_select_sequence(disable_select_boss)
+local function start_character_select_sequence(disable_bosses)
    if game_data.is_fightcade and first_run then
       character_select_coroutine(co_delay_load_savestate, "delay_load")
       first_run = false
    end
    character_select_sequence_state = 1
    Register_After_Load_State(after_character_select_loaded)
-   Load_State_Caller = module_name
+   Load_State_Caller = tools.get_calling_module_name() or module_name
    savestate.load(character_select_savestate)
 
    last_player_id = 1
 
-   disable_select_boss = disable_select_boss or false
+   disable_boss_select = disable_bosses or false
    p1_forced_select = false
    p2_forced_select = false
+   selecting_random_character = false
 end
 
 local function force_character_select_coroutine(co, name, player, char, sa, sel_button)
@@ -187,19 +189,19 @@ local function co_select_gill(input)
    local sel_buttons = {"LP", "HK"}
    local i = math.random(1, #sel_buttons)
    local sel_button = sel_buttons[i]
-   local p1_character_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
-   local p2_character_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
+   local p1_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
+   local p2_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
 
-   if p1_character_select_state > 2 and p2_character_select_state > 2 then return end
+   if p1_select_state > 2 and p2_select_state > 2 then return end
 
    local character_select_state = 0
 
-   if p1_character_select_state <= 2 then
+   if p1_select_state <= 2 then
       player_id = 1
-      character_select_state = p1_character_select_state
+      character_select_state = p1_select_state
    else
       player_id = 2
-      character_select_state = p2_character_select_state
+      character_select_state = p2_select_state
    end
 
    memory.writebyte(memory_addresses.players[player_id].character_select_col, 3)
@@ -225,7 +227,7 @@ local function co_select_gill(input)
 end
 
 local function select_gill()
-   if not disable_select_boss and character_select_sequence_state ~= 0 then
+   if not disable_boss_select and character_select_sequence_state ~= 0 then
       if not character_select_coroutines["gill"] then character_select_coroutine(co_select_gill, "gill") end
    end
 end
@@ -236,19 +238,19 @@ local function co_select_shingouki(input)
    local sel_buttons = {"LP", "HK"}
    local i = math.random(1, #sel_buttons)
    local sel_button = sel_buttons[i]
-   local p1_character_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
-   local p2_character_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
+   local p1_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
+   local p2_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
 
-   if p1_character_select_state > 2 and p2_character_select_state > 2 then return end
+   if p1_select_state > 2 and p2_select_state > 2 then return end
 
    local character_select_state = 0
 
-   if p1_character_select_state <= 2 then
+   if p1_select_state <= 2 then
       player_id = 1
-      character_select_state = p1_character_select_state
+      character_select_state = p1_select_state
    else
       player_id = 2
-      character_select_state = p2_character_select_state
+      character_select_state = p2_select_state
    end
 
    memory.writebyte(memory_addresses.players[player_id].character_select_col, 0)
@@ -274,7 +276,7 @@ local function co_select_shingouki(input)
 end
 
 local function select_shingouki()
-   if not disable_select_boss and character_select_sequence_state ~= 0 then
+   if not disable_boss_select and character_select_sequence_state ~= 0 then
       if not character_select_coroutines["shingouki"] then
          character_select_coroutine(co_select_shingouki, "shingouki")
       end
@@ -286,15 +288,15 @@ local function co_random_character(input)
    if not selecting_random_character then return end
 
    local player_id
-   local p1_character_select_state
-   local p2_character_select_state
+   local p1_select_state
+   local p2_select_state
 
-   p1_character_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
-   p2_character_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
+   p1_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
+   p2_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
 
-   if p1_character_select_state <= 2 then
+   if p1_select_state <= 2 then
       player_id = 1
-   elseif p1_character_select_state >= 5 and p2_character_select_state <= 2 then
+   elseif p1_select_state >= 5 and p2_select_state <= 2 then
       player_id = 2
    else
       return
@@ -339,7 +341,9 @@ local p1_character_select_state = 0
 local p2_character_select_state = 0
 local function update_character_select(input)
 
-   if not character_select_sequence_state == 0 then return end
+   if not character_select_sequence_state == 0 then
+      return
+   end
 
    -- Infinite select time
    -- memory.writebyte(memory_addresses.global.character_select_timer, 0x30)
@@ -374,19 +378,9 @@ local function update_character_select(input)
    p2_character_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
 
    if not p1_forced_select then
-      --   print(string.format("%d, %d, %d", character_select_sequence_state, p1_character_select_state, p2_character_select_state))
-
       if p1_character_select_state > 4 and not gamestate.is_in_match then
          if character_select_sequence_state == 2 then character_select_sequence_state = 3 end
-
-         -- for key, value in pairs(input) do
-         --  print(string.format("%s %s",key, tostring(value)))
-         -- end
          if not p1_forced_select and not p2_forced_select then inputs.swap_inputs(input) end
-         -- for key, value in pairs(input) do
-         --  print(string.format("Swap %s %s",key, tostring(value)))
-         -- end
-         -- print(string.format("State %d",character_select_sequence_state))
       end
 
       if gamestate.frame_number < clear_buttons_until_frame then
@@ -419,34 +413,23 @@ local function update_character_select(input)
    end
 end
 
-local function update_fast_forward_intro(do_fast_forward)
-   if gamestate.has_match_just_started then
-      emu.speedmode("normal")
-      character_select_sequence_state = 0
-      selecting_random_character = false
-   elseif not gamestate.is_in_match then
-      if do_fast_forward and p1_character_select_state > 4 and p2_character_select_state > 4 then
-         emu.speedmode("turbo")
-      elseif character_select_sequence_state == 0 and (p1_character_select_state < 5 or p2_character_select_state < 5) then
-         emu.speedmode("normal")
-         character_select_sequence_state = 1
-      end
-   else
-      character_select_sequence_state = 0
-   end
+local function is_selection_complete()
+   local p1_complete = memory.readbyte(memory_addresses.players[1].character_select_state) > 4
+   local p2_complete = memory.readbyte(memory_addresses.players[2].character_select_state) > 4
+   return p1_complete and p2_complete
 end
 
 local character_select = {
    module_name = module_name,
    start_character_select_sequence = start_character_select_sequence,
    update_character_select = update_character_select,
-   update_fast_forward_intro = update_fast_forward_intro,
    select_gill = select_gill,
    select_shingouki = select_shingouki,
    start_select_random_character = start_select_random_character,
    stop_select_random_character = stop_select_random_character,
    select_random_character = select_random_character,
-   force_select_character = force_select_character
+   force_select_character = force_select_character,
+   is_selection_complete = is_selection_complete
 }
 
 setmetatable(character_select, {

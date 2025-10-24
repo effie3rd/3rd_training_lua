@@ -35,23 +35,25 @@ end
 local function load_training_data()
    local training_settings = tools.read_object_from_json_file(saved_path .. training_settings_file)
    -- no file then create defaults
-   if training_settings == nil then
+   if not training_settings then
       training_settings = tools.read_object_from_json_file(saved_path .. training_settings_default_file)
-      if training_settings == nil then training_settings = {} end
+      if not training_settings then training_settings = {} end
    end
-
-   -- training_settings.version ~=
-
-   for key, value in pairs(training_settings) do training[key] = value end
+   training = training_settings
 
    local special_training_settings = tools.read_object_from_json_file(saved_path .. special_training_settings_file)
-   -- no file then create defaults
-   if special_training_settings == nil then special_training_settings = {} end
-   for key, value in pairs(special_training_settings) do special_training[key] = value end
+   if not special_training_settings then
+      special_training_settings = tools.read_object_from_json_file(saved_path .. special_training_default_settings_file)
+      if not special_training_settings then special_training_settings = {} end
+   end
+   special_training = special_training_settings
 
-   recordings = tools.read_object_from_json_file(saved_path .. recordings_file)
-   -- no file then create defaults
-   if recordings == nil then recordings = {} end
+   local recordings_settings = tools.read_object_from_json_file(saved_path .. recordings_file)
+   if recordings_settings then
+      recordings = recordings_settings
+   else
+      require("src.control.recording").clear_all_recordings()
+   end
 end
 
 load_training_data()

@@ -15,6 +15,7 @@ local addresses = {
       p1_locked = 0x020154C6,
       p2_locked = 0x020154C8,
       match_state = 0x020154A7,
+      menu_state = 0x201546B, -- 2 Character Select, 3 CPU Opponent Select Single Player, 4 In Match, 5 Grade, 7 Continue?, 9 CPU Opponent Select
       match_timer = 0x02011377,
 
       freeze_game = 0x0201136F,
@@ -61,6 +62,7 @@ local addresses = {
          meter_update_flag = 0x020157C8,
          max_meter_gauge = 0x020695B3,
          max_meter_count = 0x020695BD,
+         sa_state = 0x020695AD, --2 activate, 4 in timed sa
          stun_bar_max = P1_stun_bar_max,
          stun_activate = P1_stun_bar_max - 0x3,
          stun_timer = P1_stun_bar_max + 0x2,
@@ -71,12 +73,20 @@ local addresses = {
          score = 0x020113A2,
          parry_forward_validity_time = 0x02026335,
          parry_forward_cooldown_time = 0x02025731,
+         parry_forward_cooldown_state = 0x02025733, --1 can attempt parry, 3 can not attempt parry
+         parry_forward_cooldown_reset = 0x2025719, --write 0 to reset cooldowns, seems to break things
          parry_down_validity_time = 0x02026337,
          parry_down_cooldown_time = 0x0202574D,
+         parry_down_cooldown_state = 0x0202574F,
+         parry_down_cooldown_reset = 0x2025735,
          parry_air_validity_time = 0x02026339,
          parry_air_cooldown_time = 0x02025769,
+         parry_air_cooldown_state = 0x0202576B,
+         parry_air_cooldown_reset = 0x2025751,
          parry_antiair_validity_time = 0x02026347,
          parry_antiair_cooldown_time = 0x0202582D,
+         parry_antiair_cooldown_state = 0x0202582F,
+         parry_antiair_cooldown_reset = 0x2025815,
          damage_of_next_hit = 0x020691A7,
          stun_of_next_hit = 0x02069437,
 
@@ -142,6 +152,7 @@ local addresses = {
          meter_update_flag = 0x020157C9,
          max_meter_gauge = 0x020695DF,
          max_meter_count = 0x020695E9,
+         sa_state = 0x020695D9,
          stun_bar_max = P2_stun_bar_max,
          stun_activate = P2_stun_bar_max - 0x3,
          stun_timer = P2_stun_bar_max + 0x2,
@@ -152,12 +163,20 @@ local addresses = {
          score = 0x020113AE,
          parry_forward_validity_time = 0x202673B,
          parry_forward_cooldown_time = 0x2025D51,
+         parry_forward_cooldown_state = 0x2025D53,
+         parry_forward_cooldown_reset = 0x2025D39,
          parry_down_validity_time = 0x202673D,
          parry_down_cooldown_time = 0x2025D6D,
+         parry_down_cooldown_state = 0x2025D6F,
+         parry_down_cooldown_reset = 0x2025D55,
          parry_air_validity_time = 0x202673F,
          parry_air_cooldown_time = 0x2025D89,
+         parry_air_cooldown_state = 0x2025D8B,
+         parry_air_cooldown_reset = 0x2025D71,
          parry_antiair_validity_time = 0x202674D,
          parry_antiair_cooldown_time = 0x2025E4D,
+         parry_antiair_cooldown_state = 0x2025E4F,
+         parry_antiair_cooldown_reset = 0x2025E35,
          damage_of_next_hit = 0x02068D0F,
          stun_of_next_hit = 0x02068F9F,
 
@@ -203,6 +222,10 @@ local addresses = {
    },
    offsets = {}
 }
+
+-- Misc
+-- change_match_state = 0x2015439, --2 match start, 6 title, 8 ending, 9 car, 11 match start, 14 match start
+
 
 local function update_addresses(player) player.addresses = addresses.players[player.id] end
 

@@ -38,6 +38,7 @@ local function update_programmed_movement()
 end
 
 local function all_commands_queued(player)
+   if not programmed_movement_queue[player] then return true end
    if programmed_movement_queue[player] then
       return programmed_movement_queue[player].index > #programmed_movement_queue[player].commands
    end
@@ -45,6 +46,7 @@ local function all_commands_queued(player)
 end
 
 local function all_commands_complete(player)
+   if not programmed_movement_queue[player] then return true end
    if programmed_movement_queue[player] and programmed_movement_queue[player].index >
        #programmed_movement_queue[player].commands and gamestate.frame_number >=
        programmed_movement_queue[player].pause_until then return true end
@@ -61,9 +63,9 @@ end
 local function is_idle_timing(player, offset, precise)
    -- print(gamestate.frame_number, prediction.get_frames_until_idle(player, player.animation, player.animation_frame, frames_prediction))
    if not precise then offset = offset + 1 end
-   if offset <= 0 then return true end
    if player.superfreeze_decount > 0 then return false end
    if player.has_just_parried then return 15 < offset end
+   if offset <= 0 then return player.is_idle and player.idle_time >= -offset end
    if player.is_in_recovery then
       return player.recovery_time + player.additional_recovery_time < offset
    end
@@ -89,6 +91,7 @@ end
 
 local function is_throw_vulnerable_timing(player, offset, precise)
    if not precise then offset = offset + 1 end
+   if offset <= 0 then return player.throw_invulnerability_cooldown == 0 and player.throw_recovery_frame >= -offset end
    return player.throw_invulnerability_cooldown < offset
 end
 

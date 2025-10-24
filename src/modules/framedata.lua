@@ -201,7 +201,7 @@ character_specific.yun.backward_walk_speed = -2.75
 
 -- ## game_data.characters standing states
 -- todo: find all ground and air states
-character_specific.makoto.standing_states = {3,7,11,13} -- 7 happens during Oroshi
+character_specific.makoto.standing_states = {3, 7, 11, 13} -- 7 happens during Oroshi
 
 character_specific.oro.crouching_states = {3} -- 3 is crouching
 character_specific.dudley.crouching_states = {6} -- 6 is crouching
@@ -211,35 +211,46 @@ character_specific.oro.air_states = {4, 10}
 character_specific.dudley.air_states = {8}
 character_specific.makoto.air_states = {4}
 
-
 -- ## game_data.characters timed SA
-character_specific.oro.timed_sa[1] = true;
-character_specific.oro.timed_sa[3] = true;
-character_specific.q.timed_sa[3] = true;
-character_specific.makoto.timed_sa[3] = true;
-character_specific.twelve.timed_sa[3] = true;
-character_specific.yang.timed_sa[3] = true;
-character_specific.yun.timed_sa[3] = true;
+character_specific.oro.timed_sa[1] = true
+character_specific.oro.timed_sa[3] = true
+character_specific.q.timed_sa[3] = true
+character_specific.makoto.timed_sa[3] = true
+character_specific.twelve.timed_sa[3] = true
+character_specific.yang.timed_sa[3] = true
+character_specific.yun.timed_sa[3] = true
 
 local function patch_frame_data()
    if frame_data["alex"] then
       frame_data["alex"]["80d4"].max_hits = 0 -- PA
    end
    if frame_data["chunli"] then
-      frame_data["chunli"]["d5ac"].landing_height = -8 --u_HK
+      frame_data["chunli"]["d5ac"].landing_height = -8 -- u_HK
    end
    if frame_data["dudley"] then
-      frame_data["dudley"]["51d4"].landing_height = -12 --u_LK
-      frame_data["dudley"]["5314"].landing_height = -12 --u_MK
-      frame_data["dudley"]["5884"].landing_height = -20 --uf_LK
-      frame_data["dudley"]["59c4"].landing_height = -20 --uf_MK
-      frame_data["dudley"]["5b04"].landing_height = -30 --u_HK
-      frame_data["dudley"]["5764"].landing_height = -30 --u_HP
+      frame_data["dudley"]["51d4"].landing_height = -12 -- u_LK
+      frame_data["dudley"]["5314"].landing_height = -12 -- u_MK
+      frame_data["dudley"]["5884"].landing_height = -20 -- uf_LK
+      frame_data["dudley"]["59c4"].landing_height = -20 -- uf_MK
+      frame_data["dudley"]["5b04"].landing_height = -30 -- u_HK
+      frame_data["dudley"]["5764"].landing_height = -30 -- u_HP
+      frame_data["dudley"]["6064"].exceptions = {["1953011000"] = 0, ["1953010c00"] = 0} -- d_LK MK tc
+   end
+   if frame_data["gouki"] then
+      frame_data["gouki"]["2aa0"].frames[2].set_velocity = {5, -5} -- d_MK_air
+      frame_data["gouki"]["2aa0"].frames[2].velocity = nil
+      frame_data["gouki"]["2aa0"].frames[2].set_acceleration = {0.25, -0.5}
+      frame_data["gouki"]["2aa0"].frames[2].acceleration = nil
+      for i = 1, 6 do
+         frame_data["gouki"]["2aa0"].frames[i].ignore_motion = true
+         frame_data["gouki"]["2aa0"].frames[i].movement = nil
+      end
+      frame_data["gouki"]["93f8"].exceptions = {["5641083c00"] = 0} -- SA1 Air
    end
    if frame_data["hugo"] then
-      frame_data["hugo"]["4c10"].landing_height = -40 --HK
-      frame_data["hugo"]["5540"].landing_height = -40 --d_HP_air
-      frame_data["hugo"]["5790"].landing_height = -10 --u_HK
+      frame_data["hugo"]["4c10"].landing_height = -40 -- HK
+      frame_data["hugo"]["5540"].landing_height = -40 -- d_HP_air
+      frame_data["hugo"]["5790"].landing_height = -10 -- u_HK
    end
    if frame_data["ibuki"] then
       frame_data["ibuki"]["75f0"].frames[12].bypass_freeze = true -- HK Kazekiri
@@ -262,29 +273,66 @@ local function patch_frame_data()
    end
    if frame_data["makoto"] then
       frame_data["makoto"]["eb28"].frames[7].optional_anim = nil
+      for i = 1, 5 do
+         frame_data["makoto"]["2190"].frames[i].ignore_motion = true -- LK Tsurugi      
+      end
+      for i = 1, 9 do
+         frame_data["makoto"]["2310"].frames[i].ignore_motion = true -- MK Tsurugi      
+         frame_data["makoto"]["2410"].frames[i].ignore_motion = true -- EX Tsurugi      
+      end
+      for i = 1, 10 do
+         frame_data["makoto"]["2410"].frames[i].ignore_motion = true -- HK Tsurugi      
+      end
    end
    if frame_data["necro"] then
       frame_data["necro"]["e9e4"].max_hits = 2 -- LK Drill
+      frame_data["necro"]["e9e4"].frames[2].set_velocity = {5, -2.5}
+      frame_data["necro"]["e9e4"].frames[2].velocity = nil
+      frame_data["necro"]["e9e4"].frames[2].set_acceleration = {0, 0}
       frame_data["necro"]["f2cc"].max_hits = 2 -- MK Drill
+      frame_data["necro"]["f2cc"].frames[2].set_velocity = {4.5, -3.5}
+      frame_data["necro"]["f2cc"].frames[2].velocity = nil
+      frame_data["necro"]["f2cc"].frames[2].set_acceleration = {0, 0}
       frame_data["necro"]["f51c"].max_hits = 2 -- HK Drill
-      frame_data["necro"]["7574"].landing_height = -26 --LP Flying Viper
-      frame_data["necro"]["7674"].landing_height = -20 --MP Flying Viper
-      frame_data["necro"]["7774"].landing_height = -24 --HP Flying Viper
-      frame_data["necro"]["7874"].landing_height = -24 --EX Flying Viper
+      frame_data["necro"]["f51c"].frames[2].set_velocity = {2.75, -3.5}
+      frame_data["necro"]["f51c"].frames[2].velocity = nil
+      frame_data["necro"]["f51c"].frames[2].set_acceleration = {0, 0}
+      for i = 1, 4 do
+         frame_data["necro"]["e9e4"].frames[i].ignore_motion = true
+         frame_data["necro"]["e9e4"].frames[i].movement = nil
+         frame_data["necro"]["f2cc"].frames[i].ignore_motion = true
+         frame_data["necro"]["f2cc"].frames[i].movement = nil
+         frame_data["necro"]["f51c"].frames[i].ignore_motion = true
+         frame_data["necro"]["f51c"].frames[i].movement = nil
+      end
+      frame_data["necro"]["7574"].landing_height = -26 -- LP Flying Viper
+      frame_data["necro"]["7674"].landing_height = -20 -- MP Flying Viper
+      frame_data["necro"]["7774"].landing_height = -24 -- HP Flying Viper
+      frame_data["necro"]["7874"].landing_height = -24 -- EX Flying Viper
       frame_data["necro"]["8574"].max_hits = 999 -- PA
    end
+   if frame_data["projectiles"] then
+      frame_data["projectiles"]["00_ndl_lp"].frames[3].boxes = nil -- ndl hits later despite having boxes
+      frame_data["projectiles"]["00_ndl_mp"].frames[3].boxes = nil
+      frame_data["projectiles"]["00_ndl_hp"].frames[3].boxes = nil
+   end
    if frame_data["remy"] then
-      frame_data["remy"]["09f8"].landing_height = -30 --LK Cold Blue
-      frame_data["remy"]["0af8"].landing_height = -12 --MK Cold Blue
-      frame_data["remy"]["0c08"].landing_height = -8  --HK Cold Blue
-      frame_data["remy"]["0d18"].landing_height = -6  --EX Cold Blue
+      frame_data["remy"]["09f8"].landing_height = -30 -- LK Cold Blue
+      frame_data["remy"]["0af8"].landing_height = -12 -- MK Cold Blue
+      frame_data["remy"]["0c08"].landing_height = -8 -- HK Cold Blue
+      frame_data["remy"]["0d18"].landing_height = -6 -- EX Cold Blue
    end
    if frame_data["twelve"] then
+      frame_data["twelve"]["5a6c"].landing_height = -5 -- Air Dash LP
+      frame_data["twelve"]["5b2c"].landing_height = -32 -- Air Dash MP
+      frame_data["twelve"]["5bec"].landing_height = -18 -- Air Dash HP
+      frame_data["twelve"]["5d0c"].landing_height = -40 -- Air Dash LK
+      frame_data["twelve"]["5ddc"].landing_height = -35 -- Air Dash MK
       frame_data["twelve"]["b1f4"].max_hits = 2 -- EX D.R.A.
-      frame_data["twelve"]["a9dc"].landing_height = -40 --LK D.R.A.
-      frame_data["twelve"]["ad34"].landing_height = -40 --MK D.R.A.
-      frame_data["twelve"]["af94"].landing_height = -40 --HK D.R.A.
-      frame_data["twelve"]["b1f4"].landing_height = -14 --EX D.R.A.
+      frame_data["twelve"]["a9dc"].landing_height = -40 -- LK D.R.A.
+      frame_data["twelve"]["ad34"].landing_height = -40 -- MK D.R.A.
+      frame_data["twelve"]["af94"].landing_height = -40 -- HK D.R.A.
+      frame_data["twelve"]["b1f4"].landing_height = -14 -- EX D.R.A.
    end
    -- position prediction of urien's headbutts in the corners are incorrect due to changing pushbox size
    -- hack to fix it for now
@@ -311,9 +359,71 @@ local function patch_frame_data()
    end
    if frame_data["yang"] then
       frame_data["yang"]["c79c"].hit_frames = {{5, 9}} -- cl. MK
+      frame_data["yang"]["e39c"].frames[2].set_velocity = {1, -2.25} -- LK Raigeki
+      frame_data["yang"]["e39c"].frames[2].velocity = nil
+      frame_data["yang"]["e39c"].frames[2].set_acceleration = {0, -0.375}
+      frame_data["yang"]["e39c"].frames[2].acceleration = nil
+      frame_data["yang"]["e5ac"].frames[2].set_velocity = {6, -2.25} -- MK Raigeki
+      frame_data["yang"]["e5ac"].frames[2].velocity = nil
+      frame_data["yang"]["e5ac"].frames[2].set_acceleration = {0, -0.375}
+      frame_data["yang"]["e5ac"].frames[2].acceleration = nil
+      frame_data["yang"]["e75c"].frames[2].set_velocity = {8, -2.25} -- HK Raigeki
+      frame_data["yang"]["e75c"].frames[2].velocity = nil
+      frame_data["yang"]["e75c"].frames[2].set_acceleration = {0, -0.375}
+      frame_data["yang"]["e75c"].frames[2].acceleration = nil
+      for i = 1, 4 do
+         frame_data["yang"]["e39c"].frames[i].ignore_motion = true
+         frame_data["yang"]["e39c"].frames[i].movement = nil
+         frame_data["yang"]["e5ac"].frames[i].ignore_motion = true
+         frame_data["yang"]["e5ac"].frames[i].movement = nil
+         frame_data["yang"]["e75c"].frames[i].ignore_motion = true
+         frame_data["yang"]["e75c"].frames[i].movement = nil
+      end
    end
    if frame_data["yun"] then
       frame_data["yun"]["63d0"].max_hits = 999 -- PA
+      frame_data["yun"]["630c"].frames[2].set_velocity = {1, -2.25} -- LK Raigeki
+      frame_data["yun"]["630c"].frames[2].velocity = nil
+      frame_data["yun"]["630c"].frames[2].set_acceleration = {0, -0.375}
+      frame_data["yun"]["630c"].frames[2].acceleration = nil
+      frame_data["yun"]["650c"].frames[2].set_velocity = {6, -2.25} -- MK Raigeki
+      frame_data["yun"]["650c"].frames[2].velocity = nil
+      frame_data["yun"]["650c"].frames[2].set_acceleration = {0, -0.375}
+      frame_data["yun"]["650c"].frames[2].acceleration = nil
+      frame_data["yun"]["66bc"].frames[2].set_velocity = {8, -2.25} -- HK Raigeki
+      frame_data["yun"]["66bc"].frames[2].velocity = nil
+      frame_data["yun"]["66bc"].frames[2].set_acceleration = {0, -0.375}
+      frame_data["yun"]["66bc"].frames[2].acceleration = nil
+      frame_data["yun"]["96cc"].frames[2].set_velocity = {1, -2.25} -- LK Raigeki Geneijin
+      frame_data["yun"]["96cc"].frames[2].velocity = nil
+      frame_data["yun"]["96cc"].frames[2].set_acceleration = {0, -0.375}
+      frame_data["yun"]["96cc"].frames[2].acceleration = nil
+      frame_data["yun"]["98ac"].frames[2].set_velocity = {6, -2.25} -- MK Raigeki Geneijin
+      frame_data["yun"]["98ac"].frames[2].velocity = nil
+      frame_data["yun"]["98ac"].frames[2].set_acceleration = {0, -0.375}
+      frame_data["yun"]["98ac"].frames[2].acceleration = nil
+      frame_data["yun"]["9a3c"].frames[2].set_velocity = {8, -2.25} -- HK Raigeki Geneijin
+      frame_data["yun"]["9a3c"].frames[2].velocity = nil
+      frame_data["yun"]["9a3c"].frames[2].set_acceleration = {0, -0.375}
+      frame_data["yun"]["9a3c"].frames[2].acceleration = nil
+      for i = 1, 4 do
+         frame_data["yun"]["630c"].frames[i].ignore_motion = true
+         frame_data["yun"]["630c"].frames[i].movement = nil
+         frame_data["yun"]["650c"].frames[i].ignore_motion = true
+         frame_data["yun"]["650c"].frames[i].movement = nil
+         frame_data["yun"]["66bc"].frames[i].ignore_motion = true
+         frame_data["yun"]["66bc"].frames[i].movement = nil
+         frame_data["yun"]["96cc"].frames[i].ignore_motion = true
+         frame_data["yun"]["96cc"].frames[i].movement = nil
+         frame_data["yun"]["98ac"].frames[i].ignore_motion = true
+         frame_data["yun"]["98ac"].frames[i].movement = nil
+         frame_data["yun"]["9a3c"].frames[i].ignore_motion = true
+         frame_data["yun"]["9a3c"].frames[i].movement = nil
+      end
+   end
+   if frame_data["projectiles"] then
+      -- Yagyoudama_EXP
+      for _, frame in ipairs(frame_data["projectiles"]["72"].frames) do frame.bypass_freeze = true end
    end
 end
 
@@ -360,28 +470,34 @@ local function find_move_frame_data(char_str, animation_id)
    return frame_data[char_str][animation_id]
 end
 
-local function find_frame_data_by_name(char_str, name)
+local function find_frame_data_by_name(char_str, name, button)
    local fdata = frame_data[char_str]
-   if fdata then for k, data in pairs(fdata) do if data.name == name then return k, data end end end
+   local search_name = name
+   if button then search_name = search_name .. "_" .. button end
+   if fdata then
+      for k, data in pairs(fdata) do if data.name == search_name then return k, data end end
+      if not button then return nil end
+      for k, data in pairs(fdata) do if data.name == name then return k, data end end
+   end
    return nil
 end
 
-local function get_kara_distance_by_name(char_str, name)
-   local anim, fdata = find_frame_data_by_name(char_str, name)
+local function get_kara_distance_by_name(char_str, name, button)
+   local anim, fdata = find_frame_data_by_name(char_str, name, button)
    if fdata and fdata.frames then if fdata.frames[1].movement then return fdata.frames[1].movement[1] end end
    return 0
 end
 
-local function get_first_hit_frame_by_name(char_str, name)
+local function get_first_hit_frame_by_name(char_str, name, button)
    local hf = 0
-   local anim, fdata = find_frame_data_by_name(char_str, name)
+   local anim, fdata = find_frame_data_by_name(char_str, name, button)
    if fdata and fdata.hit_frames then hf = fdata.hit_frames[1][1] end
    return hf
 end
 
-local function get_first_idle_frame_by_name(char_str, name)
+local function get_first_idle_frame_by_name(char_str, name, button)
    local hf = 0
-   local anim, fdata = find_frame_data_by_name(char_str, name)
+   local anim, fdata = find_frame_data_by_name(char_str, name, button)
    if fdata and fdata.idle_frames then hf = fdata.idle_frames[1][1] end
    return hf
 end
@@ -405,6 +521,12 @@ local function get_last_hit_frame(char_str, anim)
    local fdata = find_move_frame_data(char_str, anim)
    if fdata and fdata.hit_frames then hf = fdata.hit_frames[#fdata.hit_frames][2] end
    return hf
+end
+
+local function is_infinite_loop(char_str, anim)
+   local fdata = frame_data[char_str][anim]
+   if fdata and fdata.infinite_loop then return true end
+   return false
 end
 
 local function get_hurtboxes(char_str, anim, frame)
@@ -447,8 +569,8 @@ local function get_hitbox_max_range(char_str, anim, hit_id)
    return 0
 end
 
-local function get_hitbox_max_range_by_name(char_str, name, hit_id)
-   local anim, fdata = find_frame_data_by_name(char_str, name)
+local function get_hitbox_max_range_by_name(char_str, name, button, hit_id)
+   local anim, fdata = find_frame_data_by_name(char_str, name, button)
    if fdata then return get_hitbox_max_range(char_str, anim, hit_id) end
    return 0
 end
@@ -473,6 +595,7 @@ return {
    get_next_hit_frame = get_next_hit_frame,
    get_last_hit_frame = get_last_hit_frame,
    find_move_frame_data = find_move_frame_data,
+   is_infinite_loop = is_infinite_loop,
    get_hurtboxes = get_hurtboxes,
    get_hitbox_max_range = get_hitbox_max_range,
    get_hitbox_max_range_by_name = get_hitbox_max_range_by_name,

@@ -4,15 +4,16 @@ local colors = require("src.ui.colors")
 local text = require("src.ui.text")
 local draw = require("src.ui.draw")
 local images = require("src.ui.image_tables")
-local move_data = require("src.modules.move_data")
 local tools = require("src.tools")
+local menu_tables = require("src.ui.menu_tables")
 
 local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text,
                                                                                              text.render_text_multiple,
                                                                                              text.get_text_dimensions,
                                                                                              text.get_text_dimensions_multiple
 
-local localization = tools.read_object_from_json_file("data/localization.json")
+local localization = tools.read_object_from_json_file("data/localization.json") or {}
+local move_selection_type = menu_tables.move_selection_type
 
 local Gauge_Menu_Item = {}
 Gauge_Menu_Item.__index = Gauge_Menu_Item
@@ -265,7 +266,11 @@ end
 
 function On_Off_Menu_Item:draw(x, y, selected)
    local color = text.default_color
-   if selected then color = text.selected_color end
+   if selected then
+      color = text.selected_color
+   elseif self.is_enabled and not self:is_enabled() then
+      color = text.disabled_color
+   end
 
    local value = ""
    if self.object[self.property_name] then
@@ -320,7 +325,11 @@ end
 
 function List_Menu_Item:draw(x, y, selected)
    local color = text.default_color
-   if selected then color = text.selected_color end
+   if selected then
+      color = text.selected_color
+   elseif self.is_enabled and not self:is_enabled() then
+      color = text.disabled_color
+   end
    local offset = 0
    if self.indent then offset = 8 end
 
@@ -356,21 +365,6 @@ function List_Menu_Item:reset()
 end
 
 function List_Menu_Item:legend() return "legend_mp_reset" end
-
-local check_box_cache = {unchecked = {}, checked = {}}
-local function get_check_box(type, color)
-   if not check_box_cache[type][color] then
-      local checkbox
-      if type == "unchecked" then
-         checkbox = images.img_kaku
-      else
-         checkbox = images.img_maru
-      end
-      local gd_color = colors.hex_to_gd_color(color)
-      check_box_cache[type][color] = colors.substitute_color_gdstr(checkbox, colors.gd_white, gd_color)
-   end
-   return check_box_cache[type][color]
-end
 
 local Check_Box_Grid_Item = {}
 Check_Box_Grid_Item.__index = Check_Box_Grid_Item
@@ -409,7 +403,7 @@ function Check_Box_Grid_Item:draw(x, y, selected)
    local color = text.default_color
    if selected then
       color = text.selected_color
-   elseif not self:is_enabled() then
+   elseif self.is_enabled and not self:is_enabled() then
       color = text.disabled_color
    end
    local offset_x, offset_y = 0, 0
@@ -458,7 +452,7 @@ function Check_Box_Grid_Item:draw(x, y, selected)
                   item_color = text.button_activated_color
                end
             end
-            local checkbox = get_check_box(checkbox_type, item_color)
+            local checkbox = draw.get_check_box(checkbox_type, item_color)
             gui.image(x + offset_x + col_offset, y + offset_y + row_offset + checkbox_offset_y, checkbox)
             render_text(x + offset_x + col_offset + self.checkbox_padding_x, y + offset_y + row_offset,
                         self.list[index], nil, nil, item_color)
@@ -595,31 +589,170 @@ end
 
 function Check_Box_Grid_Item:legend() return "legend_lp_mp_select_reset" end
 
-local Slider_Item = {}
-Slider_Item.__index = Slider_Item
-Slider_Item.__name = "Slider_Item"
+local Slider_Menu_Item = {}
+Slider_Menu_Item.__index = Slider_Menu_Item
+Slider_Menu_Item.__name = "Slider_Menu_Item"
 
-function Slider_Item:new(name, object, points, min, max)
-   local obj = {name = name, object = object, indent = false, points = points, min = min, max = max}
+function Slider_Menu_Item:new(name, line_width, points, range)
+   local obj = {
+      name = name,
+      indent = false,
+      line_width = line_width or 100,
+      mode = 1,
+      points = points,
+      range = range,
+      point_index = 1,
+      width = 0,
+      height = 0,
+      max_points = 2,
+      last_frame_validated = 0,
+      disable_mode_switch = false,
+      autofire_rate = 1,
+      autofire_time = 5,
+      legend_text = "legend_lp_mode",
+      is_enabled = function() return true end,
+      is_unselectable = function() return false end
+   }
 
    setmetatable(obj, self)
    obj:calc_dimensions()
    return obj
 end
 
-function Slider_Item:draw(x, y) end
+function Slider_Menu_Item:draw(x, y, selected)
+   local color = text.default_color
+   if selected then
+      color = text.selected_color
+   elseif self.is_enabled and not self:is_enabled() then
+      color = text.disabled_color
+   end
+   if self.last_frame_validated > gamestate.frame_number then self.last_frame_validated = 0 end
+   if (gamestate.frame_number - self.last_frame_validated < 5) then color = text.button_activated_color end
 
-function Slider_Item:calc_dimensions() end
+   local offset_x = 0
+   if self.indent then offset_x = 8 end
 
-function Slider_Item:left() end
+   local text_table = {self.name, ":  "}
+   render_text_multiple(x + offset_x, y, text_table, nil, nil, color)
 
-function Slider_Item:right() end
+   local w, h = get_text_dimensions_multiple(text_table)
+   offset_x = offset_x + w
 
-function Slider_Item:validate(input) end
+   local box_width = self.line_width + 2
+   local box_top = y + (h - 4) / 2
+   if settings.language == "jp" then box_top = box_top + 1 end
+   local box_left = x + offset_x
+   local box_right = box_left + box_width
+   local box_bottom = box_top + 2
+   local arrow_offset = -3
+   gui.box(box_left, box_top, box_right, box_bottom, color, colors.menu.gauge_border)
 
-function Slider_Item:reset(input) end
+   local arrow_color, arrow_position
+   if self.mode == 2 then
+      local num_points = 2
+      for i = 1, num_points do
+         arrow_color = color == text.disabled_color and text.disabled_color or text.inactive_color
+         if i ~= self.point_index then
+            arrow_position = (self.points[i] - self.range[1]) / (self.range[2] - self.range[1]) * self.line_width
+            gui.image(box_left + arrow_offset + arrow_position + 1, box_bottom + 1, draw.get_up_arrow(arrow_color))
+         end
+      end
+   end
+   arrow_color = color
+   arrow_position = (self.points[self.point_index] - self.range[1]) / (self.range[2] - self.range[1]) * self.line_width
+   gui.image(box_left + arrow_offset + arrow_position + 1, box_bottom + 1, draw.get_up_arrow(arrow_color))
 
-function Slider_Item:legend() return "legend_lp_mp_select_reset" end
+   local num_text
+   if self.mode == 1 then
+      num_text = {"  ", self.points[1]}
+   else
+      num_text = {"  ", self.points[1], "—", self.points[2]}
+   end
+   render_text_multiple(box_right, y, num_text, nil, nil, color)
+end
+
+function Slider_Menu_Item:calc_dimensions()
+   local w, h = get_text_dimensions_multiple({self.name, ":  "})
+   local num_text
+   if self.mode == 1 then
+      num_text = {"  ", self.points[1]}
+   else
+      num_text = {"  ", self.points[1], "—", self.points[2]}
+   end
+   local nw, nh = get_text_dimensions_multiple(num_text)
+   self.width, self.height = w + nw + self.line_width, h
+end
+
+function Slider_Menu_Item:left()
+   if self.left_function then
+      self.left_function()
+   else
+      local value
+      if self.mode == 1 then
+         value = self.points[1]
+         value = tools.clamp(value - 1, self.range[1], self.range[2])
+         self.points[1] = value
+      else
+         value = self.points[self.point_index] - 1
+         while value >= self.range[1] do
+            if not tools.table_contains(self.points, value) then break end
+            value = value - 1
+         end
+         value = tools.clamp(value, self.range[1], self.range[2])
+         self.points[self.point_index] = value
+      end
+   end
+   local val = self.points[self.point_index]
+   table.sort(self.points)
+   self.point_index = tools.table_indexof(self.points, val) or 1
+end
+
+function Slider_Menu_Item:right()
+   if self.right_function then
+      self.right_function()
+   else
+      local value
+      if self.mode == 1 then
+         value = self.points[1]
+         value = tools.clamp(value + 1, self.range[1], self.range[2])
+         self.points[1] = value
+      else
+         value = self.points[self.point_index] + 1
+         while value <= self.range[2] do
+            if not tools.table_contains(self.points, value) then break end
+            value = value + 1
+         end
+         value = tools.clamp(value, self.range[1], self.range[2])
+         self.points[self.point_index] = value
+      end
+   end
+   local val = self.points[self.point_index]
+   table.sort(self.points)
+   self.point_index = tools.table_indexof(self.points, val) or 1
+end
+
+function Slider_Menu_Item:validate(input)
+   if input.press or input.down then self.last_frame_validated = gamestate.frame_number end
+   if not self.disable_mode_switch and input.release then
+      self.mode = self.mode % 2 + 1
+      if self.validate_function then self.validate_function() end
+      if self.mode == 1 then
+         self.legend_text = "legend_lp_mode"
+         self.point_index = 1
+      elseif self.mode == 2 then
+         self.legend_text = "legend_mp_point"
+      end
+   end
+end
+
+function Slider_Menu_Item:reset(input)
+   if self.mode == 2 and input.release then
+      self.point_index = self.point_index % self.max_points + 1
+      if self.reset_function then self.reset_function() end
+   end
+end
+
+function Slider_Menu_Item:legend() return self.legend_text end
 
 local Motion_list_Menu_Item = {}
 Motion_list_Menu_Item.__index = Motion_list_Menu_Item
@@ -644,7 +777,11 @@ end
 
 function Motion_list_Menu_Item:draw(x, y, selected)
    local color = text.default_color
-   if selected then color = text.selected_color end
+   if selected then
+      color = text.selected_color
+   elseif self.is_enabled and not self:is_enabled() then
+      color = text.disabled_color
+   end
    local offset_x = 0
    local offset_y = -1
    if self.indent then offset_x = 8 end
@@ -786,8 +923,6 @@ end
 
 function Motion_list_Menu_Item:legend() return "legend_mp_reset" end
 
-local counter_attack_type = {"none", "normal_attack", "special_sa", "option_select", "recording"}
-
 local Move_Input_Display_Menu_Item = {}
 Move_Input_Display_Menu_Item.__index = Move_Input_Display_Menu_Item
 
@@ -817,7 +952,7 @@ function Move_Input_Display_Menu_Item:draw(x, y)
    local move_inputs = self.object.inputs
    local style = draw.controller_styles[settings.training.controller_style]
 
-   if counter_attack_type[self.object.type] == "special_sa" then
+   if move_selection_type[self.object.type] == "special_sa" then
       for i = 1, #move_inputs do
          local dirs = {forward = false, down = false, back = false, up = false}
          local added = 0
@@ -1002,7 +1137,7 @@ function Move_Input_Display_Menu_Item:draw(x, y)
          offset_x = offset_x + 9
       end
 
-   elseif counter_attack_type[self.object.type] == "option_select" then
+   elseif move_selection_type[self.object.type] == "option_select" then
    end
 end
 
@@ -1110,7 +1245,11 @@ end
 
 function Integer_Menu_Item:draw(x, y, selected)
    local color = text.default_color
-   if selected then color = text.selected_color end
+   if selected then
+      color = text.selected_color
+   elseif self.is_enabled and not self:is_enabled() then
+      color = text.disabled_color
+   end
    local offset_x = 0
    local w, h = 0, 0
    if self.indent then offset_x = 8 end
@@ -1184,7 +1323,11 @@ end
 
 function Hits_Before_Menu_Item:draw(x, y, selected)
    local color = text.default_color
-   if selected then color = text.selected_color end
+   if selected then
+      color = text.selected_color
+   elseif self.is_enabled and not self:is_enabled() then
+      color = text.disabled_color
+   end
 
    local offset_x = 0
    if self.indent then offset_x = 8 end
@@ -1261,7 +1404,11 @@ end
 
 function Map_Menu_Item:draw(x, y, selected)
    local color = text.default_color
-   if selected then color = text.selected_color end
+   if selected then
+      color = text.selected_color
+   elseif self.is_enabled and not self:is_enabled() then
+      color = text.disabled_color
+   end
 
    local offset_x = 0
 
@@ -1324,11 +1471,10 @@ function Button_Menu_Item:new(name, validate_function)
       name = name,
       width = 0,
       height = 0,
-      is_enabled = function() return true end,
-      is_unselectable = function() return false end,
       validate_function = validate_function,
       last_frame_validated = 0,
-      legend_text = "legend_lp_select"
+      legend_text = "legend_lp_select",
+      is_enabled = function() return true end
    }
 
    setmetatable(obj, self)
@@ -1342,10 +1488,9 @@ function Button_Menu_Item:draw(x, y, selected)
       color = text.selected_color
 
       if self.last_frame_validated > gamestate.frame_number then self.last_frame_validated = 0 end
-
       if (gamestate.frame_number - self.last_frame_validated < 5) then color = text.button_activated_color end
    end
-   if not self:is_enabled() then color = text.disabled_color end
+   if self.is_enabled and not self:is_enabled() then color = text.disabled_color end
 
    if type(self.name) == "table" then
       render_text_multiple(x, y, self.name, nil, nil, color)
@@ -1418,7 +1563,7 @@ function Footer_Menu_Item:calc_dimensions() self.width, self.height = get_text_d
 local Label_Menu_Item = {}
 Label_Menu_Item.__index = Label_Menu_Item
 
-function Label_Menu_Item:new(name, text_list, object, property, inline)
+function Label_Menu_Item:new(name, text_list, object, property, small, inline)
    local index = 0
    for i, str in ipairs(text_list) do
       if str == "value" then
@@ -1432,6 +1577,7 @@ function Label_Menu_Item:new(name, text_list, object, property, inline)
       index = index,
       object = object,
       property = property,
+      small = small or false,
       inline = inline or false,
       is_unselectable = function() return true end,
       width = 0,
@@ -1445,11 +1591,17 @@ end
 
 function Label_Menu_Item:draw(x, y)
    local color = text.inactive_color
+   local size
    self.text_list[self.index] = self.object[self.property]
-   render_text_multiple(x, y, self.text_list, nil, nil, color)
+   if self.small and settings.language == "jp" then size = 8 end
+   render_text_multiple(x, y, self.text_list, nil, size, color)
 end
 
-function Label_Menu_Item:calc_dimensions() self.width, self.height = get_text_dimensions_multiple(self.text_list) end
+function Label_Menu_Item:calc_dimensions()
+   local size
+   if self.small and settings.language == "jp" then size = 8 end
+   self.width, self.height = get_text_dimensions_multiple(self.text_list, nil, size)
+end
 
 local Multitab_Menu = {}
 Multitab_Menu.__index = Multitab_Menu
@@ -1470,7 +1622,8 @@ function Multitab_Menu:new(left, top, right, bottom, content, on_toggle_entry)
       main_menu_selected_index = 1,
       sub_menu_selected_index = 1,
       max_entries = 15,
-      on_toggle_entry = on_toggle_entry
+      on_toggle_entry = on_toggle_entry,
+      has_popup = false
    }
    if settings.language == "jp" then obj.max_entries = 11 end
 
@@ -1482,6 +1635,24 @@ function Multitab_Menu:new(left, top, right, bottom, content, on_toggle_entry)
    setmetatable(obj, self)
    obj:calc_dimensions()
    return obj
+end
+
+function Multitab_Menu:update_page_position()
+   local entries = self:current_tab().entries
+   local total_height = 0
+   local i = self:current_tab().top_entry_index
+   while i <= #entries do
+      if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
+          (entries[i].is_visible and not entries[i]:is_visible())) then
+         if total_height + entries[i].height + self.menu_item_spacing <= self.content_area_height then
+            total_height = total_height + entries[i].height + self.menu_item_spacing
+         else
+            break
+         end
+      end
+      i = i + 1
+   end
+   self:current_tab().bottom_entry_index = i - 1
 end
 
 function Multitab_Menu:calc_dimensions()
@@ -1511,14 +1682,32 @@ function Multitab_Menu:menu_stack_pop(menu)
    for i, m in ipairs(self.menu_stack) do
       if m == menu then
          table.remove(self.menu_stack, i)
+         if m.on_close then m:on_close() end
          break
       end
    end
 end
 
+function Multitab_Menu:menu_open_popup(menu, hide_menu)
+   if hide_menu then self.menu_stack = {} end
+   table.insert(self.menu_stack, menu)
+   self.has_popup = true
+end
+
+function Multitab_Menu:menu_close_popup(menu)
+   menu = menu or self.menu_stack[#self.menu_stack]
+   self:menu_stack_pop(menu)
+   if #self.menu_stack == 0 then table.insert(self.menu_stack, self) end
+   if self.menu_stack[#self.menu_stack] == self then self.has_popup = false end
+end
+
 function Multitab_Menu:menu_stack_top() return self.menu_stack[#self.menu_stack] end
 
-function Multitab_Menu:menu_stack_clear() self.menu_stack = {} end
+function Multitab_Menu:menu_stack_clear()
+   for _, menu in ipairs(self.menu_stack) do if menu.on_close then menu:on_close() end end
+   self.menu_stack = {}
+   self.has_popup = false
+end
 
 function Multitab_Menu:menu_stack_update(input)
    if #self.menu_stack == 0 then return end
@@ -1776,7 +1965,7 @@ function Multitab_Menu:update(input)
       end
    end
 
-   if input.scroll_up then
+   if input.scroll_up.press then
       if not self.is_main_menu_selected then
          if self.sub_menu_selected_index == first_visible_entry() then
             self.is_main_menu_selected = true
@@ -1788,7 +1977,7 @@ function Multitab_Menu:update(input)
       self:current_tab().bottom_entry_index = get_bottom_entry_index()
    end
 
-   if input.scroll_down then
+   if input.scroll_down.press then
       if not self.is_main_menu_selected then
          if self.sub_menu_selected_index == last_visible_entry() then
             self.is_main_menu_selected = true
@@ -1894,7 +2083,7 @@ end
 local Menu = {}
 Menu.__index = Menu
 
-function Menu:new(left, top, right, bottom, content, on_toggle_entry, draw_legend)
+function Menu:new(left, top, right, bottom, content, on_toggle_entry, draw_legend, status_item, resize)
    local obj = {
       left = left,
       top = top,
@@ -1903,7 +2092,16 @@ function Menu:new(left, top, right, bottom, content, on_toggle_entry, draw_legen
       content = content,
       selected_index = 1,
       on_toggle_entry = on_toggle_entry,
-      draw_legend = draw_legend or true
+      draw_legend = draw_legend or true,
+      status_item = status_item,
+      resize = resize or false,
+      menu_item_spacing = 1,
+      x_padding = 8,
+      y_padding = 5,
+      legend_y_padding = 3,
+      content_area_height = 0,
+      top_entry_index = 1,
+      bottom_entry_index = 1
    }
 
    setmetatable(obj, self)
@@ -1913,84 +2111,279 @@ end
 
 function Menu:current_entry() return self.content[self.selected_index] end
 
-function Menu:calc_dimensions() for i = 1, #self.content do self.content[i]:calc_dimensions() end end
+function Menu:calc_dimensions()
+   for i = 1, #self.content do self.content[i]:calc_dimensions() end
+   if self.resize then
+      local legend_w, legend_h = get_text_dimensions("legend_hp_scroll")
+      local max_width, total_height, current_width = 0, 0, 0
+      local i = 1
+      while i <= #self.content do
+         if (self.content[i].is_visible == nil or self.content[i]:is_visible()) then
+            current_width = current_width + self.content[i].width
+            if not (self.content[i + 1] and self.content[i + 1].inline) then
+               if current_width > max_width then max_width = current_width end
+               current_width = 0
+            end
+            if not self.content[i].inline then
+               total_height = total_height + self.content[i].height + self.menu_item_spacing
+            end
+         end
+         i = i + 1
+      end
+      max_width = max_width + 2 * self.x_padding
+      self.content_area_height = total_height + legend_h + self.legend_y_padding
+      total_height = self.content_area_height + 2 * self.y_padding
+      self.right = self.left + max_width
+      self.bottom = self.top + total_height
+   else
+      self.content_area_height = self.bottom - self.top - 2 * self.y_padding
+   end
+end
 
 function Menu:update(input)
+   self.max_entries = 100
 
-   local current_entry = self.content[self.selected_index]
-
-   if input.up then
-      local should_process_input = true
-      if current_entry.up then should_process_input = current_entry:up() end
-      if should_process_input then
-         repeat
-            self.selected_index = self.selected_index - 1
-            if self.selected_index == 0 then self.selected_index = #self.content end
-         until self.content[self.selected_index].is_visible == nil or self.content[self.selected_index]:is_visible()
+   local function first_visible_entry()
+      local entries = self.content
+      for i = 1, #entries do
+         if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
+             (entries[i].is_visible and not entries[i]:is_visible())) then return i end
       end
+      return 1
+   end
+
+   local function last_visible_entry()
+      local entries = self.content
+      for i = #entries, 1, -1 do
+         if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
+             (entries[i].is_visible and not entries[i]:is_visible())) then return i end
+      end
+      return #entries
+   end
+
+   local function next_selectable_entry(index)
+      local entries = self.content
+      local i = index or self.selected_index
+      i = i + 1
+      while i <= #entries do
+         if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
+             (entries[i].is_visible and not entries[i]:is_visible())) then break end
+         i = i + 1
+      end
+      return math.min(i, #entries)
+   end
+
+   local function previous_selectable_entry(index)
+      local entries = self.content
+      local i = index or self.selected_index
+      i = i - 1
+      while i >= 1 do
+         if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
+             (entries[i].is_visible and not entries[i]:is_visible())) then break end
+         i = i - 1
+      end
+      return math.max(i, 1)
+   end
+
+   local function get_bottom_page_position()
+      local entries = self.content
+      local total_height = 0
+      local i = #entries
+      while i >= 1 do
+         if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
+             (entries[i].is_visible and not entries[i]:is_visible())) then
+            if total_height + entries[i].height + self.menu_item_spacing <= self.content_area_height then
+               total_height = total_height + entries[i].height + self.menu_item_spacing
+            else
+               break
+            end
+         end
+         i = i - 1
+      end
+      return i + 1
+   end
+
+   local function get_bottom_entry_index()
+      local entries = self.content
+      local total_height = 0
+      local i = self.top_entry_index
+      while i <= #entries do
+         if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
+             (entries[i].is_visible and not entries[i]:is_visible())) then
+            if total_height + entries[i].height + self.menu_item_spacing <= self.content_area_height then
+               total_height = total_height + entries[i].height + self.menu_item_spacing
+            else
+               break
+            end
+         end
+         i = i + 1
+      end
+      return i - 1
+   end
+
+   local function get_next_page_top_entry_index()
+      local entries = self.content
+      local i = self.selected_index
+      while i <= #entries do
+         if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
+             (entries[i].is_visible and not entries[i]:is_visible())) then break end
+         i = i + 1
+      end
+      return math.min(i, get_bottom_page_position())
+   end
+
+   local function get_previous_page_top_entry_index()
+      local entries = self.content
+      local total_height = 0
+      local i = self.selected_index
+      while i >= 1 do
+         if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
+             (entries[i].is_visible and not entries[i]:is_visible())) then
+            if total_height + entries[i].height + self.menu_item_spacing <= self.content_area_height then
+               total_height = total_height + entries[i].height + self.menu_item_spacing
+            else
+               break
+            end
+         end
+         i = i - 1
+      end
+      return math.max(i + 1, 1)
+   end
+
+   while (self:current_entry().is_unselectable and self:current_entry():is_unselectable()) or
+       (self:current_entry().is_visible and not self:current_entry():is_visible()) do
+      self.selected_index = previous_selectable_entry()
+      if self.selected_index == 0 then self.selected_index = 1 end
+
+      if self.selected_index < self.top_entry_index then self.top_entry_index = math.max(self.selected_index, 1) end
+   end
+
+   if self.selected_index > self.bottom_entry_index then
+      local next_page_start = get_next_page_top_entry_index()
+      if next_page_start > 0 then self.top_entry_index = next_page_start end
    end
 
    if input.down then
       local should_process_input = true
-      if current_entry.down then should_process_input = current_entry:down() end
+      if not self.is_main_menu_selected and self:current_entry().down then
+         should_process_input = self:current_entry():down()
+      end
+      if should_process_input then
+         self.bottom_entry_index = get_bottom_entry_index()
+         repeat
+            if self.selected_index == #self.content then
+               self.selected_index = 1
+            else
+               self.selected_index = next_selectable_entry()
+            end
+            if self.selected_index > self.bottom_entry_index then
+               self.top_entry_index = get_next_page_top_entry_index()
+               self.bottom_entry_index = get_bottom_entry_index()
+            end
+         until (not (self:current_entry().is_unselectable and self:current_entry():is_unselectable()) and
+             (self:current_entry().is_visible == nil or self:current_entry():is_visible()))
+      end
+   end
+
+   if input.up then
+      local should_process_input = true
+      if self:current_entry().up then should_process_input = self:current_entry():up() end
       if should_process_input then
          repeat
-            self.selected_index = self.selected_index + 1
-            if self.selected_index == #self.content + 1 then self.selected_index = 1 end
-         until self.content[self.selected_index].is_visible == nil or self.content[self.selected_index]:is_visible()
+            if self.selected_index == 1 then
+               self.selected_index = #self.content
+            else
+               self.selected_index = previous_selectable_entry()
+            end
+            if self.selected_index < self.top_entry_index then
+               self.top_entry_index = get_previous_page_top_entry_index()
+               self.bottom_entry_index = get_bottom_entry_index()
+            end
+         until (not (self:current_entry().is_unselectable and self:current_entry():is_unselectable()) and
+             (self:current_entry().is_visible == nil or self:current_entry():is_visible()))
       end
    end
 
    if input.left then
-      if current_entry.left then
-         current_entry:left()
-         if self.on_toggle_entry ~= nil then self:on_toggle_entry() end
+      if self:current_entry() ~= nil then
+         if self:current_entry().left ~= nil then
+            self:current_entry():left()
+            if self.on_toggle_entry ~= nil then self:on_toggle_entry() end
+         end
       end
    end
 
    if input.right then
-      if current_entry.right then
-         current_entry:right()
-         if self.on_toggle_entry ~= nil then self:on_toggle_entry() end
+      if self:current_entry() ~= nil then
+         if self:current_entry().right ~= nil then
+            self:current_entry():right()
+            if self.on_toggle_entry ~= nil then self:on_toggle_entry() end
+         end
       end
    end
 
    if input.validate.down or input.validate.press or input.validate.release then
-      if current_entry.validate then
-         current_entry:validate(input.validate)
-         if self.on_toggle_entry ~= nil then self:on_toggle_entry() end
+      if self:current_entry() ~= nil then
+         if self:current_entry().validate then
+            self:current_entry():validate(input.validate)
+            if self.on_toggle_entry ~= nil then self:on_toggle_entry() end
+         end
       end
    end
 
    if input.reset.down or input.reset.press or input.reset.release then
-      if current_entry.reset then
-         current_entry:reset(input.reset)
-         if self.on_toggle_entry ~= nil then self:on_toggle_entry() end
+      if self:current_entry() ~= nil then
+         if self:current_entry().reset then
+            self:current_entry():reset(input.reset)
+            if self.on_toggle_entry ~= nil then self:on_toggle_entry() end
+         end
       end
    end
 
    if input.cancel then
-      if current_entry.cancel then
-         current_entry:cancel(current_entry)
-         if self.on_toggle_entry ~= nil then self:on_toggle_entry() end
+      if self:current_entry() ~= nil then
+         if self:current_entry().cancel then
+            self:current_entry():cancel()
+            if self.on_toggle_entry ~= nil then self:on_toggle_entry() end
+         end
+      end
+   end
+
+   if input.scroll_up.press then
+      if self.scroll_up_function then
+         self:scroll_up_function()
+      else
+         self.selected_index = previous_selectable_entry(self.top_entry_index)
+         self.top_entry_index = get_previous_page_top_entry_index()
+         self.bottom_entry_index = get_bottom_entry_index()
+      end
+   end
+
+   if input.scroll_down.press then
+      if self.scroll_down_function then
+         self:scroll_down_function()
+      else
+         self.selected_index = next_selectable_entry(self.bottom_entry_index)
+         self.top_entry_index = get_next_page_top_entry_index()
+         self.bottom_entry_index = get_bottom_entry_index()
       end
    end
 end
 
 function Menu:draw()
+   local legend_w, legend_h = get_text_dimensions("legend_hp_scroll")
+
+   self:calc_dimensions()
+
    gui.box(self.left, self.top, self.right, self.bottom, colors.menu.background, colors.menu.outline)
 
-   local x_padding = 15
-   local y_padding = 6
-   local menu_x = self.left + x_padding
-   local menu_y = self.top + y_padding
+   local menu_x = self.left + self.x_padding
+   local menu_y = self.top + self.y_padding
 
-   local w, h = get_text_dimensions("legend_hp_scroll")
-   local legend_y_padding = 3
-   local legend_y = self.bottom - (h + legend_y_padding * 2)
+   local legend_y = self.bottom - legend_h - self.y_padding - 1
 
    local menu_item_spacing = 1
-   if settings.language == "jp" then menu_item_spacing = 1 end
+
    local y_offset = 0
    for i = 1, #self.content do
       if (self.content[i].is_visible == nil or self.content[i]:is_visible()) then
@@ -2008,9 +2401,13 @@ function Menu:draw()
       end
    end
 
-   if self.content[self.selected_index].legend then
-      render_text(menu_x, legend_y + legend_y_padding, self.content[self.selected_index]:legend(), nil, nil,
+   if self.draw_legend and self.content[self.selected_index].legend then
+      render_text(menu_x, legend_y + self.legend_y_padding, self.content[self.selected_index]:legend(), nil, nil,
                   text.inactive_color)
+   end
+   if self.status_item then
+      self.status_item:calc_dimensions()
+      self.status_item:draw(self.right - self.x_padding - self.status_item.width, legend_y + self.legend_y_padding)
    end
 end
 
@@ -2020,6 +2417,7 @@ return {
    On_Off_Menu_Item = On_Off_Menu_Item,
    List_Menu_Item = List_Menu_Item,
    Check_Box_Grid_Item = Check_Box_Grid_Item,
+   Slider_Menu_Item = Slider_Menu_Item,
    Motion_list_Menu_Item = Motion_list_Menu_Item,
    Move_Input_Display_Menu_Item = Move_Input_Display_Menu_Item,
    Controller_Style_Item = Controller_Style_Item,

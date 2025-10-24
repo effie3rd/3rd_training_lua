@@ -26,8 +26,8 @@ frame_data_meta["alex"]["b224"] = { hit_type = {3}}                             
 -- frame_data_meta["alex"]["b634"] = { hit_type = {2}}                              --d_MP
 -- frame_data_meta["alex"]["b714"] = { hit_type = {2, 2}}                           --d_HP
 frame_data_meta["alex"]["b7fc"] = { hit_type = {2}}                              --d_LK
-frame_data_meta["alex"]["b99c"] = { hit_type = {2, 2}}                           --d_MK
-frame_data_meta["alex"]["babc"] = { hit_type = {2}}                              --d_HK
+frame_data_meta["alex"]["b99c"] = { hit_type = {2, 2, 2}}                           --d_MK
+frame_data_meta["alex"]["babc"] = { hit_type = {2, 2, 2}}                         --d_HK
 -- frame_data_meta["alex"]["a394"] = { hit_type = {3}}                              --cl_LP
 frame_data_meta["alex"]["af7c"] = { hit_type = {3}}                              --cl_MK
 frame_data_meta["alex"]["a694"] = { hit_type = {3}}                              --f_MP
@@ -83,8 +83,8 @@ frame_data_meta["chunli"]["cac4"] = { hit_type = {2}}                           
 frame_data_meta["chunli"]["cbb4"] = { hit_type = {2}}                            --d_MK
 -- frame_data_meta["chunli"]["cce4"] = { hit_type = {2}}                            --d_HK
 -- frame_data_meta["chunli"]["b63c"] = { hit_type = {3}}                            --cl_LP
-frame_data_meta["chunli"]["bf5c"] = { hit_type = {3}}                            --cl_MK
-frame_data_meta["chunli"]["e6c4"] = { hit_type = {3, 3}}                         --cl_MK_ext
+frame_data_meta["chunli"]["bf5c"] = { hit_type = {3, 3}}                         --cl_MK
+frame_data_meta["chunli"]["e6c4"] = { hit_type = {3, 3, 3}}                      --cl_MK_ext
 frame_data_meta["chunli"]["c52c"] = { hit_type = {3}}                            --cl_HK
 frame_data_meta["chunli"]["c3b4"] = { hit_type = {3}}                            --f_MK
 frame_data_meta["chunli"]["b8bc"] = { hit_type = {3, 3}}                         --b_MP
@@ -97,11 +97,12 @@ frame_data_meta["chunli"]["d49c"] = { hit_type = {4}}                           
 frame_data_meta["chunli"]["d5ac"] = { hit_type = {4}}                             --u_HK
 frame_data_meta["chunli"]["d68c"] = { hit_type = {4}}                             --uf_LP
 frame_data_meta["chunli"]["d72c"] = { hit_type = {4}}                             --uf_MP
-frame_data_meta["chunli"]["d7dc"] = { hit_type = {4, 4, 4}}                      --uf_HP
+frame_data_meta["chunli"]["d7dc"] = { hit_type = {4, 4}}                          --uf_HP
 frame_data_meta["chunli"]["dbbc"] = { hit_type = {4}}                             --uf_LK
 frame_data_meta["chunli"]["dc5c"] = { hit_type = {4}}                             --uf_MK
 frame_data_meta["chunli"]["debc"] = { hit_type = {4}}                             --uf_HK
 frame_data_meta["chunli"]["e484"] = { throw = true}                             --throw_neutral
+frame_data_meta["chunli"]["e59c"] = { throw = true}                             --throw_air
 frame_data_meta["chunli"]["6a3c"] = { hit_type = {4}}                            --uoh
 frame_data_meta["chunli"]["ce8c"] = { hit_type = {3}}                            --df_HK
 frame_data_meta["chunli"]["da2c"] = { hit_type = {4}}                            --d_HP_air
@@ -110,21 +111,24 @@ frame_data_meta["chunli"]["6aec"] = { hit_type = {4}}                           
 frame_data_meta["chunli"]["6e5c"] = { hit_type = {4}}                            --hazanshuu_MK
 frame_data_meta["chunli"]["71cc"] = { hit_type = {4}}                            --hazanshuu_HK
 frame_data_meta["chunli"]["753c"] = { hit_type = {4}}                            --hazanshuu_EXK
-frame_data_meta["chunli"]["458c"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_LK
-frame_data_meta["chunli"]["4644"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_MK
-frame_data_meta["chunli"]["46fc"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_HK
-frame_data_meta["chunli"]["47b4"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_EXK
+
+frame_data_meta["chunli"]["458c"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}}                         --hyakuretsukyaku_LK_ext
+frame_data_meta["chunli"]["42d4"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}}                         --hyakuretsukyaku_MK_ext
+frame_data_meta["chunli"]["41ec"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3}}                         --hyakuretsukyaku_LK_ext
+frame_data_meta["chunli"]["4644"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}}                         --hyakuretsukyaku_MK_ext
+frame_data_meta["chunli"]["46fc"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}}                         --hyakuretsukyaku_HK_ext
+frame_data_meta["chunli"]["43bc"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3}}                         --hyakuretsukyaku_HK_ext
+frame_data_meta["chunli"]["44a4"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}}                         --hyakuretsukyaku_EXK_ext
+frame_data_meta["chunli"]["47b4"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}}                         --hyakuretsukyaku_EXK_ext
+frame_data_meta["chunli"]["802c"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_HK_ext
+frame_data_meta["chunli"]["7e5c"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_LK_ext
+frame_data_meta["chunli"]["7f44"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_MK_ext
+
 frame_data_meta["chunli"]["2c54"] = { hit_type = {3, 3, 3, 3}}                   --spinning_bird_kick_LK
 frame_data_meta["chunli"]["2fac"] = { hit_type = {3, 3, 3, 3, 3, 3}}             --spinning_bird_kick_MK
 frame_data_meta["chunli"]["3334"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3}}       --spinning_bird_kick_HK
 frame_data_meta["chunli"]["36bc"] = { hit_type = {3, 3, 3, 3, 3}}                --spinning_bird_kick_EXK
-frame_data_meta["chunli"]["43bc"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_HK_ext
-frame_data_meta["chunli"]["802c"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_HK_ext
-frame_data_meta["chunli"]["41ec"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_LK_ext
-frame_data_meta["chunli"]["7e5c"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_LK_ext
-frame_data_meta["chunli"]["42d4"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_MK_ext
-frame_data_meta["chunli"]["7f44"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_MK_ext
-frame_data_meta["chunli"]["44a4"] = { hit_type = {3, 3, 3, 3}}                   --hyakuretsukyaku_EXK_ext
+
 -- frame_data_meta["chunli"]["5434"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}} --kikoushou
 frame_data_meta["chunli"]["5f54"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}} --houyokusen
 frame_data_meta["chunli"]["669c"] = { hit_type = {3, 3, 3, 3, 3, 3, 4, 4, 4}}    --tenseiranka
@@ -966,6 +970,12 @@ frame_data_meta["twelve"]["510c"] = { hit_type = {4}}                           
 frame_data_meta["twelve"]["522c"] = { hit_type = {4}}                             --uf_LK
 frame_data_meta["twelve"]["52fc"] = { hit_type = {4}}                             --uf_MK
 frame_data_meta["twelve"]["53fc"] = { hit_type = {4}}                             --uf_HK
+frame_data_meta["twelve"]["5a6c"] = { hit_type = {4}}                             --air_dash_LP
+frame_data_meta["twelve"]["5b2c"] = { hit_type = {4}}                             --air_dash_MP
+frame_data_meta["twelve"]["5bec"] = { hit_type = {4}}                             --air_dash_HP
+frame_data_meta["twelve"]["5d0c"] = { hit_type = {4}}                             --air_dash_LK
+frame_data_meta["twelve"]["5ddc"] = { hit_type = {4}}                             --air_dash_MK
+frame_data_meta["twelve"]["5edc"] = { hit_type = {4}}                             --air_dash_HK
 frame_data_meta["twelve"]["58dc"] = { throw = true}                              --throw_neutral
 frame_data_meta["twelve"]["e1b4"] = { hit_type = {4}}                            --uoh
 frame_data_meta["twelve"]["b574"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3}}       --axe_LP
@@ -1221,13 +1231,12 @@ frame_data_meta["projectiles"]["01"] = { hit_type = {3}}                        
 frame_data_meta["projectiles"]["19"] = { hit_type = {3}}                         --hadouken_MP
 frame_data_meta["projectiles"]["02"] = { hit_type = {3}}                         --hadouken_HP
 frame_data_meta["projectiles"]["1A"] = { hit_type = {3}}                         --hadouken_HP
-frame_data_meta["projectiles"]["03"] = { hit_type = {3}}                         --hadouken_EXP
-frame_data_meta["projectiles"]["1B"] = { hit_type = {3}}                         --hadouken_EXP
+frame_data_meta["projectiles"]["03"] = { hit_type = {3}}                         --hadouken_EXP ryu
+frame_data_meta["projectiles"]["1B"] = { hit_type = {3}}                         --hadouken_EXP ken
 frame_data_meta["projectiles"]["88"] = { hit_type = {3}}                         --kikouken_LP
 frame_data_meta["projectiles"]["89"] = { hit_type = {3}}                         --kikouken_MP
 frame_data_meta["projectiles"]["8A"] = { hit_type = {3}}                         --kikouken_HP
 frame_data_meta["projectiles"]["8B"] = { hit_type = {3}}                         --kikouken_EXP
-frame_data_meta["projectiles"]["55"] = { hit_type = {3}}                         --messatsu_gouhadou
 frame_data_meta["projectiles"]["0C"] = { hit_type = {3}}                         --nichirin_LP
 frame_data_meta["projectiles"]["0D"] = { hit_type = {3}}                         --nichirin_MP
 frame_data_meta["projectiles"]["0E"] = { hit_type = {3}}                         --nichirin_HP
@@ -1238,8 +1247,8 @@ frame_data_meta["projectiles"]["6A"] = { hit_type = {3}}                        
 frame_data_meta["projectiles"]["6B"] = { hit_type = {3}}                         --gohadouken_MP
 frame_data_meta["projectiles"]["6C"] = { hit_type = {3}}                         --gohadouken_HP
 frame_data_meta["projectiles"]["59"] = { hit_type = {3}}                         --shakunetsu_LP
-frame_data_meta["projectiles"]["5A"] = { hit_type = {3}}                         --shakunetsu_MP
-frame_data_meta["projectiles"]["5B"] = { hit_type = {3}}                         --shakunetsu_HP
+frame_data_meta["projectiles"]["5A"] = { hit_type = {3}, cooldown = 1}           --shakunetsu_MP
+frame_data_meta["projectiles"]["5B"] = { hit_type = {3}, cooldown = 1}           --shakunetsu_HP
 frame_data_meta["projectiles"]["14"] = { hit_type = {1}, cooldown = 3}           --yagyoudama_LP
 frame_data_meta["projectiles"]["15"] = { hit_type = {1}, cooldown = 3}           --yagyoudama_MP
 frame_data_meta["projectiles"]["16"] = { hit_type = {1}, cooldown = 3}           --yagyoudama_HP
@@ -1287,20 +1296,26 @@ frame_data_meta["projectiles"]["87"] = { hit_type = {3}}                        
 frame_data_meta["projectiles"]["81"] = { hit_type = {3}}                         --light_of_virtue_EXP_ext
 frame_data_meta["projectiles"]["85"] = { hit_type = {2}}                         --light_of_virtue_EXK
 -- frame_data_meta["projectiles"]["86"] = { hit_type = {1}}                         --light_of_virtue_EXK
+frame_data_meta["projectiles"]["00_ndl_lp"] = {hit_type = {3}}                         --ndl_LP
+frame_data_meta["projectiles"]["00_ndl_mp"] = {hit_type = {3}}                         --ndl_MP
+frame_data_meta["projectiles"]["00_ndl_hp"] = {hit_type = {3}}                         --ndl_HP
+frame_data_meta["projectiles"]["01_ndl_exp"] = {hit_type = {3}}                         --ndl_EXP
+frame_data_meta["projectiles"]["00_xndl"] = {hit_type = {3}}                         --xndl
 -- frame_data_meta["projectiles"]["65"] = { hit_type = {3}}                         --aegis_reflector_LP
 -- frame_data_meta["projectiles"]["66"] = { hit_type = {3}}                         --aegis_reflector_MP
 -- frame_data_meta["projectiles"]["67"] = { hit_type = {3}}                         --aegis_reflector_HP
-frame_data_meta["projectiles"]["68"] = { hit_type = {3}}                         --aegis_reflector_EXP
+frame_data_meta["projectiles"]["68"] = { hit_type = {3}, cooldown = 2}           --aegis_reflector_EXP
 frame_data_meta["projectiles"]["70"] = { hit_type = {1}, cooldown = 5}           --aegis_reflector
-frame_data_meta["projectiles"]["08"] = { hit_type = {3}}                         --denjin_hadouken
-frame_data_meta["projectiles"]["09"] = { hit_type = {3}}                         --denjin_hadouken_2
-frame_data_meta["projectiles"]["0A"] = { hit_type = {3}}                         --denjin_hadouken_3
-frame_data_meta["projectiles"]["0B"] = { hit_type = {3}}                         --denjin_hadouken_4
-frame_data_meta["projectiles"]["20"] = { hit_type = {3}}                         --denjin_hadouken_5
+frame_data_meta["projectiles"]["08"] = { hit_type = {3}, unblockable = true}     --denjin_hadouken
+frame_data_meta["projectiles"]["09"] = { hit_type = {3}, unblockable = true}     --denjin_hadouken_2
+frame_data_meta["projectiles"]["0A"] = { hit_type = {3}, unblockable = true}     --denjin_hadouken_3
+frame_data_meta["projectiles"]["0B"] = { hit_type = {3}, unblockable = true}     --denjin_hadouken_4
+frame_data_meta["projectiles"]["20"] = { hit_type = {3}, unblockable = true}     --denjin_hadouken_5
 frame_data_meta["projectiles"]["3E"] = { hit_type = {3}}                         --metallic_sphere_LP
 frame_data_meta["projectiles"]["3F"] = { hit_type = {3}}                         --metallic_sphere_MP
 frame_data_meta["projectiles"]["40"] = { hit_type = {3}}                         --metallic_sphere_HP
 frame_data_meta["projectiles"]["6E"] = { hit_type = {3}, cooldown = 2}           --metallic_sphere_EXP
+frame_data_meta["projectiles"]["55"] = { hit_type = {3}}                         --messatsu_gouhadou
 frame_data_meta["projectiles"]["61"] = { hit_type = {3}}                         --messatsu_gouhadou_air
 
 return {

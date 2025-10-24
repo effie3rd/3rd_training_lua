@@ -1,7 +1,7 @@
 local gamestate = require("src.gamestate")
 local colors = require("src.ui.colors")
 local text = require("src.ui.text")
-local images = require("src.ui.image_tables")
+local image_tables = require("src.ui.image_tables")
 local tools = require("src.tools")
 
 local render_text, get_text_dimensions = text.render_text, text.get_text_dimensions
@@ -15,7 +15,7 @@ local screen_x = 0
 local screen_y = 0
 local screen_scale = 1
 
-local controller_styles = images.controller_styles
+local controller_styles = image_tables.controller_styles
 
 local function update_draw_variables()
    screen_x = memory.readwordsigned(0x02026CB0)
@@ -115,20 +115,21 @@ end
 
 -- draws a controller representation
 local function draw_controller_big(entry, x, y, style)
-   gui.image(x, y, images.img_dir_big[entry.direction])
+   if not entry then return end
+   gui.image(x, y, image_tables.img_dir_big[entry.direction])
 
-   local img_LP = images.img_no_button_big
-   local img_MP = images.img_no_button_big
-   local img_HP = images.img_no_button_big
-   local img_LK = images.img_no_button_big
-   local img_MK = images.img_no_button_big
-   local img_HK = images.img_no_button_big
-   if entry.buttons[1] then img_LP = images.img_button_big[style][1] end
-   if entry.buttons[2] then img_MP = images.img_button_big[style][2] end
-   if entry.buttons[3] then img_HP = images.img_button_big[style][3] end
-   if entry.buttons[4] then img_LK = images.img_button_big[style][4] end
-   if entry.buttons[5] then img_MK = images.img_button_big[style][5] end
-   if entry.buttons[6] then img_HK = images.img_button_big[style][6] end
+   local img_LP = image_tables.img_no_button_big
+   local img_MP = image_tables.img_no_button_big
+   local img_HP = image_tables.img_no_button_big
+   local img_LK = image_tables.img_no_button_big
+   local img_MK = image_tables.img_no_button_big
+   local img_HK = image_tables.img_no_button_big
+   if entry.buttons[1] then img_LP = image_tables.img_button_big[style][1] end
+   if entry.buttons[2] then img_MP = image_tables.img_button_big[style][2] end
+   if entry.buttons[3] then img_HP = image_tables.img_button_big[style][3] end
+   if entry.buttons[4] then img_LK = image_tables.img_button_big[style][4] end
+   if entry.buttons[5] then img_MK = image_tables.img_button_big[style][5] end
+   if entry.buttons[6] then img_HK = image_tables.img_button_big[style][6] end
 
    gui.image(x + 13, y, img_LP)
    gui.image(x + 18, y, img_MP)
@@ -140,12 +141,12 @@ end
 
 local function draw_buttons_preview_big(x, y, style)
 
-   local img_LP = images.img_button_big[style][1]
-   local img_MP = images.img_button_big[style][2]
-   local img_HP = images.img_button_big[style][3]
-   local img_LK = images.img_button_big[style][4]
-   local img_MK = images.img_button_big[style][5]
-   local img_HK = images.img_button_big[style][6]
+   local img_LP = image_tables.img_button_big[style][1]
+   local img_MP = image_tables.img_button_big[style][2]
+   local img_HP = image_tables.img_button_big[style][3]
+   local img_LK = image_tables.img_button_big[style][4]
+   local img_MK = image_tables.img_button_big[style][5]
+   local img_HK = image_tables.img_button_big[style][6]
 
    gui.image(x, y, img_LP)
    gui.image(x + 5, y, img_MP)
@@ -164,39 +165,39 @@ local function draw_controller_small(entry, x, y, is_right, style)
       sign = -1
    end
 
-   gui.image(x + x_offset, y, images.img_dir_small[entry.direction])
+   gui.image(x + x_offset, y, image_tables.img_dir_small[entry.direction])
    x_offset = x_offset + sign * 2
 
    local interval = 8
    x_offset = x_offset + sign * interval
 
    if entry.buttons[1] then
-      gui.image(x + x_offset, y, images.img_button_small[style][1])
+      gui.image(x + x_offset, y, image_tables.img_button_small[style][1])
       x_offset = x_offset + sign * interval
    end
 
    if entry.buttons[2] then
-      gui.image(x + x_offset, y, images.img_button_small[style][2])
+      gui.image(x + x_offset, y, image_tables.img_button_small[style][2])
       x_offset = x_offset + sign * interval
    end
 
    if entry.buttons[3] then
-      gui.image(x + x_offset, y, images.img_button_small[style][3])
+      gui.image(x + x_offset, y, image_tables.img_button_small[style][3])
       x_offset = x_offset + sign * interval
    end
 
    if entry.buttons[4] then
-      gui.image(x + x_offset, y, images.img_button_small[style][4])
+      gui.image(x + x_offset, y, image_tables.img_button_small[style][4])
       x_offset = x_offset + sign * interval
    end
 
    if entry.buttons[5] then
-      gui.image(x + x_offset, y, images.img_button_small[style][5])
+      gui.image(x + x_offset, y, image_tables.img_button_small[style][5])
       x_offset = x_offset + sign * interval
    end
 
    if entry.buttons[6] then
-      gui.image(x + x_offset, y, images.img_button_small[style][6])
+      gui.image(x + x_offset, y, image_tables.img_button_small[style][6])
       x_offset = x_offset + sign * interval
    end
 
@@ -328,6 +329,41 @@ local function draw_character_select()
    end
 end
 
+local dot_cache = {}
+local function get_dot(color)
+   if not dot_cache[color] then
+      local img = image_tables.img_dot
+      local gd_color = colors.hex_to_gd_color(color)
+      dot_cache[color] = colors.substitute_color_gdstr(img, colors.gd_white, gd_color)
+   end
+   return dot_cache[color]
+end
+
+local up_arrow_cache = {}
+local function get_up_arrow(color)
+   if not up_arrow_cache[color] then
+      local img = image_tables.scroll_up_arrow
+      local gd_color = colors.hex_to_gd_color(color)
+      up_arrow_cache[color] = colors.substitute_color_gdstr(img, colors.gd_white, gd_color)
+   end
+   return up_arrow_cache[color]
+end
+
+local check_box_cache = {unchecked = {}, checked = {}}
+local function get_check_box(type, color)
+   if not check_box_cache[type][color] then
+      local checkbox
+      if type == "unchecked" then
+         checkbox = image_tables.img_kaku
+      else
+         checkbox = image_tables.img_maru
+      end
+      local gd_color = colors.hex_to_gd_color(color)
+      check_box_cache[type][color] = colors.substitute_color_gdstr(checkbox, colors.gd_white, gd_color)
+   end
+   return check_box_cache[type][color]
+end
+
 local draw = {
    SCREEN_WIDTH = SCREEN_WIDTH,
    SCREEN_HEIGHT = SCREEN_HEIGHT,
@@ -347,7 +383,10 @@ local draw = {
    draw_horizontal_text_segment = draw_horizontal_text_segment,
    get_above_character_position = get_above_character_position,
    loading_bar_display = loading_bar_display,
-   draw_character_select = draw_character_select
+   draw_character_select = draw_character_select,
+   get_dot = get_dot,
+   get_up_arrow = get_up_arrow,
+   get_check_box = get_check_box
 }
 
 setmetatable(draw, {

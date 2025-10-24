@@ -563,21 +563,13 @@
     "en": "red parry",
     "jp": "赤ブロ"
   },
-  "standing": {
+  "menu_standing": {
     "en": "standing",
     "jp": "立ち"
   },
-  "crouching": {
+  "menu_crouching": {
     "en": "crouching",
     "jp": "しゃがみ"
-  },
-  "jumping": {
-    "en": "jumping",
-    "jp": "ジャンプ"
-  },
-  "highjumping": {
-    "en": "highjumping",
-    "jp": "ハイジャンプ"
   },
   "counter_attack_type": {
     "en": "Counterattack",
@@ -787,9 +779,13 @@
     "en": "Attack Range Display",
     "jp": "攻撃距離表示"
   },
-  "attack_range_max_attacks": {
+  "attack_range_display_max_attacks": {
     "en": "Maximum Attacks",
     "jp": "最大限攻撃数"
+  },
+  "attack_range_display_show_numbers": {
+    "en": "Show Numbers",
+    "jp": "数字表示"
   },
   "menu_theme": {
     "en": "Theme",
@@ -1110,6 +1106,310 @@
   "please_wait": {
     "en": "Please Wait",
     "jp": "お待ち下さい"
+  },
+  "menu_jump": {
+    "en": "Jump",
+    "jp": "ジャンプ"
+  },
+  "menu_second_jump": {
+    "en": "Second Jump",
+    "jp": "第二ジャンプ"
+  },
+  "menu_jump_forward": {
+    "en": "jump forward",
+    "jp": "前ジャンプ"
+  },
+  "menu_jump_neutral": {
+    "en": "jump neutral",
+    "jp": "垂直ジャンプ"
+  },
+  "menu_jump_back": {
+    "en": "jump back",
+    "jp": "後ジャンプ"
+  },
+  "menu_sjump_forward": {
+    "en": "super jump forward",
+    "jp": "前ハイジャンプ"
+  },
+  "menu_sjump_neutral": {
+    "en": "super jump neutral",
+    "jp": "垂直ハイジャンプ"
+  },
+  "menu_sjump_back": {
+    "en": "super jump back",
+    "jp": "後ハイジャンプ"
+  },
+  "menu_air_dash_forward": {
+    "en": "air dash forward",
+    "jp": "前滑空"
+  },
+  "menu_air_dash_back": {
+    "en": "air dash back",
+    "jp": "後滑空"
+  },
+  "menu_player_position": {
+    "en": "Player Position",
+    "jp": "プレイヤー位置"
+  },
+  "menu_dummy_offset": {
+    "en": "Dummy Offset",
+    "jp": "ダミー変位"
+  },
+  "menu_attack": {
+    "en": "Attack",
+    "jp": "攻撃"
+  },
+  "menu_attack_delay": {
+    "en": "Attack Delay",
+    "jp": "攻撃遅延"
+  },
+  "menu_second_jump_delay": {
+    "en": "Second Jump Delay",
+    "jp": "第二ジャンプ遅延"
+  },
+  "menu_followup_delay": {
+    "en": "Follow-Up Delay",
+    "jp": "連続遅延"
+  },
+  "menu_settings": {
+    "en": "Settings",
+    "jp": "設定"
+  },
+  "menu_jump_offset_mode": {
+    "en": "Jump Offset Mode",
+    "jp": "ジャンプ変位モード"
+  },
+  "menu_attack_delay_mode": {
+    "en": "Attack Delay Mode",
+    "jp": "攻撃遅延モード"
+  },
+  "menu_point": {
+    "en": "point",
+    "jp": "定点"
+  },
+  "menu_range_random": {
+    "en": "range · random",
+    "jp": "範囲・ランダム"
+  },
+  "menu_range_ordered": {
+    "en": "range · ordered",
+    "jp": "範囲・順序"
+  },
+  "menu_range_endpoints": {
+    "en": "range · endpoints",
+    "jp": "範囲・極点"
+  },
+  "menu_show_jump_info": {
+    "en": "Show Jump Info",
+    "jp": "ジャンプ情報表示"
+  },
+  "menu_show_jump_arc": {
+    "en": "Show Jump Arc",
+    "jp": "ジャンプ軌道表示"
+  },
+  "menu_none": {
+    "en": "none",
+    "jp": "なし"
+  },
+  "menu_LP": {
+    "en": "LP",
+    "jp": "小P"
+  },
+  "menu_MP": {
+    "en": "MP",
+    "jp": "中P"
+  },
+  "menu_HP": {
+    "en": "HP",
+    "jp": "大P"
+  },
+  "menu_LK": {
+    "en": "LK",
+    "jp": "小K"
+  },
+  "menu_MK": {
+    "en": "MK",
+    "jp": "中K"
+  },
+  "menu_HK": {
+    "en": "HK",
+    "jp": "大K"
+  },
+  "menu_throw": {
+    "en": "throw",
+    "jp": "投げ"
+  },
+  "menu_d_HP": {
+    "en": "D+HK",
+    "jp": "下大P"
+  },
+  "menu_d_MK": {
+    "en": "D+MK",
+    "jp": "下中K"
+  },
+  "menu_HP_HP": {
+    "en": "HP · HP",
+    "jp": "大P ・ 大P"
+  },
+  "menu_LP_MK": {
+    "en": "LP · MK",
+    "jp": "小P ・ 中K"
+  },
+  "menu_MP_HP": {
+    "en": "MP · HP",
+    "jp": "中P ・ 大P"
+  },
+  "menu_tatsumaki_LK": {
+    "en": "LK tatsumaki",
+    "jp": "小K 竜巻"
+  },
+  "menu_tatsumaki_MK": {
+    "en": "MK tatsumaki",
+    "jp": "中K 竜巻"
+  },
+  "menu_tatsumaki_HK": {
+    "en": "HK tatsumaki",
+    "jp": "大K 竜巻"
+  },
+  "menu_gohadouken_air_LP": {
+    "en": "LP gohadouken",
+    "jp": "小P 斬空波動拳"
+  },
+  "menu_gohadouken_air_MP": {
+    "en": "MP gohadouken",
+    "jp": "中P 斬空波動拳"
+  },
+  "menu_gohadouken_air_HP": {
+    "en": "HP gohadouken",
+    "jp": "大P 斬空波動拳"
+  },
+  "menu_LP_f_HP": {
+    "en": "LP · F+HP",
+    "jp": "小P ・ 前大P"
+  },
+  "menu_HP_f_MK": {
+    "en": "HP · F+MK",
+    "jp": "大P ・ 前中K"
+  },
+  "menu_LK_f_MK": {
+    "en": "LK · F+MK",
+    "jp": "小K ・ 前中K"
+  },
+  "menu_kunai_LP": {
+    "en": "LP kunai",
+    "jp": "小P 苦無"
+  },
+  "menu_kunai_MP": {
+    "en": "MP kunai",
+    "jp": "中P 苦無"
+  },
+  "menu_kunai_HP": {
+    "en": "HP kunai",
+    "jp": "大P 苦無"
+  },
+  "menu_kunai_EXP": {
+    "en": "EX kunai",
+    "jp": "EX 苦無"
+  },
+  "menu_tsurugi_LK": {
+    "en": "LK tsurugi",
+    "jp": "小K 剣"
+  },
+  "menu_tsurugi_MK": {
+    "en": "MK tsurugi",
+    "jp": "中K 剣"
+  },
+  "menu_tsurugi_HK": {
+    "en": "HK tsurugi",
+    "jp": "大K 剣"
+  },
+  "menu_tsurugi_EXK": {
+    "en": "EX tsurugi",
+    "jp": "EX 剣"
+  },
+  "menu_drill_LK": {
+    "en": "LK drill",
+    "jp": "小K ドリル"
+  },
+  "menu_drill_MK": {
+    "en": "MK drill",
+    "jp": "中K ドリル"
+  },
+  "menu_drill_HK": {
+    "en": "HK drill",
+    "jp": "大K ドリル"
+  },
+  "menu_hitobashira_air": {
+    "en": "hitobashira",
+    "jp": "人柱"
+  },
+  "menu_hitobashira_air_EXK": {
+    "en": "EX hitobashira",
+    "jp": "EX 人柱"
+  },
+  "menu_axe_air_LP": {
+    "en": "LP A.X.E.",
+    "jp": "小P A.X.E."
+  },
+  "menu_axe_air_MP": {
+    "en": "MP A.X.E.",
+    "jp": "中P A.X.E."
+  },
+  "menu_axe_air_HP": {
+    "en": "HP A.X.E.",
+    "jp": "大P A.X.E."
+  },
+  "menu_axe_air_EXP": {
+    "en": "EX A.X.E.",
+    "jp": "EX A.X.E."
+  },
+  "menu_dra_LK": {
+    "en": "LK D.R.A.",
+    "jp": "小K D.R.A."
+  },
+  "menu_dra_MK": {
+    "en": "MK D.R.A.",
+    "jp": "中K D.R.A."
+  },
+  "menu_dra_HK": {
+    "en": "HK D.R.A.",
+    "jp": "大K D.R.A."
+  },
+  "menu_dra_EXK": {
+    "en": "EX D.R.A.",
+    "jp": "EX D.R.A."
+  },
+  "menu_MK_raigeki_MK": {
+    "en": "MK · MK raigeki",
+    "jp": "中K ・ 中K 雷撃"
+  },
+  "menu_raigeki_LK": {
+    "en": "LK raigeki",
+    "jp": "小K 雷撃"
+  },
+  "menu_raigeki_MK": {
+    "en": "MK raigeki",
+    "jp": "中K 雷撃"
+  },
+  "menu_raigeki_HK": {
+    "en": "HK raigeki",
+    "jp": "大K 雷撃"
+  },
+  "status_jump": {
+    "en": "Jump",
+    "jp_8": "ジャンプ"
+  },
+  "legend_hp_hk": {
+    "en": "HP/HK",
+    "jp_8": "大P/大K"
+  },
+  "legend_lp_mode": {
+    "en": "LP: Mode",
+    "jp_8": "小P: モード"
+  },
+  "legend_mp_point": {
+    "en": "MP: Point",
+    "jp_8": "中P: 基点"
   },
   "counter_attack_button": {
     "en": "Button",

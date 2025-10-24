@@ -11,8 +11,8 @@ local player = gamestate.P1
 local dummy = gamestate.P2
 
 local swap_characters = false
+local swap_recording_player = true
 
-local menu_freeze = false
 local should_freeze_game = false
 
 local disable_dummy = {false, false}
@@ -282,6 +282,14 @@ local function update_cheats()
    end
 end
 
+local function get_recording_player()
+   if swap_recording_player then
+      return dummy
+   else
+      return player
+   end
+end
+
 local function update_swap()
    if not swap_characters then
       player = gamestate.P1
@@ -297,10 +305,25 @@ local function toggle_swap_characters()
    update_swap()
 end
 
-local function freeze_game(bool) should_freeze_game = bool end
+local function update_fast_forward()
+   if gamestate.has_match_just_started then
+      emu.speedmode("normal")
+   elseif gamestate.is_in_character_select then
+      if require("src.control.character_select").is_selection_complete() then
+         emu.speedmode("turbo")
+      else
+         emu.speedmode("normal")
+      end
+   elseif gamestate.has_match_just_ended then
+      emu.speedmode("turbo")
+   end
+end
+
+local function freeze_game() should_freeze_game = true end
+local function unfreeze_game() should_freeze_game = false end
 
 local function update_game_settings()
-   write_memory.set_freeze_game(menu_freeze or should_freeze_game)
+   write_memory.set_freeze_game(should_freeze_game)
 
    write_memory.set_infinite_time(settings.training.infinite_time)
 
@@ -324,7 +347,9 @@ local training = {
    update_training_state = update_training_state,
    reset_gauge_state = reset_gauge_state,
    toggle_swap_characters = toggle_swap_characters,
-   freeze_game = freeze_game
+   update_fast_forward = update_fast_forward,
+   freeze_game = freeze_game,
+   unfreeze_game = unfreeze_game
 }
 
 setmetatable(training, {
@@ -333,12 +358,14 @@ setmetatable(training, {
          return player
       elseif key == "dummy" then
          return dummy
-      elseif key == "menu_freeze" then
-         return menu_freeze
+      elseif key == "recording_player" then
+         return get_recording_player()
       elseif key == "disable_dummy" then
          return disable_dummy
       elseif key == "swap_characters" then
          return swap_characters
+      elseif key == "swap_recording_player" then
+         return swap_recording_player
       elseif key == "counter_attack_data" then
          return counter_attack_data
       end
@@ -349,12 +376,12 @@ setmetatable(training, {
          player = value
       elseif key == "dummy" then
          dummy = value
-      elseif key == "menu_freeze" then
-         menu_freeze = value
       elseif key == "disable_dummy" then
          disable_dummy = value
       elseif key == "swap_characters" then
          swap_characters = value
+      elseif key == "swap_recording_player" then
+         swap_recording_player = value
       elseif key == "counter_attack_data" then
          counter_attack_data = value
       else

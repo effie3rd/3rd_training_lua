@@ -14,10 +14,13 @@ local unblockables = require("src.training.unblockables")
 local unblockables_tables = require("src.training.unblockables_tables")
 local defense_tables = require("src.training.defense_tables")
 local defense = require("src.training.defense")
+local jumpins_tables = require("src.training.jumpins_tables")
+local jumpins = require("src.training.jumpins")
 
 local is_initialized = false
 local is_open = false
 local disable_opening = false
+local open_after_match_start = false
 
 local save_recording_settings = {save_file_name = "", load_file_list = {}, load_file_index = 1}
 
@@ -27,44 +30,51 @@ local save_recording_slot_popup, load_recording_slot_popup, controller_style_men
       p2_meter_reset_value_gauge_item, meter_reset_delay_item, slot_weight_item, counter_attack_delay_item,
       recording_delay_item, recording_random_deviation_item, charge_overcharge_on_item, charge_follow_player_item,
       parry_follow_player_item, display_parry_compact_item, blocking_item, hits_before_red_parry_item,
-      parry_every_n_item, prefer_down_parry_item, counter_attack_motion_item, counter_attack_normal_button_item,
-      counter_attack_special_item, counter_attack_special_button_item, counter_attack_type_item,
-      counter_attack_input_display_item, counter_attack_option_select_item, hits_before_counter_attack,
-      character_select_item, p1_distances_reference_point_item, p2_distances_reference_point_item,
-      mid_distance_height_item, air_time_player_coloring_item, attack_range_display_max_item,
+      parry_every_n_item, prefer_down_parry_item, hits_before_counter_attack, character_select_item,
+      p1_distances_reference_point_item, p2_distances_reference_point_item, mid_distance_height_item,
+      air_time_player_coloring_item, attack_range_display_max_item, attack_range_display_numbers_item,
       attack_bars_show_decimal_item, display_hitboxes_opacity_item, language_item, play_challenge_item,
       select_char_challenge_item, start_unblockables_item, unblockables_type_item, unblockables_followup_item
 
 local main_menu, training_sub_menus, training_mode_item
 local defense_opponent_item, start_defense_item, defense_score_item, defense_setup_item, defense_character_select_item,
       defense_learning_item
+local jumpins_edit, jumpins_training_tab, jumpins_edit_menu, jumpins_edit_settings, current_jump_settings
+local jumpins_edit_jump_index = 1
 
-local counter_attack_settings = {
-   ca_type = 1,
-   motion = 1,
-   normal_button = 1,
-   special = 1,
-   special_button = 1,
-   option_select = 1
+local counter_attack_settings
+local counter_attack_move_selection_items = {
+   type_item = nil,
+   motion_item = nil,
+   normal_button_item = nil,
+   special_item = nil,
+   special_button_item = nil,
+   option_select_item = nil,
+   input_display_item = nil
+}
+local counter_attack_move_selection_data = {
+   type = menu_tables.move_selection_type,
+   motion_input = menu_tables.move_selection_motion_input,
+   normal_buttons = menu_tables.move_selection_normal_button_default,
+   special_names = {},
+   special_buttons = {},
+   option_select_names = move_data.get_option_select_names(),
+   move_input_data = {},
+   button_inputs = {}
 }
 
-local counter_attack_type = menu_tables.counter_attack_type
-local counter_attack_motion_input = menu_tables.counter_attack_motion_input
-local counter_attack_normal_buttons = menu_tables.counter_attack_normal_button_default
-local counter_attack_special_names = {}
-local counter_attack_special_buttons = {}
-local counter_attack_option_select_names = move_data.get_option_select_names()
-local counter_attack_move_input_data
-local counter_attack_button_inputs
+local jumpins_edit_move_selection_items = tools.deepcopy(counter_attack_move_selection_items)
+local jumpins_edit_move_selection_data = tools.deepcopy(counter_attack_move_selection_data)
 
-local special_training_modes = {defense, unblockables}
+local special_training_modes = {defense, jumpins, unblockables}
 
 local function close_menu()
    is_open = false
    main_menu:menu_stack_clear()
+   training.unfreeze_game()
 end
 
-local function update_menu()
+local function update_recording_items()
    slot_weight_item.object = recording.recording_slots[settings.training.current_recording_slot]
    recording_delay_item.object = recording.recording_slots[settings.training.current_recording_slot]
    recording_random_deviation_item.object = recording.recording_slots[settings.training.current_recording_slot]
@@ -88,85 +98,138 @@ local function update_gauge_items()
    end
 end
 
-local function update_counter_attack_data()
-   local char_str = training.dummy.char_str
-   local ca_type = counter_attack_settings.type
-   local ca_data = {char_str = char_str, type = ca_type, name = "normal", button = nil}
-   if ca_type == 2 then
-      ca_data.motion = menu_tables.counter_attack_motion[counter_attack_settings.motion]
-      ca_data.button = counter_attack_normal_buttons[counter_attack_settings.normal_button]
-      if counter_attack_settings.motion == 15 then
-         ca_data.inputs = counter_attack_button_inputs[counter_attack_settings.normal_button]
+local function update_move_selection_data(move_selection_items, move_selection_data, move_selection_settings, dummy)
+   local char_str = dummy.char_str
+   local type = move_selection_settings.type
+   local data = {char_str = char_str, type = type, name = "normal", button = nil}
+   if type == 2 then
+      data.motion = menu_tables.move_selection_motion[move_selection_settings.motion]
+      data.button = move_selection_data.normal_buttons[move_selection_settings.normal_button]
+      if move_selection_settings.motion == 15 then
+         data.inputs = move_selection_data.button_inputs[move_selection_settings.normal_button]
       end
-   elseif ca_type == 3 then
-      ca_data.name = counter_attack_special_names[counter_attack_settings.special]
-      ca_data.button = counter_attack_special_buttons[counter_attack_settings.special_button]
-      ca_data.move_type = move_data.get_type_by_move_name(char_str, ca_data.name)
-      ca_data.inputs = move_data.get_move_inputs_by_name(char_str, ca_data.name, ca_data.button)
-   elseif ca_type == 4 then
-      ca_data.name = counter_attack_option_select_names[counter_attack_settings.option_select]
+   elseif type == 3 then
+      data.name = move_selection_data.special_names[move_selection_settings.special]
+      data.button = move_selection_data.special_buttons[move_selection_settings.special_button]
+      data.move_type = move_data.get_type_by_move_name(char_str, data.name)
+      data.inputs = move_data.get_move_inputs_by_name(char_str, data.name, data.button)
+   elseif type == 4 then
+      data.name = move_selection_data.option_select_names[move_selection_settings.option_select]
    end
 
-   counter_attack_move_input_data = ca_data
-   counter_attack_input_display_item.object = ca_data
-   training.counter_attack_data = ca_data
+   move_selection_data.move_input_data = data
+   move_selection_items.input_display_item.object = data
 end
 
-local function update_counter_attack_settings()
-   if is_initialized then
-      counter_attack_settings = settings.training.counter_attack[training.dummy.char_str]
-      counter_attack_type_item.object = counter_attack_settings
-      counter_attack_motion_item.object = counter_attack_settings
-      counter_attack_normal_button_item.object = counter_attack_settings
-      counter_attack_special_item.object = counter_attack_settings
-      counter_attack_special_button_item.object = counter_attack_settings
-      counter_attack_option_select_item.object = counter_attack_settings
+local function update_move_selection_items(move_selection_items, move_selection_data, move_selection_settings, dummy)
+   move_selection_items.type_item.object = move_selection_settings
+   move_selection_items.motion_item.object = move_selection_settings
+   move_selection_items.normal_button_item.object = move_selection_settings
+   move_selection_items.special_item.object = move_selection_settings
+   move_selection_items.special_button_item.object = move_selection_settings
+   move_selection_items.option_select_item.object = move_selection_settings
+
+   move_selection_data.normal_buttons = menu_tables.move_selection_normal_button_default
+   if move_selection_settings.motion == 15 then
+      move_selection_data.button_inputs = move_data.get_buttons_by_move_name(dummy.char_str, "kara_throw")
+      move_selection_data.normal_buttons = tools.input_to_text(move_selection_data.button_inputs)
    end
-end
+   move_selection_items.normal_button_item.list = move_selection_data.normal_buttons
 
-local function update_counter_attack_normal_button()
-   counter_attack_normal_buttons = menu_tables.counter_attack_normal_button_default
-   if counter_attack_settings.motion == 15 then
-      counter_attack_button_inputs = move_data.get_buttons_by_move_name(training.dummy.char_str, "kara_throw")
-      counter_attack_normal_buttons = tools.input_to_text(counter_attack_button_inputs)
-   end
-   counter_attack_normal_button_item.list = counter_attack_normal_buttons
+   move_selection_settings.normal_button = tools.bound_index(move_selection_settings.normal_button,
+                                                             #move_selection_data.normal_buttons)
 
-   counter_attack_settings.normal_button = tools.bound_index(counter_attack_settings.normal_button,
-                                                             #counter_attack_normal_buttons)
-end
+   move_selection_data.special_names = move_data.get_special_and_sa_names(dummy.char_str, dummy.selected_sa)
+   move_selection_items.special_item.list = move_selection_data.special_names
 
-local function update_counter_attack_special_names()
-   counter_attack_special_names =
-       move_data.get_special_and_sa_names(training.dummy.char_str, training.dummy.selected_sa)
-   counter_attack_special_item.list = counter_attack_special_names
-end
+   local name = move_selection_data.special_names[move_selection_settings.special]
+   move_selection_data.special_buttons = move_data.get_buttons_by_move_name(dummy.char_str, name)
+   move_selection_items.special_button_item.list = move_selection_data.special_buttons
 
-local function update_counter_attack_special_button()
-   local name = counter_attack_special_names[counter_attack_settings.special]
-   counter_attack_special_buttons = move_data.get_buttons_by_move_name(training.dummy.char_str, name)
-   counter_attack_special_button_item.list = counter_attack_special_buttons
+   move_selection_settings.special_button = tools.bound_index(move_selection_settings.special_button,
+                                                              #move_selection_data.special_buttons)
 
-   counter_attack_settings.special_button = tools.bound_index(counter_attack_settings.special_button,
-                                                              #counter_attack_special_buttons)
-end
-
-local function update_option_select_names()
-   counter_attack_option_select_names = move_data.get_option_select_names()
-   counter_attack_option_select_item.list = counter_attack_option_select_names
+   move_selection_data.option_select_names = move_data.get_option_select_names()
+   move_selection_items.option_select_item.list = move_selection_data.option_select_names
 end
 
 local function update_counter_attack_items()
    if is_initialized then
-      update_counter_attack_settings()
-      update_counter_attack_normal_button()
-      update_counter_attack_special_names()
-      update_counter_attack_special_button()
-      update_option_select_names()
+      counter_attack_settings = settings.training.counter_attack[training.dummy.char_str]
+      update_move_selection_items(counter_attack_move_selection_items, counter_attack_move_selection_data,
+                                  counter_attack_settings, training.dummy)
+      update_move_selection_data(counter_attack_move_selection_items, counter_attack_move_selection_data,
+                                 counter_attack_settings, training.dummy)
+      training.counter_attack_data = counter_attack_move_selection_data.move_input_data
 
-      update_counter_attack_data()
       main_menu:update_dimensions()
    end
+end
+
+local function update_jumpins_settings()
+   if is_initialized then
+      jumpins_edit_settings = settings.special_training.jumpins.characters[jumpins.jumpins_dummy.char_str]
+      if not jumpins_edit_settings then
+         settings.special_training.jumpins.characters[jumpins.jumpins_dummy.char_str] =
+             jumpins_tables.create_settings(jumpins.jumpins_dummy)
+         jumpins_edit_settings = settings.special_training.jumpins.characters[jumpins.jumpins_dummy.char_str]
+      end
+      current_jump_settings = jumpins_edit_settings.jumps[jumpins_edit_jump_index]
+   end
+end
+
+local function update_jumpins_range_items()
+   jumpins_edit.player_reset_position_item.points = jumpins.player_position_range
+   jumpins_edit.player_reset_position_item.point_index = 1
+   jumpins_edit.player_reset_position_item.range = jumpins.player_position_bounds
+   jumpins_edit.player_reset_position_item.mode = 1
+
+   jumpins_edit.dummy_reset_offset_item.points = jumpins.dummy_offset_range
+   jumpins_edit.dummy_reset_offset_item.point_index = jumpins.dummy_offset_edit_index
+   jumpins_edit.dummy_reset_offset_item.range = jumpins.dummy_offset_bounds
+   jumpins_edit.dummy_reset_offset_item.mode = jumpins.dummy_offset_edit_mode
+
+   jumpins_edit.attack_delay_item.points = jumpins.attack_delay_range
+   jumpins_edit.attack_delay_item.point_index = jumpins.attack_delay_edit_index
+   jumpins_edit.attack_delay_item.range = jumpins.attack_delay_bounds
+   jumpins_edit.attack_delay_item.mode = jumpins.attack_delay_edit_mode
+end
+
+local function update_jumpins_edit_items()
+   if is_initialized then
+      update_jumpins_settings()
+
+      update_move_selection_items(jumpins_edit_move_selection_items, jumpins_edit_move_selection_data,
+                                  current_jump_settings.followup, jumpins.jumpins_dummy)
+      update_move_selection_data(jumpins_edit_move_selection_items, jumpins_edit_move_selection_data,
+                                 current_jump_settings.followup, jumpins.jumpins_dummy)
+      jumpins.followup_data = jumpins_edit_move_selection_data.move_input_data
+
+      jumpins_tables.update_character(jumpins.jumpins_dummy.char_str)
+      jumpins_training_tab.show_jump_info_item.object = jumpins_edit_settings
+      jumpins_training_tab.show_jump_arc_item.object = jumpins_edit_settings
+
+      jumpins_edit.jump_type_item.object = current_jump_settings
+      jumpins_edit.jump_type_item.list = jumpins_tables.get_menu_jump_names()
+
+      update_jumpins_range_items()
+
+      jumpins_edit.second_jump_type_item.object = current_jump_settings
+      jumpins_edit.second_jump_type_item.list = jumpins_tables.get_menu_second_jump_names()
+      jumpins_edit.second_jump_delay_item.object = current_jump_settings
+      jumpins_edit.attack_type_item.object = current_jump_settings
+      jumpins_edit.attack_type_item.list = jumpins_tables.get_menu_attack_names()
+      jumpins_edit.followup_delay_item.object = current_jump_settings
+      jumpins_edit.status_item.object = {jump_index = jumpins_edit_jump_index}
+
+      main_menu:update_dimensions()
+      jumpins_edit_menu:calc_dimensions()
+   end
+end
+
+local function change_jump_index(n)
+   jumpins_edit_jump_index = tools.wrap_index(jumpins_edit_jump_index + n, jumpins_tables.max_jumps)
+   update_jumpins_edit_items()
 end
 
 local function defense_at_least_one_selected()
@@ -268,6 +331,12 @@ local function update_unblockables_items()
    if should_reset_followup then reset_unblockables_followup() end
 end
 
+local function update_training_tab_page()
+   main_menu.content[5].entries = training_sub_menus[settings.training.special_training_mode].entries
+end
+
+local function is_frame_data_loaded() return require("src.loading").frame_data_loaded end
+
 local function play_challenge() end
 
 local function save_recording_slot_to_file()
@@ -284,7 +353,7 @@ local function save_recording_slot_to_file()
       print(string.format("Saved slot %d to \"%s\"", settings.training.current_recording_slot, path))
    end
 
-   main_menu:menu_stack_pop(save_recording_slot_popup)
+   main_menu:menu_close_popup(save_recording_slot_popup)
 end
 
 local function load_recording_slot_from_file()
@@ -307,13 +376,13 @@ local function load_recording_slot_from_file()
 
    recording.update_current_recording_slot_frames()
 
-   main_menu:menu_stack_pop(load_recording_slot_popup)
+   main_menu:menu_close_popup(load_recording_slot_popup)
 end
 
 local function open_save_popup()
    save_recording_slot_popup.selected_index = 1
-   main_menu:menu_stack_push(save_recording_slot_popup)
-   save_recording_settings.save_file_name = string.gsub(training.dummy.char_str, "(.*)", string.upper) .. "_"
+   main_menu:menu_open_popup(save_recording_slot_popup)
+   save_recording_settings.save_file_name = string.gsub(training.recording_player.char_str, "(.*)", string.upper) .. "_"
 end
 
 local function open_load_popup()
@@ -345,7 +414,7 @@ local function open_load_popup()
 
    load_file_name_item.list = save_recording_settings.load_file_list
 
-   main_menu:menu_stack_push(load_recording_slot_popup)
+   main_menu:menu_open_popup(load_recording_slot_popup)
 end
 
 local function create_recording_popup()
@@ -357,89 +426,191 @@ local function create_recording_popup()
    {
       menu_items.Textfield_Menu_Item:new("file_name", save_recording_settings, "save_file_name", ""),
       menu_items.Button_Menu_Item:new("file_save", save_recording_slot_to_file),
-      menu_items.Button_Menu_Item:new("file_cancel", function() main_menu:menu_stack_pop(save_recording_slot_popup) end)
+      menu_items.Button_Menu_Item:new("file_cancel",
+                                      function() main_menu:menu_close_popup(save_recording_slot_popup) end)
    })
 
    load_recording_slot_popup = menu_items.Menu:new(71, 61, 312, 122, -- screen size 383,223
    {
       load_file_name_item, menu_items.Button_Menu_Item:new("file_load", load_recording_slot_from_file),
-      menu_items.Button_Menu_Item:new("file_cancel", function() main_menu:menu_stack_pop(load_recording_slot_popup) end)
+      menu_items.Button_Menu_Item:new("file_cancel",
+                                      function() main_menu:menu_close_popup(load_recording_slot_popup) end)
    })
 end
 
-local function create_jumpins_edit_menu(jumpins_edit_settings)
+local function create_jumpins_edit_menu()
+   jumpins_edit_settings = settings.special_training.jumpins.characters["alex"]
+   current_jump_settings = jumpins_edit_settings.jumps[1]
+   local function is_jump_selected() return current_jump_settings.jump_name ~= 1 end
+   local function no_jump_selected() return not is_jump_selected() end
    jumpins_edit = {}
-   jumpins_edit.jump_type_item = menu_items.List_Menu_Item:new("menu_jump_type", jumpins_edit_settings, "type",
-                                                               counter_attack_type, 1, update_counter_attack_items)
+   jumpins_edit.jump_type_item = menu_items.List_Menu_Item:new("menu_jump", current_jump_settings, "jump_name",
+                                                               jumpins_tables.get_menu_jump_names(), 1)
+   jumpins_edit.jump_type_item.on_change = jumpins.change_selected_jump
 
-   jumpins_edit.player_reset_position_item = nil
-   jumpins_edit.dummy_reset_offset_item = nil
-
-   jumpins_edit.second_jump_type_item = menu_items.List_Menu_Item:new("menu_second_jump_type", jumpins_edit_settings,
-                                                                      "type", counter_attack_type, 1,
-                                                                      update_counter_attack_items)
-
-   jumpins_edit.second_jump_delay_item = menu_items.Integer_Menu_Item:new("counter_attack_delay", settings.training,
-                                                                          "counter_attack_delay", 0, 40, false, 0)
-
-   jumpins_edit.attack_type_item = menu_items.List_Menu_Item:new("menu_second_jump_type", jumpins_edit_settings, "type",
-                                                                 counter_attack_type, 1, update_counter_attack_items)
-   jumpins_edit.attack_delay_item = menu_items.Integer_Menu_Item:new("counter_attack_delay", settings.training,
-                                                                     "counter_attack_delay", 0, 40, false, 0)
-
-   jumpins_edit.type_item = menu_items.List_Menu_Item:new("menu_followup", jumpins_edit_settings, "type",
-                                                          counter_attack_type, 1, update_counter_attack_items)
-
-   jumpins_edit.motion_item = menu_items.Motion_list_Menu_Item:new("counter_attack_motion", jumpins_edit_settings,
-                                                                   "motion", counter_attack_motion_input, 1,
-                                                                   update_counter_attack_items)
-   jumpins_edit.motion_item.indent = true
-   jumpins_edit.motion_item.is_visible = function() return jumpins_edit_settings.type == 2 end
-
-   jumpins_edit.normal_button_item = menu_items.List_Menu_Item:new("counter_attack_button", jumpins_edit_settings,
-                                                                   "normal_button", counter_attack_normal_buttons, 1,
-                                                                   update_counter_attack_items)
-   jumpins_edit.normal_button_item.indent = true
-   jumpins_edit.normal_button_item.is_visible = function()
-      return jumpins_edit_settings.type == 2 and #counter_attack_normal_button_item.list > 0
+   jumpins_edit.player_reset_position_item = menu_items.Slider_Menu_Item:new("menu_player_position", 40, {400, 400},
+                                                                             {200, 800})
+   jumpins_edit.player_reset_position_item.disable_mode_switch = true
+   jumpins_edit.player_reset_position_item.legend_text = ""
+   jumpins_edit.player_reset_position_item.left = function()
+      jumpins.move_player_left()
+      update_jumpins_range_items()
    end
-
-   jumpins_edit.special_item = menu_items.List_Menu_Item:new("counter_attack_special", jumpins_edit_settings, "special",
-                                                             counter_attack_special_names, 1,
-                                                             update_counter_attack_items)
-   jumpins_edit.special_item.indent = true
-   jumpins_edit.special_item.is_visible = function() return jumpins_edit_settings.type == 3 end
-
-   jumpins_edit.special_button_item = menu_items.List_Menu_Item:new("counter_attack_button", jumpins_edit_settings,
-                                                                    "special_button", counter_attack_special_buttons, 1,
-                                                                    update_counter_attack_items)
-   jumpins_edit.special_button_item.indent = true
-   jumpins_edit.special_button_item.is_visible = function()
-      return jumpins_edit_settings.type == 3 and #counter_attack_special_button_item.list > 0
+   jumpins_edit.player_reset_position_item.right = function()
+      jumpins.move_player_right()
+      update_jumpins_range_items()
    end
+   jumpins_edit.player_reset_position_item.is_enabled = is_jump_selected
+   jumpins_edit.player_reset_position_item.is_unselectable = no_jump_selected
 
-   jumpins_edit.input_display_item = menu_items.Move_Input_Display_Menu_Item:new("move_input",
-                                                                                 counter_attack_move_input_data)
-   jumpins_edit.input_display_item.inline = true
-   jumpins_edit.input_display_item.is_visible = function()
-      return jumpins_edit_settings.type == 3 or jumpins_edit_settings.type == 4
+   jumpins_edit.dummy_reset_offset_item =
+       menu_items.Slider_Menu_Item:new("menu_dummy_offset", 40, {80, 80}, {-100, 100})
+   jumpins_edit.dummy_reset_offset_item.left = function()
+      jumpins.move_dummy_left()
+      update_jumpins_range_items()
    end
+   jumpins_edit.dummy_reset_offset_item.right = function()
+      jumpins.move_dummy_right()
+      update_jumpins_range_items()
+   end
+   jumpins_edit.dummy_reset_offset_item.validate_function = function()
+      jumpins_edit.dummy_reset_offset_item.mode = jumpins.change_dummy_offset_edit_mode()
+   end
+   jumpins_edit.dummy_reset_offset_item.reset_function = function()
+      jumpins_edit.dummy_reset_offset_item.point_index = jumpins.change_dummy_offset_edit_index()
+   end
+   jumpins_edit.dummy_reset_offset_item.is_enabled = is_jump_selected
+   jumpins_edit.dummy_reset_offset_item.is_unselectable = no_jump_selected
 
-   jumpins_edit.option_select_item = menu_items.List_Menu_Item:new("counter_attack_option_select_names",
-                                                                   jumpins_edit_settings, "option_select",
-                                                                   counter_attack_option_select_names, 1,
-                                                                   update_counter_attack_items)
-   jumpins_edit.option_select_item.indent = true
-   jumpins_edit.option_select_item.is_visible = function() return jumpins_edit_settings.type == 4 end
-   jumpins_edit.followup_delay_item = menu_items.Integer_Menu_Item:new("counter_attack_delay", settings.training,
-                                                                       "counter_attack_delay", -40, 40, false, 0)
+   jumpins_edit.second_jump_type_item = menu_items.List_Menu_Item:new("menu_second_jump", current_jump_settings,
+                                                                      "second_jump_name",
+                                                                      jumpins_tables.get_menu_second_jump_names(), 1)
+   jumpins_edit.second_jump_type_item.is_visible = function() return #jumpins_edit.second_jump_type_item.list > 0 end
+   jumpins_edit.second_jump_type_item.is_enabled = is_jump_selected
+   jumpins_edit.second_jump_type_item.is_unselectable = no_jump_selected
 
-   jumpins_edit_menu = menu_items.Menu:new(0, 0, 150, 122, {
-      jumpins_edit.player_reset_position_item, jumpins_edit.dummy_reset_offset_item
-   })
+   jumpins_edit.second_jump_delay_item = menu_items.Integer_Menu_Item:new("menu_second_jump_delay",
+                                                                          current_jump_settings, "second_jump_delay", 0,
+                                                                          60, false, 0)
+   jumpins_edit.second_jump_delay_item.is_visible =
+       function() return jumpins_edit.second_jump_type_item.is_visible() end
+   jumpins_edit.second_jump_delay_item.is_enabled = is_jump_selected
+   jumpins_edit.second_jump_delay_item.is_unselectable = no_jump_selected
+
+   jumpins_edit.attack_type_item = menu_items.List_Menu_Item:new("menu_attack", current_jump_settings, "attack_name",
+                                                                 jumpins_tables.get_menu_attack_names(), 1)
+   jumpins_edit.attack_type_item.is_enabled = is_jump_selected
+   jumpins_edit.attack_type_item.is_unselectable = no_jump_selected
+
+   jumpins_edit.attack_delay_item = menu_items.Slider_Menu_Item:new("menu_attack_delay", 40, {5, 5}, {5, 100})
+   jumpins_edit.attack_delay_item.validate_function = function()
+      jumpins_edit.attack_delay_item.mode = jumpins.change_attack_delay_edit_mode()
+   end
+   jumpins_edit.attack_delay_item.reset_function = function()
+      jumpins_edit.attack_delay_item.point_index = jumpins.change_attack_delay_edit_index()
+   end
+   jumpins_edit.attack_delay_item.is_enabled = is_jump_selected
+   jumpins_edit.attack_delay_item.is_unselectable = no_jump_selected
+
+   jumpins_edit_move_selection_items.type_item = menu_items.List_Menu_Item:new("menu_followup",
+                                                                               current_jump_settings.followup, "type",
+                                                                               jumpins_edit_move_selection_data.type, 1,
+                                                                               update_jumpins_edit_items)
+   jumpins_edit_move_selection_items.type_item.is_enabled = is_jump_selected
+   jumpins_edit_move_selection_items.type_item.is_unselectable = no_jump_selected
+
+   jumpins_edit_move_selection_items.motion_item = menu_items.Motion_list_Menu_Item:new("counter_attack_motion",
+                                                                                        current_jump_settings.followup,
+                                                                                        "motion",
+                                                                                        jumpins_edit_move_selection_data.motion_input,
+                                                                                        1, update_jumpins_edit_items)
+   jumpins_edit_move_selection_items.motion_item.indent = true
+   jumpins_edit_move_selection_items.motion_item.is_visible = function()
+      return current_jump_settings.followup.type == 2
+   end
+   jumpins_edit_move_selection_items.motion_item.is_enabled = is_jump_selected
+   jumpins_edit_move_selection_items.motion_item.is_unselectable = no_jump_selected
+
+   jumpins_edit_move_selection_items.normal_button_item = menu_items.List_Menu_Item:new("counter_attack_button",
+                                                                                        current_jump_settings.followup,
+                                                                                        "normal_button",
+                                                                                        jumpins_edit_move_selection_data.normal_buttons,
+                                                                                        1, update_jumpins_edit_items)
+   jumpins_edit_move_selection_items.normal_button_item.indent = true
+   jumpins_edit_move_selection_items.normal_button_item.is_visible = function()
+      return current_jump_settings.followup.type == 2 and #jumpins_edit_move_selection_items.normal_button_item.list > 0
+   end
+   jumpins_edit_move_selection_items.normal_button_item.is_enabled = is_jump_selected
+   jumpins_edit_move_selection_items.normal_button_item.is_unselectable = no_jump_selected
+
+   jumpins_edit_move_selection_items.special_item = menu_items.List_Menu_Item:new("counter_attack_special",
+                                                                                  current_jump_settings.followup,
+                                                                                  "special",
+                                                                                  jumpins_edit_move_selection_data.special_names,
+                                                                                  1, update_jumpins_edit_items)
+   jumpins_edit_move_selection_items.special_item.indent = true
+   jumpins_edit_move_selection_items.special_item.is_visible = function()
+      return current_jump_settings.followup.type == 3
+   end
+   jumpins_edit_move_selection_items.special_item.is_enabled = is_jump_selected
+   jumpins_edit_move_selection_items.special_item.is_unselectable = no_jump_selected
+
+   jumpins_edit_move_selection_items.special_button_item = menu_items.List_Menu_Item:new("counter_attack_button",
+                                                                                         current_jump_settings.followup,
+                                                                                         "special_button",
+                                                                                         jumpins_edit_move_selection_data.special_buttons,
+                                                                                         1, update_jumpins_edit_items)
+   jumpins_edit_move_selection_items.special_button_item.indent = true
+   jumpins_edit_move_selection_items.special_button_item.is_visible = function()
+      return current_jump_settings.followup.type == 3 and #jumpins_edit_move_selection_items.special_button_item.list >
+                 0
+   end
+   jumpins_edit_move_selection_items.special_button_item.is_enabled = is_jump_selected
+   jumpins_edit_move_selection_items.special_button_item.is_unselectable = no_jump_selected
+
+   jumpins_edit_move_selection_items.input_display_item = menu_items.Move_Input_Display_Menu_Item:new("move_input",
+                                                                                                      jumpins_edit_move_selection_data.move_input_data)
+   jumpins_edit_move_selection_items.input_display_item.inline = true
+   jumpins_edit_move_selection_items.input_display_item.is_visible = function()
+      return current_jump_settings.followup.type == 3 or current_jump_settings.followup.type == 4
+   end
+   jumpins_edit_move_selection_items.input_display_item.is_enabled = is_jump_selected
+   jumpins_edit_move_selection_items.input_display_item.is_unselectable = no_jump_selected
+
+   jumpins_edit_move_selection_items.option_select_item = menu_items.List_Menu_Item:new(
+                                                              "counter_attack_option_select_names",
+                                                              current_jump_settings.followup, "option_select",
+                                                              jumpins_edit_move_selection_data.option_select_names, 1,
+                                                              update_jumpins_edit_items)
+   jumpins_edit_move_selection_items.option_select_item.indent = true
+   jumpins_edit_move_selection_items.option_select_item.is_visible = function()
+      return current_jump_settings.followup.type == 4
+   end
+   jumpins_edit_move_selection_items.option_select_item.is_enabled = is_jump_selected
+   jumpins_edit_move_selection_items.option_select_item.is_unselectable = no_jump_selected
+
+   jumpins_edit.followup_delay_item = menu_items.Integer_Menu_Item:new("menu_followup_delay", current_jump_settings,
+                                                                       "followup_delay", -40, 40, false, 0)
+   jumpins_edit.followup_delay_item.is_enabled = is_jump_selected
+   jumpins_edit.followup_delay_item.is_unselectable = no_jump_selected
+
+   jumpins_edit.status_item = menu_items.Label_Menu_Item:new("status", {
+      "legend_hp_hk", ": ", "status_jump", "(", "value", "/", jumpins_tables.max_jumps, ")"
+   }, {jump_index = 1}, "jump_index", true)
+
+   return menu_items.Menu:new(0, 0, 150, 150, {
+      jumpins_edit.jump_type_item, jumpins_edit.player_reset_position_item, jumpins_edit.dummy_reset_offset_item,
+      jumpins_edit.second_jump_type_item, jumpins_edit.second_jump_delay_item, jumpins_edit.attack_type_item,
+      jumpins_edit.attack_delay_item, jumpins_edit_move_selection_items.type_item,
+      jumpins_edit_move_selection_items.motion_item, jumpins_edit_move_selection_items.normal_button_item,
+      jumpins_edit_move_selection_items.special_item, jumpins_edit_move_selection_items.input_display_item,
+      jumpins_edit_move_selection_items.special_button_item, jumpins_edit_move_selection_items.option_select_item,
+      jumpins_edit.followup_delay_item
+   }, nil, true, jumpins_edit.status_item, true)
 end
 
 local function create_dummy_tab()
+   counter_attack_settings = settings.training.counter_attack["alex"]
    blocking_item = menu_items.List_Menu_Item:new("blocking", settings.training, "blocking_mode",
                                                  menu_tables.blocking_mode)
    blocking_item.indent = true
@@ -461,50 +632,60 @@ local function create_dummy_tab()
       return settings.training.blocking_style == 2 or settings.training.blocking_style == 3
    end
 
-   counter_attack_type_item = menu_items.List_Menu_Item:new("counter_attack_type", counter_attack_settings, "type",
-                                                            counter_attack_type, 1, update_counter_attack_items)
+   counter_attack_move_selection_items.type_item = menu_items.List_Menu_Item:new("counter_attack_type",
+                                                                                 counter_attack_settings, "type",
+                                                                                 counter_attack_move_selection_data.type,
+                                                                                 1, update_counter_attack_items)
 
-   counter_attack_motion_item = menu_items.Motion_list_Menu_Item:new("counter_attack_motion", counter_attack_settings,
-                                                                     "motion", counter_attack_motion_input, 1,
-                                                                     update_counter_attack_items)
-   counter_attack_motion_item.indent = true
-   counter_attack_motion_item.is_visible = function() return counter_attack_settings.type == 2 end
+   counter_attack_move_selection_items.motion_item = menu_items.Motion_list_Menu_Item:new("counter_attack_motion",
+                                                                                          counter_attack_settings,
+                                                                                          "motion",
+                                                                                          counter_attack_move_selection_data.motion_input,
+                                                                                          1, update_counter_attack_items)
+   counter_attack_move_selection_items.motion_item.indent = true
+   counter_attack_move_selection_items.motion_item.is_visible = function() return counter_attack_settings.type == 2 end
 
-   counter_attack_normal_button_item = menu_items.List_Menu_Item:new("counter_attack_button", counter_attack_settings,
-                                                                     "normal_button", counter_attack_normal_buttons, 1,
-                                                                     update_counter_attack_items)
-   counter_attack_normal_button_item.indent = true
-   counter_attack_normal_button_item.is_visible = function()
-      return counter_attack_settings.type == 2 and #counter_attack_normal_button_item.list > 0
+   counter_attack_move_selection_items.normal_button_item = menu_items.List_Menu_Item:new("counter_attack_button",
+                                                                                          counter_attack_settings,
+                                                                                          "normal_button",
+                                                                                          counter_attack_move_selection_data.normal_buttons,
+                                                                                          1, update_counter_attack_items)
+   counter_attack_move_selection_items.normal_button_item.indent = true
+   counter_attack_move_selection_items.normal_button_item.is_visible = function()
+      return counter_attack_settings.type == 2 and #counter_attack_move_selection_items.normal_button_item.list > 0
    end
 
-   counter_attack_special_item = menu_items.List_Menu_Item:new("counter_attack_special", counter_attack_settings,
-                                                               "special", counter_attack_special_names, 1,
-                                                               update_counter_attack_items)
-   counter_attack_special_item.indent = true
-   counter_attack_special_item.is_visible = function() return counter_attack_settings.type == 3 end
+   counter_attack_move_selection_items.special_item = menu_items.List_Menu_Item:new("counter_attack_special",
+                                                                                    counter_attack_settings, "special",
+                                                                                    counter_attack_move_selection_data.special_names,
+                                                                                    1, update_counter_attack_items)
+   counter_attack_move_selection_items.special_item.indent = true
+   counter_attack_move_selection_items.special_item.is_visible = function() return counter_attack_settings.type == 3 end
 
-   counter_attack_special_button_item = menu_items.List_Menu_Item:new("counter_attack_button", counter_attack_settings,
-                                                                      "special_button", counter_attack_special_buttons,
-                                                                      1, update_counter_attack_items)
-   counter_attack_special_button_item.indent = true
-   counter_attack_special_button_item.is_visible = function()
-      return counter_attack_settings.type == 3 and #counter_attack_special_button_item.list > 0
+   counter_attack_move_selection_items.special_button_item =
+       menu_items.List_Menu_Item:new("counter_attack_button", counter_attack_settings, "special_button",
+                                     counter_attack_move_selection_data.special_buttons, 1, update_counter_attack_items)
+   counter_attack_move_selection_items.special_button_item.indent = true
+   counter_attack_move_selection_items.special_button_item.is_visible = function()
+      return counter_attack_settings.type == 3 and #counter_attack_move_selection_items.special_button_item.list > 0
    end
 
-   counter_attack_input_display_item = menu_items.Move_Input_Display_Menu_Item:new("move_input",
-                                                                                   counter_attack_move_input_data)
-   counter_attack_input_display_item.inline = true
-   counter_attack_input_display_item.is_visible = function()
+   counter_attack_move_selection_items.input_display_item = menu_items.Move_Input_Display_Menu_Item:new("move_input",
+                                                                                                        counter_attack_move_selection_data.move_input_data)
+   counter_attack_move_selection_items.input_display_item.inline = true
+   counter_attack_move_selection_items.input_display_item.is_visible = function()
       return counter_attack_settings.type == 3 or counter_attack_settings.type == 4
    end
 
-   counter_attack_option_select_item = menu_items.List_Menu_Item:new("counter_attack_option_select_names",
-                                                                     counter_attack_settings, "option_select",
-                                                                     counter_attack_option_select_names, 1,
-                                                                     update_counter_attack_items)
-   counter_attack_option_select_item.indent = true
-   counter_attack_option_select_item.is_visible = function() return counter_attack_settings.type == 4 end
+   counter_attack_move_selection_items.option_select_item = menu_items.List_Menu_Item:new(
+                                                                "counter_attack_option_select_names",
+                                                                counter_attack_settings, "option_select",
+                                                                counter_attack_move_selection_data.option_select_names,
+                                                                1, update_counter_attack_items)
+   counter_attack_move_selection_items.option_select_item.indent = true
+   counter_attack_move_selection_items.option_select_item.is_visible = function()
+      return counter_attack_settings.type == 4
+   end
 
    hits_before_counter_attack = menu_items.Hits_Before_Menu_Item:new("hits_before_ca_prefix", "hits_before_ca_suffix",
                                                                      settings.training,
@@ -523,9 +704,11 @@ local function create_dummy_tab()
          menu_items.List_Menu_Item:new("pose", settings.training, "pose", menu_tables.pose),
          menu_items.List_Menu_Item:new("blocking_style", settings.training, "blocking_style", menu_tables.blocking_style),
          blocking_item, hits_before_red_parry_item, parry_every_n_item, prefer_down_parry_item,
-         counter_attack_type_item, counter_attack_motion_item, counter_attack_normal_button_item,
-         counter_attack_special_item, counter_attack_input_display_item, counter_attack_special_button_item,
-         counter_attack_option_select_item, hits_before_counter_attack, counter_attack_delay_item,
+         counter_attack_move_selection_items.type_item, counter_attack_move_selection_items.motion_item,
+         counter_attack_move_selection_items.normal_button_item, counter_attack_move_selection_items.special_item,
+         counter_attack_move_selection_items.input_display_item,
+         counter_attack_move_selection_items.special_button_item,
+         counter_attack_move_selection_items.option_select_item, hits_before_counter_attack, counter_attack_delay_item,
          menu_items.List_Menu_Item:new("tech_throws", settings.training, "tech_throws_mode",
                                        menu_tables.tech_throws_mode, 1),
          menu_items.List_Menu_Item:new("mash_inputs", settings.training, "mash_inputs_mode",
@@ -563,8 +746,8 @@ local function create_recording_tab()
                                           recording.recording_slot_count, true, 1, 1, 10,
                                           recording.update_current_recording_slot_frames),
          menu_items.Label_Menu_Item:new("recording_slot_frames", {"value", " ", "menu_frames"},
-                                        recording.current_recording_slot_frames, "frames", true), slot_weight_item,
-         recording_delay_item, recording_random_deviation_item,
+                                        recording.current_recording_slot_frames, "frames", false, true),
+         slot_weight_item, recording_delay_item, recording_random_deviation_item,
          menu_items.Button_Menu_Item:new("clear_slot", function()
             recording.clear_slot()
             recording.update_current_recording_slot_frames()
@@ -596,16 +779,19 @@ local function create_display_tab()
 
    mid_distance_height_item = menu_items.Integer_Menu_Item:new("mid_distance_height", settings.training,
                                                                "mid_distance_height", 0, 200, false, 10)
+   mid_distance_height_item.indent = true
    mid_distance_height_item.is_visible = function() return settings.training.display_distances end
 
    p1_distances_reference_point_item = menu_items.List_Menu_Item:new("p1_distance_reference_point", settings.training,
                                                                      "p1_distances_reference_point",
                                                                      menu_tables.distance_display_reference_point)
+   p1_distances_reference_point_item.indent = true
    p1_distances_reference_point_item.is_visible = function() return settings.training.display_distances end
 
    p2_distances_reference_point_item = menu_items.List_Menu_Item:new("p2_distance_reference_point", settings.training,
                                                                      "p2_distances_reference_point",
                                                                      menu_tables.distance_display_reference_point)
+   p2_distances_reference_point_item.indent = true
    p2_distances_reference_point_item.is_visible = function() return settings.training.display_distances end
 
    air_time_player_coloring_item = menu_items.On_Off_Menu_Item:new("display_air_time_player_coloring",
@@ -633,13 +819,23 @@ local function create_display_tab()
    display_parry_compact_item.indent = true
    display_parry_compact_item.is_visible = function() return settings.training.display_parry end
 
-   attack_range_display_max_item = menu_items.Integer_Menu_Item:new("attack_range_max_attacks", settings.training,
+   attack_range_display_max_item = menu_items.Integer_Menu_Item:new("attack_range_display_max_attacks",
+                                                                    settings.training,
                                                                     "attack_range_display_max_attacks", 1, 3, true, 1)
    attack_range_display_max_item.indent = true
    attack_range_display_max_item.is_visible = function() return settings.training.display_attack_range ~= 1 end
 
+   attack_range_display_numbers_item = menu_items.On_Off_Menu_Item:new("attack_range_display_show_numbers",
+                                                                       settings.training,
+                                                                       "attack_range_display_show_numbers")
+   attack_range_display_numbers_item.indent = true
+   attack_range_display_numbers_item.is_visible = function() return settings.training.display_attack_range ~= 1 end
+
    language_item = menu_items.List_Menu_Item:new("language", settings.training, "language", menu_tables.language, 1,
-                                                 function() main_menu:update_dimensions() end)
+                                                 function()
+      main_menu:update_dimensions()
+      main_menu:update_page_position()
+   end)
 
    return {
       header = menu_items.Header_Menu_Item:new("menu_title_display"),
@@ -668,6 +864,7 @@ local function create_display_tab()
          menu_items.On_Off_Menu_Item:new("display_red_parry_miss", settings.training, "display_red_parry_miss"),
          menu_items.List_Menu_Item:new("attack_range_display", settings.training, "display_attack_range",
                                        menu_tables.player_options), attack_range_display_max_item,
+         attack_range_display_numbers_item,
          menu_items.List_Menu_Item:new("menu_theme", settings.training, "theme", menu_tables.theme_names, 1, function()
             colors.set_theme(settings.training.theme)
             require("src.loading").reload_text_images()
@@ -747,17 +944,21 @@ local function create_rules_tab()
                                        update_gauge_items()), p1_meter_reset_value_gauge_item,
          p2_meter_reset_value_gauge_item, -- meter_reset_delay_item,
          menu_items.On_Off_Menu_Item:new("infinite_super_art_time", settings.training, "infinite_sa_time"),
-         menu_items.Integer_Menu_Item:new("music_volume", settings.training, "music_volume", 0, 10, false, 0),
-         menu_items.On_Off_Menu_Item:new("speed_up_game_intro", settings.training, "fast_forward_intro"),
          menu_items.List_Menu_Item:new("auto_parrying", settings.training, "auto_parrying", menu_tables.player_options),
          menu_items.On_Off_Menu_Item:new("universal_cancel", settings.training, "universal_cancel"),
          menu_items.On_Off_Menu_Item:new("infinite_projectiles", settings.training, "infinite_projectiles"),
-         menu_items.On_Off_Menu_Item:new("infinite_juggle", settings.training, "infinite_juggle")
+         menu_items.On_Off_Menu_Item:new("infinite_juggle", settings.training, "infinite_juggle"),
+         menu_items.On_Off_Menu_Item:new("speed_up_game_intro", settings.training, "fast_forward_intro"),
+         menu_items.Integer_Menu_Item:new("music_volume", settings.training, "music_volume", 0, 10, false, 0)
       }
    }
 end
 
 local function create_training_tab()
+   local character_select_and_open_menu_item = menu_items.Button_Menu_Item:new("character_select", function()
+      character_select.start_character_select_sequence()
+      open_after_match_start = true
+   end)
 
    training_mode_item = menu_items.List_Menu_Item:new("menu_mode", settings.training, "special_training_mode",
                                                       menu_tables.special_training_mode, 1)
@@ -769,12 +970,12 @@ local function create_training_tab()
       defense.start(gamestate.P1.char_str, start_opponent)
       close_menu()
    end)
-
+   start_defense_item.is_enabled = is_frame_data_loaded
    start_defense_item.is_unselectable = function() return not defense_at_least_one_selected end
 
    defense_score_item = menu_items.Label_Menu_Item:new("menu_score", {"menu_score", ": ", "value"},
                                                        settings.special_training.defense.characters[opponent], "score",
-                                                       true)
+                                                       false, true)
 
    defense_opponent_item = menu_items.List_Menu_Item:new("menu_opponent", settings.special_training.defense, "opponent",
                                                          defense_tables.opponents_menu, 1, update_defense_items)
@@ -813,7 +1014,7 @@ local function create_training_tab()
       return settings.special_training.unblockables.character == "default" or
                  not unblockables_followup_item:at_least_one_selected() or
                  unblockables_tables.get_unblockables_character(sel_unblockable) ~=
-                 settings.special_training.unblockables.match_savestate_dummy
+                 settings.special_training.unblockables.match_savestate_dummy or not is_frame_data_loaded()
    end
    start_unblockables_item.is_enabled = function() return not start_unblockables_item.is_unselectable() end
 
@@ -821,24 +1022,78 @@ local function create_training_tab()
       unblockables.start_character_select()
       unblockables_followup_item.selected_col = 1
       unblockables_followup_item.selected_row = 1
+      open_after_match_start = true
       main_menu:select_item(unblockables_followup_item)
    end
 
-   local start_jumpins_edit_item = menu_items.Button_Menu_Item:new("menu_start", function()
+   jumpins_edit_menu = create_jumpins_edit_menu()
+   jumpins_edit_menu.scroll_up_function = function()
+      change_jump_index(1)
+      jumpins.load_jump(current_jump_settings)
+      update_jumpins_edit_items()
+   end
+   jumpins_edit_menu.scroll_down_function = function()
+      change_jump_index(-1)
+      jumpins.load_jump(current_jump_settings)
+      update_jumpins_edit_items()
+   end
+   jumpins_edit_menu.on_close = function() training.freeze_game() end
+
+   jumpins_training_tab = {}
+
+   jumpins_training_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
       local start_opponent = defense_tables.opponents[settings.special_training.defense.opponent]
       defense.start(gamestate.P1.char_str, start_opponent)
       close_menu()
    end)
-   local start_jumpins_item = menu_items.Button_Menu_Item:new("menu_start", function()
-      local start_opponent = defense_tables.opponents[settings.special_training.defense.opponent]
-      defense.start(gamestate.P1.char_str, start_opponent)
-      close_menu()
+   jumpins_training_tab.start_item.is_enabled = is_frame_data_loaded
+   jumpins_training_tab.start_item.is_unselectable = function()
+      return not jumpins_training_tab.start_item.is_enabled()
+   end
+
+   jumpins_training_tab.start_edit_item = menu_items.Button_Menu_Item:new("menu_settings", function()
+      jumpins_edit_jump_index = 1
+      jumpins.init()
+      update_jumpins_settings()
+      jumpins.load_settings(jumpins_edit_settings)
+      jumpins.load_jump(current_jump_settings)
+      jumpins.begin_edit()
+      update_jumpins_edit_items()
+      update_counter_attack_items()
+      main_menu:menu_open_popup(jumpins_edit_menu, true)
+      training.unfreeze_game()
+      main_menu.on_close = function()
+         jumpins.end_edit()
+         main_menu.on_close = nil
+      end
    end)
+   jumpins_training_tab.start_edit_item.is_enabled = is_frame_data_loaded
+   jumpins_training_tab.start_edit_item.is_unselectable = function()
+      return not jumpins_training_tab.start_edit_item.is_enabled()
+   end
+
+   jumpins_training_tab.jump_offset_mode_item = menu_items.List_Menu_Item:new("menu_jump_offset_mode",
+                                                                              jumpins_edit_settings, "jump_offset_mode",
+                                                                              menu_tables.jumpins_offset_mode)
+   jumpins_training_tab.attack_delay_mode_item = menu_items.List_Menu_Item:new("menu_attack_delay_mode",
+                                                                               jumpins_edit_settings,
+                                                                               "attack_delay_mode",
+                                                                               menu_tables.jumpins_offset_mode)
+
+   jumpins_training_tab.show_jump_arc_item = menu_items.On_Off_Menu_Item:new("menu_show_jump_arc",
+                                                                             jumpins_edit_settings, "show_jump_arc", 1)
+   jumpins_training_tab.show_jump_info_item = menu_items.On_Off_Menu_Item:new("menu_show_jump_info",
+                                                                              jumpins_edit_settings, "show_jump_info", 1)
 
    training_sub_menus = {
       {name = "training_defense", entries = {training_mode_item}}, {
          name = "training_jumpins",
-         entries = {training_mode_item, start_jumpins_item, start_jumpins_edit_item, character_select_item}
+         entries = {
+            training_mode_item, jumpins_training_tab.start_item, character_select_and_open_menu_item,
+            jumpins_training_tab.start_edit_item, jumpins_training_tab.jump_offset_mode_item,
+            jumpins_training_tab.attack_delay_mode_item, jumpins_training_tab.show_jump_arc_item,
+            jumpins_training_tab.show_jump_info_item
+         }
       }, {name = "training_footsies", entries = {training_mode_item}}, {
          name = "training_unblockables",
          entries = {
@@ -860,9 +1115,7 @@ local function create_training_tab()
       }
    }
 
-   training_mode_item.on_change = function()
-      main_menu.content[5].entries = training_sub_menus[settings.training.special_training_mode].entries
-   end
+   training_mode_item.on_change = update_training_tab_page
 
    return {header = menu_items.Header_Menu_Item:new("menu_title_training"), entries = training_sub_menus[1].entries}
 end
@@ -915,38 +1168,43 @@ end
 
 local function deactivate_training_modes() for _, mode in ipairs(special_training_modes) do mode.stop() end end
 
+local function update_menu_items()
+   update_counter_attack_items()
+   update_jumpins_edit_items()
+   update_gauge_items()
+   update_recording_items()
+   update_training_tab_page()
+   update_defense_items()
+   update_unblockables_items()
+end
+
 local function open_menu()
    if not disable_opening then
       is_open = true
-      update_counter_attack_items()
-      update_gauge_items()
-      update_menu()
-      local special_training_name = training_sub_menus[settings.training.special_training_mode].name
-      if special_training_name == "training_defense" then
-         update_defense_items()
-      elseif special_training_name == "training_unblockables" then
-         update_unblockables_items()
-      end
+      open_after_match_start = false
+      update_menu_items()
       deactivate_training_modes()
       main_menu:menu_stack_push(main_menu)
+      training.freeze_game()
    end
 end
 
 local horizontal_autofire_rate = 4
+local horizontal_autofire_time
 local vertical_autofire_rate = 4
-local function handle_input()
+local function update()
    if is_initialized then
       if gamestate.is_in_match then
          local should_toggle = gamestate.P1.input.pressed.start
-         if debug_settings.log_enabled then should_toggle = gamestate.P1.input.released.start end
-         should_toggle = not debug_settings.log_start_locked and should_toggle
 
          if should_toggle then
-            is_open = (not is_open)
-            if is_open then
+            if not is_open then
                open_menu()
+            elseif main_menu.has_popup then
+               main_menu:menu_close_popup()
+               update_menu_items()
             else
-               main_menu:menu_stack_clear()
+               close_menu()
             end
          end
       else
@@ -955,15 +1213,21 @@ local function handle_input()
 
       if is_open then
          local current_entry = main_menu:menu_stack_top():current_entry()
-         if current_entry ~= nil and current_entry.autofire_rate ~= nil then
+         if current_entry and current_entry.autofire_rate then
             horizontal_autofire_rate = current_entry.autofire_rate
+            horizontal_autofire_time = current_entry.autofire_time
+         else
+            horizontal_autofire_rate = 4
+            vertical_autofire_rate = 4
          end
 
          local input = {
             down = tools.check_input_down_autofire(gamestate.P1, "down", vertical_autofire_rate),
             up = tools.check_input_down_autofire(gamestate.P1, "up", vertical_autofire_rate),
-            left = tools.check_input_down_autofire(gamestate.P1, "left", horizontal_autofire_rate),
-            right = tools.check_input_down_autofire(gamestate.P1, "right", horizontal_autofire_rate),
+            left = tools.check_input_down_autofire(gamestate.P1, "left", horizontal_autofire_rate,
+                                                   horizontal_autofire_time),
+            right = tools.check_input_down_autofire(gamestate.P1, "right", horizontal_autofire_rate,
+                                                    horizontal_autofire_time),
             validate = {
                down = gamestate.P1.input.down.LP,
                press = gamestate.P1.input.pressed.LP,
@@ -975,8 +1239,16 @@ local function handle_input()
                release = gamestate.P1.input.released.MP
             },
             cancel = gamestate.P1.input.pressed.LK,
-            scroll_up = gamestate.P1.input.pressed.HP,
-            scroll_down = gamestate.P1.input.pressed.HK
+            scroll_up = {
+               down = gamestate.P1.input.down.HP,
+               press = gamestate.P1.input.pressed.HP,
+               release = gamestate.P1.input.released.HP
+            },
+            scroll_down = {
+               down = gamestate.P1.input.down.HK,
+               press = gamestate.P1.input.pressed.HK,
+               release = gamestate.P1.input.released.HK
+            }
          }
 
          -- prevent scrolling across all menus and changing settings
@@ -993,10 +1265,12 @@ end
 
 local menu_module = {
    create_menu = create_menu,
-   update_menu = update_menu,
+   update_recording_items = update_recording_items,
    update_gauge_items = update_gauge_items,
    update_counter_attack_items = update_counter_attack_items,
-   handle_input = handle_input,
+   update_unblockables_items = update_unblockables_items,
+   update_menu_items = update_menu_items,
+   update = update,
    open_menu = open_menu,
    close_menu = close_menu
 }
@@ -1009,6 +1283,8 @@ setmetatable(menu_module, {
          return is_open
       elseif key == "disable_opening" then
          return disable_opening
+      elseif key == "open_after_match_start" then
+         return open_after_match_start
       end
    end,
 
@@ -1019,6 +1295,8 @@ setmetatable(menu_module, {
          is_open = value
       elseif key == "disable_opening" then
          disable_opening = value
+      elseif key == "open_after_match_start" then
+         open_after_match_start = value
       else
          rawset(menu_module, key, value)
       end

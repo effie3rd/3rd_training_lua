@@ -13,7 +13,7 @@ local write_memory = require("src.control.write_memory")
 local memory_addresses = require("src.control.memory_addresses")
 local training = require("src.training")
 
-local module_name = "training_unblockables"
+local module_name = "unblockables"
 
 local is_active = false
 local states = {SETUP_MATCH_START = 1, INIT = 2, SETUP = 3, WAIT_FOR_SETUP = 4, RUNNING = 5, END = 6}
@@ -73,7 +73,6 @@ local function continue_from_savestate()
       local followup = active_followups[math.random(1, #active_followups)]
       advanced_control.queue_programmed_movement(dummy, followup.commands(dummy))
    end)
-   Load_State_Caller = module_name
    savestate.load(followup_state)
 end
 
@@ -96,7 +95,6 @@ local function start()
          ensure_training_settings()
          state = states.SETUP
       end)
-      Load_State_Caller = module_name
       savestate.load(match_start_state)
    end
 end
@@ -146,7 +144,6 @@ local function update()
             settings.special_training.unblockables.match_savestate_dummy = gamestate.P2.char_str
             settings.special_training.unblockables.savestate_player = ""
             settings.special_training.unblockables.savestate_dummy = ""
-            require("src.ui.menu").open_menu()
             is_active = false
          elseif state == states.SETUP then
             player = gamestate.P1

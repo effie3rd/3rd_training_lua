@@ -110,9 +110,7 @@ end
 
 local fd_load_margin = 1
 local function estimate_load_rate(elapsed, n_loaded)
-   if elapsed == 0 then
-      return fd_load_margin
-   end
+   if elapsed == 0 then return fd_load_margin end
    return math.min(n_loaded / (elapsed * 1000000) * fd_load_margin, 1)
 end
 
@@ -162,6 +160,13 @@ local function load_frame_data_async()
    end
 end
 
+local function load_framedata_human_readable()
+   for _, char in ipairs(frame_data_keys) do
+      local file_path = settings.framedata_path .. "@" .. char .. settings.framedata_file_ext
+      frame_data[char] = tools.read_object_from_json_file(file_path)
+   end
+end
+
 local load_frame_data_co = coroutine.create(load_frame_data_async)
 local load_text_images_co = coroutine.create(load_text_images_async)
 local current_co = load_frame_data_co
@@ -185,7 +190,6 @@ local function load_all()
          text_images_loaded = true
       else
          frame_data_loaded = true
-         fd.patch_frame_data()
       end
    end
    if current_co == load_text_images_co then
@@ -222,7 +226,12 @@ colors.set_theme(settings.training.theme)
 local theme_names = {}
 for _, theme in pairs(colors.themes) do table.insert(theme_names, "theme_" .. theme.name) end
 menu_tables.theme_names = theme_names
-local loading = {load_all = load_all, get_total_files = get_total_files, reload_text_images = reload_text_images}
+local loading = {
+   load_all = load_all,
+   load_framedata_human_readable = load_framedata_human_readable,
+   get_total_files = get_total_files,
+   reload_text_images = reload_text_images
+}
 
 setmetatable(loading, {
    __index = function(_, key)

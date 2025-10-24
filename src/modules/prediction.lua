@@ -5,6 +5,7 @@ local gamestate = require("src.gamestate")
 local debug = require("src.debug")
 local tools = require("src.tools")
 local debug_settings = require("src.debug_settings")
+local utils = require("src.modules.utils")
 
 local frame_data, character_specific, get_hurtboxes = fd.frame_data, fd.character_specific, fd.get_hurtboxes
 local stages = sd.stages
@@ -12,6 +13,26 @@ local find_move_frame_data = fd.find_move_frame_data
 local frame_data_meta = fdm.frame_data_meta
 
 local next_anim_types = {"next_anim", "optional_anim"}
+
+local next_animation = {}
+
+local animations = {
+   NONE = 1,
+   WALK_FORWARD = 2,
+   WALK_BACK = 3,
+   WALK_TRANSITION = 4,
+   STANDING_BEGIN = 5,
+   CROUCHING_BEGIN = 6,
+   BLOCK_HIGH_PROXIMITY = 7,
+   BLOCK_HIGH = 8,
+   BLOCK_HIGH_AIR_PROXIMITY = 9,
+   BLOCK_HIGH_AIR = 10,
+   BLOCK_LOW = 11,
+   BLOCK_LOW_PROXIMITY = 12,
+   PARRY_HIGH = 13,
+   PARRY_LOW = 14,
+   PARRY_AIR = 15
+}
 
 local function predict_frames_branching(obj, anim, frame, frames_prediction, specify_frame, result)
    local results = {}
@@ -25,72 +46,70 @@ local function predict_frames_branching(obj, anim, frame, frames_prediction, spe
       anim = anim or obj.projectile_type
       fdata = find_move_frame_data("projectiles", anim)
    end
-
-   local frame_to_check = frame + 1
+   if not fdata then return results end
+   local max_frames = fdata.frames and #fdata.frames or 1
+   local frame_to_check = math.min(frame + 1, max_frames)
    local delta = 0
    if #result > 0 then delta = result[#result].delta end
 
    if specify_frame then
       delta = delta + 1
       frames_prediction = frames_prediction - 1
-      table.insert(result, {animation = anim, frame = frame, delta = delta})
+      table.insert(result, {animation = anim, frame = math.min(frame, max_frames - 1), delta = delta})
    end
 
    local used_loop = false
    local used_next_anim = false
-   if not fdata then
-      return results
-   else
-      for i = 1, frames_prediction do
-         if fdata and frame_to_check <= #fdata.frames and fdata.frames[frame_to_check] then
-            used_loop = false
-            used_next_anim = false
-            delta = delta + 1
-            if fdata.frames[frame_to_check].loop then
-               used_loop = true
-               frame_to_check = fdata.frames[frame_to_check].loop + 1
-            else
-               for _, na in pairs(next_anim_types) do
-                  if fdata.frames[frame_to_check][na] then
-                     if na == "next_anim" then used_next_anim = true end
-                     for __, next_anim in pairs(fdata.frames[frame_to_check][na]) do
-                        local current_res = copytable(result)
-                        local next_anim_anim = next_anim[1]
-                        local next_anim_frame = next_anim[2]
-                        if next_anim_anim == "idle" then
-                           if obj.posture == 32 then
-                              next_anim_anim = frame_data[obj.char_str].crouching
-                              next_anim_frame = 0
-                           else
-                              next_anim_anim = frame_data[obj.char_str].standing
-                              next_anim_frame = 0
-                           end
-                        end
-                        table.insert(current_res, {animation = next_anim_anim, frame = next_anim_frame, delta = delta})
-                        local subres = predict_frames_branching(obj, next_anim_anim, next_anim_frame,
-                                                                frames_prediction - i, false, current_res)
 
-                        for ___, sr in pairs(subres) do table.insert(results, sr) end
+   for i = 1, frames_prediction do
+      if fdata and frame_to_check <= #fdata.frames and fdata.frames[frame_to_check] then
+         used_loop = false
+         used_next_anim = false
+         delta = delta + 1
+         if fdata.frames[frame_to_check].loop then
+            used_loop = true
+            frame_to_check = fdata.frames[frame_to_check].loop + 1
+         else
+            for _, na in pairs(next_anim_types) do
+               if fdata.frames[frame_to_check][na] then
+                  if na == "next_anim" then used_next_anim = true end
+                  for __, next_anim in pairs(fdata.frames[frame_to_check][na]) do
+                     local current_res = copytable(result)
+                     local next_anim_anim = next_anim[1]
+                     local next_anim_frame = next_anim[2]
+                     if next_anim_anim == "idle" then
+                        if obj.posture == 32 then
+                           next_anim_anim = frame_data[obj.char_str].crouching
+                           next_anim_frame = 0
+                        else
+                           next_anim_anim = frame_data[obj.char_str].standing
+                           next_anim_frame = 0
+                        end
                      end
+                     table.insert(current_res, {animation = next_anim_anim, frame = next_anim_frame, delta = delta})
+                     local subres = predict_frames_branching(obj, next_anim_anim, next_anim_frame,
+                                                             frames_prediction - i, false, current_res)
+
+                     for ___, sr in pairs(subres) do table.insert(results, sr) end
                   end
                end
             end
-            if used_next_anim then
-               break
-            else
-               if not used_loop then
-                  frame_to_check = frame_to_check + 1
-                  if frame_to_check > #fdata.frames then break end
-               end
-               table.insert(result, {animation = anim, frame = frame_to_check - 1, delta = delta})
+         end
+         if used_next_anim then
+            break
+         else
+            if not used_loop then
+               frame_to_check = frame_to_check + 1
+               if frame_to_check > #fdata.frames then break end
             end
+            table.insert(result, {animation = anim, frame = frame_to_check - 1, delta = delta})
          end
       end
-
-      if not used_next_anim then table.insert(results, result) end
-
-      return results
    end
+
+   if not used_next_anim then table.insert(results, result) end
+
+   return results
 end
 
 local function get_frames_until_idle(obj, anim, frame, frames_prediction, result, depth)
@@ -103,7 +122,6 @@ local function get_frames_until_idle(obj, anim, frame, frames_prediction, result
    frame = frame or obj.animation_frame
    local fdata = find_move_frame_data(obj.char_str, anim)
 
-   local frame_to_check = frame + 1
    local delta = 0
    if result then delta = result end
 
@@ -113,7 +131,11 @@ local function get_frames_until_idle(obj, anim, frame, frames_prediction, result
    if not fdata then
       if result == 0 then return frames_prediction end
       return delta, false
-   elseif fdata.idle_frames then
+   end
+   local max_frames = fdata.frames and #fdata.frames or 1
+   local frame_to_check = math.min(frame + 1, max_frames)
+
+   if fdata.idle_frames then
       local diff = delta
       for _, idle_frame in ipairs(fdata.idle_frames) do
          if frame <= idle_frame[1] then
@@ -230,6 +252,103 @@ local function print_pline(line)
    end
 end
 
+local function update_player_animation(player)
+   -- animation changes next frame
+   if player.has_just_blocked then
+      if not player.received_connection_is_projectile and player.other.pos_y >=
+          fd.character_specific[player.char_str].height.standing.min - 56 then
+         next_animation[player] = animations.BLOCK_HIGH_AIR
+      elseif gamestate.is_standing_state(player, player.standing_state) then
+         next_animation[player] = animations.BLOCK_HIGH
+      else
+         next_animation[player] = animations.BLOCK_LOW
+      end
+   elseif player.has_just_parried then
+      if player.parry_forward.success or player.parry_antiair.success then
+         next_animation[player] = animations.PARRY_HIGH
+      elseif player.parry_down.success then
+         next_animation[player] = animations.PARRY_LOW
+      elseif player.parry_air.success then
+         next_animation[player] = animations.PARRY_AIR
+      end
+   end
+end
+
+local function predict_next_animation(player, input)
+   local player_framedata = fd.frame_data[player.char_str]
+   next_animation[player] = animations.NONE
+   if player.is_idle then
+      if player.is_standing then
+         if tools.is_pressing_down(player, input) then
+            if player.action ~= 30 then next_animation[player] = animations.CROUCHING_BEGIN end
+         elseif tools.is_pressing_forward(player, input) then
+            if player.action == 23 or player.action == 30 then
+               next_animation[player] = animations.WALK_FORWARD
+            elseif player.action == 3 then
+               next_animation[player] = animations.WALK_TRANSITION
+            end
+         elseif tools.is_pressing_back(player, input) then
+            if player.blocking and player.blocking.last_block and player.blocking.last_block.blocking_type == "player" and
+                player.pos_y >= fd.character_specific[player.char_str].height.standing.min - 56 then
+               next_animation[player] = animations.BLOCK_HIGH_AIR_PROXIMITY
+            else
+               next_animation[player] = animations.BLOCK_HIGH_PROXIMITY
+            end
+         end
+      elseif player.is_crouching then
+         if not tools.is_pressing_down(player, input) then
+            if player.action ~= 31 then next_animation[player] = animations.STANDING_BEGIN end
+         elseif tools.is_pressing_back(player, input) then
+            next_animation[player] = animations.BLOCK_LOW_PROXIMITY
+         end
+      end
+   end
+   if player.recovery_time + player.additional_recovery_time <= 1 then
+      if player.animation == player_framedata.block_low and not tools.is_pressing_down(player, input) then
+         next_animation[player] = animations.STANDING_BEGIN
+      elseif (player.animation == player_framedata.block_high or player.animation == player_framedata.block_high_air) and
+          tools.is_pressing_down(player, input) then
+         next_animation[player] = animations.CROUCHING_BEGIN
+      end
+   end
+end
+
+local function get_next_animation(player)
+   local player_framedata = fd.frame_data[player.char_str]
+   local animation = next_animation[player]
+   if animation == animations.WALK_FORWARD then
+      return player_framedata.walk_forward
+   elseif animation == animations.WALK_BACK then
+      return player_framedata.walk_back
+   elseif animation == animations.WALK_TRANSITION then
+      return player_framedata.walk_transition
+   elseif animation == animations.STANDING_BEGIN then
+      return player_framedata.standing_begin
+   elseif animation == animations.CROUCHING_BEGIN then
+      return player_framedata.crouching_begin
+   elseif animation == animations.BLOCK_HIGH_PROXIMITY then
+      return player_framedata.block_high_proximity
+   elseif animation == animations.BLOCK_HIGH then
+      return player_framedata.block_high
+   elseif animation == animations.BLOCK_HIGH_AIR_PROXIMITY then
+      return player_framedata.block_high_air_proximity
+   elseif animation == animations.BLOCK_HIGH_AIR then
+      return player_framedata.block_high_air
+   elseif animation == animations.BLOCK_LOW_PROXIMITY then
+      return player_framedata.block_low_proximity
+   elseif animation == animations.BLOCK_LOW then
+      return player_framedata.block_low
+   elseif animation == animations.PARRY_HIGH then
+      return player_framedata.parry_high
+   elseif animation == animations.PARRY_LOW then
+      return player_framedata.parry_low
+   elseif animation == animations.PARRY_AIR then
+      return player_framedata.parry_air
+   else
+      return player.animation
+   end
+end
+
 local function insert_projectile(player, motion_data, predicted_hit)
    local fd = frame_data[player.char_str][predicted_hit.animation]
    if fd and fd.frames[predicted_hit.frame + 1] and fd.frames[predicted_hit.frame + 1].projectile then
@@ -263,12 +382,12 @@ local function insert_projectile(player, motion_data, predicted_hit)
       obj.remaining_hits = 99
       obj.is_forced_one_hit = false
       obj.has_activated = false
-      obj.animation_start_frame = gamestate.frame_number + predicted_hit.delta
+      obj.animation_start_frame = gamestate.frame_number + player.remaining_freeze_frames + predicted_hit.delta
       obj.animation_frame = 0
       obj.animation_freeze_frames = 0
       obj.remaining_freeze_frames = 0
       obj.remaining_lifetime = 0
-      obj.cooldown = predicted_hit.delta
+      obj.cooldown = 0
       obj.placeholder = true
       gamestate.projectiles[obj.id] = obj
    end
@@ -518,12 +637,13 @@ local function predict_next_player_movement(p1, p1_motion_data, p1_line, p2, p2_
       local corner_right = stage.right - character_specific[player.char_str].corner_offset_right
       local sign = tools.flip_to_sign(mdata[index - 1].flip_x)
 
-      local is_in_pushback = false
+      local is_in_pushback = player.is_in_pushback
       local pb_frame = 0
+
       for i = #mdata, 0, -1 do
          if mdata[i].pushback_start_index then
             is_in_pushback = true
-            pb_frame = index - mdata[i].pushback_start_index + 1
+            pb_frame = mdata[i].pushback_start_index + index
             break
          end
       end
@@ -555,52 +675,62 @@ local function predict_next_player_movement(p1, p1_motion_data, p1_line, p2, p2_
       end
 
       local should_apply_velocity = false
-      local previous_frame_data = find_move_frame_data(player.char_str, lines[player][index - 1].animation)
-      local first_frame_of_air_attack = lines[player][index - 1].frame == 0 and previous_frame_data and
-                                            previous_frame_data.air
+      local current_anim = lines[player][index] and lines[player][index].animation
+      local current_anim_frame = lines[player][index] and lines[player][index].frame + 1
+
+      local current_frame_data = find_move_frame_data(player.char_str, current_anim)
+      local current_frame = current_frame_data and current_frame_data.frames[current_anim_frame]
+      -- local previous_frame_data = find_move_frame_data(player.char_str, lines[player][index - 1].animation)
+      -- local previous_frame = previous_frame_data and previous_frame_data.frames and
+      --                            previous_frame_data.frames[lines[player][index - 1].frame + 1]
+      local first_frame_of_air_attack = lines[player][index].frame == 0 and current_frame_data and
+                                            current_frame_data.air
+      local should_ignore_motion = current_frame and current_frame.ignore_motion
 
       -- first frame of every air move ignores velocity/acceleration
-      if not first_frame_of_air_attack then
-         if (previous_frame_data and previous_frame_data.uses_velocity) or mdata[index - 1].pos_y > 0 then -- change this to use standing_state
+      if first_frame_of_air_attack then
+         should_ignore_motion = true
+      else
+         if (current_frame_data and current_frame_data.uses_velocity) or mdata[index - 1].pos_y > 0 then -- change this to use standing_state
             should_apply_velocity = true
          end
-         mdata[index].velocity_x = mdata[index].velocity_x + mdata[index - 1].acceleration_x
-         mdata[index].velocity_y = mdata[index].velocity_y + mdata[index - 1].acceleration_y
       end
 
-      -- bug here? index not found debug
-      if not lines[player] then
-         print(player.id, index)
-         print(lines[player][index - 1])
-      end
-      if not lines[player][index] then
-         print(player.id, index)
-         print(lines[player][index - 1])
-      end
-      local fdata = find_move_frame_data(player.char_str, lines[player][index].animation)
-      if fdata then
-         local next_frame = fdata.frames[lines[player][index].frame + 1]
-         if next_frame then
-            if next_frame.movement then
-               mdata[index].pos_x = mdata[index].pos_x + next_frame.movement[1] * sign
-               mdata[index].pos_y = mdata[index].pos_y + next_frame.movement[2]
+      if not should_ignore_motion then
+         mdata[index].velocity_x = mdata[index].velocity_x + mdata[index - 1].acceleration_x
+         mdata[index].velocity_y = mdata[index].velocity_y + mdata[index - 1].acceleration_y
+
+         if current_frame_data then
+            if current_frame then
+               if current_frame.movement then
+                  mdata[index].pos_x = mdata[index].pos_x + current_frame.movement[1] * sign
+                  mdata[index].pos_y = mdata[index].pos_y + current_frame.movement[2]
+               end
+               if current_frame.velocity then
+                  mdata[index].velocity_x = mdata[index].velocity_x + current_frame.velocity[1]
+                  mdata[index].velocity_y = mdata[index].velocity_y + current_frame.velocity[2]
+               end
+               if current_frame.acceleration then
+                  mdata[index].acceleration_x = mdata[index].acceleration_x + current_frame.acceleration[1]
+                  mdata[index].acceleration_y = mdata[index].acceleration_y + current_frame.acceleration[2]
+               end
             end
-            if next_frame.velocity then
-               mdata[index].velocity_x = mdata[index].velocity_x + next_frame.velocity[1]
-               mdata[index].velocity_y = mdata[index].velocity_y + next_frame.velocity[2]
-            end
-            if next_frame.acceleration then
-               mdata[index].acceleration_x = mdata[index].acceleration_x + next_frame.acceleration[1]
-               mdata[index].acceleration_y = mdata[index].acceleration_y + next_frame.acceleration[2]
-            end
-         else
-            -- print("next frame not found", lines[player][index].animation, lines[player][index].frame)
+         end
+         if should_apply_velocity then
+            mdata[index].pos_x = mdata[index].pos_x + mdata[index - 1].velocity_x * sign
+            mdata[index].pos_y = mdata[index].pos_y + mdata[index - 1].velocity_y
          end
       end
 
-      if should_apply_velocity then
-         mdata[index].pos_x = mdata[index].pos_x + mdata[index - 1].velocity_x * sign
-         mdata[index].pos_y = mdata[index].pos_y + mdata[index - 1].velocity_y
+      if current_frame then
+         if current_frame.set_acceleration then
+            mdata[index].acceleration_x = current_frame.set_acceleration[1]
+            mdata[index].acceleration_y = current_frame.set_acceleration[2]
+         end
+         if current_frame.set_velocity then
+            mdata[index].velocity_x = current_frame.set_velocity[1]
+            mdata[index].velocity_y = current_frame.set_velocity[2]
+         end
       end
 
       if mdata[index].pos_x > corner_right then
@@ -612,12 +742,12 @@ local function predict_next_player_movement(p1, p1_motion_data, p1_line, p2, p2_
       end
 
       -- if player is falling
-      if fdata and mdata[index].pos_y < mdata[index - 1].pos_y then
+      if current_frame_data and mdata[index].pos_y < mdata[index - 1].pos_y then
          local should_land = false
          -- this is a guess at when landing will occur. not sure what the actual principle is
          -- moves like dudley's jump HK/HP allow the player to fall much lower before landing. y_pos of -30 for dudley's j.HP!
-         if fdata.landing_height then
-            if mdata[index].pos_y < fdata.landing_height then should_land = true end
+         if current_frame_data.landing_height then
+            if mdata[index].pos_y < current_frame_data.landing_height then should_land = true end
          elseif mdata[index].pos_y < 0 then
             should_land = true
          end
@@ -626,7 +756,7 @@ local function predict_next_player_movement(p1, p1_motion_data, p1_line, p2, p2_
             mdata[index].standing_state = 1
             mdata[index].just_landed = true
             local line = predict_frames_branching(player, player.jump_recovery, 0, #lines[player] - index + 1, true)[1]
-            for j = 1, #line do lines[player][index + j - 1] = line[j] end
+            if line then for j = 1, #line do lines[player][index + j - 1] = line[j] end end
          end
       end
    end
@@ -650,24 +780,28 @@ local function predict_next_projectile_movement(projectile, mdata, line, index, 
 
    local sign = ignore_flip and 1 or tools.flip_to_sign(mdata[index - 1].flip_x)
 
-   local fdata = find_move_frame_data("projectiles", line[index].animation)
-   if fdata then
-      local next_frame = fdata.frames[line[index].frame + 1]
-      if next_frame then
-         if next_frame.movement then
-            mdata[index].pos_x = mdata[index].pos_x + next_frame.movement[1] * sign
-            mdata[index].pos_y = mdata[index].pos_y + next_frame.movement[2]
+   if line and line[index] then
+      local current_frame_data = find_move_frame_data("projectiles", line[index].animation)
+      if current_frame_data then
+         local current_frame = current_frame_data.frames[line[index].frame + 1]
+         if current_frame then
+            if current_frame.movement then
+               mdata[index].pos_x = mdata[index].pos_x + current_frame.movement[1] * sign
+               mdata[index].pos_y = mdata[index].pos_y + current_frame.movement[2]
+            end
+            if current_frame.velocity then
+               mdata[index].velocity_x = mdata[index].velocity_x + mdata[index - 1].acceleration_x +
+                                             current_frame.velocity[1]
+               mdata[index].velocity_y = mdata[index].velocity_y + mdata[index - 1].acceleration_y +
+                                             current_frame.velocity[2]
+            end
+            if current_frame.acceleration then
+               mdata[index].acceleration_x = mdata[index].acceleration_x + current_frame.acceleration[1]
+               mdata[index].acceleration_y = mdata[index].acceleration_y + current_frame.acceleration[2]
+            end
+         else
+            print("next frame not found", line[index].animation, line[index].frame) -- debug
          end
-         if next_frame.velocity then
-            mdata[index].velocity_x = mdata[index].velocity_x + mdata[index - 1].acceleration_x + next_frame.velocity[1]
-            mdata[index].velocity_y = mdata[index].velocity_y + mdata[index - 1].acceleration_y + next_frame.velocity[2]
-         end
-         if next_frame.acceleration then
-            mdata[index].acceleration_x = mdata[index].acceleration_x + next_frame.acceleration[1]
-            mdata[index].acceleration_y = mdata[index].acceleration_y + next_frame.acceleration[2]
-         end
-      else
-         print("next frame not found", line[index].animation, line[index].frame) -- debug
       end
    end
 
@@ -708,12 +842,10 @@ local function filter_lines(player, lines)
    return filtered
 end
 
-local function predict_movement_until_landing(player, player_anim, player_frame, player_motion_data, dummy, dummy_anim,
-                                              dummy_frame, dummy_motion_data, frames_prediction)
-   -- returns all possible sequences of the next 3 frames
+local function predict_jump_arc(player, player_anim, player_frame, player_motion_data, dummy, dummy_anim, dummy_frame,
+                                dummy_motion_data, frames_prediction)
    local specify_frame = player_anim and player_frame
    local player_lines = predict_frames_branching(player, player_anim, player_frame, frames_prediction, specify_frame)
-   -- filter for lines that contain hit frames or projectiles
    local filtered = filter_lines(player, player_lines) or {}
 
    if #filtered > 0 and #filtered[1] > 0 then
@@ -746,8 +878,84 @@ local function predict_movement_until_landing(player, player_anim, player_frame,
    }
 
    for i = 1, #player_line do
+      local predicted_frame = player_line[i]
+      local frame = predicted_frame.frame
+      local frame_to_check = frame + 1
+      local fdata = find_move_frame_data(player.char_str, predicted_frame.animation)
+
       predict_next_player_movement(player, player_motion_data, player_line, dummy, dummy_motion_data, dummy_line, i)
+
       if player_motion_data[i].just_landed then break end
+
+      if fdata then
+         local frames = fdata.frames
+         if frames and frames[frame_to_check] then
+            if frames[frame_to_check].projectile and (player.remaining_freeze_frames - i <= 0) then
+               insert_projectile(player, player_motion_data[i], predicted_frame)
+            end
+
+            if fdata.hit_frames and frames[frame_to_check].boxes and
+                tools.has_boxes(frames[frame_to_check].boxes, {"attack", "throw"}) then
+
+               local should_test = false
+               local current_hit_id = player.current_hit_id
+               local next_hit_id = 1
+
+               for j = 1, #fdata.hit_frames do
+                  if frame > fdata.hit_frames[j][2] then
+                     next_hit_id = math.min(j + 1, #fdata.hit_frames)
+                  end
+               end
+               if fdata.infinite_loop then
+                  current_hit_id = (player.animation_miss_count + player.animation_connection_count) % #fdata.hit_frames
+                  if #fdata.hit_frames == 1 then should_test = true end
+               end
+               if predicted_frame.animation ~= player.animation then current_hit_id = 0 end
+
+               if next_hit_id > current_hit_id then should_test = true end
+               if fdata.infinite_loop and
+                   (player.animation_connection_count + player.animation_miss_count >= fdata.max_hits) then
+                  should_test = false
+               end
+
+               if should_test then
+                  local remaining_freeze = player.remaining_freeze_frames - i
+                  local remaining_cooldown = player.cooldown
+                  if remaining_freeze <= 0 then
+                     remaining_cooldown = math.max(remaining_cooldown + remaining_freeze, 0)
+                  end
+
+                  local dummy_boxes = get_hurtboxes(dummy.char_str, dummy_line[i].animation, dummy_line[i].frame)
+                  if #dummy_boxes == 0 then dummy_boxes = dummy.boxes end
+
+                  if debug_settings.debug_hitboxes and i <= 100 then
+                     local attack_boxes = tools.get_boxes(frames[frame_to_check].boxes, {"attack"})
+                     debug.queue_hitbox_draw(gamestate.frame_number + predicted_frame.delta, {
+                        player_motion_data[i].pos_x, player_motion_data[i].pos_y, player_motion_data[i].flip_x,
+                        attack_boxes, nil, nil, 0xFF941CDD
+                     }, "attack")
+                     local color = 0x44097000 + 255 - math.floor(100 * (frames_prediction - i) / frames_prediction)
+                     debug.queue_hitbox_draw(gamestate.frame_number + predicted_frame.delta, {
+                        dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y, dummy_motion_data[i].flip_x,
+                        dummy_boxes, nil, nil, color
+                     }, "vuln")
+                  end
+
+                  local box_type_matches = {{{"vulnerability", "ext. vulnerability"}, {"attack"}}}
+                  if frame_data_meta[player.char_str][predicted_frame.animation] and
+                      frame_data_meta[player.char_str][predicted_frame.animation].hit_throw then
+                     table.insert(box_type_matches, {{"throwable"}, {"throw"}})
+                  end
+
+                  if test_collision(dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y, dummy_motion_data[i].flip_x,
+                                    dummy_boxes, player_motion_data[i].pos_x, player_motion_data[i].pos_y,
+                                    player_motion_data[i].flip_x, frames[frame_to_check].boxes, box_type_matches) then
+                     break
+                  end
+               end
+            end
+         end
+      end
    end
 
    return predicted_state
@@ -797,9 +1005,14 @@ local function predict_player_movement(player, player_anim, player_frame, player
    return predicted_state
 end
 
-local function update_prediction(player, player_anim, player_frame, dummy, dummy_anim, dummy_frame, frames_prediction)
-   -- returns all possible sequences of the next 3 frames
+local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim, dummy_frame, frames_prediction)
    local specify_frame = player_anim and player_frame
+   if not specify_frame and next_animation[player] ~= animations.NONE then
+      player_anim = get_next_animation(player)
+      player_frame = 0
+      specify_frame = true
+   end
+   -- get all possible sequences of the next 3 frames
    local player_lines = predict_frames_branching(player, player_anim, player_frame, frames_prediction, specify_frame)
    -- filter for lines that contain hit frames or projectiles
    local filtered = filter_lines(player, player_lines) or {}
@@ -820,6 +1033,11 @@ local function update_prediction(player, player_anim, player_frame, dummy, dummy
    end
 
    specify_frame = dummy_anim and dummy_frame
+   if not specify_frame and next_animation[dummy] ~= animations.NONE then
+      dummy_anim = get_next_animation(dummy)
+      dummy_frame = 0
+      specify_frame = true
+   end
    local dummy_line = predict_frames_branching(dummy, dummy_anim, dummy_frame, frames_prediction, specify_frame)[1]
    if not dummy_line or #dummy_line == 0 then dummy_line = create_line(dummy, frames_prediction) end
    dummy_line[0] = {animation = dummy.animation, frame = dummy.animation_frame, delta = 0}
@@ -862,6 +1080,18 @@ local function update_prediction(player, player_anim, player_frame, dummy, dummy
                player_motion_data[i].pos_x, player_motion_data[i].pos_y, player_motion_data[i].flip_x, vuln, nil, nil,
                color
             }, "player")
+            tfd = frame_data[dummy.char_str][dummy_line[i].animation]
+            color = 0x44097000 + 255
+            if tfd and tfd.frames and tfd.frames[dummy_line[i].frame + 1] and tfd.frames[dummy_line[i].frame + 1].boxes then
+               vuln =
+                   tools.get_boxes(tfd.frames[dummy_line[i].frame + 1].boxes, {"vulnerability", "ext. vulnerability"})
+               color = 0x44097000 + 255 - math.floor(100 * (frames_prediction - i) / frames_prediction)
+            end
+            if #vuln == 0 then vuln = player.boxes end
+            debug.queue_hitbox_draw(gamestate.frame_number + i, {
+               dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y, dummy_motion_data[i].flip_x, vuln, nil, nil,
+               color
+            }, "dummy")
          end
 
          -- print(i, dummy_line[i].animation, dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y, #vuln)
@@ -869,7 +1099,7 @@ local function update_prediction(player, player_anim, player_frame, dummy, dummy
          if fdata then
             local frames = fdata.frames
             if frames and frames[frame_to_check] then
-               if frames[frame_to_check].projectile then
+               if frames[frame_to_check].projectile and (player.remaining_freeze_frames - i <= 0) then
                   insert_projectile(player, player_motion_data[i], predicted_frame)
                end
 
@@ -881,11 +1111,14 @@ local function update_prediction(player, player_anim, player_frame, dummy, dummy
                   local next_hit_id = 1
 
                   for j = 1, #fdata.hit_frames do
-                     if frame > fdata.hit_frames[j][2] then next_hit_id = j + 1 end
+                     if frame > fdata.hit_frames[j][2] then
+                        next_hit_id = math.min(j + 1, #fdata.hit_frames)
+                     end
                   end
                   if fdata.infinite_loop then
                      current_hit_id = (player.animation_miss_count + player.animation_connection_count) %
                                           #fdata.hit_frames
+                     if #fdata.hit_frames == 1 then should_test = true end
                   end
                   if predicted_frame.animation ~= player.animation then current_hit_id = 0 end
 
@@ -931,9 +1164,9 @@ local function update_prediction(player, player_anim, player_frame, dummy, dummy
                         local delta = predicted_frame.delta + remaining_cooldown
                         if not (fdata.frames[predicted_frame.frame + 1].bypass_freeze and delta == 1) then
                            delta = delta + player.remaining_freeze_frames
-                        else
-                           -- print(predicted_frame.animation, predicted_frame.frame, delta) --debug
                         end
+                        local side = utils.get_side(player_motion_data[i].pos_x, dummy_motion_data[i].pos_x,
+                                                    player_motion_data[i - 1].pos_x, dummy_motion_data[i - 1].pos_x)
                         local expected_hit = {
                            id = player.id,
                            blocking_type = "player",
@@ -941,23 +1174,19 @@ local function update_prediction(player, player_anim, player_frame, dummy, dummy
                            delta = delta,
                            animation = predicted_frame.animation,
                            flip_x = predicted_frame.flip_x,
-                           switched_sides = player_motion_data[i].switched_sides
+                           side = side
                         }
                         table.insert(expected_hits, expected_hit)
                      end
                   end
                end
-            else
-               print("NO FD", predicted_frame.animation, frame)
             end
          end
-
       end
    end
 
    local valid_projectiles = {}
    for _, projectile in pairs(gamestate.projectiles) do
-      -- print(projectile.id, projectile.animation_start_frame)
       if ((projectile.is_forced_one_hit and projectile.remaining_hits ~= 0xFF) or projectile.remaining_hits > 0) and
           projectile.alive and projectile.projectile_type ~= "00_seieienbu" then
          if (projectile.emitter_id ~= dummy.id or (projectile.emitter_id == dummy.id and projectile.is_converted)) then
@@ -978,9 +1207,22 @@ local function update_prediction(player, player_anim, player_frame, dummy, dummy
       for _, projectile in pairs(valid_projectiles) do
          local proj_line = nil
          if projectile.projectile_type == "seieienbu" then
-            local emitter = gamestate.player_objects[projectile.emitter_id]
-            proj_line = predict_frames_branching(emitter, projectile.seiei_animation, projectile.seiei_frame,
-                                                 frames_prediction, true)[1]
+            proj_line = {}
+            for i = 1, frames_prediction do
+               table.insert(proj_line,
+                            {animation = projectile.seiei_animation, frame = projectile.seiei_frame, delta = i})
+            end
+         elseif projectile.placeholder then
+            proj_line = {}
+            local j = 1
+            for i = 1, frames_prediction do
+               local proj_frame = projectile.animation_frame
+               if projectile.animation_start_frame - gamestate.frame_number - i < 0 then
+                  proj_frame = proj_frame + j
+                  j = j + 1
+               end
+               table.insert(proj_line, {animation = projectile.projectile_type, frame = proj_frame, delta = i})
+            end
          else
             proj_line = predict_frames_branching(projectile, projectile.projectile_type, projectile.animation_frame,
                                                  frames_prediction)[1]
@@ -991,21 +1233,33 @@ local function update_prediction(player, player_anim, player_frame, dummy, dummy
              (projectile.placeholder and projectile.animation_start_frame - gamestate.frame_number > 0 and
                  projectile.animation_start_frame - gamestate.frame_number <= frames_prediction) then
             for i = 1, #dummy_line do
+               if not proj_line[i] then break end
                local remaining_freeze = projectile.remaining_freeze_frames - i
                local remaining_cooldown = projectile.cooldown
+               if player.superfreeze_decount > 0 then
+                  remaining_freeze = remaining_freeze + player.remaining_freeze_frames
+               end
+               if projectile.placeholder then
+                  remaining_cooldown = (projectile.animation_start_frame - gamestate.frame_number - proj_line[i].delta)
+               end
                if remaining_freeze <= 0 then
                   remaining_cooldown = math.max(remaining_cooldown + remaining_freeze, 0)
+                  remaining_freeze = 0
                end
 
                local proj_boxes = {}
                local ignore_flip = false
+               local is_first_hit_frame = false
+               local fdata
                if projectile.projectile_type == "00_tenguishi" then
                   proj_boxes = projectile.boxes
                   ignore_flip = true
                elseif projectile.projectile_type == "seieienbu" then
-                  proj_boxes = projectile.boxes
+                  if projectile.animation_start_frame - gamestate.frame_number - i == 0 then
+                     proj_boxes = projectile.boxes
+                  end
                else
-                  local fdata = find_move_frame_data("projectiles", proj_line[i].animation)
+                  fdata = find_move_frame_data("projectiles", proj_line[i].animation)
                   local frame_to_check = proj_line[i].frame + 1
                   if fdata then
                      local frames = fdata.frames
@@ -1013,6 +1267,8 @@ local function update_prediction(player, player_anim, player_frame, dummy, dummy
                          tools.has_boxes(frames[frame_to_check].boxes, {"attack", "throw"}) then
                         proj_boxes = frames[frame_to_check].boxes
                      end
+                     if proj_line[i].frame == fd.get_first_hit_frame("projectiles", proj_line[i].animation) and
+                         not proj_line[i].animation == "70" then is_first_hit_frame = true end
                   end
                   if #proj_boxes == 0 then proj_boxes = projectile.boxes end
                end
@@ -1022,12 +1278,11 @@ local function update_prediction(player, player_anim, player_frame, dummy, dummy
                local dummy_boxes = get_hurtboxes(dummy.char_str, dummy_line[i].animation, dummy_line[i].frame)
                if not dummy_boxes then dummy_boxes = dummy.boxes end
 
-               local delta = proj_line[i].delta + projectile.remaining_freeze_frames + remaining_cooldown
-               if projectile.placeholder then
-                  delta = projectile.animation_start_frame - gamestate.frame_number
-               end
-
-               if #proj_boxes > 0 and delta <= frames_prediction then
+               local delta = proj_line[i].delta + remaining_cooldown
+               if not fdata or
+                   not (fdata.frames[proj_line[i].frame + 1] and fdata.frames[proj_line[i].frame + 1].bypass_freeze and
+                       delta == 1) then delta = delta + remaining_freeze end
+               if #proj_boxes > 0 and delta <= frames_prediction and remaining_cooldown <= 0 and not is_first_hit_frame then
                   if debug_settings.debug_hitboxes and i <= 1 then
                      local color = 0xa9691c00 + 255 - 70 * delta
                      debug.queue_hitbox_draw(gamestate.frame_number + delta, {
@@ -1073,10 +1328,22 @@ local function predict_frames_before_landing(player)
    return -1
 end
 
+local function update_before(input, player, dummy)
+   update_player_animation(player)
+   update_player_animation(dummy)
+end
+
+local function update_after(input, player, dummy)
+   predict_next_animation(player, input)
+   predict_next_animation(dummy, input)
+end
+
 return {
    test_collision = test_collision,
-   update_prediction = update_prediction,
-   predict_movement_until_landing = predict_movement_until_landing,
+   predict_hits = predict_hits,
+   update_before = update_before,
+   update_after = update_after,
+   predict_jump_arc = predict_jump_arc,
    predict_player_movement = predict_player_movement,
    predict_frames_before_landing = predict_frames_before_landing,
    get_frames_until_idle = get_frames_until_idle,

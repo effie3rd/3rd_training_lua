@@ -16,6 +16,7 @@ local is_in_character_select = false
 local is_before_curtain = false
 local is_in_match = false
 local has_match_just_started = false
+local has_match_just_ended = false
 local player_objects = {}
 local projectiles = {}
 
@@ -24,83 +25,66 @@ local P1, P2
 local movement_postures = {[6] = true, [8] = true, [10] = true, [12] = true}
 local jump_postures = {[20] = true, [22] = true, [24] = true, [26] = true, [28] = true, [30] = true}
 
-local attacking_byte_exception = {}
-attacking_byte_exception["alex"] = {["5944"] = true, ["5aec"] = true, ["5cac"] = true, ["5e54"] = true}
-attacking_byte_exception["chunli"] = {
-   ["486c"] = true,
-   ["4b64"] = true,
-   ["4e44"] = true,
-   ["5124"] = true,
-   ["ce8c"] = true,
-   ["c3b4"] = true
+local attacking_byte_exception = {
+   alex = {["5e54"] = 10, ["5aec"] = 17, ["5944"] = 12, ["5cac"] = 22},
+   gouki = {["5124"] = 10, ["a508"] = 17, ["a6e0"] = 21, ["a330"] = 13},
+   twelve = {
+      ["510c"] = 13,
+      ["5bec"] = 13,
+      ["5b2c"] = 15,
+      ["5edc"] = 17,
+      ["4bac"] = 13,
+      ["5a6c"] = 17,
+      ["5d0c"] = 21,
+      ["5ddc"] = 12
+   },
+   ibuki = {
+      ["f150"] = 10,
+      ["93b8"] = 26,
+      ["9750"] = 24,
+      ["9578"] = 30,
+      ["edb0"] = 10,
+      ["ef80"] = 10,
+      ["0748"] = 29,
+      ["e2f0"] = 22
+   },
+   shingouki = {["e170"] = 23, ["ddc0"] = 14, ["df98"] = 18},
+   gill = {["d63c"] = 100},
+   hugo = {
+      ["f3ac"] = 23,
+      ["efcc"] = 18,
+      ["f1bc"] = 20,
+      ["2184"] = 68,
+      ["f59c"] = 22,
+      ["1d64"] = 25,
+      ["1f24"] = 53,
+      ["f7a4"] = 15,
+      ["fa54"] = 19,
+      ["fd1c"] = 28,
+      ["0044"] = 31
+   },
+   dudley = {["3cdc"] = 19},
+   chunli = {["ce8c"] = 41, ["c3b4"] = 17, ["486c"] = 13, ["4e44"] = 10, ["4b64"] = 12, ["5124"] = 14},
+   ryu = {["8354"] = 15, ["84fc"] = 18, ["81dc"] = 12},
+   makoto = {["2720"] = 21, ["df10"] = 87},
+   sean = {["c25c"] = 22, ["2060"] = 23, ["4310"] = 0, ["2200"] = 29, ["1ef0"] = 19, ["2130"] = 27},
+   urien = {["6aac"] = 23},
+   ken = {["a870"] = 19, ["abe8"] = 34},
+   necro = {
+      ["80b4"] = 30,
+      ["8574"] = 24,
+      ["f084"] = 14,
+      ["5e7c"] = 11,
+      ["e7a4"] = 14,
+      ["dd9c"] = 8,
+      ["7f24"] = 28,
+      ["7d94"] = 26,
+      ["5824"] = 20,
+      ["dadc"] = 12
+   },
+   yun = {["1e28"] = 33},
+   yang = {["af98"] = 12, ["aa18"] = 12, ["94d8"] = 33, ["a498"] = 12}
 }
-attacking_byte_exception["dudley"] = {["3cdc"] = true}
-attacking_byte_exception["gill"] = {["d63c"] = true}
-attacking_byte_exception["gouki"] = {["a330"] = true, ["a508"] = true, ["a6e0"] = true, ["5124"] = true}
-attacking_byte_exception["hugo"] = {
-   ["efcc"] = true,
-   ["f1bc"] = true,
-   ["f3ac"] = true,
-   ["f59c"] = true,
-   ["1d64"] = true,
-   ["1f24"] = true,
-   ["2184"] = true,
-   ["f7a4"] = true,
-   ["fa54"] = true,
-   ["fd1c"] = true,
-   ["0044"] = true
-}
-attacking_byte_exception["ibuki"] = {
-   ["93b8"] = true,
-   ["6aa8"] = true,
-   ["9578"] = true,
-   ["6b48"] = true,
-   ["9750"] = true,
-   ["63f0"] = true,
-   ["edb0"] = true,
-   ["66a8"] = true,
-   ["ef80"] = true,
-   ["f150"] = true,
-   ["0748"] = true,
-   ["e2f0"] = true
-}
-attacking_byte_exception["ken"] = {["a870"] = true, ["abe8"] = true}
-attacking_byte_exception["makoto"] = {["2720"] = true, ["df10"] = true}
-attacking_byte_exception["necro"] = {
-   ["dd9c"] = true,
-   ["f084"] = true,
-   ["e7a4"] = true,
-   ["5824"] = true,
-   ["5e7c"] = true,
-   ["7d94"] = true,
-   ["7f24"] = true,
-   ["80b4"] = true,
-   ["8574"] = true,
-   ["dadc"] = true
-}
-attacking_byte_exception["ryu"] = {["81dc"] = true, ["8354"] = true, ["84fc"] = true}
-attacking_byte_exception["sean"] = {
-   ["1ef0"] = true,
-   ["2060"] = true,
-   ["2130"] = true,
-   ["2200"] = true,
-   ["4310"] = true,
-   ["c25c"] = true
-}
-attacking_byte_exception["shingouki"] = {["ddc0"] = true, ["df98"] = true, ["e170"] = true}
-attacking_byte_exception["twelve"] = {
-   ["510c"] = true,
-   ["4bac"] = true,
-   ["5a6c"] = true,
-   ["5b2c"] = true,
-   ["5bec"] = true,
-   ["5d0c"] = true,
-   ["5ddc"] = true,
-   ["5edc"] = true
-}
-attacking_byte_exception["urien"] = {["6aac"] = true}
-attacking_byte_exception["yang"] = {["94d8"] = true, ["a498"] = true, ["aa18"] = true, ["af98"] = true}
-attacking_byte_exception["yun"] = {["1e28"] = true}
 
 local function make_input_set(value)
    return {
@@ -163,28 +147,28 @@ local function reset_player_objects()
    end
 end
 
-local function update_received_hits(self, other)
-   if self.received_connection or self.is_being_thrown then
-      self.last_received_connection_animation = other.animation
-      self.last_received_connection_hit_id = math.max(other.current_hit_id, 1)
-   elseif frame_number - self.last_received_connection_frame == 1 then
+local function update_received_hits(player, other)
+   if (player.received_connection or player.is_being_thrown) and not player.received_connection_is_projectile then
+      player.last_received_connection_animation = other.animation
+      player.last_received_connection_hit_id = math.max(other.current_hit_id, 1)
+   elseif frame_number - player.last_received_connection_frame == 1 then
       for _, proj in pairs(projectiles) do
          -- this will not detect tengu stones because their remaining_hits does not change
          if proj.emitter_id == other.id and
              (proj.previous_remaining_hits - proj.remaining_hits == 1 or proj.previous_remaining_hits -
                  proj.remaining_hits == -255) then
-            self.last_received_connection_animation = proj.projectile_type
-            self.last_received_connection_hit_id = proj.remaining_hits -- could use max_hits - remaining if needed
+            player.last_received_connection_animation = proj.projectile_type
+            player.last_received_connection_hit_id = proj.remaining_hits -- could use max_hits - remaining if needed
          end
       end
    end
 end
 
-local function update_wakeup(self, other)
-   if self.posture == 0x26 and self.posture_ext >= 0x40 and not debug_settings.recording_framedata then
-      self.remaining_wakeup_time = get_wakeup_time(self.char_str, self.animation, self.animation_frame)
+local function update_wakeup(player, other)
+   if player.posture == 0x26 and player.posture_ext >= 0x40 and not debug_settings.recording_framedata then
+      player.remaining_wakeup_time = get_wakeup_time(player.char_str, player.animation, player.animation_frame)
    else
-      self.remaining_wakeup_time = 0
+      player.remaining_wakeup_time = 0
    end
 end
 
@@ -228,7 +212,7 @@ local function get_parry_type(player)
    local opponent_airborne = player.other.posture >= 20 and player.other.posture <= 30
    local parry_type = "ground"
 
-   if player.other.has_just_connected then -- if other player connected, then attack is not a projectile
+   if not player.received_connection_is_projectile then -- if other player connected, then attack is not a projectile
       if player_airborne then
          parry_type = "air"
       elseif opponent_airborne then
@@ -248,13 +232,14 @@ local function read_game_vars()
    local p2_locked = memory.readbyte(memory_addresses.global.p2_locked)
    match_state = memory.readbyte(memory_addresses.global.match_state) -- 1 before curtain, 2 after curtain, 9 character select
 
-   is_in_character_select = match_state == 0x09
+   is_in_character_select = match_state == 0x09 and memory.readbyte(memory_addresses.global.menu_state) == 2
 
    is_in_match = ((p1_locked == 0xFF or p2_locked == 0xFF) and match_state == 0x02)
 
    is_before_curtain = ((p1_locked == 0xFF or p2_locked == 0xFF) and match_state == 0x01)
 
    has_match_just_started = previous_match_state == 0x01 and is_in_match
+   has_match_just_ended = match_state == 3
 
    stage = memory.readbyte(memory_addresses.global.stage)
 end
@@ -518,6 +503,8 @@ local function read_player_vars(player)
    player.recovery_type = memory.readbyte(player.base + 0x207) -- 1 was hit on ground, 4 attacking normal, 5 attacking special, 6 was hit in air, 7 body hit ground, updates frame after hit
    player.previous_standing_state = player.standing_state or 0
    player.standing_state = memory.readbyte(player.base + 0x297)
+   player.has_just_started_jump = (player.action == 12 and previous_action ~= 12) or
+                                      (player.action == 13 and previous_action ~= 13)
    player.is_standing = player.posture == 0x0 and player.pos_y == 0
    player.is_crouching = player.posture == 0x20 or player.posture == 0x21
    player.is_jumping = jump_postures[player.posture] or false
@@ -557,6 +544,8 @@ local function read_player_vars(player)
          player.additional_recovery_time = player.additional_recovery_time - 1
          if player.additional_recovery_time <= 0 then player.ends_recovery_next_frame = true end
       end
+   elseif player.recovery_time == 0 and player.previous_recovery_time > 0 then
+      player.ends_recovery_next_frame = true
    end
 
    player.meter_gauge = memory.readbyte(player.addresses.gauge)
@@ -618,6 +607,7 @@ local function read_player_vars(player)
    player.is_attacking_byte = memory.readbyte(player.base + 0x428)
    player.is_attacking = player.is_attacking_byte > 0 or
                              (attacking_byte_exception[player.char_str] and
+                                 attacking_byte_exception[player.char_str][player.animation] and player.animation_frame <=
                                  attacking_byte_exception[player.char_str][player.animation])
    player.is_attacking_ext_byte = memory.readbyte(player.base + 0x429)
    player.is_attacking_ext = player.is_attacking_ext_byte > 0
@@ -625,9 +615,6 @@ local function read_player_vars(player)
    if debug_state_variables and player.has_just_attacked then
       print(string.format("%d - %s attacked", frame_number, player.prefix))
    end
-
-   player.just_cancelled_into_attack = previous_attacking_state and player.character_state_byte == 4 and
-                                           player.has_animation_just_changed -- not the most accurate
 
    -- ACTION
    local previous_action_count = player.action_count or 0
@@ -641,28 +628,38 @@ local function read_player_vars(player)
    player.animation_action_count = player.animation_action_count or 0
    if player.has_just_acted then player.animation_action_count = player.animation_action_count + 1 end
 
+   -- FREEZE
+   player.freeze_just_began = false
+   player.freeze_just_ended = false
+   if player.remaining_freeze_frames > 0 then
+      if player.previous_remaining_freeze_frames == 0 then
+         player.freeze_just_began = true
+      else
+         if not (player.animation_frame_data and not debug_settings.recording_framedata -- debug
+         and player.animation_frame_data.frames and player.animation_frame_data.frames[player.animation_frame + 1] and
+             player.animation_frame_data.frames[player.animation_frame + 1].bypass_freeze) then
+            player.animation_freeze_frames = player.animation_freeze_frames + 1
+         end
+      end
+   elseif player.remaining_freeze_frames == 0 and player.previous_remaining_freeze_frames > 0 then
+      player.freeze_just_ended = true
+      player.animation_freeze_frames = player.animation_freeze_frames + 1
+   end
+
    -- ANIMATION
    player.animation_start_frame = player.animation_start_frame or frame_number
    player.animation_freeze_frames = player.animation_freeze_frames or 0
 
+   player.animation_frame = frame_number - player.animation_start_frame - player.animation_freeze_frames
+
+   if player.animation_frame_data and not debug_settings.recording_framedata then
+      -- cap animation frame. animation frame will sometimes exceed # of frames in frame data for some long looping animations i.e. air recovery
+      player.animation_frame = math.min(player.animation_frame, #player.animation_frame_data.frames - 1)
+   end
+
    player.animation_frame_data = nil
    if frame_data[player.char_str] then player.animation_frame_data = frame_data[player.char_str][player.animation] end
    player.has_animation_just_changed = previous_animation ~= player.animation
-   if debug_state_variables and player.has_animation_just_changed then
-      print(string.format("%d - %s animation changed (%s -> %s)", frame_number, player.prefix, previous_animation,
-                          player.animation))
-   end
-
-   player.animation_frame = frame_number - player.animation_start_frame - player.animation_freeze_frames
-
-   -- self chain. cr. lk chains, etc
-   if not debug_settings.recording_framedata then ---debug
-      if player.animation_frame_data and not player.has_animation_just_changed and
-          player.animation_frame_data.self_chain and player.animation_frame > 2 and
-          (player.has_just_attacked or (player.previous_input_capacity > 0 and player.input_capacity == 0)) then
-         player.self_chain = true -- look for self chain next frame
-      end
-   end
 
    local function reset_animation()
       player.animation_start_frame = frame_number
@@ -680,30 +677,59 @@ local function read_player_vars(player)
 
    if player.has_animation_just_changed then reset_animation() end
 
-   -- debug
-   if not debug_settings.recording_framedata then
-      player.animation_frame_hash = string.sub(player.animation_frame_hash, 1, 8) ..
-                                        string.format("%02x", player.animation_action_count)
-   end
-
-   if player.animation_frame_data and not debug_settings.recording_framedata then
-      -- cap animation frame. animation frame will sometimes exceed # of frames in frame data for some long looping animations i.e. air recovery
-      player.animation_frame = math.min(player.animation_frame, #player.animation_frame_data.frames - 1)
-   end
-
-   player.freeze_just_began = false
-   player.freeze_just_ended = false
-   if player.remaining_freeze_frames > 0 then
-      if player.previous_remaining_freeze_frames == 0 then player.freeze_just_began = true end
-      if not (player.animation_frame_data and not debug_settings.recording_framedata -- debug
-      and player.animation_frame_data.frames and player.animation_frame_data.frames[player.animation_frame + 1] and
-          player.animation_frame_data.frames[player.animation_frame + 1].bypass_freeze) then
-         player.animation_freeze_frames = player.animation_freeze_frames + 1
+   -- self chain. cr. lk chains, etc
+   if not debug_settings.recording_framedata then ---debug
+      if player.animation_frame_data and not player.has_animation_just_changed and
+          player.animation_frame_data.self_chain and player.animation_frame > 2 and
+          (player.has_just_attacked or (player.previous_input_capacity > 0 and player.input_capacity == 0)) then
+         player.self_chain = true
+         player.animation_action_count = 0
       end
-   elseif player.remaining_freeze_frames == 0 and player.previous_remaining_freeze_frames > 0 then
-      player.freeze_just_ended = true
    end
 
+   player.just_cancelled_into_attack = previous_attacking_state and player.character_state_byte == 4 and
+                                           player.has_animation_just_changed -- not the most accurate
+
+   -- if not debug_settings.recording_framedata then
+   player.animation_frame_hash = string.sub(player.animation_frame_hash, 1, 8) ..
+                                     string.format("%02x", player.animation_action_count)
+   -- end
+
+   -- resync animation
+   if player.animation_frame_data and not debug_settings.recording_framedata then
+      local frames = player.animation_frame_data.frames
+      local current_frame = frames[player.animation_frame + 1]
+      if current_frame then
+         local target_hash = player.animation_frame_hash
+         local current_hash = current_frame.hash
+         if current_hash and current_hash ~= target_hash -- and (player.remaining_freeze_frames == 0 or player.freeze_just_began)
+         then
+            local resync_target, new_hash = find_resync_target(player, player.animation_frame_data,
+                                                               player.animation_frame_data.infinite_loop)
+            if resync_target ~= -1 then
+               if player.self_chain and resync_target <= fd.get_first_hit_frame(player.char_str, player.animation) then
+                  reset_animation()
+               elseif resync_target == 0 then
+                  player.animation_action_count = 0
+                  player.animation_connection_count = 0
+                  player.animation_miss_count = 0
+                  player.self_chain = false
+               end
+               if player.animation_frame_data.infinite_loop then
+                  player.animation_action_count = 0
+                  player.animation_connection_count = 0
+                  player.animation_miss_count = 0
+               end
+               player.current_hit_id = 0
+               player.animation_frame = resync_target
+               player.animation_start_frame = frame_number - resync_target - player.animation_freeze_frames
+            end
+         end
+      end
+   end
+   if player.has_just_acted then player.last_act_animation = player.animation end
+
+   -- PUSHBACK
    player.pushback_start_frame = player.pushback_start_frame or 0
    player.is_in_pushback = player.is_in_pushback or false
    if player.freeze_just_began or player.is_in_pushback and player.recovery_time == 0 then
@@ -714,36 +740,6 @@ local function read_player_vars(player)
       player.pushback_start_frame = frame_number
       player.is_in_pushback = true
    end
-
-   -- resync animation
-   if player.animation_frame_data ~= nil and not debug_settings.recording_framedata then
-      local frames = player.animation_frame_data.frames
-      local current_frame = frames[player.animation_frame + 1]
-      if current_frame then
-         local target_hash = player.animation_frame_hash
-         local current_hash = current_frame.hash
-         if current_hash ~= nil and current_hash ~= target_hash -- and (player.remaining_freeze_frames == 0 or player.freeze_just_began)
-         then
-            -- print(player.animation, target_hash, current_hash)
-            local resync_target, target_hash = find_resync_target(player, player.animation_frame_data,
-                                                                  player.animation_frame_data.infinite_loop)
-            if resync_target ~= -1 then
-               if player.self_chain and resync_target <= fd.get_first_hit_frame(player.char_str, player.animation) then
-                  reset_animation()
-               elseif resync_target == 0 then
-                  player.animation_action_count = 0
-                  player.animation_connection_count = 0
-                  player.animation_miss_count = 0
-                  player.self_chain = false
-               end
-               player.current_hit_id = 0
-               player.animation_frame = resync_target
-               player.animation_start_frame = frame_number - resync_target - player.animation_freeze_frames
-            end
-         end
-      end
-   end
-   if player.has_just_acted then player.last_act_animation = player.animation end
 
    -- RECEIVED HITS/BLOCKS/PARRYS
    local previous_total_received_hit_count = player.total_received_hit_count or nil
@@ -761,6 +757,8 @@ local function read_player_vars(player)
    player.received_connection_marker = memory.readword(player.addresses.received_connection_marker)
    player.received_connection = previous_received_connection_marker == 0 and player.received_connection_marker ~= 0
    player.received_connection_type = memory.readbyte(player.addresses.received_connection_type)
+   player.received_connection_is_projectile = player.received_connection_type == 2 or player.received_connection_type ==
+                                                  4
 
    player.last_received_connection_frame = player.last_received_connection_frame or 0
    if player.received_connection then player.last_received_connection_frame = frame_number end
@@ -780,6 +778,14 @@ local function read_player_vars(player)
    local previous_is_blocking = player.is_blocking
    player.is_blocking = player.blocking_id > 0 and player.blocking_id < 5 or player.has_just_blocked
 
+   -- player.is_blocking_high_air = player.blocking_id == 1 --updates 1 frame after connection
+   -- player.is_blocking_high = player.blocking_id == 2
+   -- player.is_blocking_low = player.blocking_id == 3
+   -- player.is_parrying_antiair = player.blocking_id == 5
+   -- player.is_parrying_high = player.blocking_id == 6
+   -- player.is_parrying_low = player.blocking_id == 7
+   -- player.is_parrying_air = player.blocking_id == 8
+
    player.has_just_been_hit = false
 
    if total_received_hit_count_diff > 0 then
@@ -788,6 +794,7 @@ local function read_player_vars(player)
    end
 
    player.has_just_parried = false
+
    if player.received_connection and player.received_connection_marker == 0xFFF1 and total_received_hit_count_diff == 0 then
       player.has_just_parried = true
       if player.other.animation == "baac" and player.action ~= 23 then player.has_just_parried = false end -- chun st.HP bug
@@ -915,25 +922,6 @@ local function read_player_vars(player)
 
    player.just_became_idle = not previous_is_idle and player.is_idle
    player.just_recovered = player.previous_recovery_time > 0 and player.recovery_time == 0 and player.standing_state < 3
-   --[[
-  if player.id == 1 then
-    print(string.format(
-      "%d: %d, %d, %d, %d, %d, %d, %d, %04x, %d, %d, %04x",
-      tools.to_bit(player.is_idle),
-      tools.to_bit(player.is_attacking),
-      tools.to_bit(player.is_attacking_ext),
-      tools.to_bit(player.is_blocking),
-      tools.to_bit(player.is_waking_up),
-      tools.to_bit(player.is_fast_wakingup),
-      tools.to_bit(player.is_being_thrown),
-      tools.to_bit(player.is_in_jump_startup),
-      player.busy_flag,
-      player.recovery_time,
-      player.remaining_freeze_frames,
-      player.input_capacity
-    ))
-  end
-  ]]
 
    if player.is_idle then
       player.idle_time = player.idle_time + 1
@@ -992,15 +980,7 @@ local function read_player_vars(player)
    if player.is_in_jump_startup then player.last_jump_startup_duration = player.last_jump_startup_duration + 1 end
 
    -- TIMED SA
-   if character_specific[player.char_str].timed_sa[player.selected_sa] then
-      if player.superfreeze_decount > 0 then
-         player.is_in_timed_sa = true
-      elseif player.is_in_timed_sa and memory.readbyte(player.addresses.gauge) == 0 then
-         player.is_in_timed_sa = false
-      end
-   else
-      player.is_in_timed_sa = false
-   end
+   player.is_in_timed_sa = memory.readbyte(player.addresses.sa_state) == 4
 
    -- PARRY BUFFERS
    -- global game consts
@@ -1036,7 +1016,6 @@ local function read_player_vars(player)
              "air" and parry_object.name == "air" or parry_type == "anti_air" and parry_object.name == "anti_air" then
             parry_object.last_attempt_frame = frame_number
             if player.has_just_parried then
-               -- right
                parry_object.delta = frame_number - parry_object.last_validity_start_frame
                parry_object.success = true
                parry_object.armed = false
@@ -1385,7 +1364,13 @@ local function read_player_vars(player)
    player.previous_stun_timer = player.stun_timer
 
    -- THROW INVULNERABILITY
+   player.throw_invulnerability_cooldown = player.throw_invulnerability_cooldown or 0
+   player.throw_recovery_frame = player.throw_recovery_frame or 0
+   local previous_throw_invulnerability_cooldown = player.throw_invulnerability_cooldown
    player.throw_invulnerability_cooldown = math.max(player.throw_invulnerability_cooldown - 1, 0)
+   if previous_throw_invulnerability_cooldown > 0 and player.throw_invulnerability_cooldown == 0 then
+      player.throw_recovery_frame = frame_number
+   end
 
    if player.has_just_woke_up then
       player.throw_invulnerability_cooldown = 7
@@ -1497,6 +1482,7 @@ local function update_seieienbu()
                         cooldown = 0,
                         placeholder = true,
                         seiei_animation = player.animation,
+                        seiei_frame = player.animation_frame,
                         seiei_hit_id = player.current_hit_id
                      }
                      projectiles[projectile.id .. "_" .. tostring(frame_number)] = projectile
@@ -1518,6 +1504,8 @@ local function update_projectile_cooldown(obj)
                                             fdmeta.hit_period)
       end
    end
+   -- EX Aegis sometimes hits slow
+   if obj.projectile_type == "68" and obj.animation_frame_hash == "5250024000" then obj.cooldown = 17 end
 end
 
 local max_objects = 30
@@ -1614,19 +1602,23 @@ local function read_projectiles()
             elseif emitter.char_str == "sean" then
                obj.projectile_type = "00_pa_sean"
             elseif emitter.char_str == "twelve" then
-               obj.projectile_type = "00_ndl"
+               if emitter.animation == "c534" then
+                  obj.projectile_type = "00_ndl_lp"
+               elseif emitter.animation == "c684" then
+                  obj.projectile_type = "00_ndl_mp"
+               elseif emitter.animation == "c7d4" then
+                  obj.projectile_type = "00_ndl_hp"
+               elseif emitter.animation == "ca84" then
+                  obj.projectile_type = "00_xndl"
+               end
             elseif emitter.char_str == "yang" then
                obj.projectile_type = "00_seieienbu"
             end
          elseif obj.projectile_type == "01" then
-            if emitter.char_str == "twelve" then obj.projectile_type = "01_ndl" end
+            if emitter.char_str == "twelve" then obj.projectile_type = "01_ndl_exp" end
          end
 
          if is_initialization then
-            -- debug
-            if obj.projectile_type == "5B" or obj.projectile_type == "00_seieienbu" then
-               memory_view_start = obj.base + 0x202
-            end
             obj.projectile_start_type = obj.projectile_type -- type can change during projectile life (ex: aegis)
             obj.animation_start_frame = frame_number
             obj.start_lifetime = obj.remaining_lifetime
@@ -1732,6 +1724,8 @@ reset_player_objects()
 local gamestate = {
    reset_player_objects = reset_player_objects,
    gamestate_read = gamestate_read,
+   is_standing_state = is_standing_state,
+   is_crouching_state = is_crouching_state,
    is_ground_state = is_ground_state,
    update_projectile_cooldown = update_projectile_cooldown
 }
@@ -1760,6 +1754,8 @@ setmetatable(gamestate, {
          return is_before_curtain
       elseif key == "has_match_just_started" then
          return has_match_just_started
+      elseif key == "has_match_just_ended" then
+         return has_match_just_ended
       end
    end,
 

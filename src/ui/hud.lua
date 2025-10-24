@@ -119,10 +119,10 @@ local function parry_gauge_display(player)
       gui.box(cooldown_gauge_right, y + 10, cooldown_gauge_right, y + 12, 0x00000000, colors.gauges.outline)
       draw.draw_gauge(validity_gauge_left, y + 8, validity_gauge_width, gauge_height + 1,
                       parry_object.validity_time / parry_object.max_validity, colors.gauges.valid_fill,
-                      colors.menu.gauge_background, colors.gauges.outline, true)
+                      colors.gauges.background, colors.gauges.outline, true)
       draw.draw_gauge(cooldown_gauge_left, y + 8 + gauge_height + 2, cooldown_gauge_width, gauge_height,
                       parry_object.cooldown_time / parry_object.max_cooldown, colors.gauges.cooldown_fill,
-                      colors.menu.gauge_background, colors.gauges.outline, true)
+                      colors.gauges.background, colors.gauges.outline, true)
 
       gui.box(validity_gauge_left + 3 * gauge_x_scale, y + 8, validity_gauge_left + 2 + 3 * gauge_x_scale,
               y + 8 + gauge_height + 2, colors.gauges.outline, 0x00000000)
@@ -192,7 +192,6 @@ local function charge_display(player)
       x = math.min(math.max(x, x_border), draw.SCREEN_WIDTH - x_border - charge_gauge_width)
 
       local charge_gauge_left = math.floor(x + (reset_gauge_width - charge_gauge_width) * 0.5)
-      local charge_gauge_right = charge_gauge_left + charge_gauge_width + 1
       local reset_gauge_left = x
       local reset_gauge_right = reset_gauge_left + reset_gauge_width + 1
       local charge_time_text = string.format("%d", charge_object.charge_time)
@@ -212,20 +211,16 @@ local function charge_display(player)
       local name_y_offset = 0
       if settings.language == "jp" then name_y_offset = -1 end
       render_text(x + 1, y + name_y_offset, charge_object.name)
-      --       gui.box(reset_gauge_left + 1, y + 11, charge_gauge_left, y + 11, 0x00000000, 0x00000077)
-      --       gui.box(reset_gauge_left, y + 10, reset_gauge_left, y + 12, 0x00000000, 0x00000077)
-      --       gui.box(charge_gauge_right, y + 11, reset_gauge_right - 1, y + 11, 0x00000000, 0x00000077)
-      --       gui.box(reset_gauge_right, y + 10, reset_gauge_right, y + 12, 0x00000000, 0x00000077)
       draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1,
                       charge_object.charge_time / charge_object.max_charge, colors.gauges.valid_fill,
-                      colors.menu.gauge_background, colors.gauges.outline, true)
+                      colors.gauges.background, colors.gauges.outline, true)
       draw.draw_gauge(reset_gauge_left, y + 8 + gauge_height + 2, reset_gauge_width, gauge_height,
                       charge_object.reset_time / charge_object.max_reset, colors.gauges.cooldown_fill,
-                      colors.menu.gauge_background, colors.gauges.outline, true)
+                      colors.gauges.background, colors.gauges.outline, true)
       if settings.training.charge_overcharge_on and charge_object.overcharge ~= 0 and charge_object.overcharge < 42 then
          draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1,
                          charge_object.overcharge / charge_object.max_charge, overcharge_color,
-                         colors.menu.gauge_background, colors.gauges.outline, true)
+                         colors.gauges.background, colors.gauges.outline, true)
          local w = get_text_dimensions(charge_time_text, "en")
          render_text(reset_gauge_right + 4 + w, y + 7, overcharge_time_text, "en", nil, charge_text_color)
       end
@@ -247,14 +242,11 @@ local function charge_display(player)
 
       x = math.min(math.max(x, x_border), draw.SCREEN_WIDTH - x_border - charge_gauge_width)
 
-      local charge_gauge_left = math.floor(x + (reset_gauge_width - charge_gauge_width) * 0.5)
-      local charge_gauge_right = charge_gauge_left + charge_gauge_width + 1
       local reset_gauge_left = x
       local reset_gauge_right = reset_gauge_left + reset_gauge_width + 1
       local validity_time_text = ""
       if kaiten_object.validity_time > 0 then validity_time_text = string.format("%d", kaiten_object.validity_time) end
       local reset_time_text = string.format("%d", kaiten_object.reset_time)
-      local charge_text_color = text.default_color
 
       local name_y_offset = 0
       if settings.language == "jp" then name_y_offset = -1 end
@@ -264,7 +256,7 @@ local function charge_display(player)
 
       draw.draw_gauge(reset_gauge_left, y + 8 + 9, reset_gauge_width, gauge_height,
                       kaiten_object.reset_time / kaiten_object.max_reset, colors.gauges.cooldown_fill,
-                      colors.menu.gauge_background, colors.gauges.outline, true)
+                      colors.gauges.background, colors.gauges.outline, true)
 
       render_text(reset_gauge_right + 4, y + 10, validity_time_text, "en", nil)
       render_text(reset_gauge_right + 4, y + 17, reset_time_text, "en", nil)
@@ -299,7 +291,7 @@ local function charge_display(player)
 
       if legs_object.active ~= 0xFF then
          draw.draw_gauge(x, y + 24, width, gauge_height + 1, legs_object.reset_time / 99, colors.gauges.valid_fill,
-                         colors.menu.gauge_background, colors.gauges.outline, true)
+                         colors.gauges.background, colors.gauges.outline, true)
       end
 
       return 8 + 5 + (gauge_height * 2)
@@ -339,31 +331,93 @@ end
 
 local air_combo_expired_color = 0x2013
 local air_time_bar_max_width = 121
+local air_time_bar_max_height = 3
 local function air_time_display(player, dummy)
    local offset_x = 225
    local offset_y = 50
-   local juggle_count = memory.readbyte(dummy.addresses.juggle_count) -- 2069031
-   local air_time = math.floor((memory.readbyte(dummy.addresses.juggle_time) + 1) / 2) -- 206902F
+   local juggle_count = memory.readbyte(dummy.addresses.juggle_count)
+   local air_time = math.floor((memory.readbyte(dummy.addresses.juggle_time) + 1) / 2)
    local air_time_bar_width = tools.round((air_time / 121) * air_time_bar_max_width)
    local x, y = get_text_dimensions(tostring(juggle_count), "en")
    render_text(offset_x - x, offset_y - 2, juggle_count, "en", nil)
    offset_x = offset_x + 4
-   gui.drawbox(offset_x, offset_y, offset_x + air_time_bar_max_width, offset_y + 3, colors.menu.gauge_background,
-               0x000000FF)
-   if air_time ~= 128 then -- 0x00C080FF
-      gui.drawbox(offset_x, offset_y, offset_x + air_time_bar_width, offset_y + 3, colors.gauges.cooldown_fill,
-                  0x00000000)
+
+   if air_time ~= 128 then
+      gui.drawbox(offset_x, offset_y, offset_x + air_time_bar_width, offset_y + air_time_bar_max_height,
+                  colors.gauges.cooldown_fill)
       if air_time > 0 then
          x, y = get_text_dimensions(tostring(air_time), "en")
-         offset_x = offset_x - x / 2
-         render_text(offset_x + air_time_bar_width, offset_y + 6, air_time, "en", nil)
+         render_text(offset_x - x / 2 + air_time_bar_width, offset_y + 6, air_time, "en", nil)
       end
    end
+   gui.drawbox(offset_x, offset_y, offset_x + air_time_bar_max_width, offset_y + air_time_bar_max_height,
+               colors.gauges.background, colors.gauges.outline)
    if dummy.pos_y > 0 and air_time == 128 then
       color_player(dummy, air_combo_expired_color)
    else
       color_player(dummy, "default")
    end
+end
+
+local denjin_display_bar_max_width = 80
+local denjin_display_bar_max_height = 3
+local denjin_display_text_padding = 4
+local denjin_display_is_charging = false
+local denjin_time = 8
+local denjin_value = 3
+local function denjin_display(player)
+   if not (player.char_str == "ryu" and player.selected_sa == 3) then return end
+   local x, y = draw.game_to_screen_space(player.pos_x,
+                                          player.pos_y + character_specific[player.char_str].height.standing.max)
+   x = x - denjin_display_bar_max_width / 2
+   y = y - 6 - denjin_display_bar_max_height
+
+   if player.superfreeze_decount > 0 then
+      denjin_time = 8
+      denjin_value = 3
+      denjin_display_is_charging = true
+   end
+   if not (player.animation == "774c" or player.animation == "90b4") then
+      denjin_display_is_charging = false
+   end
+   if denjin_display_is_charging and player.superfreeze_decount == 0 then
+      denjin_time = memory.readbyte(player.addresses.denjin_time)
+      denjin_value = memory.readbyte(player.addresses.denjin_level)
+   end
+
+   local barColor = colors.gauges.denjin
+   local denjin_level = ""
+   local max_timer = 8
+   if denjin_value == 3 then
+      denjin_level = "I"
+      max_timer = 8
+      barColor = colors.colorscale(colors.gauges.denjin, 0.8)
+   elseif denjin_value == 9 then
+      denjin_level = "II"
+      max_timer = 24
+      barColor = colors.gauges.denjin
+   elseif denjin_value == 14 then
+      denjin_level = "III"
+      max_timer = 48
+      barColor = colors.colorscale(colors.gauges.denjin, 1.5)
+   elseif denjin_value == 19 then
+      denjin_level = "IV"
+      max_timer = 80
+      barColor = colors.colorscale(colors.gauges.denjin, 2)
+      if denjin_time == 0 then
+         denjin_level = "V"
+         barColor = colors.colorscale(colors.gauges.denjin, 2.5)
+      end
+   end
+   local denjin_display_bar_width = (max_timer - denjin_time) / max_timer * denjin_display_bar_max_width
+   local w, h = get_text_dimensions(denjin_level, "en")
+   render_text(x - w - denjin_display_text_padding + 1, y, denjin_level, "en")
+   render_text(x + denjin_display_bar_max_width + denjin_display_text_padding, y, tostring(max_timer - denjin_time), "en")
+   y = y + 2
+   gui.drawbox(x, y, x + denjin_display_bar_width, y + denjin_display_bar_max_height, barColor)
+   gui.drawbox(x, y, x + denjin_display_bar_max_width, y + denjin_display_bar_max_height, colors.gauges.background,
+               colors.gauges.outline)
+
 end
 
 -- local function player_coloring_display()
@@ -481,38 +535,16 @@ local function red_parry_miss_display(player)
    end
 end
 
-local function draw_denjin(offsetX, offsetY)
-   local denjinTimer = memory.readbyte(0x02068D27) -- 20691BF
-   local denjin = memory.readbyte(0x02068D2D) -- 20691C5
-   local barColor = 0x00000000
-   local denjinLv = 0
-   if denjin == 3 then
-      denjinLv = 1
-      barColor = 0x0080FFFF
-   elseif denjin == 9 then
-      denjinLv = 2
-      barColor = 0x00FFFFFF
-   elseif denjin == 14 then
-      denjinLv = 3
-      barColor = 0x80FFFFFF
-   elseif denjin == 19 then
-      denjinLv = 4
-      barColor = 0xFEFEFEFF
-      if denjinTimer == 0 then denjinLv = 5 end
-   end
-   gui.text(offsetX - 10, offsetY, "  " .. tostring(denjinTimer))
-   gui.text(offsetX - 38, offsetY, "LV_" .. denjinLv)
-   offsetY = offsetY + 1
-   gui.drawbox(offsetX, offsetY, offsetX + 8, offsetY + 4, 0x00000000, 0x000000FF)
-   gui.drawbox(offsetX, offsetY, offsetX + 24, offsetY + 4, 0x00000000, 0x000000FF)
-   gui.drawbox(offsetX, offsetY, offsetX + 48, offsetY + 4, 0x00000000, 0x000000FF)
-   gui.drawbox(offsetX, offsetY, offsetX + 80, offsetY + 4, 0x00000000, 0x000000FF)
-   gui.drawbox(offsetX, offsetY, offsetX + denjinTimer, offsetY + 4, barColor, 0x000000FF)
-
-end
-
 local attack_range_display_attacks = {{}, {}}
 local attack_range_display_data = {}
+local attack_range_display_start_pos = {}
+local attack_range_display_attack_box_colors = {
+   colors.colorscale(colors.hitboxes.attack, 0.6), colors.colorscale(colors.hitboxes.push, 0.6), 0x670EAAFF
+}
+local attack_range_display_throw_box_colors = {
+   colors.colorscale(colors.hitboxes.throw, 0.6), colors.colorscale(colors.hitboxes.throwable, 0.6),
+   colors.colorscale(colors.hitboxes.extvulnerability, 0.6)
+}
 
 local function attack_range_display_reset()
    attack_range_display_attacks = {{}, {}}
@@ -521,10 +553,7 @@ end
 
 -- needs to be rewritten due to framedata changes
 local function attack_range_display()
-   local function already_in_list(table, item)
-      for k, v in pairs(table) do if v == item then return true end end
-      return false
-   end
+   if not require("src.loading").frame_data_loaded then return end
    local players = {}
    if settings.training.display_attack_range == 2 then
       players = {gamestate.P1}
@@ -538,9 +567,10 @@ local function attack_range_display()
       local fdata = nil
       local id = player.id
       if player.has_just_attacked then
+         attack_range_display_start_pos[id] = {player.previous_pos_x, player.previous_pos_y}
          fdata = frame_data[player.char_str][player.animation]
          if fdata and fdata.hit_frames then
-            if not already_in_list(attack_range_display_attacks[id], player.animation) then
+            if not tools.table_contains(attack_range_display_attacks[id], player.animation) then
                table.insert(attack_range_display_attacks[id], player.animation)
             end
          end
@@ -549,111 +579,118 @@ local function attack_range_display()
          table.remove(attack_range_display_attacks[id], 1)
       end
 
-      local sign = 1
-      if player.flip_x ~= 0 then sign = -1 end
+      local sign = tools.flip_to_sign(player.flip_x)
+      local attack_color_index = 1
+      local throw_color_index = 1
       for i = 1, #attack_range_display_attacks[id] do
-         if player.animation == attack_range_display_attacks[id][i] then
+         local attack_anim = attack_range_display_attacks[id][i]
+         if player.animation == attack_anim then
             local last_hit_frame = 0
             local offset_x = 0
             local offset_y = 0
-            fdata = frame_data[player.char_str][attack_range_display_attacks[id][i]]
-            if fdata then
-               for _, hit_frame in ipairs(fdata.hit_frames) do
-                  if type(hit_frame) == "number" then
-                     last_hit_frame = math.max(hit_frame, last_hit_frame)
-                  else
-                     last_hit_frame = math.max(hit_frame.max, last_hit_frame)
-                  end
-               end
-               last_hit_frame = last_hit_frame + 1
+            local velocity_x = 0
+            local velocity_y = 0
+            local acceleration_x = 0
+            local acceleration_y = 0
 
-               local movement_type = 1
-               local fdata_meta = frame_data_meta[player.char_str][attack_range_display_attacks[id][i]]
-               attack_range_display_data[attack_range_display_attacks[id][i]] = {}
+            fdata = frame_data[player.char_str][attack_anim]
+            if fdata and fdata.hit_frames then
+               last_hit_frame = fdata.hit_frames[#fdata.hit_frames][2] + 1
+               attack_range_display_data[attack_anim] = {}
                for j = 1, last_hit_frame do
-                  if fdata_meta and fdata_meta.movement_type then
-                     movement_type = fdata_meta.movement_type
-                  end
-                  if movement_type == 1 then
+                  velocity_x = velocity_x + acceleration_x
+                  velocity_y = velocity_y + acceleration_y
+                  offset_x = offset_x + velocity_x
+                  offset_y = offset_y + velocity_y
+                  if fdata.frames[j].movement then
                      offset_x = offset_x + fdata.frames[j].movement[1]
                      offset_y = offset_y + fdata.frames[j].movement[2]
-                  else -- velocity based movement
-                     --         next_attacker_pos = predict_object_position(, frame_delta)
+                  end
+                  if fdata.frames[j].velocity then
+                     velocity_x = velocity_x + fdata.frames[j].velocity[1]
+                     velocity_y = velocity_y + fdata.frames[j].velocity[2]
+                  end
+                  if fdata.frames[j].acceleration then
+                     acceleration_x = acceleration_x + fdata.frames[j].acceleration[1]
+                     acceleration_y = acceleration_y + fdata.frames[j].acceleration[2]
                   end
 
                   if fdata.frames[j].boxes then
                      for _, box in pairs(fdata.frames[j].boxes) do
-                        box = tools.format_box(box)
-                        if box.type == "attack" or box.type == "throw" then
+                        local b = tools.format_box(box)
+                        if b.type == "attack" or b.type == "throw" then
                            local data = {}
-                           local dist = 0
-                           if player.flip_x == 0 then
-                              dist = math.abs(offset_x + box.left)
-                           else
-                              dist = math.abs(-offset_x - box.left)
-                           end
-                           data.distance = dist
+                           data.distance = tools.round(offset_x - b.left)
                            data.box = box
+                           data.box_type = b.type
                            data.offset_x = offset_x
                            data.offset_y = offset_y
-                           table.insert(attack_range_display_data[attack_range_display_attacks[id][i]], data)
+                           table.insert(attack_range_display_data[attack_anim], data)
                         end
                      end
                   end
                end
             end
          end
-         for _, data in pairs(attack_range_display_data[attack_range_display_attacks[id][i]]) do
-            if player.animation == attack_range_display_attacks[id][i] then
-               draw.draw_hitboxes(player.pos_x, player.pos_y, player.flip_x, {data.box}, {["attack"] = true}, nil,
-                                  0x880000FF)
-               draw.draw_hitboxes(player.pos_x, player.pos_y, player.flip_x, {data.box}, {["throw"] = true}, nil,
-                                  0x888800FF)
-            else
-               draw.draw_hitboxes(player.pos_x + sign * data.offset_x, player.pos_y + data.offset_y, player.flip_x,
-                                  {data.box}, {["attack"] = true}, nil, 0x880000FF)
-               draw.draw_hitboxes(player.pos_x + sign * data.offset_x, player.pos_y + data.offset_y, player.flip_x,
-                                  {data.box}, {["throw"] = true}, nil, 0x888800FF)
+         local drawn_box_type = ""
+         local attack_range_display_attack_box_color = attack_range_display_attack_box_colors[attack_color_index]
+         local attack_range_display_throw_box_color = attack_range_display_throw_box_colors[throw_color_index]
+         local posx, posy = player.pos_x, player.pos_y
+         if player.animation == attack_anim then
+            posx, posy = attack_range_display_start_pos[id][1], attack_range_display_start_pos[id][2]
+         end
+         for _, data in pairs(attack_range_display_data[attack_anim]) do
+            local current_box = data.box
+            local box = tools.format_box(data.box)
+            local height_below_zero = (posy + data.offset_y + box.bottom) * -1
+            if height_below_zero > 0 then
+               box.bottom = box.bottom + height_below_zero
+               current_box = tools.create_box(box)
             end
+
+            draw.draw_hitboxes(posx + sign * data.offset_x, posy + data.offset_y, player.flip_x, {current_box},
+                               {["attack"] = true}, nil, attack_range_display_attack_box_color)
+            draw.draw_hitboxes(posx + sign * data.offset_x, posy + data.offset_y, player.flip_x, {current_box},
+                               {["throw"] = true}, nil, attack_range_display_throw_box_color)
+            drawn_box_type = data.box_type
+         end
+         if drawn_box_type == "attack" then
+            attack_color_index = tools.wrap_index(attack_color_index + 1, #attack_range_display_attack_box_colors)
+         elseif drawn_box_type == "throw" then
+            throw_color_index = tools.wrap_index(throw_color_index + 1, #attack_range_display_attack_box_colors)
          end
       end
       if settings.training.attack_range_display_show_numbers then
          for i = 1, #attack_range_display_attacks[id] do
-            if attack_range_display_data[attack_range_display_attacks[id][i]] then
-               --         local tx,ty = 0
-               --         if player.flip_x == 0 then
-               --           tx = farthest[3][1] + farthest[2].width / 2
-               --         else
-               --           tx = farthest[3][1] - farthest[2].width / 2
-               --         end
-               --         ty = farthest[3][2] - farthest[2].height / 2
-               --         local posx, posy = draw.game_to_screen_space(tx, ty)
+            local attack_anim = attack_range_display_attacks[id][i]
+            local posx, posy = player.pos_x, player.pos_y
+            if player.animation == attack_anim then
+               posx, posy = attack_range_display_start_pos[id][1], attack_range_display_start_pos[id][2]
+            end
+            if attack_range_display_data[attack_anim] then
                local dist = 0
-               local attack_data = attack_range_display_data[attack_range_display_attacks[id][i]]
-               local data = attack_range_display_data[attack_range_display_attacks[id][i]][1]
-               for j = 1, #attack_data do
-                  if attack_data[j].distance > dist then
-                     dist = attack_data[j].distance
-                     data = attack_data[j]
+               local attack = attack_range_display_data[attack_anim]
+               local data
+               for j = 1, #attack do
+                  if attack[j].distance > dist then
+                     dist = attack[j].distance
+                     data = attack[j]
                   end
                end
-               if data ~= nil then
-                  local w, h = get_text_dimensions(tostring(data.distance))
-                  local tx = 0
-
-                  if sign == 1 then
-                     tx = math.max(
-                              player.pos_x + data.offset_x + sign * data.box.left + sign * data.box.width / 2 - w / 2,
-                              player.pos_x + data.offset_x + sign * data.box.left + 2)
+               if data then
+                  local w, h = get_text_dimensions(data.distance, "en")
+                  local text_x = 0
+                  local box = tools.format_box(data.box)
+                  if player.flip_x == 0 then
+                     text_x = math.max(posx + sign * (data.offset_x - box.left - box.width / 2) - w / 2,
+                                       posx + sign * (data.offset_x - box.left) + 2)
                   else
-                     tx = math.min(
-                              player.pos_x - data.offset_x + sign * data.box.left + sign * data.box.width / 2 - w / 2,
-                              player.pos_x - data.offset_x + sign * data.box.left - 2 - w)
+                     text_x = math.max(posx + sign * (data.offset_x - box.left - box.width / 2) - w / 2,
+                                       posx + sign * (data.offset_x - box.left) - box.width + 2)
                   end
-                  local posx, posy = draw.game_to_screen_space(tx, player.pos_y + data.offset_y + data.box.bottom +
-                                                                   data.box.height / 2 + h / 2 - 1)
-
-                  render_text(posx, posy, tostring(data.distance) .. " " .. attack_range_display_attacks[id][i], "en")
+                  local dist_text_x, dist_text_y = draw.game_to_screen_space(text_x, posy + data.offset_y + box.bottom +
+                                                                                 box.height / 2)
+                  render_text(dist_text_x, dist_text_y - 3, data.distance, "en")
                end
             end
          end
@@ -862,7 +899,7 @@ local function stun_timer_display(player)
          pos_y = pos_y - 8
          draw.draw_gauge(pos_x, pos_y, stun_timer_max_width, stun_timer_gauge_height,
                          player.stun_timer / stun_timer_max_value, colors.gauges.cooldown_fill,
-                         colors.menu.gauge_background, colors.gauges.outline)
+                         colors.gauges.background, colors.gauges.outline)
 
          render_text(pos_x + stun_timer_half_width - tools.round(text_w / 2), pos_y - text_h + 1, stun_text, "en")
       end
@@ -930,8 +967,8 @@ local function update_blocking_direction(input, player, dummy)
             end
          end
       end
-      if dummy.blocking.last_block.frame == gamestate.frame_number and dummy.blocking.last_block.sub_type ~= "pass" and
-          blocking_dir ~= last_dir then
+      if dummy.blocking.last_block.frame_number == gamestate.frame_number and dummy.blocking.last_block.sub_type ~=
+          "pass" and blocking_dir ~= last_dir then
          table.insert(blocking_direction_history, {start_frame = gamestate.frame_number, dir = blocking_dir})
       end
       last_dir = blocking_dir
@@ -1407,19 +1444,11 @@ local function player_position_display()
 end
 
 local draw_list = {}
-local function register_draw(func)
-   draw_list[func] = func
-end
+local function register_draw(func) draw_list[func] = func end
 
-local function unregister_draw(func)
-   draw_list[func] = nil
-end
+local function unregister_draw(func) draw_list[func] = nil end
 
-local function draw_registered_functions()
-   for _, func in pairs(draw_list) do
-      func()
-   end
-end
+local function draw_registered_functions() for _, func in pairs(draw_list) do func() end end
 
 local function reset_hud()
    attack_range_display_reset()
@@ -1451,8 +1480,8 @@ local function draw_hud(player, dummy)
       parry_gauge_display(player.other) -- debug
    end
    if settings.training.display_charge then
-      charge_display(player.other)
-      -- charge_display(gamestate.P2)
+      charge_display(player)
+      denjin_display(player)
    end
    if settings.training.display_air_time then air_time_display(player, dummy) end
    if show_player_position then player_position_display() end
@@ -1484,7 +1513,6 @@ local function draw_hud(player, dummy)
    fading_text_display()
 
    score_text_display()
-   --   draw_denjin(draw.SCREEN_WIDTH/2 - 40, draw.SCREEN_HEIGHT - 40)
 
    player_label_display()
 

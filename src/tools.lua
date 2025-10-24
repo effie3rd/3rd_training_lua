@@ -117,7 +117,7 @@ end
 
 local function read_object_from_json_file(file_path)
    local f = io.open(file_path, "r")
-   if f == nil then return {} end
+   if f == nil then return nil end
 
    local object
    local pos, err
@@ -136,16 +136,14 @@ local function write_object_to_json_file(object, file_path, indent)
       print(string.format("Error %d: %s", code, error))
       return false
    end
-   local str = ""
+   local str
    if indent then
       str = json.encode(object, {indent = true})
    else
       str = json.encode(object)
    end
-
    f:write(str)
    f:close()
-
    return true
 end
 
@@ -164,6 +162,11 @@ end
 local function table_contains(tbl, value)
    for _, v in pairs(tbl) do if v == value then return true end end
    return false
+end
+
+local function table_indexof(tbl, value)
+   for i, v in ipairs(tbl) do if v == value then return i end end
+   return nil
 end
 
 local function table_contains_property(tbl, prop, value)
@@ -233,6 +236,8 @@ for i, box_type in ipairs(convert_box_types) do convert_box_types[box_type] = i 
 local function format_box(box)
    return {type = convert_box_types[box[1]], bottom = box[2], height = box[3], left = box[4], width = box[5]}
 end
+
+local function create_box(box) return {convert_box_types[box.type], box.bottom, box.height, box.left, box.width} end
 
 local function has_boxes(boxes, types)
    for _, box in pairs(boxes) do
@@ -351,6 +356,17 @@ local function sequence_to_name(seq)
    return btn
 end
 
+local function enum(names, opts)
+   opts = opts or {}
+   local e = {}
+   for i, name in ipairs(names) do
+      local key = opts.upper and name:upper() or name
+      e[key] = i
+      if opts.reverse then e[i] = key end
+   end
+   return e
+end
+
 local function select_weighted(list)
    local total = 0
    for _, item in ipairs(list) do total = total + item.weight end
@@ -382,6 +398,12 @@ local function bound_index(i, num)
    return i
 end
 
+local function get_calling_module_name()
+   local src = debug.getinfo(3, "S")
+   if not src then return nil end
+   return src.short_src:match("([^/\\]+)%.lua$")
+end
+
 return {
    t_assert = t_assert,
    round = round,
@@ -400,6 +422,7 @@ return {
    write_object_to_json_file = write_object_to_json_file,
    print_memory_line = print_memory_line,
    table_contains = table_contains,
+   table_indexof = table_indexof,
    table_contains_property = table_contains_property,
    deep_equal = deep_equal,
    table_contains_deep = table_contains_deep,
@@ -409,6 +432,7 @@ return {
    float_to_byte = float_to_byte,
    convert_box_types = convert_box_types,
    format_box = format_box,
+   create_box = create_box,
    has_boxes = has_boxes,
    get_boxes = get_boxes,
    get_pushboxes = get_pushboxes,
@@ -419,7 +443,9 @@ return {
    is_pressing_down = is_pressing_down,
    input_to_text = input_to_text,
    sequence_to_name = sequence_to_name,
+   enum = enum,
    select_weighted = select_weighted,
    wrap_index = wrap_index,
-   bound_index = bound_index
+   bound_index = bound_index,
+   get_calling_module_name = get_calling_module_name
 }

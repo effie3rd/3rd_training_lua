@@ -1,25 +1,77 @@
 {
-  "defense":{
-    "opponent":1,
-    "characters":{
+  "defense": {
+    "opponent": 1,
+    "characters": {
       "ken": {
         "score": 0,
-        "setups": [true,true,true,true,true],
+        "setups": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
         "followups": [],
         "learning": true
       }
     },
-    "match_savestate_player":"",
-    "match_savestate_dummy":""
+    "match_savestate_player": "",
+    "match_savestate_dummy": ""
   },
-  "unblockables":{
-    "character":"default",
-    "type":1,
-    "followups":[false,false,false,false],
-    "match_savestate_player":"",
-    "match_savestate_dummy":"",
-    "savestate_player":"",
-    "savestate_dummy":"",
-    "savestate_type":1
+  "jumpins": {
+    "characters": {
+      "alex": {
+        "jump_offset_mode": 1,
+        "attack_delay_mode": 1,
+        "show_jump_arc": false,
+        "show_jump_info": false,
+        "jumps": [
+          {
+            "jump_name": 1,
+            "player_position": [
+              424,
+              424
+            ],
+            "dummy_offset": [
+              100,
+              100
+            ],
+            "dummy_offset_mode": 1,
+            "second_jump_name": 1,
+            "second_jump_delay": 0,
+            "attack_name": 1,
+            "attack_delay": [
+              5,
+              5
+            ],
+            "attack_delay_mode": 1,
+            "followup": {
+              "special_button": 1,
+              "option_select": 1,
+              "normal_button": 1,
+              "special": 1,
+              "type": 1,
+              "motion": 1
+            },
+            "followup_delay": 0
+          }
+        ]
+      }
+    }
+  },
+  "unblockables": {
+    "character": "default",
+    "type": 1,
+    "followups": [
+      false,
+      false,
+      false,
+      false
+    ],
+    "match_savestate_player": "",
+    "match_savestate_dummy": "",
+    "savestate_player": "",
+    "savestate_dummy": "",
+    "savestate_type": 1
   }
 }

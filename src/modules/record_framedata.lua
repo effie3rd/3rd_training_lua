@@ -536,6 +536,7 @@ local function save_frame_data()
             fdata.parry_air = ""
             if not fdata.wakeups then fdata.wakeups = {} end
          end
+
          for id, data in pairs(fdata) do
             if type(data) == "table" and id ~= "wakeups" then
                for k, v in pairs(data) do
@@ -612,6 +613,7 @@ local function save_frame_data()
                end
             end
          end
+
          local file_path = framedata_path .. "@" .. char .. frame_data_file_ext
          if not tools.write_object_to_json_file(fdata, file_path, true) then
             print(string.format("Error: Failed to write frame data to \"%s\"", file_path))
@@ -920,6 +922,7 @@ local function merge_sequence(existing, incoming)
    return true
 end
 
+local force_merge_ignore_fields = {"next_anim"}
 local function force_merge_sequence(existing, incoming)
    local merged = false
    local i_incoming = 1
@@ -932,7 +935,12 @@ local function force_merge_sequence(existing, incoming)
             if existing[index + i] and not tools.deep_equal(existing[index + i].boxes, {}) then
                boxes = existing[index + i].boxes
             end
-            existing[index + i] = incoming[i_incoming + i]
+            if not existing[index + i] then existing[index + i] = {} end
+            for key, value in pairs(incoming[i_incoming + i]) do
+               if not tools.table_contains(force_merge_ignore_fields, key) then
+                  existing[index + i][key] = value
+               end
+            end
             if boxes then existing[index + i].boxes = boxes end
             i = i + 1
          end
@@ -1188,12 +1196,14 @@ end
 
 local function get_index_of_action_count(frames, ac)
    for i = 1, #frames do
+      if not frames[i].hash then return 0 end
       if tonumber(string.sub(frames[i].hash, #frames[i].hash - 1, #frames[i].hash), 16) == ac then return i end
    end
    return 0
 end
 
 local function find_exceptions(existing, incoming, i)
+   if not incoming[i].hash then return 0 end
    local next_action_count = tonumber(string.sub(incoming[i].hash, #incoming[i].hash - 1, #incoming[i].hash), 16) + 1
    local incoming_next_action_index = get_index_of_action_count(incoming, next_action_count)
    local existing_next_action_index = get_index_of_action_count(existing, next_action_count)
@@ -1330,7 +1340,7 @@ local function end_recording(player, projectiles, name)
          end
 
          local merged = false
-         if rec.recording_options.record_frames_after_hit then
+         if rec.recording_options.record_frames_after_hit and not rec.recording_options.target_combo then
             merged = force_merge_sequence(fdata.frames, new_frames)
          else
             merged = merge_sequence(fdata.frames, new_frames)
@@ -1364,7 +1374,9 @@ local function end_recording(player, projectiles, name)
    for id, _ in pairs(ids) do
       local anim = frame_data[player.char_str][id]
       local frames = frame_data[player.char_str][id].frames
-
+      if anim.name == "standing" then
+print(id, "start", frames[1].movement[1], frames[1])
+      end
       local hit_frames = calculate_ranges(frames, is_hit_frame)
       if #hit_frames > 0 then
          -- make 0 index
@@ -1432,6 +1444,9 @@ local function end_recording(player, projectiles, name)
             end
          end
       end
+            if anim.name == "standing" then
+print(id, "end", frames[1].movement[1], frames[1])
+      end
    end
 
    rec.recording = false
@@ -1446,7 +1461,6 @@ local function record_framedata(player, projectiles, name)
    local sign = tools.flip_to_sign(player.flip_x)
 
    if rec.recording then
-
       if player.has_just_been_blocked or player.has_just_hit then
          if rec.recording_options.record_frames_after_hit then
             for i = 1, frame + 1 - 1 do current_recording_animation.frames[i].discard = true end
@@ -1526,6 +1540,7 @@ local function record_framedata(player, projectiles, name)
       end
 
       if player.remaining_freeze_frames == 0 or bypassing_freeze then
+
          -- print(string.format("recording frame %d (%d - %d - %d)", frame, gamestate.frame_number, player.animation_freeze_frames, player.animation_start_frame))
 
          if player.standing_state == 1 then rec.current_recording_acceleration_offset = 0 end
@@ -1540,7 +1555,9 @@ local function record_framedata(player, projectiles, name)
          if player.velocity_x ~= 0 or player.velocity_y ~= 0 or player.acceleration_x ~= 0 or player.acceleration_y ~= 0 then
             additional_props.uses_velocity = true
          end
-         if (frame == 0 and not player.is_attacking and player.posture == 0 and player.pos_y == 0) then
+
+         if (frame == 0 and not player.is_attacking and player.posture == 0 and player.pos_y == 0 and
+             player.previous_pos_y ~= 0) then
             -- recovery animation (landing, after dash, etc)
             write_memory.clear_motion_data(player)
             additional_props.uses_velocity = false
@@ -1550,8 +1567,6 @@ local function record_framedata(player, projectiles, name)
             if rec.recording_options.recording_landing then
                if current_recording_anim_list[#current_recording_anim_list - 1] then
                   current_recording_anim_list[#current_recording_anim_list - 1].landing_height = player.previous_pos_y
-                  print(current_recording_anim_list[#current_recording_anim_list - 1].name,
-                        current_recording_anim_list[#current_recording_anim_list - 1].landing_height)
                end
             end
          end
@@ -1623,7 +1638,6 @@ local function record_framedata(player, projectiles, name)
                table.insert(current_recording_animation.frames[frame + 1].boxes, copytable(box))
             end
          end
-
       end
    end
    if (rec.recording or rec.recording_projectiles) and not rec.recording_options.ignore_projectiles then
@@ -1844,22 +1858,23 @@ local record_idle_states = {"standing", "crouching", "standing_begin", "crouchin
 local i_record_idle_states = 1
 local function record_idle(player)
    local dummy = player.other
-   function start_recording_idle(name)
+   local function start_recording_idle(name)
       new_recording(player, {}, name)
       record_idle_start_frame = gamestate.frame_number
-      write_memory.write_pos(player, 440, 0)
-      write_memory.write_pos(dummy, 540, 0)
       print(name)
    end
 
    if gamestate.is_in_match and debug_settings.recording_framedata then
       if i_record_idle_states <= #record_idle_states then
+         if not setup then
+            write_memory.write_pos(player, 440, 0)
+            write_memory.write_pos(dummy, 540, 0)
+         end
          local name = record_idle_states[i_record_idle_states]
          if name == "standing" then
             if setup then
                if not (state == "recording") and player.action == 0 then
                   rec.recording_options = {recording_idle = true}
-                  -- rec.recording_options.infinite_loop = true
                   start_recording_idle(name)
                end
             else
@@ -1873,7 +1888,6 @@ local function record_idle(player)
             if setup then
                if not (state == "recording") and player.action == 7 then
                   rec.recording_options = {recording_idle = true}
-                  -- rec.recording_options.infinite_loop = true
                   start_recording_idle(name)
                end
                inputs.queue_input_sequence(player, {{"down"}})
@@ -2513,9 +2527,16 @@ local function populate_moves(player)
             move = tools.deepcopy(moves[i])
             move.name = "hayate_1"
             table.insert(moves, i + 1, move)
+            move = tools.deepcopy(moves[i])
+            move.name = "hayate_cancel"
+            table.insert(moves, i + 1, move)
          elseif moves[i].name == "dashing_head_attack" then
             local move = tools.deepcopy(moves[i])
             move.name = "dashing_head_attack_high"
+            table.insert(moves, i + 1, move)
+         elseif moves[i].name == "chariot_tackle" then
+            local move = tools.deepcopy(moves[i])
+            move.name = "chariot_tackle_crouch_recov"
             table.insert(moves, i + 1, move)
          elseif moves[i].name == "tourouzan" then
             local move = tools.deepcopy(moves[i])
@@ -3778,7 +3799,9 @@ local function record_attacks(player, projectiles)
                   if not (button == "EXP") then
                      current_attack.optional_anim = {1}
                      local n = 120
-                     for i = 1, n do table.insert(sequence, {button}) end
+                     for j = 1, n do table.insert(sequence, {button}) end
+                  else
+                     rec.recording_options.record_frames_after_hit = true
                   end
                end
                if (base_name == "hayate_3" or base_name == "hayate_2" or base_name == "hayate_1") and button == "EXP" then
@@ -3791,19 +3814,32 @@ local function record_attacks(player, projectiles)
                   rec.dummy_offset_x = 100
                   current_attack.optional_anim = {1}
                   local n = 50
-                  for i = 1, n do table.insert(sequence, {button}) end
+                  for j = 1, n do table.insert(sequence, {button}) end
                end
                if base_name == "hayate_2" then
                   current_attack.name = base_name
                   rec.dummy_offset_x = 100
                   current_attack.optional_anim = {1}
                   local n = 30
-                  for i = 1, n do table.insert(sequence, {button}) end
+                  for j = 1, n do table.insert(sequence, {button}) end
                end
                if base_name == "hayate_1" then
                   current_attack.name = base_name
                   rec.dummy_offset_x = 100
                   current_attack.optional_anim = {1}
+               end
+               if base_name == "hayate_cancel" then
+                  current_attack.name = base_name
+                  rec.dummy_offset_x = 100
+                  current_attack.max_hits = 0
+                  if button == "EXP" or rec.recording_options.hit_type == "block" then
+                     rec.i_attacks = rec.i_attacks + 1
+                     state = "queue_move"
+                     return
+                  end
+                  current_attack.optional_anim = {1}
+                  for j = 1, 4 do table.insert(sequence, {button}) end
+                  table.insert(sequence, {button, "LK"})
                end
                if base_name == "fukiage" then
                   rec.dummy_offset_x = 100
@@ -3848,7 +3884,7 @@ local function record_attacks(player, projectiles)
                      current_attack.max_hits = 41
                      if rec.recording_options.hit_type == "block" then n = 460 end
                   end
-                  for i = 1, n do
+                  for j = 1, n do
                      table.insert(sequence, {})
                      if button == "EXP" then
                         table.insert(sequence, {"LP", "MP"})
@@ -3932,7 +3968,7 @@ local function record_attacks(player, projectiles)
                      current_attack.max_hits = 3
                   end
                   local n = 20
-                  for i = 1, n do
+                  for j = 1, n do
                      table.insert(sequence, {})
                      if button == "EXK" then
                         table.insert(sequence, {"LK", "MK"})
@@ -3954,7 +3990,7 @@ local function record_attacks(player, projectiles)
                      Queue_Command(gamestate.frame_number + 10, write_memory.clear_motion_data, {player})
                   end
                   local n = 20
-                  for i = 1, n do
+                  for j = 1, n do
                      table.insert(sequence, {})
                      if button == "EXK" then
                         table.insert(sequence, {"LK", "MK"})
@@ -4250,7 +4286,7 @@ local function record_attacks(player, projectiles)
                      if button ~= "LP" then current_attack.max_hits = 3 end
                   end
 
-                  for i = 1, n do
+                  for j = 1, n do
                      table.insert(sequence, {})
                      if button == "EXP" then
                         table.insert(sequence, {"LP", "MP"})
@@ -4308,6 +4344,25 @@ local function record_attacks(player, projectiles)
                   rec.dummy_offset_x = 100
                   if button == "EXK" then current_attack.max_hits = 2 end
                end
+               if base_name == "chariot_tackle_crouch_recov" then
+                  rec.recording_options.record_next_anim = true
+                  current_attack.reset_pos_x = 150
+                  rec.dummy_offset_x = 100
+                  local n = 60
+                  if button == "HK" then
+                     n = 70
+                  elseif button == "EXK" then
+                     n = 85
+                  end
+
+                  for j = 1, n do table.insert(sequence, {"down", "back"}) end
+                  if button == "EXK" then current_attack.max_hits = 2 end
+                  if rec.recording_options.hit_type == "block" then
+                     rec.i_attacks = rec.i_attacks + 1
+                     state = "queue_move"
+                     return
+                  end
+               end
                if base_name == "violence_kneedrop" then
                   current_attack.reset_pos_x = 150
                   rec.dummy_offset_x = 80
@@ -4340,7 +4395,7 @@ local function record_attacks(player, projectiles)
                   local n = 4
                   if button == "EXP" then n = 10 end
                   if rec.recording_options.hit_type == "block" then n = 25 end
-                  for i = 1, n do table.insert(sequence, {}) end
+                  for j = 1, n do table.insert(sequence, {}) end
                   table.insert(sequence, {"down"})
                   table.insert(sequence, {"down", "forward"})
                   table.insert(sequence, {"forward"})
@@ -4363,7 +4418,7 @@ local function record_attacks(player, projectiles)
                   local n = 25
                   if button == "EXP" then n = 8 end
                   if rec.recording_options.hit_type == "block" then n = 14 end
-                  for i = 1, n do table.insert(sequence, {}) end
+                  for j = 1, n do table.insert(sequence, {}) end
                   table.insert(sequence, {"down"})
                   table.insert(sequence, {"down", "forward"})
                   table.insert(sequence, {"forward"})
@@ -4386,7 +4441,7 @@ local function record_attacks(player, projectiles)
                   local n = 2
                   if button == "EXP" then n = 8 end
                   if rec.recording_options.hit_type == "block" then n = 25 end
-                  for i = 1, n do table.insert(sequence, {}) end
+                  for j = 1, n do table.insert(sequence, {}) end
                   table.insert(sequence, {"down"})
                   table.insert(sequence, {"down", "forward"})
                   table.insert(sequence, {"forward"})
@@ -4410,7 +4465,7 @@ local function record_attacks(player, projectiles)
                   local n = 2
                   if button == "EXP" then n = 9 end
                   if rec.recording_options.hit_type == "block" then n = 25 end
-                  for i = 1, n do table.insert(sequence, {}) end
+                  for j = 1, n do table.insert(sequence, {}) end
                   table.insert(sequence, {"down"})
                   table.insert(sequence, {"down", "forward"})
                   table.insert(sequence, {"forward"})
@@ -4437,7 +4492,7 @@ local function record_attacks(player, projectiles)
                end
                if base_name == "byakko" then
                   current_attack.name = base_name
-                  if button == "EXK" then current_attack.name = base_name .. button end
+                  if button == "EXP" then current_attack.name = base_name .. button end
                   rec.dummy_offset_x = 100
                   if button == "EXP" then
                      current_attack.max_hits = 0
@@ -4503,7 +4558,7 @@ local function record_attacks(player, projectiles)
                end
                if base_name == "kobokushi" then
                   current_attack.name = base_name
-                  if button == "EXK" then current_attack.name = base_name .. button end
+                  if button == "EXP" then current_attack.name = base_name .. button end
                   if button == "EXP" then
                      current_attack.max_hits = 0
                      if rec.recording_options.hit_type == "block" then
@@ -4833,6 +4888,9 @@ local function record_attacks(player, projectiles)
                   rec.dummy_offset_x = 90
                   current_attack.max_hits = 1
                   current_attack.hits_appear_after_parry = true
+                  if rec.recording_options.hit_type ~= "miss" then
+                     rec.recording_options.ignore_next_anim = true
+                  end
                   rec.block_max_hits = 1
                elseif current_attack.move_type == "sa3" then
                   current_attack.max_hits = 0
@@ -5557,6 +5615,12 @@ local function record_attacks(player, projectiles)
    end
 end
 
+local function process_framedata_and_save()
+   loading.load_framedata_human_readable()
+   fd.patch_frame_data()
+   span_frame_data()
+end
+
 local i_record = 1
 local i_characters = 1
 local end_character = 21
@@ -5615,7 +5679,6 @@ local function record_all_characters(player, projectiles)
             setup = false
             rec.recording = false
             i_record = i_record + 1
-            -- i_characters = 99
          end
          if i_record > 5 then
             i_record = 1
@@ -5628,7 +5691,7 @@ local function record_all_characters(player, projectiles)
       elseif record_char_state == "finished" then
          save_frame_data()
          debug_settings.recording_framedata = false
-         loading.frame_data_loaded = false -- debug
+         process_framedata_and_save()
          record_char_state = "the_end"
       end
    end
@@ -5639,6 +5702,7 @@ local function update_framedata_recording(player, projectiles) record_all_charac
 local record_framedata = {
    save_frame_data = save_frame_data,
    span_frame_data = span_frame_data,
+   process_framedata_and_save = process_framedata_and_save,
    update_framedata_recording = update_framedata_recording
 }
 

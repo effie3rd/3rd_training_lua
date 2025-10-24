@@ -32,7 +32,8 @@
         "cooldown_fill": "0x9333EAFF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
-        "meter": "0x00E6F7FF"
+        "meter": "0x00E6F7FF",
+        "denjin": "0xEC4899FF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -102,7 +103,8 @@
         "cooldown_fill": "0x375483FF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
-        "meter": "0x00E6F7FF"
+        "meter": "0x00E6F7FF",
+        "denjin": "0x1de1d9FF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -172,7 +174,8 @@
         "cooldown_fill": "0x353b82FF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
-        "meter": "0x00E6F7FF"
+        "meter": "0x00E6F7FF",
+        "denjin": "0x353b82FF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -242,7 +245,8 @@
         "cooldown_fill": "0x562a83FF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
-        "meter": "0x00E6F7FF"
+        "meter": "0x00E6F7FF",
+        "denjin": "0x562a83FF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -312,7 +316,8 @@
         "cooldown_fill": "0x042bc2FF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
-        "meter": "0x00E6F7FF"
+        "meter": "0x00E6F7FF",
+        "denjin": "0x042bc2FF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -382,7 +387,8 @@
         "cooldown_fill": "0x531750FF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
-        "meter": "0x00E6F7FF"
+        "meter": "0x00E6F7FF",
+        "denjin": "0x3c9691FF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -452,7 +458,8 @@
         "cooldown_fill": "0x02051bC0",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
-        "meter": "0x00E6F7FF"
+        "meter": "0x00E6F7FF",
+        "denjin": "0x02051bC0"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -522,7 +529,8 @@
         "cooldown_fill": "0x531750FF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
-        "meter": "0x00E6F7FF"
+        "meter": "0x00E6F7FF",
+        "denjin": "0x531750FF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -592,7 +600,8 @@
         "cooldown_fill": "0x531750FF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
-        "meter": "0x00E6F7FF"
+        "meter": "0x00E6F7FF",
+        "denjin": "0x531750FF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -662,7 +671,8 @@
         "cooldown_fill": "0x531750FF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
-        "meter": "0x00E6F7FF"
+        "meter": "0x00E6F7FF",
+        "denjin": "0x531750FF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",

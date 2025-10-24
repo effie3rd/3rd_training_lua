@@ -25,11 +25,12 @@ local superfreeze_begin_frame = -1
 
 local continuous_recording_state = {RUNNING = 1, STOPPED = 2, PLAYING = 3}
 
+local function get_current_recording_slot() return recording_slots[settings.training.current_recording_slot] end
+
 local function make_recording_slot() return {inputs = {}, superfreeze = {}, delay = 0, random_deviation = 0, weight = 1} end
 
 local function initialize_slots()
    for i = 1, recording_slot_count do table.insert(recording_slots, make_recording_slot()) end
-
    for i = 1, #recording_slots do table.insert(recording_slots_names, "slot " .. i) end
 end
 
@@ -62,7 +63,7 @@ local function backup_recordings()
       end
    end
 
-   if training.dummy.char_str ~= "" then settings.recordings[training.dummy.char_str] = recording_slots end
+   if training.recording_player.char_str ~= "" then settings.recordings[training.recording_player.char_str] = recording_slots end
 end
 
 local function update_current_recording_slot_frames()
@@ -173,7 +174,7 @@ local function set_recording_state(input, state)
 
       training.swap_characters = false
    elseif current_recording_state == 4 then
-      inputs.clear_input_sequence(training.dummy)
+      inputs.clear_input_sequence(training.recording_player)
    end
 
    current_recording_state = state
@@ -203,7 +204,7 @@ local function set_recording_state(input, state)
          end
       end
 
-      if replay_slot > 0 then inputs.queue_input_sequence(training.dummy, recording_slots[replay_slot].inputs) end
+      if replay_slot > 0 then inputs.queue_input_sequence(training.recording_player, recording_slots[replay_slot].inputs) end
    end
 end
 
@@ -404,8 +405,10 @@ initialize_slots()
 
 local recording_module = {
    recording_slot_count = recording_slot_count,
+   get_current_recording_slot = get_current_recording_slot,
    clear_slot = clear_slot,
    clear_all_slots = clear_all_slots,
+   clear_all_recordings = clear_all_recordings,
    backup_recordings = backup_recordings,
    restore_recordings = restore_recordings,
    process_gesture = process_gesture,

@@ -1419,9 +1419,17 @@
     "en": "images/menu/HP+HK_en_5_white.png",
     "jp": "images/menu/HP+HK_jp_10_white.png"
   },
+  "HP_f_MK": {
+    "en": "images/menu/HP_f_MK_en_5_white.png",
+    "jp": "images/menu/HP_f_MK_jp_10_white.png"
+  },
   "LK": {
     "en": "images/menu/LK_en_5_white.png",
     "jp": "images/menu/LK_jp_10_white.png"
+  },
+  "LK_f_MK": {
+    "en": "images/menu/LK_f_MK_en_5_white.png",
+    "jp": "images/menu/LK_f_MK_jp_10_white.png"
   },
   "LP": {
     "en": "images/menu/LP_en_5_white.png",
@@ -1431,9 +1439,17 @@
     "en": "images/menu/LP+LK_en_5_white.png",
     "jp": "images/menu/LP+LK_jp_10_white.png"
   },
+  "LP_f_HP": {
+    "en": "images/menu/LP_f_HP_en_5_white.png",
+    "jp": "images/menu/LP_f_HP_jp_10_white.png"
+  },
   "MK": {
     "en": "images/menu/MK_en_5_white.png",
     "jp": "images/menu/MK_jp_10_white.png"
+  },
+  "MK_raigeki_MK": {
+    "en": "images/menu/MK_raigeki_MK_en_5_white.png",
+    "jp": "images/menu/MK_raigeki_MK_jp_10_white.png"
   },
   "MP": {
     "en": "images/menu/MP_en_5_white.png",
@@ -1487,6 +1503,14 @@
     "en": "images/menu/attack_range_display_en_5_white.png",
     "jp": "images/menu/attack_range_display_jp_10_white.png"
   },
+  "attack_range_display_max_attacks": {
+    "en": "images/menu/attack_range_display_max_attacks_en_5_white.png",
+    "jp": "images/menu/attack_range_display_max_attacks_jp_10_white.png"
+  },
+  "attack_range_display_show_numbers": {
+    "en": "images/menu/attack_range_display_show_numbers_en_5_white.png",
+    "jp": "images/menu/attack_range_display_show_numbers_jp_10_white.png"
+  },
   "attack_range_max_attacks": {
     "en": "images/menu/attack_range_max_attacks_en_5_white.png",
     "jp": "images/menu/attack_range_max_attacks_jp_10_white.png"
@@ -1506,6 +1530,22 @@
   "axe": {
     "en": "images/menu/axe_en_5_white.png",
     "jp": "images/menu/axe_jp_10_white.png"
+  },
+  "axe_air_EXP": {
+    "en": "images/menu/axe_air_EXP_en_5_white.png",
+    "jp": "images/menu/axe_air_EXP_jp_10_white.png"
+  },
+  "axe_air_HP": {
+    "en": "images/menu/axe_air_HP_en_5_white.png",
+    "jp": "images/menu/axe_air_HP_jp_10_white.png"
+  },
+  "axe_air_LP": {
+    "en": "images/menu/axe_air_LP_en_5_white.png",
+    "jp": "images/menu/axe_air_LP_jp_10_white.png"
+  },
+  "axe_air_MP": {
+    "en": "images/menu/axe_air_MP_en_5_white.png",
+    "jp": "images/menu/axe_air_MP_jp_10_white.png"
   },
   "back_dash_down_LK": {
     "en": "images/menu/back_dash_down_LK_en_5_white.png",
@@ -1855,9 +1895,37 @@
     "en": "images/menu/dra_en_5_white.png",
     "jp": "images/menu/dra_jp_10_white.png"
   },
+  "dra_EXK": {
+    "en": "images/menu/dra_EXK_en_5_white.png",
+    "jp": "images/menu/dra_EXK_jp_10_white.png"
+  },
+  "dra_HK": {
+    "en": "images/menu/dra_HK_en_5_white.png",
+    "jp": "images/menu/dra_HK_jp_10_white.png"
+  },
+  "dra_LK": {
+    "en": "images/menu/dra_LK_en_5_white.png",
+    "jp": "images/menu/dra_LK_jp_10_white.png"
+  },
+  "dra_MK": {
+    "en": "images/menu/dra_MK_en_5_white.png",
+    "jp": "images/menu/dra_MK_jp_10_white.png"
+  },
   "dragon_smash": {
     "en": "images/menu/dragon_smash_en_5_white.png",
     "jp": "images/menu/dragon_smash_jp_10_white.png"
+  },
+  "drill_HK": {
+    "en": "images/menu/drill_HK_en_5_white.png",
+    "jp": "images/menu/drill_HK_jp_10_white.png"
+  },
+  "drill_LK": {
+    "en": "images/menu/drill_LK_en_5_white.png",
+    "jp": "images/menu/drill_LK_jp_10_white.png"
+  },
+  "drill_MK": {
+    "en": "images/menu/drill_MK_en_5_white.png",
+    "jp": "images/menu/drill_MK_jp_10_white.png"
   },
   "ducking": {
     "en": "images/menu/ducking_en_5_white.png",
@@ -1870,6 +1938,10 @@
   "dummy_learning": {
     "en": "images/menu/dummy_learning_en_5_white.png",
     "jp": "images/menu/dummy_learning_jp_10_white.png"
+  },
+  "dummy_offset": {
+    "en": "images/menu/dummy_offset_en_5_white.png",
+    "jp": "images/menu/dummy_offset_jp_10_white.png"
   },
   "dump_state_display": {
     "en": "images/menu/dump_state_display_en_5_white.png",
@@ -2131,6 +2203,14 @@
     "en": "images/menu/hitobashira_en_5_white.png",
     "jp": "images/menu/hitobashira_jp_10_white.png"
   },
+  "hitobashira_air": {
+    "en": "images/menu/hitobashira_air_en_5_white.png",
+    "jp": "images/menu/hitobashira_air_jp_10_white.png"
+  },
+  "hitobashira_air_EXK": {
+    "en": "images/menu/hitobashira_air_EXK_en_5_white.png",
+    "jp": "images/menu/hitobashira_air_EXK_jp_10_white.png"
+  },
   "hits": {
     "en": "images/menu/hits_en_5_white.png",
     "jp": "images/menu/hits_jp_10_white.png"
@@ -2391,13 +2471,41 @@
     "en": "images/menu/kunai_en_5_white.png",
     "jp": "images/menu/kunai_jp_10_white.png"
   },
+  "kunai_EXP": {
+    "en": "images/menu/kunai_EXP_en_5_white.png",
+    "jp": "images/menu/kunai_EXP_jp_10_white.png"
+  },
+  "kunai_HP": {
+    "en": "images/menu/kunai_HP_en_5_white.png",
+    "jp": "images/menu/kunai_HP_jp_10_white.png"
+  },
+  "kunai_LP": {
+    "en": "images/menu/kunai_LP_en_5_white.png",
+    "jp": "images/menu/kunai_LP_jp_10_white.png"
+  },
+  "kunai_MP": {
+    "en": "images/menu/kunai_MP_en_5_white.png",
+    "jp": "images/menu/kunai_MP_jp_10_white.png"
+  },
   "language": {
     "en": "images/menu/language_en_5_white.png",
     "jp": "images/menu/language_jp_10_white.png"
   },
+  "legend_hp_hk": {
+    "en": "images/menu/legend_hp_hk_en_5_white.png",
+    "jp": "images/menu/legend_hp_hk_jp_8_white.png"
+  },
   "legend_hp_scroll": {
     "en": "images/menu/legend_hp_scroll_en_5_white.png",
     "jp": "images/menu/legend_hp_scroll_jp_8_white.png"
+  },
+  "legend_lp_mode": {
+    "en": "images/menu/legend_lp_mode_en_5_white.png",
+    "jp": "images/menu/legend_lp_mode_jp_8_white.png"
+  },
+  "legend_lp_mode_mp_point": {
+    "en": "images/menu/legend_lp_mode_mp_point_en_5_white.png",
+    "jp": "images/menu/legend_lp_mode_mp_point_jp_8_white.png"
   },
   "legend_lp_mp_select_reset": {
     "en": "images/menu/legend_lp_mp_select_reset_en_5_white.png",
@@ -2410,6 +2518,10 @@
   "legend_lp_select_coin_start": {
     "en": "images/menu/legend_lp_select_coin_start_en_5_white.png",
     "jp": "images/menu/legend_lp_select_coin_start_jp_8_white.png"
+  },
+  "legend_mp_point": {
+    "en": "images/menu/legend_mp_point_en_5_white.png",
+    "jp": "images/menu/legend_mp_point_jp_8_white.png"
   },
   "legend_mp_reset": {
     "en": "images/menu/legend_mp_reset_en_5_white.png",
@@ -2495,9 +2607,69 @@
     "en": "images/menu/menu_2_lines_en_5_white.png",
     "jp": "images/menu/menu_2_lines_jp_10_white.png"
   },
+  "menu_HK": {
+    "en": "images/menu/menu_HK_en_5_white.png",
+    "jp": "images/menu/menu_HK_jp_10_white.png"
+  },
+  "menu_HP": {
+    "en": "images/menu/menu_HP_en_5_white.png",
+    "jp": "images/menu/menu_HP_jp_10_white.png"
+  },
+  "menu_HP_HP": {
+    "en": "images/menu/menu_HP_HP_en_5_white.png",
+    "jp": "images/menu/menu_HP_HP_jp_10_white.png"
+  },
+  "menu_HP_f_MK": {
+    "en": "images/menu/menu_HP_f_MK_en_5_white.png",
+    "jp": "images/menu/menu_HP_f_MK_jp_10_white.png"
+  },
+  "menu_LK": {
+    "en": "images/menu/menu_LK_en_5_white.png",
+    "jp": "images/menu/menu_LK_jp_10_white.png"
+  },
+  "menu_LK_f_MK": {
+    "en": "images/menu/menu_LK_f_MK_en_5_white.png",
+    "jp": "images/menu/menu_LK_f_MK_jp_10_white.png"
+  },
+  "menu_LP": {
+    "en": "images/menu/menu_LP_en_5_white.png",
+    "jp": "images/menu/menu_LP_jp_10_white.png"
+  },
+  "menu_LP_MK": {
+    "en": "images/menu/menu_LP_MK_en_5_white.png",
+    "jp": "images/menu/menu_LP_MK_jp_10_white.png"
+  },
+  "menu_LP_f_HP": {
+    "en": "images/menu/menu_LP_f_HP_en_5_white.png",
+    "jp": "images/menu/menu_LP_f_HP_jp_10_white.png"
+  },
+  "menu_MK": {
+    "en": "images/menu/menu_MK_en_5_white.png",
+    "jp": "images/menu/menu_MK_jp_10_white.png"
+  },
+  "menu_MK_raigeki_MK": {
+    "en": "images/menu/menu_MK_raigeki_MK_en_5_white.png",
+    "jp": "images/menu/menu_MK_raigeki_MK_jp_10_white.png"
+  },
+  "menu_MP": {
+    "en": "images/menu/menu_MP_en_5_white.png",
+    "jp": "images/menu/menu_MP_jp_10_white.png"
+  },
+  "menu_MP_HP": {
+    "en": "images/menu/menu_MP_HP_en_5_white.png",
+    "jp": "images/menu/menu_MP_HP_jp_10_white.png"
+  },
   "menu_after_first_hit": {
     "en": "images/menu/menu_after_first_hit_en_5_white.png",
     "jp": "images/menu/menu_after_first_hit_jp_10_white.png"
+  },
+  "menu_air_dash_back": {
+    "en": "images/menu/menu_air_dash_back_en_5_white.png",
+    "jp": "images/menu/menu_air_dash_back_jp_10_white.png"
+  },
+  "menu_air_dash_forward": {
+    "en": "images/menu/menu_air_dash_forward_en_5_white.png",
+    "jp": "images/menu/menu_air_dash_forward_jp_10_white.png"
   },
   "menu_alex": {
     "en": "images/menu/menu_alex_en_5_white.png",
@@ -2506,6 +2678,34 @@
   "menu_always": {
     "en": "images/menu/menu_always_en_5_white.png",
     "jp": "images/menu/menu_always_jp_10_white.png"
+  },
+  "menu_attack": {
+    "en": "images/menu/menu_attack_en_5_white.png",
+    "jp": "images/menu/menu_attack_jp_10_white.png"
+  },
+  "menu_attack_delay": {
+    "en": "images/menu/menu_attack_delay_en_5_white.png",
+    "jp": "images/menu/menu_attack_delay_jp_10_white.png"
+  },
+  "menu_attack_delay_mode": {
+    "en": "images/menu/menu_attack_delay_mode_en_5_white.png",
+    "jp": "images/menu/menu_attack_delay_mode_jp_10_white.png"
+  },
+  "menu_axe_air_EXP": {
+    "en": "images/menu/menu_axe_air_EXP_en_5_white.png",
+    "jp": "images/menu/menu_axe_air_EXP_jp_10_white.png"
+  },
+  "menu_axe_air_HP": {
+    "en": "images/menu/menu_axe_air_HP_en_5_white.png",
+    "jp": "images/menu/menu_axe_air_HP_jp_10_white.png"
+  },
+  "menu_axe_air_LP": {
+    "en": "images/menu/menu_axe_air_LP_en_5_white.png",
+    "jp": "images/menu/menu_axe_air_LP_jp_10_white.png"
+  },
+  "menu_axe_air_MP": {
+    "en": "images/menu/menu_axe_air_MP_en_5_white.png",
+    "jp": "images/menu/menu_axe_air_MP_jp_10_white.png"
   },
   "menu_back_dash_followups": {
     "en": "images/menu/menu_back_dash_followups_en_5_white.png",
@@ -2531,13 +2731,57 @@
     "en": "images/menu/menu_crossup_mk_followups_en_5_white.png",
     "jp": "images/menu/menu_crossup_mk_followups_jp_10_white.png"
   },
+  "menu_crouching": {
+    "en": "images/menu/menu_crouching_en_5_white.png",
+    "jp": "images/menu/menu_crouching_jp_10_white.png"
+  },
+  "menu_d_HP": {
+    "en": "images/menu/menu_d_HP_en_5_white.png",
+    "jp": "images/menu/menu_d_HP_jp_10_white.png"
+  },
+  "menu_d_MK": {
+    "en": "images/menu/menu_d_MK_en_5_white.png",
+    "jp": "images/menu/menu_d_MK_jp_10_white.png"
+  },
   "menu_d_hp": {
     "en": "images/menu/menu_d_hp_en_5_white.png",
     "jp": "images/menu/menu_d_hp_jp_8_white.png"
   },
+  "menu_dra_EXK": {
+    "en": "images/menu/menu_dra_EXK_en_5_white.png",
+    "jp": "images/menu/menu_dra_EXK_jp_10_white.png"
+  },
+  "menu_dra_HK": {
+    "en": "images/menu/menu_dra_HK_en_5_white.png",
+    "jp": "images/menu/menu_dra_HK_jp_10_white.png"
+  },
+  "menu_dra_LK": {
+    "en": "images/menu/menu_dra_LK_en_5_white.png",
+    "jp": "images/menu/menu_dra_LK_jp_10_white.png"
+  },
+  "menu_dra_MK": {
+    "en": "images/menu/menu_dra_MK_en_5_white.png",
+    "jp": "images/menu/menu_dra_MK_jp_10_white.png"
+  },
+  "menu_drill_HK": {
+    "en": "images/menu/menu_drill_HK_en_5_white.png",
+    "jp": "images/menu/menu_drill_HK_jp_10_white.png"
+  },
+  "menu_drill_LK": {
+    "en": "images/menu/menu_drill_LK_en_5_white.png",
+    "jp": "images/menu/menu_drill_LK_jp_10_white.png"
+  },
+  "menu_drill_MK": {
+    "en": "images/menu/menu_drill_MK_en_5_white.png",
+    "jp": "images/menu/menu_drill_MK_jp_10_white.png"
+  },
   "menu_dudley": {
     "en": "images/menu/menu_dudley_en_5_white.png",
     "jp": "images/menu/menu_dudley_jp_10_white.png"
+  },
+  "menu_dummy_offset": {
+    "en": "images/menu/menu_dummy_offset_en_5_white.png",
+    "jp": "images/menu/menu_dummy_offset_jp_10_white.png"
   },
   "menu_elena": {
     "en": "images/menu/menu_elena_en_5_white.png",
@@ -2559,6 +2803,10 @@
     "en": "images/menu/menu_followup_en_5_white.png",
     "jp": "images/menu/menu_followup_jp_10_white.png"
   },
+  "menu_followup_delay": {
+    "en": "images/menu/menu_followup_delay_en_5_white.png",
+    "jp": "images/menu/menu_followup_delay_jp_10_white.png"
+  },
   "menu_forward_dash_followups": {
     "en": "images/menu/menu_forward_dash_followups_en_5_white.png",
     "jp": "images/menu/menu_forward_dash_followups_jp_10_white.png"
@@ -2571,9 +2819,29 @@
     "en": "images/menu/menu_gill_en_5_white.png",
     "jp": "images/menu/menu_gill_jp_10_white.png"
   },
+  "menu_gohadouken_air_HP": {
+    "en": "images/menu/menu_gohadouken_air_HP_en_5_white.png",
+    "jp": "images/menu/menu_gohadouken_air_HP_jp_10_white.png"
+  },
+  "menu_gohadouken_air_LP": {
+    "en": "images/menu/menu_gohadouken_air_LP_en_5_white.png",
+    "jp": "images/menu/menu_gohadouken_air_LP_jp_10_white.png"
+  },
+  "menu_gohadouken_air_MP": {
+    "en": "images/menu/menu_gohadouken_air_MP_en_5_white.png",
+    "jp": "images/menu/menu_gohadouken_air_MP_jp_10_white.png"
+  },
   "menu_gouki": {
     "en": "images/menu/menu_gouki_en_5_white.png",
     "jp": "images/menu/menu_gouki_jp_10_white.png"
+  },
+  "menu_hitobashira_air": {
+    "en": "images/menu/menu_hitobashira_air_en_5_white.png",
+    "jp": "images/menu/menu_hitobashira_air_jp_10_white.png"
+  },
+  "menu_hitobashira_air_EXK": {
+    "en": "images/menu/menu_hitobashira_air_EXK_en_5_white.png",
+    "jp": "images/menu/menu_hitobashira_air_EXK_jp_10_white.png"
   },
   "menu_hugo": {
     "en": "images/menu/menu_hugo_en_5_white.png",
@@ -2583,9 +2851,45 @@
     "en": "images/menu/menu_ibuki_en_5_white.png",
     "jp": "images/menu/menu_ibuki_jp_10_white.png"
   },
+  "menu_jump": {
+    "en": "images/menu/menu_jump_en_5_white.png",
+    "jp": "images/menu/menu_jump_jp_10_white.png"
+  },
+  "menu_jump_back": {
+    "en": "images/menu/menu_jump_back_en_5_white.png",
+    "jp": "images/menu/menu_jump_back_jp_10_white.png"
+  },
+  "menu_jump_forward": {
+    "en": "images/menu/menu_jump_forward_en_5_white.png",
+    "jp": "images/menu/menu_jump_forward_jp_10_white.png"
+  },
+  "menu_jump_neutral": {
+    "en": "images/menu/menu_jump_neutral_en_5_white.png",
+    "jp": "images/menu/menu_jump_neutral_jp_10_white.png"
+  },
+  "menu_jump_offset_mode": {
+    "en": "images/menu/menu_jump_offset_mode_en_5_white.png",
+    "jp": "images/menu/menu_jump_offset_mode_jp_10_white.png"
+  },
   "menu_ken": {
     "en": "images/menu/menu_ken_en_5_white.png",
     "jp": "images/menu/menu_ken_jp_10_white.png"
+  },
+  "menu_kunai_EXP": {
+    "en": "images/menu/menu_kunai_EXP_en_5_white.png",
+    "jp": "images/menu/menu_kunai_EXP_jp_10_white.png"
+  },
+  "menu_kunai_HP": {
+    "en": "images/menu/menu_kunai_HP_en_5_white.png",
+    "jp": "images/menu/menu_kunai_HP_jp_10_white.png"
+  },
+  "menu_kunai_LP": {
+    "en": "images/menu/menu_kunai_LP_en_5_white.png",
+    "jp": "images/menu/menu_kunai_LP_jp_10_white.png"
+  },
+  "menu_kunai_MP": {
+    "en": "images/menu/menu_kunai_MP_en_5_white.png",
+    "jp": "images/menu/menu_kunai_MP_jp_10_white.png"
   },
   "menu_makoto": {
     "en": "images/menu/menu_makoto_en_5_white.png",
@@ -2603,9 +2907,17 @@
     "en": "images/menu/menu_never_en_5_white.png",
     "jp": "images/menu/menu_never_jp_10_white.png"
   },
+  "menu_none": {
+    "en": "images/menu/menu_none_en_5_white.png",
+    "jp": "images/menu/menu_none_jp_10_white.png"
+  },
   "menu_off": {
     "en": "images/menu/menu_off_en_5_white.png",
     "jp": "images/menu/menu_off_jp_10_white.png"
+  },
+  "menu_offset_mode": {
+    "en": "images/menu/menu_offset_mode_en_5_white.png",
+    "jp": "images/menu/menu_offset_mode_jp_10_white.png"
   },
   "menu_on": {
     "en": "images/menu/menu_on_en_5_white.png",
@@ -2619,13 +2931,49 @@
     "en": "images/menu/menu_oro_en_5_white.png",
     "jp": "images/menu/menu_oro_jp_10_white.png"
   },
+  "menu_player_pose": {
+    "en": "images/menu/menu_player_pose_en_5_white.png",
+    "jp": "images/menu/menu_player_pose_jp_10_white.png"
+  },
+  "menu_player_position": {
+    "en": "images/menu/menu_player_position_en_5_white.png",
+    "jp": "images/menu/menu_player_position_jp_10_white.png"
+  },
+  "menu_point": {
+    "en": "images/menu/menu_point_en_5_white.png",
+    "jp": "images/menu/menu_point_jp_10_white.png"
+  },
   "menu_q": {
     "en": "images/menu/menu_q_en_5_white.png",
     "jp": "images/menu/menu_q_jp_10_white.png"
   },
+  "menu_raigeki_HK": {
+    "en": "images/menu/menu_raigeki_HK_en_5_white.png",
+    "jp": "images/menu/menu_raigeki_HK_jp_10_white.png"
+  },
+  "menu_raigeki_LK": {
+    "en": "images/menu/menu_raigeki_LK_en_5_white.png",
+    "jp": "images/menu/menu_raigeki_LK_jp_10_white.png"
+  },
+  "menu_raigeki_MK": {
+    "en": "images/menu/menu_raigeki_MK_en_5_white.png",
+    "jp": "images/menu/menu_raigeki_MK_jp_10_white.png"
+  },
   "menu_random": {
     "en": "images/menu/menu_random_en_5_white.png",
     "jp": "images/menu/menu_random_jp_10_white.png"
+  },
+  "menu_range_endpoints": {
+    "en": "images/menu/menu_range_endpoints_en_5_white.png",
+    "jp": "images/menu/menu_range_endpoints_jp_10_white.png"
+  },
+  "menu_range_ordered": {
+    "en": "images/menu/menu_range_ordered_en_5_white.png",
+    "jp": "images/menu/menu_range_ordered_jp_10_white.png"
+  },
+  "menu_range_random": {
+    "en": "images/menu/menu_range_random_en_5_white.png",
+    "jp": "images/menu/menu_range_random_jp_10_white.png"
   },
   "menu_remy": {
     "en": "images/menu/menu_remy_en_5_white.png",
@@ -2642,6 +2990,18 @@
   "menu_sean": {
     "en": "images/menu/menu_sean_en_5_white.png",
     "jp": "images/menu/menu_sean_jp_10_white.png"
+  },
+  "menu_second_jump": {
+    "en": "images/menu/menu_second_jump_en_5_white.png",
+    "jp": "images/menu/menu_second_jump_jp_10_white.png"
+  },
+  "menu_second_jump_delay": {
+    "en": "images/menu/menu_second_jump_delay_en_5_white.png",
+    "jp": "images/menu/menu_second_jump_delay_jp_10_white.png"
+  },
+  "menu_settings": {
+    "en": "images/menu/menu_settings_en_5_white.png",
+    "jp": "images/menu/menu_settings_jp_10_white.png"
   },
   "menu_setup": {
     "en": "images/menu/menu_setup_en_5_white.png",
@@ -2691,17 +3051,57 @@
     "en": "images/menu/menu_shingouki_en_5_white.png",
     "jp": "images/menu/menu_shingouki_jp_10_white.png"
   },
+  "menu_show_jump_arc": {
+    "en": "images/menu/menu_show_jump_arc_en_5_white.png",
+    "jp": "images/menu/menu_show_jump_arc_jp_10_white.png"
+  },
+  "menu_show_jump_info": {
+    "en": "images/menu/menu_show_jump_info_en_5_white.png",
+    "jp": "images/menu/menu_show_jump_info_jp_10_white.png"
+  },
+  "menu_sjump_back": {
+    "en": "images/menu/menu_sjump_back_en_5_white.png",
+    "jp": "images/menu/menu_sjump_back_jp_10_white.png"
+  },
+  "menu_sjump_forward": {
+    "en": "images/menu/menu_sjump_forward_en_5_white.png",
+    "jp": "images/menu/menu_sjump_forward_jp_10_white.png"
+  },
+  "menu_sjump_neutral": {
+    "en": "images/menu/menu_sjump_neutral_en_5_white.png",
+    "jp": "images/menu/menu_sjump_neutral_jp_10_white.png"
+  },
   "menu_slot": {
     "en": "images/menu/menu_slot_en_5_white.png",
     "jp": "images/menu/menu_slot_jp_10_white.png"
+  },
+  "menu_standing": {
+    "en": "images/menu/menu_standing_en_5_white.png",
+    "jp": "images/menu/menu_standing_jp_10_white.png"
   },
   "menu_start": {
     "en": "images/menu/menu_start_en_5_white.png",
     "jp": "images/menu/menu_start_jp_10_white.png"
   },
+  "menu_tatsumaki_HK": {
+    "en": "images/menu/menu_tatsumaki_HK_en_5_white.png",
+    "jp": "images/menu/menu_tatsumaki_HK_jp_10_white.png"
+  },
+  "menu_tatsumaki_LK": {
+    "en": "images/menu/menu_tatsumaki_LK_en_5_white.png",
+    "jp": "images/menu/menu_tatsumaki_LK_jp_10_white.png"
+  },
+  "menu_tatsumaki_MK": {
+    "en": "images/menu/menu_tatsumaki_MK_en_5_white.png",
+    "jp": "images/menu/menu_tatsumaki_MK_jp_10_white.png"
+  },
   "menu_theme": {
     "en": "images/menu/menu_theme_en_5_white.png",
     "jp": "images/menu/menu_theme_jp_10_white.png"
+  },
+  "menu_throw": {
+    "en": "images/menu/menu_throw_en_5_white.png",
+    "jp": "images/menu/menu_throw_jp_10_white.png"
   },
   "menu_title_challenge": {
     "en": "images/menu/menu_title_challenge_en_5_white.png",
@@ -2730,6 +3130,22 @@
   "menu_title_training": {
     "en": "images/menu/menu_title_training_en_5_white.png",
     "jp": "images/menu/menu_title_training_jp_10_white.png"
+  },
+  "menu_tsurugi_EXK": {
+    "en": "images/menu/menu_tsurugi_EXK_en_5_white.png",
+    "jp": "images/menu/menu_tsurugi_EXK_jp_10_white.png"
+  },
+  "menu_tsurugi_HK": {
+    "en": "images/menu/menu_tsurugi_HK_en_5_white.png",
+    "jp": "images/menu/menu_tsurugi_HK_jp_10_white.png"
+  },
+  "menu_tsurugi_LK": {
+    "en": "images/menu/menu_tsurugi_LK_en_5_white.png",
+    "jp": "images/menu/menu_tsurugi_LK_jp_10_white.png"
+  },
+  "menu_tsurugi_MK": {
+    "en": "images/menu/menu_tsurugi_MK_en_5_white.png",
+    "jp": "images/menu/menu_tsurugi_MK_jp_10_white.png"
   },
   "menu_twelve": {
     "en": "images/menu/menu_twelve_en_5_white.png",
@@ -2935,6 +3351,10 @@
     "en": "images/menu/play_en_5_white.png",
     "jp": "images/menu/play_jp_10_white.png"
   },
+  "player_position": {
+    "en": "images/menu/player_position_en_5_white.png",
+    "jp": "images/menu/player_position_jp_10_white.png"
+  },
   "please_wait": {
     "en": "images/menu/please_wait_en_5_white.png",
     "jp": "images/menu/please_wait_jp_10_white.png"
@@ -2970,6 +3390,18 @@
   "raida": {
     "en": "images/menu/raida_en_5_white.png",
     "jp": "images/menu/raida_jp_10_white.png"
+  },
+  "raigeki_HK": {
+    "en": "images/menu/raigeki_HK_en_5_white.png",
+    "jp": "images/menu/raigeki_HK_jp_10_white.png"
+  },
+  "raigeki_LK": {
+    "en": "images/menu/raigeki_LK_en_5_white.png",
+    "jp": "images/menu/raigeki_LK_jp_10_white.png"
+  },
+  "raigeki_MK": {
+    "en": "images/menu/raigeki_MK_en_5_white.png",
+    "jp": "images/menu/raigeki_MK_jp_10_white.png"
   },
   "raishin": {
     "en": "images/menu/raishin_en_5_white.png",
@@ -3231,6 +3663,10 @@
     "en": "images/menu/standing_en_5_white.png",
     "jp": "images/menu/standing_jp_10_white.png"
   },
+  "status_jump": {
+    "en": "images/menu/status_jump_en_5_white.png",
+    "jp": "images/menu/status_jump_jp_8_white.png"
+  },
   "stun_refill_mode": {
     "en": "images/menu/stun_refill_mode_en_5_white.png",
     "jp": "images/menu/stun_refill_mode_jp_10_white.png"
@@ -3350,6 +3786,22 @@
   "tsurugi": {
     "en": "images/menu/tsurugi_en_5_white.png",
     "jp": "images/menu/tsurugi_jp_10_white.png"
+  },
+  "tsurugi_EXK": {
+    "en": "images/menu/tsurugi_EXK_en_5_white.png",
+    "jp": "images/menu/tsurugi_EXK_jp_10_white.png"
+  },
+  "tsurugi_HK": {
+    "en": "images/menu/tsurugi_HK_en_5_white.png",
+    "jp": "images/menu/tsurugi_HK_jp_10_white.png"
+  },
+  "tsurugi_LK": {
+    "en": "images/menu/tsurugi_LK_en_5_white.png",
+    "jp": "images/menu/tsurugi_LK_jp_10_white.png"
+  },
+  "tsurugi_MK": {
+    "en": "images/menu/tsurugi_MK_en_5_white.png",
+    "jp": "images/menu/tsurugi_MK_jp_10_white.png"
   },
   "tyrant_slaughter": {
     "en": "images/menu/tyrant_slaughter_en_5_white.png",

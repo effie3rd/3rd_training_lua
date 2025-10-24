@@ -164,14 +164,18 @@ local function set_parry_validity(player, n)
    memory.writebyte(player.addresses.parry_antiair_validity_time, n)
 end
 
-local function max_parry_cooldowns(player)
-   memory.writebyte(player.addresses.parry_forward_cooldown_time, 21)
-   memory.writebyte(player.addresses.parry_down_cooldown_time, 21)
-   memory.writebyte(player.addresses.parry_air_cooldown_time, 18)
-   memory.writebyte(player.addresses.parry_antiair_cooldown_time, 16)
+local function disable_parry_attempts(player)
+   memory.writebyte(player.addresses.parry_forward_cooldown_state, 3)
+   memory.writebyte(player.addresses.parry_down_cooldown_state, 3)
+   memory.writebyte(player.addresses.parry_air_cooldown_state, 3)
+   memory.writebyte(player.addresses.parry_antiair_cooldown_state, 3)
 end
 
-local function clear_parry_cooldowns(player)
+local function reset_parry_cooldowns(player)
+   memory.writebyte(player.addresses.parry_forward_cooldown_state, 1)
+   memory.writebyte(player.addresses.parry_down_cooldown_state, 1)
+   memory.writebyte(player.addresses.parry_air_cooldown_state, 1)
+   memory.writebyte(player.addresses.parry_antiair_cooldown_state, 1)
    memory.writebyte(player.addresses.parry_forward_cooldown_time, 0)
    memory.writebyte(player.addresses.parry_down_cooldown_time, 0)
    memory.writebyte(player.addresses.parry_air_cooldown_time, 0)
@@ -210,8 +214,8 @@ return {
    max_parry_validity = max_parry_validity,
    clear_parry_validity = clear_parry_validity,
    set_parry_validity = set_parry_validity,
-   max_parry_cooldowns = max_parry_cooldowns,
-   clear_parry_cooldowns = clear_parry_cooldowns,
+   disable_parry_attempts = disable_parry_attempts,
+   reset_parry_cooldowns = reset_parry_cooldowns,
    set_freeze_game = set_freeze_game,
    set_infinite_time = set_infinite_time,
    set_music_volume = set_music_volume

@@ -17,9 +17,7 @@ local training = require("src.training")
 local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
 
-local module_name = "training_defense"
-
--- automatic reset
+local module_name = "defense"
 
 local is_active = false
 local states = {
@@ -186,6 +184,14 @@ local function insert_followup(index, followup)
    actions[index] = followup.action
 end
 
+local function check_setup_timeout()
+   if gamestate.frame_number - setup_start_frame >= setup_timeout then
+      state = states.SETUP
+      setup_state = setup_states.INIT
+      print("SETUP FAILED", player_reset_x, player.pos_x, dummy_reset_x, dummy.pos_x) -- debug
+   end
+end
+
 local function bound_setup_positions(setup)
    local current_stage = stage_data.stages[gamestate.stage]
    local player_left, player_right = setup:get_soft_reset_range(dummy, gamestate.stage)[1],
@@ -242,7 +248,6 @@ local function hard_setup()
          end)
          setup_state = setup_states.SET_POSITIONS
 
-         Load_State_Caller = module_name
          if action_queue[1] == defense_data.wakeup then
             savestate.load(wakeup_state)
          else
@@ -388,7 +393,6 @@ local function start(sel_player, sel_dummy)
          state = states.SELECT_SETUP
       end)
       Queue_Command(gamestate.frame_number + 1, function()
-         Load_State_Caller = module_name
          savestate.load(match_start_state)
       end)
    end
@@ -487,9 +491,7 @@ local function update()
 
             should_block_input = false
 
-            if selected_setup ~= defense_data.wakeup then
-               should_block_input = true
-            end
+            if selected_setup ~= defense_data.wakeup then should_block_input = true end
 
             table.insert(action_queue, selected_setup)
             table.insert(actions, selected_setup.action)
@@ -532,6 +534,7 @@ local function update()
             else
                soft_setup()
             end
+            check_setup_timeout()
          elseif state == states.WAIT_FOR_SETUP then
             if player.is_waking_up then move_players(true, false) end
             if advanced_control.all_commands_complete(dummy) and not inputs.is_playing_input_sequence(dummy) then
@@ -541,11 +544,7 @@ local function update()
                i_labels = 1
                state = states.FOLLOWUP
             end
-            if gamestate.frame_number - setup_start_frame >= setup_timeout then
-               state = states.SETUP
-               setup_state = setup_states.INIT
-               print("SETUP FAILED", player_reset_x, player.pos_x, dummy_reset_x, dummy.pos_x) -- debug
-            end
+            check_setup_timeout()
          elseif state == states.FOLLOWUP then
             if i_labels < i_actions then i_labels = i_actions end
             i_actions = i_actions + 1
@@ -636,7 +635,6 @@ local function update()
                settings.special_training.defense.characters[opponent].score = score
             end
             display_delta_score(delta_score)
-            print("end score", delta_score)
             if should_adjust_weights then
                local player_response
 
@@ -728,7 +726,7 @@ local function update()
    end
 end
 
-local function process_gesture(gesture) if is_active then if gesture == "single_tap" then start() end end end
+local function process_gesture(gesture) end
 
 local defense = {
    module_name = module_name,

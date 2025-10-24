@@ -1,46 +1,35 @@
-local text = require("src.ui.text")
 local fd = require("src.modules.framedata")
 local move_data = require("src.modules.move_data")
-local gamestate = require("src.gamestate")
-local image_tables = require("src.ui.image_tables")
-local prediction = require("src.modules.prediction")
-local write_memory = require("src.control.write_memory")
-local advanced_control = require("src.control.advanced_control")
-local inputs = require("src.control.inputs")
 local tools = require("src.tools")
 
-local frame_data, character_specific = fd.frame_data, fd.character_specific
 local find_frame_data_by_name = fd.find_frame_data_by_name
-local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_slow_jumper
-local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text,
-                                                                                             text.render_text_multiple,
-                                                                                             text.get_text_dimensions,
 
-                                                                                             text.get_text_dimensions_multiple
-local Delay = advanced_control.Delay
-local queue_input_sequence_and_wait, all_commands_complete = advanced_control.queue_input_sequence_and_wait,
-                                                             advanced_control.all_commands_complete
-local move_list = move_data.move_list
-
-local jumps
-local second_jumps
-local jumps_default = {"jump_forward", "jump_neutral", "jump_back", "sjump_forward", "sjump_neutral", "sjump_back"}
-local oro_jumps = {"jump_forward", "jump_neutral", "jump_back"}
-local twelve_jumps = {"air_dash_forward", "air_dash_back"}
-local moves
+local max_jumps = 9
+local jumps = {}
+local second_jumps = {}
+local jumps_default = {
+   "off", "jump_forward", "jump_neutral", "jump_back", "sjump_forward", "sjump_neutral", "sjump_back"
+}
+local oro_jumps = {"none", "jump_forward", "jump_neutral", "jump_back"}
+local twelve_jumps = {"none", "air_dash_forward", "air_dash_back"}
+local moves = {}
 local moves_default = {"none", "LP", "MP", "HP", "LK", "MK", "HK", "throw"}
 local additional_moves = {
    alex = {"d_HP"},
    chunli = {"d_HP", "d_MK", "HP_HP"},
    elena = {"LP_MK", "MP_HP"},
-   gouki = {"d_MK", "gohadouken_LP", "gohadouken_MP", "gohadouken_HP"},
+   gouki = {"d_MK", "gohadouken_LP", "gohadouken_MP", "gohadouken_HP", "tatsumaki_LK", "tatsumaki_MK", "tatsumaki_HK"},
    hugo = {"d_HP"},
-   ibuki = {"LP_f_HP", "HP_f_MK", "LK_f_MK", "kunai_LP", "kunai_MP", "kunai_HP", "kunai_EX"},
-   makoto = {"tsurugi_LK", "tsurugi_MK", "tsurugi_HK", "tsurugi_EX"},
+   ibuki = {"LP_f_HP", "HP_f_MK", "LK_f_MK", "kunai_LP", "kunai_MP", "kunai_HP", "kunai_EXP"},
+   ken = {"tatsumaki_LK", "tatsumaki_MK", "tatsumaki_HK", "tatsumaki_EXK"},
+   makoto = {"tsurugi_LK", "tsurugi_MK", "tsurugi_HK", "tsurugi_EXK"},
    necro = {"drill_LK", "drill_MK", "drill_HK"},
-   oro = {"hitobashira", "hitobashira_EX"},
-   shingouki = {"d_MK", "gohadouken_LP", "gohadouken_MP", "gohadouken_HP"},
-   twelve = {"axe_LP", "axe_MP", "axe_HP", "axe_EX", "dra_LK", "dra_MK", "dra_HK", "dra_EX"},
+   oro = {"hitobashira", "hitobashira_EXK"},
+   ryu = {"tatsumaki_LK", "tatsumaki_MK", "tatsumaki_HK", "tatsumaki_EXK"},
+   shingouki = {
+      "d_MK", "gohadouken_LP", "gohadouken_MP", "gohadouken_HP", "tatsumaki_LK", "tatsumaki_MK", "tatsumaki_HK"
+   },
+   twelve = {"axe_LP", "axe_MP", "axe_HP", "axe_EX", "dra_LK", "dra_MK", "dra_HK", "dra_EXP"},
    yang = {"MK_raigeki_MK", "raigeki_LK", "raigeki_MK", "raigeki_HK"},
    yun = {"LP_f_HP", "raigeki_LK", "raigeki_MK", "raigeki_HK"}
 }
@@ -65,13 +54,14 @@ local jump_inputs = {
 
 local function update_character(char_str)
    jumps = copytable(jumps_default)
+   second_jumps = {}
    if char_str == "oro" then
       second_jumps = oro_jumps
    elseif char_str == "twelve" then
       second_jumps = twelve_jumps
    end
    moves = copytable(moves_default)
-   if additional_moves[char_str] then for _, name in ipairs(additional_moves) do table.insert(moves, name) end end
+   if additional_moves[char_str] then for _, name in ipairs(additional_moves[char_str]) do table.insert(moves, name) end end
 end
 
 local function init(char_str)
@@ -90,6 +80,9 @@ local function init(char_str)
       HP_HP = {{"HP"}, {"HP"}},
       LP_MK = {{"LP"}, {"MK"}},
       MP_HP = {{"MP"}, {"HP"}},
+      tatsumaki_LK = move_data.get_move_inputs_by_name("gouki", "tatsumaki", "LK"),
+      tatsumaki_MK = move_data.get_move_inputs_by_name("gouki", "tatsumaki", "MK"),
+      tatsumaki_HK = move_data.get_move_inputs_by_name("gouki", "tatsumaki", "HK"),
       gohadouken_air_LP = move_data.get_move_inputs_by_name("gouki", "gohadouken", "LP"),
       gohadouken_air_MP = move_data.get_move_inputs_by_name("gouki", "gohadouken", "MP"),
       gohadouken_air_HP = move_data.get_move_inputs_by_name("gouki", "gohadouken", "HP"),
@@ -125,14 +118,32 @@ local function init(char_str)
 end
 
 local function get_jump_names()
+   return jumps
+end
+
+local function get_second_jump_names()
+   return second_jumps
+end
+
+local function get_attack_names()
+   return moves
+end
+
+local function get_menu_jump_names()
    local jump_names = copytable(jumps)
-   for k, name in pairs(jump_names) do jump_names[k] = "menu_" .. name end
+   for k, name in ipairs(jump_names) do jump_names[k] = "menu_" .. name end
    return jump_names
 end
 
-local function get_move_names()
+local function get_menu_second_jump_names()
+   local jump_names = copytable(second_jumps)
+   for k, name in ipairs(jump_names) do jump_names[k] = "menu_" .. name end
+   return jump_names
+end
+
+local function get_menu_attack_names()
    local move_names = copytable(moves)
-   for k, name in pairs(move_names) do move_names[k] = "menu_" .. name end
+   for k, name in ipairs(move_names) do move_names[k] = "menu_" .. name end
    return move_names
 end
 
@@ -176,11 +187,39 @@ local function get_move_framedata(char_str, jump_name, move_name)
    end
 end
 
+local function create_settings(dummy)
+   local data = {jump_offset_mode = 1, attack_delay_mode = 1, show_jump_arc = false, show_jump_info = false, jumps = {}}
+   local jump = {
+      jump_name = 2,
+      player_position = {math.floor(dummy.other.pos_x), math.floor(dummy.other.pos_x)},
+      dummy_offset = {math.floor(dummy.pos_x - dummy.other.pos_x), math.floor(dummy.pos_x - dummy.other.pos_x + 20)},
+      dummy_offset_mode = 1,
+      second_jump_name = 1,
+      second_jump_delay = 0,
+      attack_name = 1,
+      attack_delay = {5, 5},
+      attack_delay_mode = 1,
+      followup = {special_button = 1, option_select = 1, normal_button = 1, special = 1, type = 1, motion = 1},
+      followup_delay = 0
+   }
+   table.insert(data.jumps, tools.deepcopy(jump))
+   jump.jump_name = 1
+   for i = 2, max_jumps do table.insert(data.jumps, tools.deepcopy(jump)) end
+   return data
+end
+
 return {
    init = init,
+   update_character = update_character,
    get_jump_names = get_jump_names,
-   get_move_names = get_move_names,
+   get_second_jump_names = get_second_jump_names,
+   get_attack_names = get_attack_names,
+   get_menu_jump_names = get_menu_jump_names,
+   get_menu_second_jump_names = get_menu_second_jump_names,
+   get_menu_attack_names = get_menu_attack_names,
    get_move_inputs = get_move_inputs,
    get_jump_inputs = get_jump_inputs,
-   get_move_framedata = get_move_framedata
+   get_move_framedata = get_move_framedata,
+   create_settings = create_settings,
+   max_jumps = max_jumps
 }

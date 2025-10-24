@@ -13,6 +13,7 @@ local inputs = require("src.control.inputs")
 local memory_addresses = require("src.control.memory_addresses")
 local character_select = require("src.control.character_select")
 local tools = require("src.tools")
+local colors= require("src.ui.colors")
 
 local frame_data = fd.frame_data
 local frame_data_meta = fdm.frame_data_meta
@@ -69,48 +70,48 @@ local function show_dump_state_display()
    end
 end
 
-local display = {}
-local function debuggui(name, var) if name and var then table.insert(display, {name, var}) end end
+local debug_display = {}
+local function debuggui(name, var) if name and var then table.insert(debug_display, {name, var}) end end
 
 local function debug_update_framedata(player, projectiles)
    if gamestate.is_in_match then
       -- player = gamestate.P2
       local other = player.other
 
-      display = {}
+      debug_display = {}
       debuggui("frame", gamestate.frame_number)
       debuggui("state", require("src.modules.record_framedata").state)
       debuggui("anim", player.animation)
       debuggui("anim f", player.animation_frame)
       -- debuggui("action", player.action)
       -- debuggui("cd", player.cooldown)
-      -- debuggui("hash", player.animation_frame_hash)
-      -- debuggui("freeze", player.remaining_freeze_frames)
-      -- -- debuggui("sfreeze", player.superfreeze_decount)
+      debuggui("hash", player.animation_frame_hash)
+      debuggui("freeze", player.remaining_freeze_frames)
       -- -- debuggui("action #", player.action_count)
       -- -- debuggui("action #", player.animation_action_count)
       debuggui("conn action #", player.connected_action_count)
       -- debuggui("just conn", tostring(other.has_just_connected))
-      debuggui("hit id", player.current_hit_id)
-      debuggui("max hit id", player.max_hit_id)
+      -- debuggui("hit id", player.current_hit_id)
+      -- debuggui("max hit id", player.max_hit_id)
       debuggui("is recovery", tostring(other.is_in_recovery))
       -- debuggui("proj", player.total_received_projectiles_count)
       debuggui("throw invul", player.throw_invulnerability_cooldown)
-      debuggui("miss", player.animation_miss_count)
+      debuggui("throw r f", player.throw_recovery_frame)
+      -- debuggui("miss", player.animation_miss_count)
       -- -- debuggui("attacking", tostring(player.is_attacking))
       debuggui("wakeup", player.remaining_wakeup_time)
       debuggui("wakeup2", other.remaining_wakeup_time)
-      -- debuggui("pos", string.format("%04f,%04f",player.pos_x, player.pos_y))
+      debuggui("pos", string.format("%.04f,%.04f",player.pos_x, player.pos_y))
       -- debuggui("pos", string.format("%04f,%04f",other.pos_x, other.pos_y))
       -- debuggui("diff", string.format("%04f,%04f",player.pos_x - player.previous_pos_x, player.pos_y - player.previous_pos_y ))
       -- debuggui("diff", string.format("%04f,%04f",other.pos_x - other.previous_pos_x, other.pos_y - other.previous_pos_y ))
-      -- debuggui("vel", string.format("%04f,%04f", player.velocity_x, player.velocity_y))
+      debuggui("vel", string.format("%.04f,%.04f", player.velocity_x, player.velocity_y))
       -- debuggui("vel", string.format("%04f,%04f", other.velocity_x, other.velocity_y))
-      -- debuggui("acc", string.format("%04f,%04f", player.acceleration_x, player.acceleration_y))
+      debuggui("acc", string.format("%.04f,%.04f", player.acceleration_x, player.acceleration_y))
       -- debuggui("recording", tostring(recording))
 
-      -- local screen_pos_x = memory.readword(memory_addresses.global.screen_pos_x)
-      -- debuggui("screenx", screen_pos_x)
+      local screen_pos_x = memory.readword(memory_addresses.global.screen_pos_x)
+      debuggui("screenx", screen_pos_x)
 
       for _, obj in pairs(projectiles) do
          if obj.emitter_id == player.id and obj.alive then
@@ -120,7 +121,6 @@ local function debug_update_framedata(player, projectiles)
 
             debuggui("xy", tostring(obj.pos_x) .. ", " .. tostring(obj.pos_y))
             -- debuggui("friends", obj.friends)
-            print(obj.id, obj.projectile_type)
             debuggui("anim", obj.animation_frame_hash)
             debuggui("frame", obj.animation_frame)
             debuggui("freeze", obj.remaining_freeze_frames)
@@ -143,12 +143,33 @@ local function debug_update_framedata(player, projectiles)
    end
 end
 
-local function debug_framedata_display()
-   local gui_box_bg_color = 0x1F1F1FF0
-   local y = 44
-   gui.box(2, 2 + y, 80, 5 + 10 * #display + y, gui_box_bg_color, gui_box_bg_color)
-   for i = 1, #display do
-      render_text(6, 6 + 10 * (i - 1) + y, string.format("%s: %s", display[i][1], display[i][2]), "en")
+local debug_framedata_display_max_width = 0
+local function debug_framedata_display(right_side)
+   local x_offset, y_offset = 2, 32
+   local x_padding, y_padding = 5, 4
+   local height, y_spacing = 0, 1
+   local gui_box_bg_color = colors.menu.background
+   local max_width, total_height = 0, 0
+   for i = 1, #debug_display do
+      local w, h = get_text_dimensions(string.format("%s: %s", debug_display[i][1], debug_display[i][2]), "en")
+      if w > max_width then
+         max_width = w
+      end
+      total_height = total_height + h + y_spacing
+      height = h
+   end
+   max_width = max_width + 2 * x_padding
+   total_height = total_height + 2 * y_padding - y_spacing
+   local x, y = x_offset, y_offset
+   if right_side then
+      if max_width > debug_framedata_display_max_width then
+         debug_framedata_display_max_width = max_width
+      end
+      x = draw.SCREEN_WIDTH - x_offset - debug_framedata_display_max_width
+   end
+   gui.box(x, y, x + max_width, y + total_height, gui_box_bg_color, gui_box_bg_color)
+   for i = 1, #debug_display do
+      render_text(x + x_padding, y + y_padding + (height + y_spacing) * (i - 1), string.format("%s: %s", debug_display[i][1], debug_display[i][2]), "en")
    end
 end
 
@@ -462,50 +483,13 @@ local function run_debug()
       collectgarbage()
       print("GC memory:", collectgarbage("count"))
    end
-
-   --[[   if parry_down then
-          memory.writebyte(gamestate.P2.addresses.parry_down_validity_time, 2)
-  end ]]
    local keys = input.get()
    if keys.down then parry_down = not parry_down end
 
-   if keys.F12 then debug_settings.recording_framedata = true end
-
-   -- if loading.frame_data_loaded and first_scan then
-   --   for char, data in pairs(frame_data) do
-   --     local found_stand = false
-   --     local found_crouch = false
-   --     for id, daaa in pairs(data) do
-   --       if type(daaa) == "table" then
-   --         for k,v in pairs(daaa) do
-   --           if k == "frames" then
-   --             for i=1, #v do
-   --               if not v[i].hash then
-   --                 print(char,id,i)
-   --               end
-   --             end
-   --           end
-   --         end
-   --       end
-   --       if id == "standing_turn" then
-   --         found_stand = true
-   --       end
-   --       if id == "crouching_turn" then
-   --         found_crouch = true
-   --       end
-   --     end
-   --     if not found_stand then
-   --       print(char, "no stand turn")
-   --     end
-   --     if not found_crouch then
-   --       print(char, "no crouch turn")
-   --     end
-   --   end
-   --   first_scan = false
-   -- end
+   if keys.F12 and loading.frame_data_loaded then debug_settings.recording_framedata = true end
 
    if gamestate.is_in_match then
-      if gamestate.P2.superfreeze_just_began then
+      if gamestate.P1.superfreeze_just_began or gamestate.P1.superfreeze_just_began then
          if (gamestate.frame_number) % 3 == 2 then
             print("delayed")
          else
@@ -515,6 +499,8 @@ local function run_debug()
    end
 
    if start_debug then
+      require("src.training.jumpins").test_jump()
+
       -- local yagyou = move_data.get_move_inputs_by_name("oro", "yagyoudama", "MP")
       -- if gamestate.is_in_match then
       --   if yag_state == "init" then
@@ -582,13 +568,13 @@ end
 
 local function draw_debug()
    local menu = require("src.ui.menu")
-   if not menu.is_open then
+   -- if not menu.is_open then
       -- memory_display()
       if debug_settings.show_dump_state_display then show_dump_state_display() end
-      if debug_settings.show_debug_frames_display then debug_framedata_display() end
+      if debug_settings.show_debug_frames_display then debug_framedata_display(true) end
       if debug_settings.show_memory_view_display then show_memory_view_display() end
       if debug_settings.show_memory_results_display then show_memory_results_display() end
-   end
+   -- end
 
    for k, boxes_list in pairs(draw_hitbox_queue) do
       if k > gamestate.frame_number then
@@ -609,6 +595,11 @@ local function draw_debug()
 end
 
 local function debug_things()
+   for _, str in ipairs({
+      "legend_hp_hk", ": ", "status_jump", "(", "2", "/", 8, ")"
+   }) do
+   print(str, get_text_dimensions(str, "en"), get_text_dimensions(str, "jp", 8))
+   end
    -- require("src.training.jumpins").test_jump()
 end
 

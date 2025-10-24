@@ -1,35 +1,99 @@
 local gamestate = require("src.gamestate")
 local draw = require("src.ui.draw")
+local hud = require("src.ui.hud")
 local tools = require("src.tools")
-local text  = require("src.ui.text")
-local colors= require("src.ui.colors")
+local text = require("src.ui.text")
+local colors = require("src.ui.colors")
 
 local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text,
                                                                                              text.render_text_multiple,
                                                                                              text.get_text_dimensions,
                                                                                              text.get_text_dimensions_multiple
 
-local move_advantage = {}
+local move_advantage = {armed = false}
 
-local jumping_states = {[14] = true, [15] = true, [16] = true, [20] = true, [21] = true, [22] = true}
+local advantage_states = {START = 1, WAIT_FOR_IDLE = 2, FINISHED = 3}
+local advantage = {}
+
+local function has_just_attacked(player)
+   return player.has_just_attacked or player.has_just_thrown or
+              (player.recovery_time == 0 and player.freeze_frames == 0 and player.input_capacity == 0 and
+                  player.previous_input_capacity ~= 0) or
+              (player.movement_type == 4 and player.last_movement_type_change_frame == 0)
+end
+
+local function has_ended_attack(player) return (player.busy_flag == 0 or player.is_in_jump_startup or player.is_idle) end
+
+local function has_ended_recovery(player)
+   return (player.is_idle or has_just_attacked(player) or player.is_in_jump_startup)
+end
+
+local function idle_just_began(player)
+   return (player.just_became_idle or has_just_attacked(player) or player.has_just_started_jump)
+end
+
+local advantage_display_time = 60
+local advantage_fade_time = 20
+local advantage_min_y = 60
+local function display_frame_advantage_numbers(player, num)
+   local advantage_text = num
+   local advantage_color = colors.hud_text.default
+   local x, y
+   if num > 0 then
+      advantage_text = string.format("+%d", num)
+      advantage_color = colors.hud_text.success
+   elseif num < 0 then
+      advantage_text = string.format("%d", num)
+      advantage_color = colors.hud_text.failure
+   end
+   x, y = draw.get_above_character_position(player)
+   y = math.max(y, advantage_min_y)
+   hud.add_fading_text(x, y - 4, advantage_text, "en", advantage_color, advantage_display_time, advantage_fade_time,
+                       true)
+end
+
+local function new_advantage()
+   return {active = true, state = advantage_states.START, start_frame = gamestate.frame_number}
+end
+
+local function finish_advantage(player, advantage_obj)
+   advantage_obj.active = false
+   if advantage_obj.opponent_reference_frame and advantage_obj.player_reference_frame then
+      advantage_obj.advantage = advantage_obj.opponent_reference_frame - advantage_obj.player_reference_frame
+      display_frame_advantage_numbers(player, advantage_obj.advantage)
+   end
+end
+
+local function update()
+   for i, player in ipairs(gamestate.player_objects) do
+      if has_just_attacked(player) or player.has_just_connected then advantage[player.id] = new_advantage() end
+   end
+   for i, player in ipairs(gamestate.player_objects) do
+      if advantage[player.id] and advantage[player.id].active then
+         if advantage[player.id].state == advantage_states.START then
+            if not player.is_idle then advantage[player.id].state = advantage_states.WAIT_FOR_IDLE end
+         elseif advantage[player.id].state == advantage_states.WAIT_FOR_IDLE then
+            if idle_just_began(player) or player.has_just_landed or
+                (not gamestate.is_ground_state(player.other, player.other.standing_state) and
+                    (player.action == 2 or player.action == 3)) then
+               advantage[player.id].player_reference_frame = gamestate.frame_number
+            end
+            if idle_just_began(player.other) then
+               advantage[player.id].opponent_reference_frame = gamestate.frame_number
+            end
+            if (player.is_idle or idle_just_began(player)) and (player.other.is_idle or idle_just_began(player.other)) then
+               advantage[player.id].state = advantage_states.FINISHED
+            end
+         end
+         if advantage[player.id].state == advantage_states.FINISHED then
+            finish_advantage(player, advantage[player.id])
+         end
+      end
+   end
+end
 
 local function frame_advantage_update(attacker, defender)
-
-   local function has_just_attacked(player)
-      return player.has_just_attacked or player.has_just_thrown or
-                 (player.recovery_time == 0 and player.freeze_frames == 0 and player.input_capacity == 0 and
-                     player.previous_input_capacity ~= 0) or
-                 (player.movement_type == 4 and player.last_movement_type_change_frame == 0)
-   end
-
-   local function has_ended_attack(player)
-      return (player.busy_flag == 0 or player.is_in_jump_startup or player.is_idle)
-   end
-
-   local function has_ended_recovery(player)
-      return (player.is_idle or has_just_attacked(player) or player.is_in_jump_startup)
-   end
-
+   update()
    -- reset end frame if attack occurs again
    if move_advantage.armed and has_just_attacked(attacker) then move_advantage.end_frame = nil end
 
@@ -163,19 +227,19 @@ local function frame_advantage_display()
    end
 
    if move_advantage.hit_frame ~= nil and move_advantage.end_frame ~= nil and move_advantage.opponent_end_frame ~= nil then
-      local advantage = move_advantage.opponent_end_frame - (move_advantage.end_frame)
+      local frame_advantage = move_advantage.opponent_end_frame - (move_advantage.end_frame)
 
       local sign = ""
-      if advantage > 0 then sign = "+" end
+      if frame_advantage > 0 then sign = "+" end
 
       local color = colors.hud_text.default
-      if advantage < 0 then
+      if frame_advantage < 0 then
          color = colors.hud_text.failure
-      elseif advantage > 0 then
+      elseif frame_advantage > 0 then
          color = colors.hud_text.success
       end
 
-      display_line("hud_advantage", string.format("%s%d", sign, advantage), color)
+      display_line("hud_advantage", string.format("%s%d", sign, frame_advantage), color)
    else
       if move_advantage.hitbox_start_frame ~= nil and move_advantage.hitbox_end_frame ~= nil then
          display_line("hud_active",
@@ -185,11 +249,13 @@ local function frame_advantage_display()
    end
 end
 
-local function frame_advantage_reset() move_advantage = {armed = false} end
-frame_advantage_reset()
+local function reset()
+   move_advantage = {armed = false}
+   advantage = {}
+end
 
 return {
    frame_advantage_update = frame_advantage_update,
    frame_advantage_display = frame_advantage_display,
-   frame_advantage_reset = frame_advantage_reset
+   reset = reset
 }

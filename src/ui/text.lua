@@ -70,8 +70,7 @@ local function render_text(x, y, str, lang, size, color, opacity)
 end
 
 local function get_text_dimensions_jp(str, lang, size)
-   local w = 0
-   local h = 0
+   local w,h  = 0, 0
    lang = lang or "jp"
    if size then lang = lang .. "_" .. size end
    for _, v in utf8.codes(str) do
@@ -88,8 +87,7 @@ local function get_text_dimensions_jp(str, lang, size)
 end
 
 local function get_text_dimensions(str, lang, size)
-   local w = 0
-   local h = 0
+   local w,h  = 0, 0
    str = tostring(str)
    lang = lang or settings.language
    for _, v in utf8.codes(str) do

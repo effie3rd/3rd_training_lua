@@ -649,6 +649,7 @@ end
 local followup_b_mk = Followup:new("followup_b_mk", Action_Type.ATTACK)
 
 function followup_b_mk:setup(player, stage, actions, i_actions)
+   self.has_hit = false
    return {
       {
          condition = function()
@@ -666,6 +667,7 @@ end
 function followup_b_mk:run(player, stage, actions, i_actions)
    if all_commands_complete(player) then
       if player.has_just_hit then
+         self.has_hit = true
          if player.current_hit_id == 2 then
             if player.other.is_crouching then
                return true, {should_punish = true}
@@ -677,6 +679,7 @@ function followup_b_mk:run(player, stage, actions, i_actions)
       if player.current_hit_id == 2 then
          if player.other.has_just_blocked then return true, {score = 1} end
          if player.other.has_just_parried then return true, {score = 2} end
+         if self.has_hit then return true, {score = -1} end
       end
    end
    if (player.is_being_thrown and player.throw_tech_countdown <= 0) or
@@ -758,10 +761,12 @@ function followup_block:run(player, stage, actions, i_actions)
 
       self.next_action = actions[i_actions + 1]
       if self.next_action and self.next_action.block_condition and self.next_action:block_condition(player, self) then
+         print("this?") --debug
          return true, {score = 0}
       end
       -- print(self.blocked_frames, self.block_time, self.has_blocked, self:should_block(player)) -- debug
       if self.blocked_frames < self.block_time then
+         print(self.blocked_frames , self.block_time)
          self:extend(player)
       else
          if self:should_block(player) then
@@ -782,7 +787,6 @@ function followup_block:run(player, stage, actions, i_actions)
             else
                return true, {score = 1}
             end
-
          end
       end
    end

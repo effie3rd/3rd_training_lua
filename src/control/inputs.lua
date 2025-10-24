@@ -1,6 +1,5 @@
 local settings = require("src.settings")
 local gamestate = require("src.gamestate")
-local training = require("src.training")
 local fd = require("src.modules.framedata")
 local frame_data, is_slow_jumper, is_really_slow_jumper = fd.frame_data, fd.is_slow_jumper, fd.is_really_slow_jumper
 local memory_addresses = require("src.control.memory_addresses")
@@ -74,7 +73,6 @@ local function process_pending_input_sequence(player, input)
 
    if player.pending_input_sequence.current_frame >= 1 then
       local current_frame_input = player.pending_input_sequence.sequence[player.pending_input_sequence.current_frame]
-      last_processed_input = current_frame_input
       for i = 1, #current_frame_input do
          local input_name = player.prefix .. " "
          if current_frame_input[i] == "forward" then
@@ -135,18 +133,18 @@ local function process_pending_input_sequence(player, input)
                memory.writeword(gauges_base + gauges_offsets[4], 0xFF00)
             end
          elseif current_frame_input[i] == "legs_LK" then
-            player.legs_state.l_legs_count = memory.writebyte(memory_addresses.players[player.id].kyaku_l_count, 0x4)
-            player.legs_state.reset_time = memory.writebyte(memory_addresses.players[player.id].kyaku_reset_time, 0x63)
+            memory.writebyte(memory_addresses.players[player.id].kyaku_l_count, 0x4)
+            memory.writebyte(memory_addresses.players[player.id].kyaku_reset_time, 0x63)
          elseif current_frame_input[i] == "legs_MK" then
-            player.legs_state.m_legs_count = memory.writebyte(memory_addresses.players[player.id].kyaku_m_count, 0x4)
-            player.legs_state.reset_time = memory.writebyte(memory_addresses.players[player.id].kyaku_reset_time, 0x63)
+            memory.writebyte(memory_addresses.players[player.id].kyaku_m_count, 0x4)
+            memory.writebyte(memory_addresses.players[player.id].kyaku_reset_time, 0x63)
          elseif current_frame_input[i] == "legs_HK" then
-            player.legs_state.h_legs_count = memory.writebyte(memory_addresses.players[player.id].kyaku_h_count, 0x4)
-            player.legs_state.reset_time = memory.writebyte(memory_addresses.players[player.id].kyaku_reset_time, 0x63)
+            memory.writebyte(memory_addresses.players[player.id].kyaku_h_count, 0x4)
+            memory.writebyte(memory_addresses.players[player.id].kyaku_reset_time, 0x63)
          elseif current_frame_input[i] == "legs_EXK" then
-            player.legs_state.l_legs_count = memory.writebyte(memory_addresses.players[player.id].kyaku_l_count, 0x4)
-            player.legs_state.m_legs_count = memory.writebyte(memory_addresses.players[player.id].kyaku_m_count, 0x4)
-            player.legs_state.reset_time = memory.writebyte(memory_addresses.players[player.id].kyaku_reset_time, 0x63)
+            memory.writebyte(memory_addresses.players[player.id].kyaku_l_count, 0x4)
+            memory.writebyte(memory_addresses.players[player.id].kyaku_m_count, 0x4)
+            memory.writebyte(memory_addresses.players[player.id].kyaku_reset_time, 0x63)
          elseif current_frame_input[i] == "360" then
             memory.writebyte(player.addresses.kaiten_1, 0)
             memory.writebyte(player.addresses.kaiten_2, 0)
@@ -249,23 +247,23 @@ local function press_right(input, id)
    input["P" .. id .. " Right"] = true
 end
 
-local function create_counter_attack_input_sequence(counter_attack_data)
+local function create_input_sequence(move_selection_data)
    -- recording
-   if counter_attack_data.type == 5 then return nil end
+   if move_selection_data.type == 5 then return nil end
 
    local sequence = {}
    local offset = 0
 
-   local name = counter_attack_data.name
+   local name = move_selection_data.name
 
-   if counter_attack_data.type == 2 then
+   if move_selection_data.type == 2 then
 
-      local stick = counter_attack_data.motion
-      local button = counter_attack_data.button
+      local stick = move_selection_data.motion
+      local button = move_selection_data.button
 
       if stick == "kara_throw" then
          sequence = {{"LP", "LK"}}
-         table.insert(sequence, 1, tools.deepcopy(counter_attack_data.inputs))
+         table.insert(sequence, 1, tools.deepcopy(move_selection_data.inputs))
          return sequence, offset
       end
       if stick == "dir_5" then
@@ -322,25 +320,25 @@ local function create_counter_attack_input_sequence(counter_attack_data)
       else
          if stick == "dir_7" or stick == "dir_8" or stick == "dir_9" then
             for i = 1, 6 - #sequence do table.insert(sequence, {}) end
-            if (is_slow_jumper(counter_attack_data.char_str)) then
+            if (is_slow_jumper(move_selection_data.char_str)) then
                table.insert(sequence, #sequence, {})
-            elseif is_really_slow_jumper(counter_attack_data.char_str) then
+            elseif is_really_slow_jumper(move_selection_data.char_str) then
                table.insert(sequence, #sequence, {})
                table.insert(sequence, #sequence, {})
             end
          elseif stick == "sjump_back" or stick == "sjump_neutral" or stick == "sjump_forward" then
             for i = 1, 8 - #sequence do table.insert(sequence, {}) end
-            if (is_slow_jumper(counter_attack_data.char_str)) then
+            if (is_slow_jumper(move_selection_data.char_str)) then
                table.insert(sequence, #sequence, {})
-            elseif is_really_slow_jumper(counter_attack_data.char_str) then
+            elseif is_really_slow_jumper(move_selection_data.char_str) then
                table.insert(sequence, #sequence, {})
                table.insert(sequence, #sequence, {})
             end
          end
          table.insert(sequence[#sequence], button)
       end
-   elseif counter_attack_data.type == 3 then
-      sequence = tools.deepcopy(counter_attack_data.inputs)
+   elseif move_selection_data.type == 3 then
+      sequence = tools.deepcopy(move_selection_data.inputs)
       if name == "kara_capture_and_deadly_blow" then
          offset = 1
       elseif name == "kara_karakusa_lk" then
@@ -356,7 +354,7 @@ local function create_counter_attack_input_sequence(counter_attack_data)
       elseif name == "kara_niouriki" then
          offset = 1
       end
-   elseif counter_attack_data.type == 4 then
+   elseif move_selection_data.type == 4 then
       if name == "guard_jump_back" then
          sequence = {
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
@@ -384,9 +382,9 @@ local function create_counter_attack_input_sequence(counter_attack_data)
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"back", "up"}, {"back", "up"}, {}, {}, {},
             {"forward"}
          }
-         if (is_slow_jumper(counter_attack_data.char_str)) then
+         if (is_slow_jumper(move_selection_data.char_str)) then
             table.insert(sequence, #sequence, {})
-         elseif is_really_slow_jumper(counter_attack_data.char_str) then
+         elseif is_really_slow_jumper(move_selection_data.char_str) then
             table.insert(sequence, #sequence, {})
             table.insert(sequence, #sequence, {})
          end
@@ -395,9 +393,9 @@ local function create_counter_attack_input_sequence(counter_attack_data)
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"up"}, {"up"}, {}, {}, {}, {"forward"}
          }
-         if (is_slow_jumper(counter_attack_data.char_str)) then
+         if (is_slow_jumper(move_selection_data.char_str)) then
             table.insert(sequence, #sequence, {})
-         elseif is_really_slow_jumper(counter_attack_data.char_str) then
+         elseif is_really_slow_jumper(move_selection_data.char_str) then
             table.insert(sequence, #sequence, {})
             table.insert(sequence, #sequence, {})
          end
@@ -407,9 +405,9 @@ local function create_counter_attack_input_sequence(counter_attack_data)
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"up", "forward"}, {"up", "forward"}, {}, {}, {},
             {"forward"}
          }
-         if (is_slow_jumper(counter_attack_data.char_str)) then
+         if (is_slow_jumper(move_selection_data.char_str)) then
             table.insert(sequence, #sequence, {})
-         elseif is_really_slow_jumper(counter_attack_data.char_str) then
+         elseif is_really_slow_jumper(move_selection_data.char_str) then
             table.insert(sequence, #sequence, {})
             table.insert(sequence, #sequence, {})
          end
@@ -576,7 +574,7 @@ local input_module = {
    press_left = press_left,
    press_right = press_right,
    problematic_inputs_released = problematic_inputs_released,
-   create_counter_attack_input_sequence = create_counter_attack_input_sequence,
+   create_input_sequence = create_input_sequence,
    queue_input_from_json = queue_input_from_json,
    is_previous_input_neutral = is_previous_input_neutral,
    log_input = log_input,

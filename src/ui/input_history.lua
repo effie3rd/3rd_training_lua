@@ -5,6 +5,7 @@ local input_history_size_max = 15
 local input_history = {{}, {}}
 
 local function make_input_history_entry(prefix, input)
+   if not input then return end
    local up = input[prefix .. " Up"]
    local down = input[prefix .. " Down"]
    local left = input[prefix .. " Left"]
