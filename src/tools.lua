@@ -91,16 +91,16 @@ local function check_input_down_autofire(player_object, input, autofire_rate, au
    return false
 end
 
-local Perf_timer = {}
-Perf_timer.__index = Perf_timer
+local Perf_Timer = {}
+Perf_Timer.__index = Perf_Timer
 
-function Perf_timer:new()
+function Perf_Timer:new()
    local obj = {}
    obj.start = os.clock()
    return setmetatable(obj, self)
 end
-function Perf_timer:reset() self.start = os.clock() end
-function Perf_timer:elapsed() return os.clock() - self.start end
+function Perf_Timer:reset() self.start = os.clock() end
+function Perf_Timer:elapsed() return os.clock() - self.start end
 
 local function read_number_from_file(file_path)
    local f = io.open(file_path, "r")
@@ -409,7 +409,7 @@ return {
    memory_readword_reverse = memory_readword_reverse,
    clamp = clamp,
    check_input_down_autofire = check_input_down_autofire,
-   Perf_timer = Perf_timer,
+   Perf_Timer = Perf_Timer,
    read_number_from_file = read_number_from_file,
    read_object_from_json_file = read_object_from_json_file,
    write_object_to_json_file = write_object_to_json_file,

@@ -11,12 +11,14 @@ local framedata = require("src.modules.framedata")
 local image_map = text.image_map
 local frame_data = framedata.frame_data
 
----@type table|nil
-local image_map_json_data = tools.read_object_from_json_file("data/image_map.json")
+local image_map_json_data = tools.read_object_from_json_file("data/image_map.json") or {}
 
 local reader = mp.Msg_Pack_Reader.new(settings.framedata_path .. settings.framedata_bin_file)
 local framedata_size = reader:read()
 reader:close()
+
+local text_images_size = 0
+for _, data in pairs(image_map_json_data) do text_images_size = text_images_size + 1 end
 
 -- cache default, selected, and disabled colors. everything is recolored in real time
 local function load_text_images(filepath)
@@ -99,7 +101,9 @@ local function load_text_image(data, code)
    end
 end
 
-local function get_total_files() return framedata_size end
+local im_load_time_constant = 2444
+
+local function get_total_files() return text_images_size * im_load_time_constant + framedata_size end
 
 local frame_time_margin = 0.80
 local frame_time = (1 / 60) * frame_time_margin
@@ -109,13 +113,7 @@ local function estimate_chunks_per_frame(elapsed, chunks_loaded)
    return math.max(math.floor(frame_time * frame_time_margin / rate), 1)
 end
 
-local fd_load_margin = 1
-local function estimate_load_rate(n_loaded, elapsed)
-   if elapsed == 0 then return fd_load_margin end
-   return math.min(n_loaded / (elapsed * 1000000) * fd_load_margin, 1)
-end
-
-local load_timer = tools.Perf_timer:new()
+local load_timer = tools.Perf_Timer:new()
 local load_rate = math.huge
 local n_loaded_this_frame = 0
 
@@ -140,7 +138,6 @@ local function load_text_images_async()
    image_map_json_data = nil
 end
 
-
 local function load_frame_data_async()
    framedata.clear_frame_data()
    reader = mp.Msg_Pack_Reader.new(settings.framedata_path .. settings.framedata_bin_file)
@@ -148,7 +145,6 @@ local function load_frame_data_async()
    load_timer:reset()
    repeat
       local size = reader:get_length()
-      -- print(load_rate , (frame_time - load_timer:elapsed()) , size, load_rate * (frame_time - load_timer:elapsed()) < size)
       if load_rate * (frame_time - load_timer:elapsed()) < size then
          coroutine.yield(n_loaded_this_frame)
          load_timer:reset()
@@ -188,7 +184,10 @@ local function load_all()
    local status = coroutine.status(current_loader)
    if status == "suspended" then
       local pass, n = coroutine.resume(current_loader)
-      if pass and n then n_loaded = n end
+      if pass and n then
+         n_loaded = n
+         if current_loader == load_text_images_co then n_loaded = n_loaded * im_load_time_constant end
+      end
    elseif status == "dead" then
       if current_loader == load_text_images_co then
          text_images_loaded = true
