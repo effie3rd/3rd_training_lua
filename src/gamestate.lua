@@ -17,6 +17,7 @@ local is_before_curtain = false
 local is_in_match = false
 local has_match_just_started = false
 local has_match_just_ended = false
+local screen_x, screen_y = 0, 0
 local player_objects = {}
 local projectiles = {}
 
@@ -242,6 +243,9 @@ local function read_game_vars()
    has_match_just_ended = match_state == 3
 
    stage = memory.readbyte(memory_addresses.global.stage)
+
+   screen_x = memory.readwordsigned(memory_addresses.global.screen_pos_x)
+   screen_y = memory.readwordsigned(memory_addresses.global.screen_pos_y)
 end
 
 local function read_input(player)
@@ -450,7 +454,7 @@ local function read_player_vars(player)
    player.char_str = game_data.characters[player.char_id + 1]
 
    player.previous_remaining_freeze_frames = player.remaining_freeze_frames or 0
-   player.remaining_freeze_frames = memory.readbyte(player.base + 0x45)
+   player.remaining_freeze_frames = memory.readbyte(player.addresses.remaining_freeze_frames)
    player.freeze_type = 0
    if player.remaining_freeze_frames ~= 0 then
       if player.remaining_freeze_frames < 127 then
@@ -480,14 +484,14 @@ local function read_player_vars(player)
    local previous_action = player.action or 0x00
 
    player.previous_input_capacity = player.input_capacity or 0
-   player.input_capacity = memory.readword(player.base + 0x46C)
-   player.action = memory.readdword(player.base + 0xAC)
-   player.action_ext = memory.readdword(player.base + 0x12C)
+   player.input_capacity = memory.readword(player.addresses.input_capacity)
+   player.action = memory.readdword(player.addresses.action)
+   player.action_ext = memory.readdword(player.addresses.action_ext)
    player.previous_recovery_time = player.recovery_time or 0
-   player.recovery_time = memory.readbyte(player.base + 0x187)
-   player.movement_type = memory.readbyte(player.base + 0x0AD)
-   player.movement_type2 = memory.readbyte(player.base + 0x0AF) -- seems that we can know which basic movement the player is doing from there
-   player.total_received_projectiles_count = memory.readword(player.base + 0x430) -- on block or hit
+   player.recovery_time = memory.readbyte(player.addresses.recovery_time)
+   player.movement_type = memory.readbyte(player.addresses.movement_type)
+   player.movement_type2 = memory.readbyte(player.addresses.movement_type2) -- seems that we can know which basic movement the player is doing from there
+   player.total_received_projectiles_count = memory.readword(player.addresses.total_received_projectiles_count) -- on block or hit
    -- postures
    --  0x00 -- standing neutral
    --  0x08 -- going backwards
@@ -498,11 +502,11 @@ local function read_player_vars(player)
    --  0x18 -- flying backwards
    --  0x1A -- high jump
    --  0x26 -- knocked down
-   player.posture = memory.readbyte(player.base + 0x20E)
-   player.posture_ext = memory.readbyte(player.base + 0x209)
-   player.recovery_type = memory.readbyte(player.base + 0x207) -- 1 was hit on ground, 4 attacking normal, 5 attacking special, 6 was hit in air, 7 body hit ground, updates frame after hit
+   player.posture = memory.readbyte(player.addresses.posture)
+   player.posture_ext = memory.readbyte(player.addresses.posture_ext)
+   player.recovery_type = memory.readbyte(player.addresses.recovery_type) -- 1 was hit on ground, 4 attacking normal, 5 attacking special, 6 was hit in air, 7 body hit ground, updates frame after hit
    player.previous_standing_state = player.standing_state or 0
-   player.standing_state = memory.readbyte(player.base + 0x297)
+   player.standing_state = memory.readbyte(player.addresses.standing_state)
    player.has_just_started_jump = (player.action == 12 and previous_action ~= 12) or
                                       (player.action == 13 and previous_action ~= 13)
    player.is_standing = player.posture == 0x0 and player.pos_y == 0
@@ -512,14 +516,14 @@ local function read_player_vars(player)
    player.is_grounded = player.is_standing or player.is_crouching or movement_postures[player.posture] or
                             (player.posture == 0 and player.standing_state ~= 0 and player.pos_y == 0)
 
-   player.busy_flag = memory.readword(player.base + 0x3D1)
+   player.busy_flag = memory.readword(player.addresses.busy_flag)
 
    local previous_is_in_basic_action = player.is_in_basic_action or false
    player.is_in_basic_action = player.action < 0xFF and previous_action < 0xFF -- this triggers one frame early than it should, so we delay it artificially
    player.has_just_entered_basic_action = not previous_is_in_basic_action and player.is_in_basic_action
 
    local previous_recovery_flag = player.recovery_flag or 1
-   player.recovery_flag = memory.readbyte(player.base + 0x3B)
+   player.recovery_flag = memory.readbyte(player.addresses.recovery_flag)
    player.has_just_ended_recovery =
        player.standing_state <= 2 and previous_recovery_flag == 2 and player.recovery_flag ~= 2
 
@@ -556,20 +560,16 @@ local function read_player_vars(player)
 
    -- COMBO
    player.previous_combo = player.combo or 0
-   if player.id == 1 then
-      player.combo = memory.readbyte(0x020696C5)
-   else
-      player.combo = memory.readbyte(0x0206961D)
-   end
+   player.combo = memory.readbyte(player.addresses.combo)
 
    -- NEXT HIT
    player.damage_of_next_hit = memory.readbyte(player.addresses.damage_of_next_hit)
    player.stun_of_next_hit = memory.readbyte(player.addresses.stun_of_next_hit)
 
    -- BONUSES
-   player.damage_bonus = memory.readword(player.base + 0x43A)
-   player.stun_bonus = memory.readword(player.base + 0x43E)
-   player.defense_bonus = memory.readword(player.base + 0x440)
+   player.damage_bonus = memory.readword(player.addresses.damage_bonus)
+   player.stun_bonus = memory.readword(player.addresses.stun_bonus)
+   player.defense_bonus = memory.readword(player.addresses.defense_bonus)
 
    -- THROW
    local previous_is_throwing = player.is_throwing or false
@@ -577,7 +577,7 @@ local function read_player_vars(player)
    player.has_just_thrown = not previous_is_throwing and player.is_throwing
 
    local _previous_being_thrown = player.is_being_thrown
-   player.is_being_thrown = memory.readbyte(player.base + 0x3CF) ~= 0
+   player.is_being_thrown = memory.readbyte(player.addresses.is_being_thrown) ~= 0
    player.throw_countdown = player.throw_countdown or 0
    player.previous_throw_countdown = player.throw_countdown
    player.has_just_been_thrown = (not _previous_being_thrown) and player.is_being_thrown
@@ -586,7 +586,7 @@ local function read_player_vars(player)
    if player.has_just_been_thrown then player.throw_tech_countdown = 4 end
    player.is_in_throw_tech = player.action == 44 or player.action == 43 -- 44 attacker, 43 defender
 
-   local throw_countdown = memory.readbyte(player.base + 0x434)
+   local throw_countdown = memory.readbyte(player.addresses.throw_countdown)
    if throw_countdown > player.previous_throw_countdown then
       player.throw_countdown = throw_countdown + 2 -- air throw animations seems to not match the countdown (ie. Ibuki's Air Throw), let's add a few frames to it
    else
@@ -603,13 +603,13 @@ local function read_player_vars(player)
    -- ATTACKING
    local previous_is_attacking = player.is_attacking or false
    local previous_attacking_state = player.character_state_byte == 4 or false
-   player.character_state_byte = memory.readbyte(player.base + 0x27) -- used to detect hugos clap, meat squasher, lariat, which do not set the is_attacking_byte
-   player.is_attacking_byte = memory.readbyte(player.base + 0x428)
+   player.character_state_byte = memory.readbyte(player.addresses.character_state_byte) -- used to detect hugos clap, meat squasher, lariat, which do not set the is_attacking_byte
+   player.is_attacking_byte = memory.readbyte(player.addresses.is_attacking_byte)
    player.is_attacking = player.is_attacking_byte > 0 or
                              (attacking_byte_exception[player.char_str] and
                                  attacking_byte_exception[player.char_str][player.animation] and player.animation_frame <=
                                  attacking_byte_exception[player.char_str][player.animation])
-   player.is_attacking_ext_byte = memory.readbyte(player.base + 0x429)
+   player.is_attacking_ext_byte = memory.readbyte(player.addresses.is_attacking_ext_byte)
    player.is_attacking_ext = player.is_attacking_ext_byte > 0
    player.has_just_attacked = player.is_attacking and not previous_is_attacking
    if debug_state_variables and player.has_just_attacked then
@@ -618,7 +618,7 @@ local function read_player_vars(player)
 
    -- ACTION
    local previous_action_count = player.action_count or 0
-   player.action_count = memory.readbyte(player.base + 0x459)
+   player.action_count = memory.readbyte(player.addresses.action_count)
    player.has_just_acted = player.action_count > previous_action_count
    if debug_state_variables and player.has_just_acted then
       print(string.format("%d - %s acted (%d > %d)", frame_number, player.prefix, previous_action_count,
@@ -743,7 +743,7 @@ local function read_player_vars(player)
 
    -- RECEIVED HITS/BLOCKS/PARRYS
    local previous_total_received_hit_count = player.total_received_hit_count or nil
-   player.total_received_hit_count = memory.readword(player.base + 0x33E)
+   player.total_received_hit_count = memory.readword(player.addresses.total_received_hit_count)
    local total_received_hit_count_diff = 0
    if previous_total_received_hit_count then
       if previous_total_received_hit_count == 0xFFFF then
@@ -766,7 +766,7 @@ local function read_player_vars(player)
    player.last_movement_type_change_frame = player.last_movement_type_change_frame or 0
    if player.movement_type ~= previous_movement_type then player.last_movement_type_change_frame = frame_number end
    -- is blocking/has just blocked/has just been hit/has_just_parried
-   player.blocking_id = memory.readbyte(player.base + 0x3D3)
+   player.blocking_id = memory.readbyte(player.addresses.blocking_id)
    player.has_just_blocked = false
    if (player.received_connection and player.received_connection_marker ~= 0xFFF1 and total_received_hit_count_diff == 0) or
        (player.received_connection and player.other.animation == "baac" and player.received_connection_marker == 0xFFF1 and
@@ -810,7 +810,7 @@ local function read_player_vars(player)
 
    -- HITS
    local previous_hit_count = player.hit_count or 0
-   player.hit_count = memory.readbyte(player.base + 0x189)
+   player.hit_count = memory.readbyte(player.addresses.hit_count)
    player.has_just_hit = player.hit_count > previous_hit_count
    if player.has_just_hit then
       log(player.prefix, "fight", "has hit")
@@ -822,7 +822,7 @@ local function read_player_vars(player)
    -- BLOCKS
    local previous_connected_action_count = player.connected_action_count or 0
    local previous_blocked_count = previous_connected_action_count - previous_hit_count
-   player.connected_action_count = memory.readbyte(player.base + 0x17B)
+   player.connected_action_count = memory.readbyte(player.addresses.connected_action_count)
    local blocked_count = player.connected_action_count - player.hit_count
    player.has_just_been_blocked = blocked_count > previous_blocked_count
    if debug_state_variables and player.has_just_been_blocked then
@@ -937,12 +937,12 @@ local function read_player_vars(player)
 
       -- WAKE UP
       player.previous_can_fast_wakeup = player.can_fast_wakeup or 0
-      player.can_fast_wakeup = memory.readbyte(player.base + 0x402)
+      player.can_fast_wakeup = memory.readbyte(player.addresses.can_fast_wakeup)
 
       local previous_fast_wakeup_flag = player.fast_wakeup_flag or 0
-      player.fast_wakeup_flag = memory.readbyte(player.base + 0x403)
+      player.fast_wakeup_flag = memory.readbyte(player.addresses.fast_wakeup_flag)
 
-      player.is_flying_down_flag = memory.readbyte(player.base + 0x8D) -- does not reset to 0 after air reset landings, resets to 0 after jump start
+      player.is_flying_down_flag = memory.readbyte(player.addresses.is_flying_down_flag) -- does not reset to 0 after air reset landings, resets to 0 after jump start
 
       player.previous_is_wakingup = player.is_waking_up or false
       player.is_waking_up = player.posture == 0x26
@@ -1744,6 +1744,10 @@ setmetatable(gamestate, {
          return projectiles
       elseif key == "stage" then
          return stage
+      elseif key == "screen_x" then
+         return screen_x
+      elseif key == "screen_y" then
+         return screen_y
       elseif key == "match_state" then
          return match_state
       elseif key == "is_in_character_select" then

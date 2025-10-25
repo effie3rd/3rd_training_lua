@@ -55,6 +55,7 @@ local addresses = {
          selected_sa = 0x0201138B,
          superfreeze_decount = 0x02069520,
 
+         -- [BYTE]
          life = P1_base + 0x9F,
          gauge = 0x020695B5,
          meter = 0x020286AB,
@@ -62,7 +63,7 @@ local addresses = {
          meter_update_flag = 0x020157C8,
          max_meter_gauge = 0x020695B3,
          max_meter_count = 0x020695BD,
-         sa_state = 0x020695AD, --2 activate, 4 in timed sa
+         sa_state = 0x020695AD, -- 2 activate, 4 in timed sa
          stun_bar_max = P1_stun_bar_max,
          stun_activate = P1_stun_bar_max - 0x3,
          stun_timer = P1_stun_bar_max + 0x2,
@@ -73,8 +74,8 @@ local addresses = {
          score = 0x020113A2,
          parry_forward_validity_time = 0x02026335,
          parry_forward_cooldown_time = 0x02025731,
-         parry_forward_cooldown_state = 0x02025733, --1 can attempt parry, 3 can not attempt parry
-         parry_forward_cooldown_reset = 0x2025719, --write 0 to reset cooldowns, seems to break things
+         parry_forward_cooldown_state = 0x02025733, -- 1 can attempt parry, 3 can not attempt parry
+         parry_forward_cooldown_reset = 0x2025719, -- write 0 to reset cooldowns, seems to break things
          parry_down_validity_time = 0x02026337,
          parry_down_cooldown_time = 0x0202574D,
          parry_down_cooldown_state = 0x0202574F,
@@ -89,6 +90,39 @@ local addresses = {
          parry_antiair_cooldown_reset = 0x2025815,
          damage_of_next_hit = 0x020691A7,
          stun_of_next_hit = 0x02069437,
+         remaining_freeze_frames = P1_base + 0x45,
+         recovery_time = P1_base + 0x187,
+         movement_type = P1_base + 0x0AD,
+         movement_type2 = P1_base + 0x0AF,
+         posture = P1_base + 0x20E,
+         posture_ext = P1_base + 0x209,
+         recovery_type = P1_base + 0x207, -- 1 was hit on ground, 4 attacking normal, 5 attacking special, 6 was hit in air, 7 body hit ground, updates frame after hit
+         standing_state = P1_base + 0x297,
+         recovery_flag = P1_base + 0x3B,
+         is_being_thrown = P1_base + 0x3CF,
+         throw_countdown = P1_base + 0x434,
+         character_state_byte = P1_base + 0x27,
+         is_attacking_byte = P1_base + 0x428,
+         is_attacking_ext_byte = P1_base + 0x429,
+         action_count = P1_base + 0x459,
+         blocking_id = P1_base + 0x3D3,
+         hit_count = P1_base + 0x189,
+         connected_action_count = P1_base + 0x17B,
+         can_fast_wakeup = P1_base + 0x402,
+         fast_wakeup_flag = P1_base + 0x403,
+         is_flying_down_flag = P1_base + 0x8D,
+         combo = P1_base + 0xA59,
+
+         -- [WORD]
+         action = P1_base + 0xAC,
+         action_ext = P1_base + 0x12C,
+         input_capacity = P1_base + 0x46C,
+         total_received_projectiles_count = P1_base + 0x430,
+         busy_flag = P1_base + 0x3D1,
+         damage_bonus = P1_base + 0x43A,
+         stun_bonus = P1_base + 0x43E,
+         defense_bonus = P1_base + 0x440,
+         total_received_hit_count = P1_base + 0x33E,
 
          charge_1_reset = 0x02025A47, -- Alex_1(Elbow)
          charge_1 = 0x02025A49,
@@ -179,6 +213,38 @@ local addresses = {
          parry_antiair_cooldown_reset = 0x2025E35,
          damage_of_next_hit = 0x02068D0F,
          stun_of_next_hit = 0x02068F9F,
+         remaining_freeze_frames = P2_base + 0x45,
+         recovery_time = P2_base + 0x187,
+         movement_type = P2_base + 0x0AD,
+         movement_type2 = P2_base + 0x0AF,
+         posture = P2_base + 0x20E,
+         posture_ext = P2_base + 0x209,
+         recovery_type = P2_base + 0x207,
+         standing_state = P2_base + 0x297,
+         recovery_flag = P2_base + 0x3B,
+         is_being_thrown = P2_base + 0x3CF,
+         throw_countdown = P2_base + 0x434,
+         character_state_byte = P2_base + 0x27,
+         is_attacking_byte = P2_base + 0x428,
+         is_attacking_ext_byte = P2_base + 0x429,
+         action_count = P2_base + 0x459,
+         blocking_id = P2_base + 0x3D3,
+         hit_count = P2_base + 0x189,
+         connected_action_count = P2_base + 0x17B,
+         can_fast_wakeup = P2_base + 0x402,
+         fast_wakeup_flag = P2_base + 0x403,
+         is_flying_down_flag = P2_base + 0x8D,
+         combo = P2_base + 0x519,
+
+         action = P2_base + 0xAC,
+         action_ext = P2_base + 0x12C,
+         input_capacity = P2_base + 0x46C,
+         total_received_projectiles_count = P2_base + 0x430,
+         busy_flag = P2_base + 0x3D1,
+         damage_bonus = P2_base + 0x43A,
+         stun_bonus = P2_base + 0x43E,
+         defense_bonus = P2_base + 0x440,
+         total_received_hit_count = P2_base + 0x33E,
 
          charge_1_reset = 0x2026067,
          charge_1 = 0x2026069,
@@ -225,7 +291,6 @@ local addresses = {
 
 -- Misc
 -- change_match_state = 0x2015439, --2 match start, 6 title, 8 ending, 9 car, 11 match start, 14 match start
-
 
 local function update_addresses(player) player.addresses = addresses.players[player.id] end
 

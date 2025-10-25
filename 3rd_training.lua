@@ -200,9 +200,6 @@ local function on_load_state()
 end
 
 local function before_frame()
-
-   draw.update_draw_variables()
-
    local previous_p2_char_str = gamestate.P2.char_str or ""
    local previous_dummy_char_str = training.dummy.char_str or ""
    gamestate.gamestate_read()

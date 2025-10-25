@@ -11,22 +11,18 @@ local SCREEN_WIDTH = 383
 local SCREEN_HEIGHT = 223
 local GROUND_OFFSET = 23
 
-local screen_x = 0
-local screen_y = 0
 local screen_scale = 1
 
 local controller_styles = image_tables.controller_styles
 
 local function update_draw_variables()
-   screen_x = memory.readwordsigned(0x02026CB0)
-   screen_y = memory.readwordsigned(0x02026CB4)
    screen_scale = memory.readwordsigned(0x0200DCBA) -- FBA can't read from 04xxxxxx
    screen_scale = 0x40 / (screen_scale > 0 and screen_scale or 1)
 end
 
-local function game_to_screen_space_x(x) return x - screen_x + emu.screenwidth() / 2 end
+local function game_to_screen_space_x(x) return x - gamestate.screen_x + emu.screenwidth() / 2 end
 
-local function game_to_screen_space_y(y) return emu.screenheight() - (y - screen_y) - GROUND_OFFSET end
+local function game_to_screen_space_y(y) return emu.screenheight() - (y - gamestate.screen_y) - GROUND_OFFSET end
 
 local function game_to_screen_space(x, y) return game_to_screen_space_x(x), game_to_screen_space_y(y) end
 
@@ -388,17 +384,5 @@ local draw = {
    get_up_arrow = get_up_arrow,
    get_check_box = get_check_box
 }
-
-setmetatable(draw, {
-   __index = function(_, key)
-      if key == "screen_x" then
-         return screen_x
-      elseif key == "screen_y" then
-         return screen_y
-      elseif key == "screen_scale" then
-         return screen_scale
-      end
-   end
-})
 
 return draw

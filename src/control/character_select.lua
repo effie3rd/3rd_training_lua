@@ -90,7 +90,7 @@ local function co_delay_load_savestate(input)
 end
 
 local function start_character_select_sequence(disable_bosses)
-   if game_data.is_fightcade and first_run then
+   if first_run then
       character_select_coroutine(co_delay_load_savestate, "delay_load")
       first_run = false
    end

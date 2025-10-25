@@ -76,8 +76,6 @@ local change_position_start_frame = 0
 local move_speed = 1
 local max_move_speed = 3
 local move_speed_increase_delay = 20
-local screen_scroll_offset_left = 102
-local screen_scroll_offset_right = 100
 local contact_dist = 0
 local test_jump_start_delay = 30
 
@@ -170,7 +168,7 @@ end
 local function change_dummy_offset_edit_mode()
    dummy_offset_edit_mode = dummy_offset_edit_mode % 2 + 1
    if dummy_offset_edit_mode == 1 then dummy_offset_edit_index = 1 end
-      edit_jump_settings.dummy_offset_mode = dummy_offset_edit_mode
+   edit_jump_settings.dummy_offset_mode = dummy_offset_edit_mode
    return dummy_offset_edit_mode
 end
 
@@ -356,15 +354,16 @@ local function simulate_jump(player, start_x, first_jump_name, second_jump_name,
 end
 
 local function fix_screen_position(player, player_pos_x)
-   local scroll_boundary_left = memory.readword(memory_addresses.global.screen_pos_x) + (129 - framedata.character_specific[player.char_str].corner_offset_left)
-   local scroll_boundary_right = memory.readword(memory_addresses.global.screen_pos_x) - (129 - framedata.character_specific[player.char_str].corner_offset_right)
+   local screen_pos_x = gamestate.screen_x
+   local scroll_boundary_left = screen_pos_x + (129 - framedata.character_specific[player.char_str].corner_offset_left)
+   local scroll_boundary_right = screen_pos_x - (129 - framedata.character_specific[player.char_str].corner_offset_right)
    if player_pos_x <= scroll_boundary_left then
       local screen_limit_left, _ = utils.get_stage_screen_limits(gamestate.stage)
-      local new_screen_pos = math.max(player_pos_x + screen_scroll_offset_left, screen_limit_left)
+      local new_screen_pos = math.max(screen_pos_x + player_pos_x - scroll_boundary_left, screen_limit_left)
       write_memory.set_screen_pos(new_screen_pos, 0)
    elseif player_pos_x >= scroll_boundary_right then
       local _, screen_limit_right = utils.get_stage_screen_limits(gamestate.stage)
-      local new_screen_pos = math.min(player_pos_x - screen_scroll_offset_right, screen_limit_right)
+      local new_screen_pos = math.min(screen_pos_x + player_pos_x - scroll_boundary_right, screen_limit_right)
       write_memory.set_screen_pos(new_screen_pos, 0)
    end
 end
@@ -497,6 +496,7 @@ local function move_player_left()
    end
    update_position_bounds()
    bound_settings()
+   fix_screen_position(jumpins_player, player_position_range[1])
    current_jump_arc = nil
 end
 
@@ -520,6 +520,7 @@ local function move_player_right()
    end
    update_position_bounds()
    bound_settings()
+   fix_screen_position(jumpins_player, player_position_range[1])
    current_jump_arc = nil
 end
 
@@ -556,6 +557,7 @@ local function move_dummy_left()
    end
    update_position_bounds()
    bound_settings()
+   fix_screen_position(jumpins_dummy, new_x)
    current_jump_arc = nil
 end
 
@@ -584,7 +586,6 @@ local function move_dummy_right()
       table.sort(dummy_offset_range)
       dummy_offset_edit_index = tools.table_indexof(dummy_offset_range, new_offset) or 1
    end
-   print(dummy_offset_edit_index, dummy_offset_range[1], dummy_offset_range[2])
    local dummy_right = get_current_dummy_offset() + contact_dist
    local dummy_left = get_current_dummy_offset() - contact_dist
    if player_position_range[1] > dummy_left and player_position_range[1] < dummy_right then
@@ -593,13 +594,11 @@ local function move_dummy_right()
    end
    update_position_bounds()
    bound_settings()
+   fix_screen_position(jumpins_dummy, new_x)
    current_jump_arc = nil
 end
 
-local function load_settings(settings)
-   print(settings.show_jump_arc)
-   general_settings = settings
-end
+local function load_settings(settings) general_settings = settings end
 
 local function load_jump(jump_settings)
    edit_jump_settings = jump_settings
@@ -667,10 +666,10 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
       local target_combo = {
          {
             condition = function() return attack_timer:is_complete() end,
-            action = function() queue_input_sequence_and_wait(player, attack_input[1]) end
+            action = function() queue_input_sequence_and_wait(player, {attack_input[1]}) end
          }, {
             condition = function() return player.has_just_connected end,
-            action = function() queue_input_sequence_and_wait(player, attack_input[2]) end
+            action = function() queue_input_sequence_and_wait(player, {attack_input[2]}) end
          }
       }
       table.insert(command, target_combo[1])
@@ -851,16 +850,15 @@ local function update()
                 move_left_frame >= test_jump_start_delay and
                 jumpins_tables.get_jump_names()[edit_jump_settings.jump_name] ~= "off" then
                if (jumpins_player.action == 0 or (player_pose == 2 and jumpins_player.action == 7)) and
-                   jumpins_dummy.action == 0 and jumpins_player.pos_x == player_position_range[1] and
-                   jumpins_dummy.pos_x == player_position_range[1] + dummy_offset_range[dummy_offset_edit_index] then
+                   jumpins_dummy.action == 0 and math.floor(jumpins_player.pos_x) == player_position_range[1] and
+                   math.floor(jumpins_dummy.pos_x) == player_position_range[1] + dummy_offset_range[dummy_offset_edit_index] then
                   state = states.QUEUE_TEST_JUMP
                end
             end
+            print(jumpins_player.pos_x,  player_position_range[1], jumpins_dummy.pos_x, player_position_range[1] + dummy_offset_range[dummy_offset_edit_index])
             write_memory.write_pos(jumpins_player, player_position_range[1], 0)
             write_memory.write_pos(jumpins_dummy,
                                    player_position_range[1] + dummy_offset_range[dummy_offset_edit_index], 0)
-            fix_screen_position(jumpins_player, player_position_range[1])
-            fix_screen_position(jumpins_dummy, player_position_range[1] + dummy_offset_range[dummy_offset_edit_index])
          elseif state == states.QUEUE_TEST_JUMP then
             local first_jump_name = jumpins_tables.get_jump_names()[edit_jump_settings.jump_name]
             if first_jump_name ~= "off" then

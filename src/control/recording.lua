@@ -282,8 +282,8 @@ local function create_new_keyframe()
    local keyframe = {
       recording_frame = 1,
       frame_mod3 = gamestate.frame_number % 3,
-      screen_x = memory.readword(memory_addresses.global.screen_pos_x),
-      screen_y = memory.readword(memory_addresses.global.screen_pos_y),
+      screen_x = gamestate.screen_x,
+      screen_y = gamestate.screen_y,
       players = {}
    }
    for i, player in ipairs(gamestate.player_objects) do

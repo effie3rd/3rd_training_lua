@@ -110,8 +110,7 @@ local function debug_update_framedata(player, projectiles)
       debuggui("acc", string.format("%.04f,%.04f", player.acceleration_x, player.acceleration_y))
       -- debuggui("recording", tostring(recording))
 
-      local screen_pos_x = memory.readword(memory_addresses.global.screen_pos_x)
-      debuggui("screenx", screen_pos_x)
+      debuggui("screenx", gamestate.screen_x)
 
       for _, obj in pairs(projectiles) do
          if obj.emitter_id == player.id and obj.alive then
