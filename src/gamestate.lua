@@ -67,7 +67,7 @@ local attacking_byte_exception = {
    dudley = {["3cdc"] = 19},
    chunli = {["ce8c"] = 41, ["c3b4"] = 17, ["486c"] = 13, ["4e44"] = 10, ["4b64"] = 12, ["5124"] = 14},
    ryu = {["8354"] = 15, ["84fc"] = 18, ["81dc"] = 12},
-   makoto = {["2720"] = 21, ["df10"] = 87},
+   makoto = {["2720"] = 21, ["df10"] = 61},
    sean = {["c25c"] = 22, ["2060"] = 23, ["4310"] = 0, ["2200"] = 29, ["1ef0"] = 19, ["2130"] = 27},
    urien = {["6aac"] = 23},
    ken = {["a870"] = 19, ["abe8"] = 34},
@@ -120,6 +120,7 @@ local function make_player_object(id, base, prefix)
       counter = {attack_frame = -1, ref_time = -1, recording_slot = -1},
       stunned = false,
       throw_invulnerability_cooldown = 0,
+      animation_frame = 0,
       posture = 0,
       meter_gauge = 0,
       meter_count = 0,
@@ -149,7 +150,7 @@ local function reset_player_objects()
 end
 
 local function update_received_hits(player, other)
-   if (player.received_connection or player.is_being_thrown) and not player.received_connection_is_projectile then
+   if (player.just_received_connection or player.is_being_thrown) and not player.received_connection_is_projectile then
       player.last_received_connection_animation = other.animation
       player.last_received_connection_hit_id = math.max(other.current_hit_id, 1)
    elseif frame_number - player.last_received_connection_frame == 1 then
@@ -355,10 +356,10 @@ local function read_game_object(obj)
    }
 
    if obj.id == 1 or obj.id == 2 then
-      local action_type = memory.readbyte(obj.base + 0xAD)
+      local action_type = memory.readbyte(obj.addresses.action_type)
       -- throw, normal, special/sa
       if action_type == 3 or action_type == 4 or action_type == 5 then
-         local action_count = memory.readbyte(obj.base + 0x459)
+         local action_count = memory.readbyte(obj.addresses.action_count)
          table.insert(hash, string.format("%02x", action_count))
       else
          table.insert(hash, "00")
@@ -755,21 +756,21 @@ local function read_player_vars(player)
 
    local previous_received_connection_marker = player.received_connection_marker or 0
    player.received_connection_marker = memory.readword(player.addresses.received_connection_marker)
-   player.received_connection = previous_received_connection_marker == 0 and player.received_connection_marker ~= 0
+   player.just_received_connection = previous_received_connection_marker == 0 and player.received_connection_marker ~= 0
    player.received_connection_type = memory.readbyte(player.addresses.received_connection_type)
    player.received_connection_is_projectile = player.received_connection_type == 2 or player.received_connection_type ==
                                                   4
 
    player.last_received_connection_frame = player.last_received_connection_frame or 0
-   if player.received_connection then player.last_received_connection_frame = frame_number end
+   if player.just_received_connection then player.last_received_connection_frame = frame_number end
 
    player.last_movement_type_change_frame = player.last_movement_type_change_frame or 0
    if player.movement_type ~= previous_movement_type then player.last_movement_type_change_frame = frame_number end
    -- is blocking/has just blocked/has just been hit/has_just_parried
    player.blocking_id = memory.readbyte(player.addresses.blocking_id)
    player.has_just_blocked = false
-   if (player.received_connection and player.received_connection_marker ~= 0xFFF1 and total_received_hit_count_diff == 0) or
-       (player.received_connection and player.other.animation == "baac" and player.received_connection_marker == 0xFFF1 and
+   if (player.just_received_connection and player.received_connection_marker ~= 0xFFF1 and total_received_hit_count_diff == 0) or
+       (player.just_received_connection and player.other.animation == "baac" and player.received_connection_marker == 0xFFF1 and
            total_received_hit_count_diff == 0 and (player.action == 30 or player.action == 31)) then -- chun st.HP bug
       player.has_just_blocked = true
       log(player.prefix, "fight", "block")
@@ -795,7 +796,7 @@ local function read_player_vars(player)
 
    player.has_just_parried = false
 
-   if player.received_connection and player.received_connection_marker == 0xFFF1 and total_received_hit_count_diff == 0 then
+   if player.just_received_connection and player.received_connection_marker == 0xFFF1 and total_received_hit_count_diff == 0 then
       player.has_just_parried = true
       if player.other.animation == "baac" and player.action ~= 23 then player.has_just_parried = false end -- chun st.HP bug
       log(player.prefix, "fight", "parry")
@@ -1354,7 +1355,7 @@ local function read_player_vars(player)
       player.is_stunned = true
       if not player.previous_stunned then player.stun_just_began = true end
    elseif player.is_stunned then
-      if player.received_connection or player.is_being_thrown or player.stun_timer == 0 or player.stun_timer >= 250 then
+      if player.just_received_connection or player.is_being_thrown or player.stun_timer == 0 or player.stun_timer >= 250 then
          player.is_stunned = false
          player.stun_just_ended = true
       end
@@ -1679,21 +1680,10 @@ local function remove_expired_projectiles()
 end
 
 local function update_flip_input(player, other_player)
-   if player.flip_input == nil then
-      player.flip_input = other_player.pos_x >= player.pos_x
-      return
-   end
-
-   local previous_flip_input = player.flip_input
-   --   local flip_hysteresis = 0 -- character_specific[other_player.char_str].half_width
    local diff = other_player.pos_x - player.pos_x
-   --   if math.abs(diff) >= flip_hysteresis then
-   -- player.flip_input = other_player.pos_x >= player.pos_x
-   player.flip_input = math.floor(other_player.pos_x) > math.floor(player.pos_x)
-   --   end
-   if previous_flip_input ~= player.flip_input then log(player.prefix, "fight", "flip input") end
+   if diff == 0 then diff = math.floor(other_player.previous_pos_x) - math.floor(player.previous_pos_x) end
 
-   if diff == 0 then player.flip_input = player.flip_x ~= 0 end
+   player.flip_input = diff > 0
 end
 
 local function gamestate_read()

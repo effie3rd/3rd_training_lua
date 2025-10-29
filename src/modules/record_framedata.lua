@@ -5393,7 +5393,7 @@ local function record_attacks(player, projectiles)
             end
          end
 
-         if dummy.has_just_blocked or dummy.has_just_been_hit or dummy.received_connection then
+         if dummy.has_just_blocked or dummy.has_just_been_hit or dummy.just_received_connection then
             rec.received_hits = rec.received_hits + 1
          end
 
@@ -5441,7 +5441,7 @@ local function record_attacks(player, projectiles)
             end
          end
 
-         if dummy.has_just_blocked or dummy.has_just_been_hit or dummy.received_connection then
+         if dummy.has_just_blocked or dummy.has_just_been_hit or dummy.just_received_connection then
             if (rec.recording_options.hit_type == "block" or rec.recording_options.hit_type == "hit") and
                 not current_attack.throw and not (rec.block_pattern and rec.block_pattern[rec.received_hits] == 3) then
                rec.unfreeze_dummy = true

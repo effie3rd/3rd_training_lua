@@ -48,6 +48,10 @@ local function is_in_opponent_throw_range(player)
    return false
 end
 
+local motion_to_menu_text = {
+   dir_5 = "menu_neutral", dir_6 = "menu_forward", dir_3 = "menu_down_forward", dir_2 = "menu_down", dir_1 = "menu_down_back", dir_4 = "menu_back", dir_7 = "menu_jump_back", dir_8 = "menu_jump_neutral", dir_9 = "menu_jump_forward", sjump_back = "menu_sjump_back", sjump_neutral = "menu_sjump_neutral",
+   sjump_forward = "menu_sjump_forward", back_dash = "menu_back_dash", forward_dash = "menu_forward_dash", kara_throw = "menu_kara_throw"
+}
 local function create_move_data_from_selection(move_selection_settings, player)
    local type = move_selection_settings.type
    local data = {char_str = player.char_str, type = type, name = "normal", button = nil}
@@ -64,6 +68,7 @@ local function create_move_data_from_selection(move_selection_settings, player)
       if move_selection_settings.motion == 15 then
          data.inputs = button_inputs[move_selection_settings.normal_button] or {}
       end
+      data.name = motion_to_menu_text[data.motion]
    elseif type == 3 then
       local special_names = move_data.get_special_and_sa_names(player.char_str, player.selected_sa)
       data.name = special_names[move_selection_settings.special]
@@ -74,6 +79,8 @@ local function create_move_data_from_selection(move_selection_settings, player)
    elseif type == 4 then
       local option_select_names = move_data.get_option_select_names()
       data.name = option_select_names[move_selection_settings.option_select]
+   elseif type == 5 then
+      data.name = "recording"
    end
    return data
 end

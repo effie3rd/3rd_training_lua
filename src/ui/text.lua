@@ -12,6 +12,7 @@ local function draw_text(x, y, str, lang, size, color, opacity)
    else
       local gd_color = colors.hex_to_gd_color(color)
       local img = colors.substitute_color(image_map[str][lang].base_image, colors.gd_white, gd_color)
+      image_map[str][lang][color] = img
       gui.image(x, y, img, opacity)
    end
 end

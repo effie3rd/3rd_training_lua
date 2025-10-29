@@ -15,6 +15,8 @@ local render_text, render_text_multiple, get_text_dimensions, get_text_dimension
 local localization = tools.read_object_from_json_file("data/localization.json") or {}
 local move_selection_type = menu_tables.move_selection_type
 
+local indent_width = 8
+
 local Gauge_Menu_Item = {}
 Gauge_Menu_Item.__index = Gauge_Menu_Item
 
@@ -43,7 +45,7 @@ function Gauge_Menu_Item:draw(x, y, selected)
    if selected then color = text.selected_color end
 
    local offset = 0
-   if self.indent then offset = 8 end
+   if self.indent then offset = indent_width end
 
    render_text_multiple(x + offset, y, {self.name, ":  "}, nil, nil, color)
    local w, h = get_text_dimensions_multiple({self.name, ":  "})
@@ -279,7 +281,7 @@ function On_Off_Menu_Item:draw(x, y, selected)
       value = "menu_off"
    end
    local offset = 0
-   if self.indent then offset = 8 end
+   if self.indent then offset = indent_width end
 
    render_text_multiple(x + offset, y, {self.name, ":  ", value}, nil, nil, color)
 end
@@ -315,7 +317,8 @@ function List_Menu_Item:new(name, object, property_name, list, default_value, on
       indent = false,
       on_change = on_change,
       width = 0,
-      height = 0
+      height = 0,
+      is_selected = false
    }
 
    setmetatable(obj, self)
@@ -324,6 +327,7 @@ function List_Menu_Item:new(name, object, property_name, list, default_value, on
 end
 
 function List_Menu_Item:draw(x, y, selected)
+   self.is_selected = selected
    local color = text.default_color
    if selected then
       color = text.selected_color
@@ -331,7 +335,7 @@ function List_Menu_Item:draw(x, y, selected)
       color = text.disabled_color
    end
    local offset = 0
-   if self.indent then offset = 8 end
+   if self.indent then offset = indent_width end
 
    render_text_multiple(x + offset, y, {self.name, ":  ", self.list[self.object[self.property_name]]}, nil, nil, color)
 end
@@ -407,7 +411,7 @@ function Check_Box_Grid_Item:draw(x, y, selected)
       color = text.disabled_color
    end
    local offset_x, offset_y = 0, 0
-   if self.indent then offset_x = 8 end
+   if self.indent then offset_x = indent_width end
    if self.last_frame_validated > gamestate.frame_number then self.last_frame_validated = 0 end
    local max_width = 0
    for _, name in ipairs(self.list) do
@@ -444,15 +448,15 @@ function Check_Box_Grid_Item:draw(x, y, selected)
          if self.list[index] then
             local row_offset = self.row_height * (row - 1)
             local item_color = base_color
-            local checkbox_type = "unchecked"
-            if self.object[index] then checkbox_type = "checked" end
+            local checkbox_image = images.img_kaku -- unchecked
+            if self.object[index] then checkbox_image = images.img_maru end -- checked
             if index == sel_index and selected then
                item_color = text.selected_color
                if (gamestate.frame_number - self.last_frame_validated < 5) then
                   item_color = text.button_activated_color
                end
             end
-            local checkbox = draw.get_check_box(checkbox_type, item_color)
+            local checkbox = draw.get_image(checkbox_image, item_color)
             gui.image(x + offset_x + col_offset, y + offset_y + row_offset + checkbox_offset_y, checkbox)
             render_text(x + offset_x + col_offset + self.checkbox_padding_x, y + offset_y + row_offset,
                         self.list[index], nil, nil, item_color)
@@ -630,7 +634,7 @@ function Slider_Menu_Item:draw(x, y, selected)
    if (gamestate.frame_number - self.last_frame_validated < 5) then color = text.button_activated_color end
 
    local offset_x = 0
-   if self.indent then offset_x = 8 end
+   if self.indent then offset_x = indent_width end
 
    local text_table = {self.name, ":  "}
    render_text_multiple(x + offset_x, y, text_table, nil, nil, color)
@@ -654,13 +658,15 @@ function Slider_Menu_Item:draw(x, y, selected)
          arrow_color = color == text.disabled_color and text.disabled_color or text.inactive_color
          if i ~= self.point_index then
             arrow_position = (self.points[i] - self.range[1]) / (self.range[2] - self.range[1]) * self.line_width
-            gui.image(box_left + arrow_offset + arrow_position + 1, box_bottom + 1, draw.get_up_arrow(arrow_color))
+            gui.image(box_left + arrow_offset + arrow_position + 1, box_bottom + 1,
+                      draw.get_image(images.scroll_up_arrow, arrow_color))
          end
       end
    end
    arrow_color = color
    arrow_position = (self.points[self.point_index] - self.range[1]) / (self.range[2] - self.range[1]) * self.line_width
-   gui.image(box_left + arrow_offset + arrow_position + 1, box_bottom + 1, draw.get_up_arrow(arrow_color))
+   gui.image(box_left + arrow_offset + arrow_position + 1, box_bottom + 1,
+             draw.get_image(images.scroll_up_arrow, arrow_color))
 
    local num_text
    if self.mode == 1 then
@@ -754,10 +760,10 @@ end
 
 function Slider_Menu_Item:legend() return self.legend_text end
 
-local Motion_list_Menu_Item = {}
-Motion_list_Menu_Item.__index = Motion_list_Menu_Item
+local Motion_List_Menu_Item = {}
+Motion_List_Menu_Item.__index = Motion_List_Menu_Item
 
-function Motion_list_Menu_Item:new(name, object, property_name, list, default_value, on_change)
+function Motion_List_Menu_Item:new(name, object, property_name, list, default_value, on_change)
    local obj = {
       name = name,
       object = object,
@@ -775,7 +781,7 @@ function Motion_list_Menu_Item:new(name, object, property_name, list, default_va
    return obj
 end
 
-function Motion_list_Menu_Item:draw(x, y, selected)
+function Motion_List_Menu_Item:draw(x, y, selected)
    local color = text.default_color
    if selected then
       color = text.selected_color
@@ -784,7 +790,7 @@ function Motion_list_Menu_Item:draw(x, y, selected)
    end
    local offset_x = 0
    local offset_y = -1
-   if self.indent then offset_x = 8 end
+   if self.indent then offset_x = indent_width end
 
    render_text_multiple(x + offset_x, y, {self.name, ":  "}, nil, nil, color)
    local w, _ = get_text_dimensions_multiple({self.name, ":  "})
@@ -845,19 +851,19 @@ function Motion_list_Menu_Item:draw(x, y, selected)
             table.insert(img_list, images.img_button_small[style][6])
          elseif self.list[id][i][j] == "h_charge" then
             added = added + 1
-            table.insert(img_list, images.img_hold)
+            table.insert(img_list, draw.get_image(images.img_hold, color))
          elseif self.list[id][i][j] == "v_charge" then
             added = added + 1
-            table.insert(img_list, images.img_hold)
+            table.insert(img_list, draw.get_image(images.img_hold, color))
          elseif self.list[id][i][j] == "neutral" then
             added = added + 1
-            table.insert(img_list, images.img_dir_small[5])
+            table.insert(img_list, draw.get_image(images.img_dir_small[5], color))
          elseif self.list[id][i][j] == "maru" then
             added = added + 1
-            table.insert(img_list, images.img_maru)
+            table.insert(img_list, draw.get_image(images.img_maru, color))
          elseif self.list[id][i][j] == "tilda" then
             added = added + 1
-            table.insert(img_list, images.img_tilda)
+            table.insert(img_list, draw.get_image(images.img_tilda, color))
          end
       end
       local dir = 0
@@ -883,9 +889,9 @@ function Motion_list_Menu_Item:draw(x, y, selected)
 
       if dir > 0 then
          if added > 0 then
-            table.insert(img_list, #img_list - added + 1, images.img_dir_small[dir])
+            table.insert(img_list, #img_list - added + 1, draw.get_image(images.img_dir_small[dir], color))
          else
-            table.insert(img_list, images.img_dir_small[dir])
+            table.insert(img_list, draw.get_image(images.img_dir_small[dir], color))
          end
       end
    end
@@ -896,37 +902,37 @@ function Motion_list_Menu_Item:draw(x, y, selected)
 
 end
 
-function Motion_list_Menu_Item:calc_dimensions()
+function Motion_List_Menu_Item:calc_dimensions()
    self.width, self.height = get_text_dimensions_multiple({self.name, ":  "})
    self.width = self.width + 7
 end
 
-function Motion_list_Menu_Item:left()
+function Motion_List_Menu_Item:left()
    self.object[self.property_name] = self.object[self.property_name] - 1
    if self.object[self.property_name] == 0 then self.object[self.property_name] = #self.list end
    self:calc_dimensions()
    if self.on_change then self.on_change() end
 end
 
-function Motion_list_Menu_Item:right()
+function Motion_List_Menu_Item:right()
    self.object[self.property_name] = self.object[self.property_name] + 1
    if self.object[self.property_name] > #self.list then self.object[self.property_name] = 1 end
    self:calc_dimensions()
    if self.on_change then self.on_change() end
 end
 
-function Motion_list_Menu_Item:reset()
+function Motion_List_Menu_Item:reset()
    self.object[self.property_name] = self.default_value
    self:calc_dimensions()
    if self.on_change then self.on_change() end
 end
 
-function Motion_list_Menu_Item:legend() return "legend_mp_reset" end
+function Motion_List_Menu_Item:legend() return "legend_mp_reset" end
 
 local Move_Input_Display_Menu_Item = {}
 Move_Input_Display_Menu_Item.__index = Move_Input_Display_Menu_Item
 
-function Move_Input_Display_Menu_Item:new(name, object)
+function Move_Input_Display_Menu_Item:new(name, object, select_special_item)
    local obj = {
       name = name,
       object = object,
@@ -934,6 +940,8 @@ function Move_Input_Display_Menu_Item:new(name, object)
       width = 0,
       height = 0,
       inline = false,
+      img_list = {},
+      select_special_item = select_special_item,
       is_unselectable = function() return true end
    }
 
@@ -947,10 +955,16 @@ function Move_Input_Display_Menu_Item:draw(x, y)
    local offset_x = 6
    local offset_y = -1
    if settings.language == "jp" then offset_y = 2 end
-   if self.indent then offset_x = 8 end
+   if self.indent then offset_x = indent_width end
    local img_list = {}
    local move_inputs = self.object.inputs
    local style = draw.controller_styles[settings.training.controller_style]
+   local color = colors.text.default
+   if self.select_special_item.is_enabled and not self.select_special_item:is_enabled() then
+      color = colors.text.disabled
+   elseif self.select_special_item.is_selected then
+      color = colors.text.selected
+   end
 
    if move_selection_type[self.object.type] == "special_sa" then
       for i = 1, #move_inputs do
@@ -1003,13 +1017,13 @@ function Move_Input_Display_Menu_Item:draw(x, y)
                table.insert(img_list, images.img_button_small[style][6])
             elseif move_inputs[i][j] == "h_charge" then
                added = added + 1
-               table.insert(img_list, images.img_hold)
+               table.insert(img_list, draw.get_image(images.img_hold, color))
             elseif move_inputs[i][j] == "v_charge" then
                added = added + 1
-               table.insert(img_list, images.img_hold)
+               table.insert(img_list, draw.get_image(images.img_hold, color))
             elseif move_inputs[i][j] == "v_charge" then
                added = added + 1
-               table.insert(img_list, images.img_hold)
+               table.insert(img_list, draw.get_image(images.img_hold, color))
             elseif move_inputs[i][j] == "legs_LK" then
                for k = 1, 4 do
                   added = added + 1
@@ -1033,10 +1047,10 @@ function Move_Input_Display_Menu_Item:draw(x, y)
                end
             elseif move_inputs[i][j] == "maru" then
                added = added + 1
-               table.insert(img_list, images.img_maru)
+               table.insert(img_list, draw.get_image(images.img_maru, color))
             elseif move_inputs[i][j] == "tilda" then
                added = added + 1
-               table.insert(img_list, images.img_tilda)
+               table.insert(img_list, draw.get_image(images.img_tilda, color))
             elseif move_inputs[i][j] == "button" then
                added = added + 1
                table.insert(img_list, "button")
@@ -1065,9 +1079,9 @@ function Move_Input_Display_Menu_Item:draw(x, y)
 
          if dir > 0 then
             if added > 0 then
-               table.insert(img_list, #img_list - added + 1, images.img_dir_small[dir])
+               table.insert(img_list, #img_list - added + 1, draw.get_image(images.img_dir_small[dir], color))
             else
-               table.insert(img_list, images.img_dir_small[dir])
+               table.insert(img_list, draw.get_image(images.img_dir_small[dir], color))
             end
          else
             if added == 0 then table.insert(img_list, "none") end
@@ -1090,7 +1104,7 @@ function Move_Input_Display_Menu_Item:draw(x, y)
             if matching then
                if length > 1 then
                   for j = 1, length do table.remove(img_list, start) end
-                  table.insert(img_list, start, images.img_hold)
+                  table.insert(img_list, start, draw.get_image(images.img_hold, color))
                   i = 2
                end
                start = 0
@@ -1114,7 +1128,7 @@ function Move_Input_Display_Menu_Item:draw(x, y)
                matching = false
             end
          end
-         if img_list[i] == images.img_hold then
+         if img_list[i] == draw.get_image(images.img_hold, color) then
             if not matching then
                start = i - 1
                matching = true
@@ -1136,18 +1150,13 @@ function Move_Input_Display_Menu_Item:draw(x, y)
          gui.image(x + offset_x, y + offset_y, img_list[j])
          offset_x = offset_x + 9
       end
-
+      self.img_list = img_list
    elseif move_selection_type[self.object.type] == "option_select" then
    end
+   self:calc_dimensions()
 end
 
-function Move_Input_Display_Menu_Item:calc_dimensions()
-   local w1, h1 = get_text_dimensions(self.name)
-   local w2, h2 = get_text_dimensions(":  ")
-   local w3, h3 = 7, 7 -- probably
-
-   self.width, self.height = (w1 + w2 + w3), math.max(h1, h2, h3)
-end
+function Move_Input_Display_Menu_Item:calc_dimensions() self.width, self.height = #self.img_list * 9, 9 end
 
 local Controller_Style_Item = {}
 Controller_Style_Item.__index = Controller_Style_Item
@@ -1174,7 +1183,7 @@ function Controller_Style_Item:draw(x, y, selected)
    local color = text.default_color
    if selected then color = text.selected_color end
    local offset_x = 0
-   if self.indent then offset_x = 8 end
+   if self.indent then offset_x = indent_width end
 
    render_text_multiple(x + offset_x, y, {self.name, ":  "}, nil, nil, color)
    local w, _ = get_text_dimensions_multiple({self.name, ":  "})
@@ -1252,7 +1261,7 @@ function Integer_Menu_Item:draw(x, y, selected)
    end
    local offset_x = 0
    local w, h = 0, 0
-   if self.indent then offset_x = 8 end
+   if self.indent then offset_x = indent_width end
 
    render_text_multiple(x + offset_x, y, {self.name, ":  ", self.object[self.property_name]}, nil, nil, color)
 
@@ -1330,7 +1339,7 @@ function Hits_Before_Menu_Item:draw(x, y, selected)
    end
 
    local offset_x = 0
-   if self.indent then offset_x = 8 end
+   if self.indent then offset_x = indent_width end
    local w, h = 0, 0
 
    if localization[self.name][settings.language] ~= "" then
@@ -2073,9 +2082,20 @@ function Multitab_Menu:draw()
          scroll_up_y_pos = menu_y + h / 2 - 2
          scroll_down_y_pos = menu_y + (y_offset - self.menu_item_spacing - h) + h / 2
       end
-      if scroll_up then gui.image(self.left + self.x_padding / 2 - 2, scroll_up_y_pos, images.scroll_up_arrow) end
+
+      local scroll_up_color, scroll_down_color = colors.text.default, colors.text.default
+      if self.sub_menu_selected_index == self:current_tab().top_entry_index then
+         scroll_up_color = colors.text.selected
+      elseif self.sub_menu_selected_index == self:current_tab().bottom_entry_index then
+         scroll_down_color = colors.text.selected
+      end
+      if scroll_up then
+         gui.image(self.left + self.x_padding / 2 - 2, scroll_up_y_pos,
+                   draw.get_image(images.scroll_up_arrow, scroll_up_color))
+      end
       if scroll_down then
-         gui.image(self.left + self.x_padding / 2 - 2, scroll_down_y_pos, images.scroll_down_arrow)
+         gui.image(self.left + self.x_padding / 2 - 2, scroll_down_y_pos,
+                   draw.get_image(images.scroll_down_arrow, scroll_down_color))
       end
    end
 end
@@ -2101,7 +2121,8 @@ function Menu:new(left, top, right, bottom, content, on_toggle_entry, draw_legen
       legend_y_padding = 3,
       content_area_height = 0,
       top_entry_index = 1,
-      bottom_entry_index = 1
+      bottom_entry_index = 1,
+      background_color = colors.menu.background
    }
 
    setmetatable(obj, self)
@@ -2120,9 +2141,12 @@ function Menu:calc_dimensions()
       while i <= #self.content do
          if (self.content[i].is_visible == nil or self.content[i]:is_visible()) then
             current_width = current_width + self.content[i].width
+            if self.content[i].indent then current_width = current_width + indent_width end
             if not (self.content[i + 1] and self.content[i + 1].inline) then
                if current_width > max_width then max_width = current_width end
                current_width = 0
+            else
+               current_width = current_width + indent_width
             end
             if not self.content[i].inline then
                total_height = total_height + self.content[i].height + self.menu_item_spacing
@@ -2375,7 +2399,7 @@ function Menu:draw()
 
    self:calc_dimensions()
 
-   gui.box(self.left, self.top, self.right, self.bottom, colors.menu.background, colors.menu.outline)
+   gui.box(self.left, self.top, self.right, self.bottom, self.background_color, colors.menu.outline)
 
    local menu_x = self.left + self.x_padding
    local menu_y = self.top + self.y_padding
@@ -2388,7 +2412,7 @@ function Menu:draw()
    for i = 1, #self.content do
       if (self.content[i].is_visible == nil or self.content[i]:is_visible()) then
          if self.content[i].inline and (i - 1) >= 1 then
-            local x_offset = self.content[i - 1].width + 8
+            local x_offset = self.content[i - 1].width + indent_width
             if settings.language == "jp" then x_offset = x_offset + 2 end
             local y_adj = -1 * (self.content[i - 1].height + menu_item_spacing)
             self.content[i]:draw(menu_x + x_offset, menu_y + y_offset + y_adj, self.selected_index == i)
@@ -2418,7 +2442,7 @@ return {
    List_Menu_Item = List_Menu_Item,
    Check_Box_Grid_Item = Check_Box_Grid_Item,
    Slider_Menu_Item = Slider_Menu_Item,
-   Motion_list_Menu_Item = Motion_list_Menu_Item,
+   Motion_List_Menu_Item = Motion_List_Menu_Item,
    Move_Input_Display_Menu_Item = Move_Input_Display_Menu_Item,
    Controller_Style_Item = Controller_Style_Item,
    Integer_Menu_Item = Integer_Menu_Item,

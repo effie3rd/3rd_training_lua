@@ -11,7 +11,6 @@ local player = gamestate.P1
 local dummy = gamestate.P2
 
 local swap_characters = false
-local swap_recording_player = true
 
 local should_freeze_game = false
 
@@ -282,14 +281,6 @@ local function update_cheats()
    end
 end
 
-local function get_recording_player()
-   if swap_recording_player then
-      return dummy
-   else
-      return player
-   end
-end
-
 local function update_swap()
    if not swap_characters then
       player = gamestate.P1
@@ -358,14 +349,10 @@ setmetatable(training, {
          return player
       elseif key == "dummy" then
          return dummy
-      elseif key == "recording_player" then
-         return get_recording_player()
       elseif key == "disable_dummy" then
          return disable_dummy
       elseif key == "swap_characters" then
          return swap_characters
-      elseif key == "swap_recording_player" then
-         return swap_recording_player
       elseif key == "counter_attack_data" then
          return counter_attack_data
       end
@@ -380,8 +367,6 @@ setmetatable(training, {
          disable_dummy = value
       elseif key == "swap_characters" then
          swap_characters = value
-      elseif key == "swap_recording_player" then
-         swap_recording_player = value
       elseif key == "counter_attack_data" then
          counter_attack_data = value
       else

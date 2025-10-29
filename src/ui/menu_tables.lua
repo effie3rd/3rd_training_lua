@@ -63,6 +63,8 @@ local slot_replay_mode = {
 
 local distance_display_reference_point = {"distance_origin", "distance_hurtbox"}
 
+local jumpins_position_mode = {"menu_point", "menu_dynamic"}
+local jumpins_replay_mode = {"replay_random", "replay_ordered"}
 local jumpins_offset_mode = {"menu_point", "menu_range_random", "menu_range_ordered", "menu_range_endpoints"}
 
 local unblockables_types = {}
@@ -95,6 +97,8 @@ local menu_tables = {
    challenge_mode = challenge_mode,
    slot_replay_mode = slot_replay_mode,
    distance_display_reference_point = distance_display_reference_point,
+   jumpins_position_mode = jumpins_position_mode,
+   jumpins_replay_mode = jumpins_replay_mode,
    jumpins_offset_mode = jumpins_offset_mode
 }
 

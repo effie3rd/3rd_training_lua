@@ -106,6 +106,7 @@ local function start_character_select()
       is_active = true
       player = gamestate.P1
       dummy = gamestate.P2
+      print(is_active)
    end)
    unblockable_data = unblockables_tables.get_unblockables_data(settings.special_training.unblockables.character,
                                                                 settings.special_training.unblockables.type)
@@ -122,6 +123,7 @@ local function stop()
       restore_training_settings()
       inputs.unblock_input(1)
       inputs.unblock_input(2)
+      advanced_control.clear_all()
    end
 end
 

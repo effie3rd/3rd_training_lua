@@ -488,7 +488,7 @@ local function run_debug()
    if keys.F12 and loading.frame_data_loaded then debug_settings.recording_framedata = true end
 
    if gamestate.is_in_match then
-      if gamestate.P1.superfreeze_just_began or gamestate.P1.superfreeze_just_began then
+      if gamestate.P1.superfreeze_just_began or gamestate.P2.superfreeze_just_began then
          if (gamestate.frame_number) % 3 == 2 then
             print("delayed")
          else

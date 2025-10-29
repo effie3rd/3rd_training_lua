@@ -55,7 +55,7 @@ local addresses = {
          selected_sa = 0x0201138B,
          superfreeze_decount = 0x02069520,
 
-         -- [BYTE]
+         -- [byte]
          life = P1_base + 0x9F,
          gauge = 0x020695B5,
          meter = 0x020286AB,
@@ -104,6 +104,7 @@ local addresses = {
          character_state_byte = P1_base + 0x27,
          is_attacking_byte = P1_base + 0x428,
          is_attacking_ext_byte = P1_base + 0x429,
+         action_type = P1_base + 0xAD,
          action_count = P1_base + 0x459,
          blocking_id = P1_base + 0x3D3,
          hit_count = P1_base + 0x189,
@@ -113,7 +114,7 @@ local addresses = {
          is_flying_down_flag = P1_base + 0x8D,
          combo = P1_base + 0xA59,
 
-         -- [WORD]
+         -- [word]
          action = P1_base + 0xAC,
          action_ext = P1_base + 0x12C,
          input_capacity = P1_base + 0x46C,
@@ -227,6 +228,7 @@ local addresses = {
          character_state_byte = P2_base + 0x27,
          is_attacking_byte = P2_base + 0x428,
          is_attacking_ext_byte = P2_base + 0x429,
+         action_type = P2_base + 0xAD,
          action_count = P2_base + 0x459,
          blocking_id = P2_base + 0x3D3,
          hit_count = P2_base + 0x189,

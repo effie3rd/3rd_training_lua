@@ -67,14 +67,10 @@ local jumpins_edit_move_selection_items = tools.deepcopy(counter_attack_move_sel
 local jumpins_edit_move_selection_data = tools.deepcopy(counter_attack_move_selection_data)
 
 local special_training_modes = {defense, jumpins, unblockables}
-
-local function close_menu()
-   is_open = false
-   main_menu:menu_stack_clear()
-   training.unfreeze_game()
-end
+local close_menu
 
 local function update_recording_items()
+   recording.load_recordings(training.dummy.char_str)
    slot_weight_item.object = recording.recording_slots[settings.training.current_recording_slot]
    recording_delay_item.object = recording.recording_slots[settings.training.current_recording_slot]
    recording_random_deviation_item.object = recording.recording_slots[settings.training.current_recording_slot]
@@ -154,7 +150,7 @@ local function update_move_selection_items(move_selection_items, move_selection_
 end
 
 local function update_counter_attack_items()
-   if is_initialized then
+   if is_initialized and gamestate.is_in_match then
       counter_attack_settings = settings.training.counter_attack[training.dummy.char_str]
       update_move_selection_items(counter_attack_move_selection_items, counter_attack_move_selection_data,
                                   counter_attack_settings, training.dummy)
@@ -167,7 +163,8 @@ local function update_counter_attack_items()
 end
 
 local function update_jumpins_settings()
-   if is_initialized then
+   if is_initialized and gamestate.is_in_match then
+      jumpins.init()
       jumpins_edit_settings = settings.special_training.jumpins.characters[jumpins.jumpins_dummy.char_str]
       if not jumpins_edit_settings then
          settings.special_training.jumpins.characters[jumpins.jumpins_dummy.char_str] =
@@ -193,10 +190,15 @@ local function update_jumpins_range_items()
    jumpins_edit.attack_delay_item.point_index = jumpins.attack_delay_edit_index
    jumpins_edit.attack_delay_item.range = jumpins.attack_delay_bounds
    jumpins_edit.attack_delay_item.mode = jumpins.attack_delay_edit_mode
+
+   jumpins_edit.second_jump_delay_item.points = jumpins.second_jump_delay_range
+   jumpins_edit.second_jump_delay_item.point_index = 1
+   jumpins_edit.second_jump_delay_item.range = jumpins.second_jump_delay_bounds
+   jumpins_edit.second_jump_delay_item.mode = 1
 end
 
 local function update_jumpins_edit_items()
-   if is_initialized then
+   if is_initialized and gamestate.is_in_match then
       update_jumpins_settings()
 
       update_move_selection_items(jumpins_edit_move_selection_items, jumpins_edit_move_selection_data,
@@ -206,8 +208,6 @@ local function update_jumpins_edit_items()
       jumpins.followup_data = jumpins_edit_move_selection_data.move_input_data
 
       jumpins_tables.update_character(jumpins.jumpins_dummy.char_str)
-      jumpins_training_tab.show_jump_info_item.object = jumpins_edit_settings
-      jumpins_training_tab.show_jump_arc_item.object = jumpins_edit_settings
 
       jumpins_edit.jump_type_item.object = current_jump_settings
       jumpins_edit.jump_type_item.list = jumpins_tables.get_menu_jump_names()
@@ -221,6 +221,14 @@ local function update_jumpins_edit_items()
       jumpins_edit.attack_type_item.list = jumpins_tables.get_menu_attack_names()
       jumpins_edit.followup_delay_item.object = current_jump_settings
       jumpins_edit.status_item.object = {jump_index = jumpins_edit_jump_index}
+
+      jumpins_training_tab.jump_replay_mode_item.object = jumpins_edit_settings
+      jumpins_training_tab.player_position_mode_item.object = jumpins_edit_settings
+      jumpins_training_tab.dummy_offset_mode_item.object = jumpins_edit_settings
+      jumpins_training_tab.attack_delay_mode_item.object = jumpins_edit_settings
+      jumpins_training_tab.show_jump_arc_item.object = jumpins_edit_settings
+      jumpins_training_tab.show_jump_info_item.object = jumpins_edit_settings
+      jumpins_training_tab.automatic_replay_item.object = jumpins_edit_settings
 
       main_menu:update_dimensions()
       jumpins_edit_menu:calc_dimensions()
@@ -382,7 +390,7 @@ end
 local function open_save_popup()
    save_recording_slot_popup.selected_index = 1
    main_menu:menu_open_popup(save_recording_slot_popup)
-   save_recording_settings.save_file_name = string.gsub(training.recording_player.char_str, "(.*)", string.upper) .. "_"
+   save_recording_settings.save_file_name = string.gsub(training.dummy.char_str, "(.*)", string.upper) .. "_"
 end
 
 local function open_load_popup()
@@ -446,7 +454,10 @@ local function create_jumpins_edit_menu()
    jumpins_edit = {}
    jumpins_edit.jump_type_item = menu_items.List_Menu_Item:new("menu_jump", current_jump_settings, "jump_name",
                                                                jumpins_tables.get_menu_jump_names(), 1)
-   jumpins_edit.jump_type_item.on_change = jumpins.change_selected_jump
+   jumpins_edit.jump_type_item.on_change = function()
+      jumpins.update_selected_jump()
+      update_jumpins_edit_items()
+   end
 
    jumpins_edit.player_reset_position_item = menu_items.Slider_Menu_Item:new("menu_player_position", 40, {400, 400},
                                                                              {200, 800})
@@ -488,12 +499,18 @@ local function create_jumpins_edit_menu()
    jumpins_edit.second_jump_type_item.is_visible = function() return #jumpins_edit.second_jump_type_item.list > 0 end
    jumpins_edit.second_jump_type_item.is_enabled = is_jump_selected
    jumpins_edit.second_jump_type_item.is_unselectable = no_jump_selected
+   jumpins_edit.second_jump_type_item.on_change = function()
+      jumpins.update_selected_jump()
+      update_jumpins_edit_items()
+   end
 
-   jumpins_edit.second_jump_delay_item = menu_items.Integer_Menu_Item:new("menu_second_jump_delay",
-                                                                          current_jump_settings, "second_jump_delay", 0,
-                                                                          60, false, 0)
-   jumpins_edit.second_jump_delay_item.is_visible =
-       function() return jumpins_edit.second_jump_type_item.is_visible() end
+   jumpins_edit.second_jump_delay_item = menu_items.Slider_Menu_Item:new("menu_second_jump_delay", 40, {8, 8}, {8, 40})
+   jumpins_edit.second_jump_delay_item.disable_mode_switch = true
+   jumpins_edit.second_jump_delay_item.legend_text = ""
+
+   jumpins_edit.second_jump_delay_item.is_visible = function()
+      return jumpins_edit.second_jump_type_item.is_visible() and current_jump_settings.second_jump_name ~= 1
+   end
    jumpins_edit.second_jump_delay_item.is_enabled = is_jump_selected
    jumpins_edit.second_jump_delay_item.is_unselectable = no_jump_selected
 
@@ -519,7 +536,7 @@ local function create_jumpins_edit_menu()
    jumpins_edit_move_selection_items.type_item.is_enabled = is_jump_selected
    jumpins_edit_move_selection_items.type_item.is_unselectable = no_jump_selected
 
-   jumpins_edit_move_selection_items.motion_item = menu_items.Motion_list_Menu_Item:new("counter_attack_motion",
+   jumpins_edit_move_selection_items.motion_item = menu_items.Motion_List_Menu_Item:new("counter_attack_motion",
                                                                                         current_jump_settings.followup,
                                                                                         "motion",
                                                                                         jumpins_edit_move_selection_data.motion_input,
@@ -569,7 +586,8 @@ local function create_jumpins_edit_menu()
    jumpins_edit_move_selection_items.special_button_item.is_unselectable = no_jump_selected
 
    jumpins_edit_move_selection_items.input_display_item = menu_items.Move_Input_Display_Menu_Item:new("move_input",
-                                                                                                      jumpins_edit_move_selection_data.move_input_data)
+                                                                                                      jumpins_edit_move_selection_data.move_input_data,
+                                                                                                      jumpins_edit_move_selection_items.special_item)
    jumpins_edit_move_selection_items.input_display_item.inline = true
    jumpins_edit_move_selection_items.input_display_item.is_visible = function()
       return current_jump_settings.followup.type == 3 or current_jump_settings.followup.type == 4
@@ -637,7 +655,7 @@ local function create_dummy_tab()
                                                                                  counter_attack_move_selection_data.type,
                                                                                  1, update_counter_attack_items)
 
-   counter_attack_move_selection_items.motion_item = menu_items.Motion_list_Menu_Item:new("counter_attack_motion",
+   counter_attack_move_selection_items.motion_item = menu_items.Motion_List_Menu_Item:new("counter_attack_motion",
                                                                                           counter_attack_settings,
                                                                                           "motion",
                                                                                           counter_attack_move_selection_data.motion_input,
@@ -671,7 +689,8 @@ local function create_dummy_tab()
    end
 
    counter_attack_move_selection_items.input_display_item = menu_items.Move_Input_Display_Menu_Item:new("move_input",
-                                                                                                        counter_attack_move_selection_data.move_input_data)
+                                                                                                        counter_attack_move_selection_data.move_input_data,
+                                                                                                        counter_attack_move_selection_items.special_item)
    counter_attack_move_selection_items.input_display_item.inline = true
    counter_attack_move_selection_items.input_display_item.is_visible = function()
       return counter_attack_settings.type == 3 or counter_attack_settings.type == 4
@@ -967,8 +986,8 @@ local function create_training_tab()
 
    start_defense_item = menu_items.Button_Menu_Item:new("menu_start", function()
       local start_opponent = defense_tables.opponents[settings.special_training.defense.opponent]
+      close_menu(true)
       defense.start(gamestate.P1.char_str, start_opponent)
-      close_menu()
    end)
    start_defense_item.is_enabled = is_frame_data_loaded
    start_defense_item.is_unselectable = function() return not defense_at_least_one_selected end
@@ -1005,8 +1024,8 @@ local function create_training_tab()
    unblockables_followup_item.is_enabled = function() return not unblockables_followup_item.is_unselectable() end
 
    start_unblockables_item = menu_items.Button_Menu_Item:new("menu_start", function()
+      close_menu(true)
       unblockables.start()
-      close_menu()
    end)
    start_unblockables_item.legend_text = "legend_lp_select_coin_start"
    start_unblockables_item.is_unselectable = function()
@@ -1027,6 +1046,7 @@ local function create_training_tab()
    end
 
    jumpins_edit_menu = create_jumpins_edit_menu()
+   jumpins_edit_menu.background_color = bit.band(colors.menu.background, 0xFFFFFF00) + 0x98
    jumpins_edit_menu.scroll_up_function = function()
       change_jump_index(1)
       jumpins.load_jump(current_jump_settings)
@@ -1042,11 +1062,11 @@ local function create_training_tab()
    jumpins_training_tab = {}
 
    jumpins_training_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
-      local start_opponent = defense_tables.opponents[settings.special_training.defense.opponent]
-      defense.start(gamestate.P1.char_str, start_opponent)
-      close_menu()
+      close_menu(true)
+      jumpins.start(settings.special_training.jumpins)
    end)
-   jumpins_training_tab.start_item.is_enabled = is_frame_data_loaded
+   jumpins_training_tab.start_item.legend_text = "legend_lp_select_coin_start"
+   jumpins_training_tab.start_item.is_enabled = function() return is_frame_data_loaded() and jumpins_edit_settings end
    jumpins_training_tab.start_item.is_unselectable = function()
       return not jumpins_training_tab.start_item.is_enabled()
    end
@@ -1055,9 +1075,7 @@ local function create_training_tab()
       jumpins_edit_jump_index = 1
       jumpins.init()
       update_jumpins_settings()
-      jumpins.load_settings(jumpins_edit_settings)
-      jumpins.load_jump(current_jump_settings)
-      jumpins.begin_edit()
+      jumpins.begin_edit(settings.special_training.jumpins, current_jump_settings)
       update_jumpins_edit_items()
       update_counter_attack_items()
       main_menu:menu_open_popup(jumpins_edit_menu, true)
@@ -1072,27 +1090,37 @@ local function create_training_tab()
       return not jumpins_training_tab.start_edit_item.is_enabled()
    end
 
-   jumpins_training_tab.jump_offset_mode_item = menu_items.List_Menu_Item:new("menu_jump_offset_mode",
-                                                                              jumpins_edit_settings, "jump_offset_mode",
-                                                                              menu_tables.jumpins_offset_mode)
+   jumpins_training_tab.jump_replay_mode_item = menu_items.List_Menu_Item:new("menu_jump_replay_mode",
+                                                                              jumpins_edit_settings, "jump_replay_mode",
+                                                                              menu_tables.jumpins_replay_mode)
+   jumpins_training_tab.player_position_mode_item = menu_items.List_Menu_Item:new("menu_player_position_mode",
+                                                                                  jumpins_edit_settings,
+                                                                                  "player_position_mode",
+                                                                                  menu_tables.jumpins_position_mode)
+   jumpins_training_tab.dummy_offset_mode_item = menu_items.List_Menu_Item:new("menu_dummy_offset_mode",
+                                                                               jumpins_edit_settings,
+                                                                               "dummy_offset_mode",
+                                                                               menu_tables.jumpins_offset_mode)
    jumpins_training_tab.attack_delay_mode_item = menu_items.List_Menu_Item:new("menu_attack_delay_mode",
                                                                                jumpins_edit_settings,
                                                                                "attack_delay_mode",
                                                                                menu_tables.jumpins_offset_mode)
-
    jumpins_training_tab.show_jump_arc_item = menu_items.On_Off_Menu_Item:new("menu_show_jump_arc",
                                                                              jumpins_edit_settings, "show_jump_arc", 1)
    jumpins_training_tab.show_jump_info_item = menu_items.On_Off_Menu_Item:new("menu_show_jump_info",
                                                                               jumpins_edit_settings, "show_jump_info", 1)
-
+   jumpins_training_tab.automatic_replay_item = menu_items.On_Off_Menu_Item:new("menu_automatic_replay",
+                                                                                jumpins_edit_settings,
+                                                                                "automatic_replay", 1)
    training_sub_menus = {
       {name = "training_defense", entries = {training_mode_item}}, {
          name = "training_jumpins",
          entries = {
             training_mode_item, jumpins_training_tab.start_item, character_select_and_open_menu_item,
-            jumpins_training_tab.start_edit_item, jumpins_training_tab.jump_offset_mode_item,
+            jumpins_training_tab.start_edit_item, jumpins_training_tab.jump_replay_mode_item,
+            jumpins_training_tab.player_position_mode_item, jumpins_training_tab.dummy_offset_mode_item,
             jumpins_training_tab.attack_delay_mode_item, jumpins_training_tab.show_jump_arc_item,
-            jumpins_training_tab.show_jump_info_item
+            jumpins_training_tab.show_jump_info_item, jumpins_training_tab.automatic_replay_item
          }
       }, {name = "training_footsies", entries = {training_mode_item}}, {
          name = "training_unblockables",
@@ -1183,10 +1211,17 @@ local function open_menu()
       is_open = true
       open_after_match_start = false
       update_menu_items()
-      deactivate_training_modes()
       main_menu:menu_stack_push(main_menu)
       training.freeze_game()
    end
+end
+
+close_menu = function(training_stays_active)
+   is_open = false
+   main_menu:menu_stack_clear()
+   settings.save_training_data()
+   if not training_stays_active then deactivate_training_modes() end
+   training.unfreeze_game()
 end
 
 local horizontal_autofire_rate = 4
@@ -1203,11 +1238,12 @@ local function update()
             elseif main_menu.has_popup then
                main_menu:menu_close_popup()
                update_menu_items()
+               settings.save_training_data()
             else
                close_menu()
             end
          end
-      else
+      elseif is_open then
          close_menu()
       end
 

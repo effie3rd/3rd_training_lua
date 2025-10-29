@@ -88,6 +88,14 @@ local function update()
          if advantage[player.id].state == advantage_states.FINISHED then
             finish_advantage(player, advantage[player.id])
          end
+         if require("src.ui.menu").is_open then
+            if advantage[player.id].player_reference_frame then
+               advantage[player.id].player_reference_frame = advantage[player.id].player_reference_frame + 1
+            end
+            if advantage[player.id].opponent_reference_frame then
+               advantage[player.id].opponent_reference_frame = advantage[player.id].opponent_reference_frame + 1
+            end
+         end
       end
    end
 end

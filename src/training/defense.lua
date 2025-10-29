@@ -689,7 +689,7 @@ local function update()
                    not (dummy.superfreeze_decount > 0)) or
                    (player.character_state_byte == 0 and dummy.character_state_byte == 0) then
                   end_frame = 0
-                  print("end now")
+                  print("end now") --debug
                end
             end
 
@@ -716,7 +716,7 @@ local function update()
                      should_hard_setup = true
                   end
                end
-               print(should_hard_setup)
+               print(should_hard_setup) --debug
                state = states.SELECT_SETUP
             end
          end

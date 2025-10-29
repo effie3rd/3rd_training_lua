@@ -102,7 +102,7 @@ local function hotkey8() -- debug
    -- memory_view_start = 0x020154A7
 end
 local function hotkey9() -- debug
-   -- require("src.modules.record_framedata").process_framedata_and_save()
+   require("src.modules.record_framedata").process_framedata_and_save()
    -- jumpins.single_jump()
 end
 
@@ -210,7 +210,7 @@ local function before_frame()
 
    if menu.is_initialized then
       -- load recordings according to gamestate.P2 character
-      if previous_p2_char_str ~= gamestate.P2.char_str then recording.restore_recordings() end
+      if previous_p2_char_str ~= gamestate.P2.char_str then recording.restore_recordings(training.dummy.char_str) end
       -- update character specific settings on training.dummy change
       if previous_dummy_char_str ~= training.dummy.char_str then menu.update_menu_items() end
    end
@@ -277,7 +277,7 @@ local function before_frame()
 
       advanced_control.update(inputs.input, training.player, training.dummy)
 
-      if not menu.is_open then recording.update_recording(inputs.input, training.player, training.dummy) end
+      if not menu.is_open or jumpins.is_active then recording.update_recording(inputs.input, training.player, training.dummy) end
    end
 
    if not menu.is_open or jumpins.is_active then

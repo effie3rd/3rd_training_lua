@@ -28,7 +28,6 @@ local function game_to_screen_space(x, y) return game_to_screen_space_x(x), game
 
 local function get_text_width(text)
    if #text == 0 then return 0 end
-
    return #text * 4
 end
 
@@ -325,39 +324,19 @@ local function draw_character_select()
    end
 end
 
-local dot_cache = {}
-local function get_dot(color)
-   if not dot_cache[color] then
-      local img = image_tables.img_dot
-      local gd_color = colors.hex_to_gd_color(color)
-      dot_cache[color] = colors.substitute_color_gdstr(img, colors.gd_white, gd_color)
+local image_cache = {}
+local function get_image(image, color)
+   if not image_cache[image] then
+      image_cache[image] = {}
    end
-   return dot_cache[color]
-end
-
-local up_arrow_cache = {}
-local function get_up_arrow(color)
-   if not up_arrow_cache[color] then
-      local img = image_tables.scroll_up_arrow
-      local gd_color = colors.hex_to_gd_color(color)
-      up_arrow_cache[color] = colors.substitute_color_gdstr(img, colors.gd_white, gd_color)
+   if not color then
+      color = colors.text.default
    end
-   return up_arrow_cache[color]
-end
-
-local check_box_cache = {unchecked = {}, checked = {}}
-local function get_check_box(type, color)
-   if not check_box_cache[type][color] then
-      local checkbox
-      if type == "unchecked" then
-         checkbox = image_tables.img_kaku
-      else
-         checkbox = image_tables.img_maru
-      end
+   if not image_cache[image][color] then
       local gd_color = colors.hex_to_gd_color(color)
-      check_box_cache[type][color] = colors.substitute_color_gdstr(checkbox, colors.gd_white, gd_color)
+      image_cache[image][color] = colors.substitute_color_gdstr(image, colors.gd_white, gd_color)
    end
-   return check_box_cache[type][color]
+   return image_cache[image][color]
 end
 
 local draw = {
@@ -380,9 +359,7 @@ local draw = {
    get_above_character_position = get_above_character_position,
    loading_bar_display = loading_bar_display,
    draw_character_select = draw_character_select,
-   get_dot = get_dot,
-   get_up_arrow = get_up_arrow,
-   get_check_box = get_check_box
+   get_image = get_image,
 }
 
 return draw

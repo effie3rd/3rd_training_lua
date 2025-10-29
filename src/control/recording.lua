@@ -18,7 +18,6 @@ local current_recording_slot_frames = {frames = 0}
 local replay_slot = -1
 
 local recording_slots = {}
-
 local recording_slots_names = {}
 
 local superfreeze_begin_frame = -1
@@ -63,18 +62,28 @@ local function backup_recordings()
       end
    end
 
-   if training.recording_player.char_str ~= "" then settings.recordings[training.recording_player.char_str] = recording_slots end
+   if training.dummy.char_str ~= "" then
+      settings.recordings[training.dummy.char_str] = recording_slots
+   end
 end
 
 local function update_current_recording_slot_frames()
    current_recording_slot_frames.frames = #recording_slots[settings.training.current_recording_slot].inputs
 end
 
-local function restore_recordings()
-   local char = gamestate.P2.char_str
-   if char and char ~= "" then
+local function load_recordings(char_str)
+   recording_slots = settings.recordings[char_str] or {}
+   update_current_recording_slot_frames()
+end
+
+local function get_recordings(char_str)
+   return settings.recordings[char_str] or {}
+end
+
+local function restore_recordings(char_str)
+   if char_str and char_str ~= "" then
       local recording_count = #recording_slots
-      if settings.recordings then recording_slots = settings.recordings[char] or {} end
+      if settings.recordings then recording_slots = settings.recordings[char_str] or {} end
       local missing_slots = recording_count - #recording_slots
       for i = 1, missing_slots do table.insert(recording_slots, make_recording_slot()) end
    end
@@ -174,7 +183,7 @@ local function set_recording_state(input, state)
 
       training.swap_characters = false
    elseif current_recording_state == 4 then
-      inputs.clear_input_sequence(training.recording_player)
+      inputs.clear_input_sequence(training.dummy)
    end
 
    current_recording_state = state
@@ -204,7 +213,9 @@ local function set_recording_state(input, state)
          end
       end
 
-      if replay_slot > 0 then inputs.queue_input_sequence(training.recording_player, recording_slots[replay_slot].inputs) end
+      if replay_slot > 0 then
+         inputs.queue_input_sequence(training.dummy, recording_slots[replay_slot].inputs)
+      end
    end
 end
 
@@ -405,6 +416,8 @@ initialize_slots()
 
 local recording_module = {
    recording_slot_count = recording_slot_count,
+   load_recordings = load_recordings,
+   get_recordings = get_recordings,
    get_current_recording_slot = get_current_recording_slot,
    clear_slot = clear_slot,
    clear_all_slots = clear_all_slots,

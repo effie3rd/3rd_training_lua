@@ -671,6 +671,10 @@
     "en": "f",
     "jp_8": "フレ"
   },
+  "hud_after": {
+    "en": "after",
+    "jp": "後"
+  },
   "replay_mode": {
     "en": "Replay Mode",
     "jp": "再生モード"
@@ -894,6 +898,42 @@
   "none": {
     "en": "none",
     "jp": "なし"
+  },
+  "menu_neutral": {
+    "en": "neutral",
+    "jp": "N"
+  },
+  "menu_forward": {
+    "en": "forward",
+    "jp": "前"
+  },
+  "menu_down_forward": {
+    "en": "down forward",
+    "jp": "屈前"
+  },
+  "menu_down": {
+    "en": "down",
+    "jp": "屈"
+  },
+  "menu_down_back": {
+    "en": "down back",
+    "jp": "屈後"
+  },
+  "menu_back": {
+    "en": "back",
+    "jp": "後"
+  },
+  "menu_back_dash": {
+    "en": "back dash",
+    "jp": "バクステ"
+  },
+  "menu_forward_dash": {
+    "en": "forward dash",
+    "jp": "前ステ"
+  },
+  "menu_kara_throw": {
+    "en": "kara throw",
+    "jp": "移動投げ"
   },
   "LP": {
     "en": "LP",
@@ -1175,9 +1215,21 @@
     "en": "Settings",
     "jp": "設定"
   },
-  "menu_jump_offset_mode": {
-    "en": "Jump Offset Mode",
-    "jp": "ジャンプ変位モード"
+  "menu_automatic_replay": {
+    "en": "Automatic Replay",
+    "jp": "自動再生"
+  },
+  "menu_jump_replay_mode": {
+    "en": "Jump Replay Mode",
+    "jp": "ジャンプ再生モード"
+  },
+  "menu_player_position_mode": {
+    "en": "Player Position Mode",
+    "jp": "プレイヤー位置モード"
+  },
+  "menu_dummy_offset_mode": {
+    "en": "Dummy Offset Mode",
+    "jp": "ダミー変位モード"
   },
   "menu_attack_delay_mode": {
     "en": "Attack Delay Mode",
@@ -1186,6 +1238,10 @@
   "menu_point": {
     "en": "point",
     "jp": "定点"
+  },
+  "menu_dynamic": {
+    "en": "dynamic",
+    "jp": "動態"
   },
   "menu_range_random": {
     "en": "range · random",
@@ -1249,27 +1305,31 @@
   },
   "menu_HP_HP": {
     "en": "HP · HP",
-    "jp": "大P ・ 大P"
+    "jp": "大P・大P"
   },
   "menu_LP_MK": {
     "en": "LP · MK",
-    "jp": "小P ・ 中K"
+    "jp": "小P・中K"
   },
   "menu_MP_HP": {
     "en": "MP · HP",
-    "jp": "中P ・ 大P"
+    "jp": "中P・大P"
   },
-  "menu_tatsumaki_LK": {
+  "menu_tatsumaki_air_LK": {
     "en": "LK tatsumaki",
     "jp": "小K 竜巻"
   },
-  "menu_tatsumaki_MK": {
+  "menu_tatsumaki_air_MK": {
     "en": "MK tatsumaki",
     "jp": "中K 竜巻"
   },
-  "menu_tatsumaki_HK": {
+  "menu_tatsumaki_air_HK": {
     "en": "HK tatsumaki",
     "jp": "大K 竜巻"
+  },
+  "menu_tatsumaki_air_EXK": {
+    "en": "EX tatsumaki",
+    "jp": "EX 竜巻"
   },
   "menu_gohadouken_air_LP": {
     "en": "LP gohadouken",
@@ -1285,15 +1345,15 @@
   },
   "menu_LP_f_HP": {
     "en": "LP · F+HP",
-    "jp": "小P ・ 前大P"
+    "jp": "小P・前大P"
   },
   "menu_HP_f_MK": {
     "en": "HP · F+MK",
-    "jp": "大P ・ 前中K"
+    "jp": "大P・前中K"
   },
   "menu_LK_f_MK": {
     "en": "LK · F+MK",
-    "jp": "小K ・ 前中K"
+    "jp": "小K・前中K"
   },
   "menu_kunai_LP": {
     "en": "LP kunai",
@@ -1381,7 +1441,7 @@
   },
   "menu_MK_raigeki_MK": {
     "en": "MK · MK raigeki",
-    "jp": "中K ・ 中K 雷撃"
+    "jp": "中K・中K 雷撃"
   },
   "menu_raigeki_LK": {
     "en": "LK raigeki",

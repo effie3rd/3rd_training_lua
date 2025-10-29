@@ -38,27 +38,7 @@ local function load_text_images(filepath)
                image_map[code][lang].height = image_map[code][lang].height - 1
             end
 
-            local gdStr = png:gdStr()
-            image_map[code][lang][text.default_color] = gd.createFromGdStr(gdStr)
-            image_map[code][lang][text.selected_color] = gd.createFromGdStr(gdStr)
-            image_map[code][lang][text.inactive_color] = gd.createFromGdStr(gdStr)
-
-            local gd_default_color = colors.hex_to_gd_color(text.default_color)
-            local gd_selected_color = colors.hex_to_gd_color(text.selected_color)
-            local gd_inactive_color = colors.hex_to_gd_color(text.inactive_color)
-            for i = 0, image_map[code][lang].width - 1 do
-               for j = 0, image_map[code][lang].height - 1 do
-                  if image_map[code][lang].base_image:getPixel(i, j) == colors.gd_white then
-                     image_map[code][lang][text.default_color]:setPixel(i, j, gd_default_color)
-                     image_map[code][lang][text.selected_color]:setPixel(i, j, gd_selected_color)
-                     image_map[code][lang][text.inactive_color]:setPixel(i, j, gd_inactive_color)
-                  end
-               end
-            end
-
-            image_map[code][lang][text.default_color] = image_map[code][lang][text.default_color]:gdStr()
-            image_map[code][lang][text.selected_color] = image_map[code][lang][text.selected_color]:gdStr()
-            image_map[code][lang][text.inactive_color] = image_map[code][lang][text.inactive_color]:gdStr()
+            image_map[code][lang][text.default_color] = png:gdStr()
          end
       end
    end
@@ -78,26 +58,7 @@ local function load_text_image(data, code)
          image_map[code][lang].height = image_map[code][lang].height - 1
       end
 
-      local gdStr = png:gdStr()
-      image_map[code][lang][text.default_color] = gd.createFromGdStr(gdStr)
-      image_map[code][lang][text.selected_color] = gd.createFromGdStr(gdStr)
-      image_map[code][lang][text.inactive_color] = gd.createFromGdStr(gdStr)
-
-      local gd_selected_color = colors.hex_to_gd_color(text.selected_color)
-      local gd_inactive_color = colors.hex_to_gd_color(text.inactive_color)
-      for i = 0, image_map[code][lang].width - 1 do
-         for j = 0, image_map[code][lang].height - 1 do
-            if image_map[code][lang].base_image:getPixel(i, j) == colors.gd_white then
-               image_map[code][lang][text.selected_color]:setPixel(i, j, gd_selected_color)
-               image_map[code][lang][text.inactive_color]:setPixel(i, j, gd_inactive_color)
-            end
-         end
-      end
-
-      image_map[code][lang][text.default_color] = image_map[code][lang][text.default_color]:gdStr()
-      image_map[code][lang][text.selected_color] = image_map[code][lang][text.selected_color]:gdStr()
-      image_map[code][lang][text.inactive_color] = image_map[code][lang][text.inactive_color]:gdStr()
-
+      image_map[code][lang][text.default_color] = png:gdStr()
    end
 end
 

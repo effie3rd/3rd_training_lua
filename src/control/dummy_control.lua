@@ -23,9 +23,7 @@ local poses = {
 }
 
 local disable = {}
-local function disable_update(name, value)
-   disable[name] = value
-end
+local function disable_update(name, value) disable[name] = value end
 
 local function update_pose(input, player, dummy, pose)
    if recording.current_recording_state == 4 -- Replaying
@@ -57,7 +55,7 @@ local function update_pose(input, player, dummy, pose)
 end
 local Block_Style = {BLOCK = 1, PARRY = 2, RED_PARRY = 3}
 local Block_Type = {BLOCK = 1, PARRY = 2}
-local force_block_timeout = 10
+local force_block_timeout = 20
 
 local function update_blocking(input, player, dummy, mode, style, red_parry_hit_count, parry_every_n_count)
 
@@ -203,7 +201,7 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
    local frames_prediction = 3
 
    dummy.blocking.expected_attacks = prediction.predict_hits(player, nil, nil, dummy, nil, nil, frames_prediction)
-   if dummy.received_connection then
+   if dummy.just_received_connection then
       dummy.blocking.received_hit_count = dummy.blocking.received_hit_count + 1
       dummy.blocking.last_block.has_connected = true
    end
@@ -276,10 +274,10 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
                attack.force_block = nil
                attack.block_inputs = nil
                attack.should_ignore = true
-               print("this one")
             end
             if attack.blocking_type == "player" then
-               if player.animation ~= attack.animation then
+               if player.animation_frame > fd.get_last_hit_frame(player.char_str, player.animation) or player.animation ~=
+                   attack.animation then
                   dummy.blocking.block_until_confirmed = false
                   attack.force_block = nil
                end
@@ -655,7 +653,8 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
    if defender.is_grounded then defender.counter.air_recovery = false end
 
    local function handle_recording()
-      if counter_attack_data.type == 5 and defender.id == 2 then
+      if counter_attack_data.type == 5 then
+         recording.load_recordings(counter_attack_data.char_str)
          local slot_index = settings.training.current_recording_slot
          if settings.training.replay_mode == 2 or settings.training.replay_mode == 5 then
             slot_index = recording.find_random_recording_slot()
@@ -691,8 +690,7 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
             end
          end
          if counter_attack_data.type == 3 then defender.counter.attack_frame = defender.counter.attack_frame + 1 end
-         defender.counter.sequence, defender.counter.offset =
-             inputs.create_input_sequence(counter_attack_data)
+         defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
          if counter_attack_data.move_type == "kara_special" then
             defender.counter.offset = defender.counter.offset + 1
             if counter_attack_data.name == "kara_karakusa_lk" then
@@ -736,8 +734,7 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
             defender.counter.counter_type = "reversal"
             defender.counter.attack_frame = defender.counter.attack_frame + 2
          end
-         defender.counter.sequence, defender.counter.offset =
-             inputs.create_input_sequence(counter_attack_data)
+         defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
          defender.counter.ref_time = -1
          handle_recording()
       elseif defender.has_just_entered_air_recovery then
@@ -746,8 +743,7 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
          defender.counter.counter_type = "reversal"
          defender.counter.ref_time = -1
          defender.counter.attack_frame = gamestate.frame_number + 100
-         defender.counter.sequence, defender.counter.offset =
-             inputs.create_input_sequence(counter_attack_data)
+         defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
          defender.counter.air_recovery = true
          handle_recording()
          log(defender.prefix, "counter_attack", "init ca (air)")
@@ -774,8 +770,7 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
          else
             defender.counter.attack_frame = defender.counter.attack_frame + 2
          end
-         defender.counter.sequence, defender.counter.offset =
-             inputs.create_input_sequence(counter_attack_data)
+         defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
          defender.counter.ref_time = -1
          handle_recording()
       end

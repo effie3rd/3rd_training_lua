@@ -259,6 +259,7 @@ local function patch_frame_data()
       frame_data["hugo"]["4c10"].landing_height = -40 -- HK
       frame_data["hugo"]["5540"].landing_height = -40 -- d_HP_air
       frame_data["hugo"]["5790"].landing_height = -10 -- u_HK
+      frame_data["hugo"]["0d8c"].hit_frames[1][1] = 0 -- Gigas
    end
    if frame_data["ibuki"] then
       frame_data["ibuki"]["75f0"].frames[12].bypass_freeze = true -- HK Kazekiri

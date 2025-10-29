@@ -522,7 +522,7 @@ local function get_push_value(dist_from_pb_center, pushbox_overlap_range, push_v
    return 0
 end
 
-local function predict_player_pushback(p1, p1_motion_data, p1_line, p2, p2_motion_data, p2_line, index)
+local function predict_pushbox_pushback(p1, p1_motion_data, p1_line, p2, p2_motion_data, p2_line, index)
    local motion_data = {[p1] = p1_motion_data, [p2] = p2_motion_data}
    local lines = {[p1] = p1_line, [p2] = p2_line}
    local stage = stages[gamestate.stage]
@@ -534,25 +534,28 @@ local function predict_player_pushback(p1, p1_motion_data, p1_line, p2, p2_motio
       if fdata and fdata.frames and fdata.frames[lines[player][index].frame + 1] and
           fdata.frames[lines[player][index].frame + 1].boxes then
          local boxes = tools.get_boxes(fdata.frames[lines[player][index].frame + 1].boxes, {"push"})
-         if #boxes > 0 then pushboxes[player.id] = boxes[1] end
+         if #boxes > 0 then
+            pushboxes[player.id] = boxes[1]
+         end
       end
       if not pushboxes[player.id] then pushboxes[player.id] = tools.get_pushboxes(player) end
    end
 
    if pushboxes[1] and pushboxes[2] then
-      local p1_pushbox = tools.format_box(pushboxes[1])
-      local p2_pushbox = tools.format_box(pushboxes[2])
+      pushboxes[1] = tools.format_box(pushboxes[1])
+      pushboxes[2] = tools.format_box(pushboxes[2])
 
       local p1_mdata = motion_data[p1][index]
       local p2_mdata = motion_data[p2][index]
 
-      local overlap = get_horizontal_box_overlap(p1_pushbox, p1_mdata.pos_x, p1_mdata.pos_y, p1_mdata.flip_x,
-                                                 p2_pushbox, p2_mdata.pos_x, p2_mdata.pos_y, p2_mdata.flip_x)
+      local overlap = get_horizontal_box_overlap(pushboxes[p1.id], p1_mdata.pos_x, p1_mdata.pos_y, p1_mdata.flip_x,
+                                                 pushboxes[p2.id], p2_mdata.pos_x, p2_mdata.pos_y, p2_mdata.flip_x)
+
       if overlap > 1 then
          local push_value_max = math.ceil((character_specific[p1.char_str].push_value +
                                               character_specific[p2.char_str].push_value) / 2)
          local dist_from_pb_center = math.abs(p1_mdata.pos_x - p2_mdata.pos_x)
-         local pushbox_overlap_range = (p1_pushbox.width + p2_pushbox.width) / 2
+         local pushbox_overlap_range = (pushboxes[1].width + pushboxes[2].width) / 2
          local push_value = get_push_value(dist_from_pb_center, pushbox_overlap_range, push_value_max)
 
          local sign = (math.floor(p2_mdata.pos_x) - math.floor(p1_mdata.pos_x) >= 0 and -1) or
@@ -771,7 +774,7 @@ local function predict_next_player_movement(p1, p1_motion_data, p1_line, p2, p2_
          end
       end
    end
-   predict_player_pushback(p1, p1_motion_data, p1_line, p2, p2_motion_data, p2_line, index)
+   predict_pushbox_pushback(p1, p1_motion_data, p1_line, p2, p2_motion_data, p2_line, index)
    predict_switch_sides(p1, p1_motion_data, p1_line, p2, p2_motion_data, p2_line, index)
 end
 
@@ -1065,7 +1068,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
             dummy_line = dummy_line
          }
 
-         if debug_settings.debug_hitboxes and i <= debug_settings.hitbox_display_frames then
+         if debug_settings.debug_hitboxes and i <= debug_settings.hitbox_display_frames and false then
             local vuln = {}
             local tfd = frame_data[player.char_str][player_line[i].animation]
             local color = 0x44097000 + 255
@@ -1323,7 +1326,11 @@ local function predict_frames_before_landing(player)
    for i = 1, frames_prediction do
       y = y + velocity
       velocity = velocity + player.acceleration_y
-      if y <= 0 then return i end
+      if player.animation_frame_data and player.animation_frame_data.landing_height then
+         if y < player.animation_frame_data.landing_height then return i end
+      elseif y < 0 then
+         return i
+      end
    end
    return -1
 end

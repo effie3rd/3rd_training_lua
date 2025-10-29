@@ -1030,52 +1030,52 @@ local function bonuses_display(player_object)
    end
    if player_object.damage_bonus > 0 then
       -- gui.text(x, y, t, 0xFF7184FF, 0x392031FF)
-      local text = {"+", player_object.damage_bonus, "bonus_damage"}
+      local bonus_text = {"+", player_object.damage_bonus, "bonus_damage"}
       local w, h = 0, 0
       if lang == "en" then
-         w, h = get_text_dimensions_multiple(text)
+         w, h = get_text_dimensions_multiple(bonus_text)
       elseif lang == "jp" then
-         w, h = get_text_dimensions_multiple(text, "jp", "8")
+         w, h = get_text_dimensions_multiple(bonus_text, "jp", "8")
       end
       if player_object.id == 2 then x = x - w - spacing end
       if lang == "en" then
-         render_text_multiple(x, y, text, "en", nil, colors.bonuses.damage)
+         render_text_multiple(x, y, bonus_text, "en", nil, colors.bonuses.damage)
       elseif lang == "jp" then
-         render_text_multiple(x, y, text, "jp", "8", colors.bonuses.damage)
+         render_text_multiple(x, y, bonus_text, "jp", "8", colors.bonuses.damage)
       end
       if player_object.id == 1 then x = x + w + spacing end
    end
 
    if player_object.defense_bonus > 0 then
-      local text = {"+", player_object.defense_bonus, "bonus_defense"}
+      local bonus_text = {"+", player_object.defense_bonus, "bonus_defense"}
       local w, h = 0, 0
       if lang == "en" then
-         w, h = get_text_dimensions_multiple(text)
+         w, h = get_text_dimensions_multiple(bonus_text)
       elseif lang == "jp" then
-         w, h = get_text_dimensions_multiple(text, "jp", "8")
+         w, h = get_text_dimensions_multiple(bonus_text, "jp", "8")
       end
       if player_object.id == 2 then x = x - w - spacing end
       if lang == "en" then
-         render_text_multiple(x, y, text, "en", nil, colors.bonuses.defense)
+         render_text_multiple(x, y, bonus_text, "en", nil, colors.bonuses.defense)
       elseif lang == "jp" then
-         render_text_multiple(x, y, text, "jp", "8", colors.bonuses.defense)
+         render_text_multiple(x, y, bonus_text, "jp", "8", colors.bonuses.defense)
       end
       if player_object.id == 1 then x = x + w + spacing end
    end
 
    if player_object.stun_bonus > 0 then
-      local text = {"+", player_object.stun_bonus, "bonus_stun"}
+      local bonus_text = {"+", player_object.stun_bonus, "bonus_stun"}
       local w, h = 0, 0
       if lang == "en" then
-         w, h = get_text_dimensions_multiple(text)
+         w, h = get_text_dimensions_multiple(bonus_text)
       elseif lang == "jp" then
-         w, h = get_text_dimensions_multiple(text, "jp", "8")
+         w, h = get_text_dimensions_multiple(bonus_text, "jp", "8")
       end
       if player_object.id == 2 then x = x - w - spacing end
       if lang == "en" then
-         render_text_multiple(x, y, text, "en", nil, colors.bonuses.stun)
+         render_text_multiple(x, y, bonus_text, "en", nil, colors.bonuses.stun)
       elseif lang == "jp" then
-         render_text_multiple(x, y, text, "jp", "8", colors.bonuses.stun)
+         render_text_multiple(x, y, bonus_text, "jp", "8", colors.bonuses.stun)
       end
       if player_object.id == 1 then x = x + w + spacing end
    end

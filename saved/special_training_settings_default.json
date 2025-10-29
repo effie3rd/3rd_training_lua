@@ -21,7 +21,10 @@
   "jumpins": {
     "characters": {
       "alex": {
-        "jump_offset_mode": 1,
+        "automatic_replay": true,
+        "player_position_mode":1,
+        "jump_replay_mode": 1,
+        "dummy_offset_mode": 1,
         "attack_delay_mode": 1,
         "show_jump_arc": false,
         "show_jump_info": false,
@@ -38,7 +41,7 @@
             ],
             "dummy_offset_mode": 1,
             "second_jump_name": 1,
-            "second_jump_delay": 0,
+            "second_jump_delay": [0,0],
             "attack_name": 1,
             "attack_delay": [
               5,

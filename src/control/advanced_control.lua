@@ -62,13 +62,27 @@ end
 
 local function is_idle_timing(player, offset, precise)
    -- print(gamestate.frame_number, prediction.get_frames_until_idle(player, player.animation, player.animation_frame, frames_prediction))
+   if player.just_received_connection then return false end
    if not precise then offset = offset + 1 end
    if player.superfreeze_decount > 0 then return false end
    if player.has_just_parried then return 15 < offset end
-   if offset <= 0 then return player.is_idle and player.idle_time >= -offset end
-   if player.is_in_recovery then
-      return player.recovery_time + player.additional_recovery_time < offset
+   if player.is_airborne then
+      if player.is_idle then
+         if offset > 0 then
+            return true
+         else
+            return false
+         end
+      else
+         local action_type = memory.readbyte(player.addresses.action_type)
+         local frames_until_landing = prediction.predict_frames_before_landing(player)
+         if action_type == 4 then -- normal
+            return player.remaining_freeze_frames + frames_until_landing + 2 < offset
+         end
+      end
    end
+   if offset <= 0 then return player.is_idle and player.idle_time >= -offset end
+   if player.is_in_recovery then return player.recovery_time + player.additional_recovery_time < offset end
    return player.remaining_freeze_frames +
               prediction.get_frames_until_idle(player, player.animation, player.animation_frame, frames_prediction) <
               offset
@@ -90,6 +104,7 @@ local function is_landing_timing(player, offset, precise)
 end
 
 local function is_throw_vulnerable_timing(player, offset, precise)
+   if player.just_received_connection or player.remaining_freeze_frames > 0 or player.freeze_just_ended then return false end
    if not precise then offset = offset + 1 end
    if offset <= 0 then return player.throw_invulnerability_cooldown == 0 and player.throw_recovery_frame >= -offset end
    return player.throw_invulnerability_cooldown < offset
@@ -110,9 +125,7 @@ function Delay:reset(n)
    if n then self.delay = n end
 end
 
-function Delay:extend(n)
-   self.end_frame = self.end_frame + n
-end
+function Delay:extend(n) self.end_frame = self.end_frame + n end
 
 function Delay:begin(n)
    if n then self.delay = n end

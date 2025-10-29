@@ -1555,10 +1555,10 @@ function followup_walk_out:followups(player) return walk_out_followups end
 local followup_back_dash = Followup:new("followup_back_dash")
 
 function followup_back_dash:setup(player, stage, actions, i_actions)
-   local dash_duration = Delay:new(#back_dash_input + back_dash_duration + 1 - 3)
+   local dash_duration = Delay:new(back_dash_duration + 1 - 3)
    local setup = {
       {
-         condition = function() return is_idle_timing(player, 1, true) end,
+         condition = function() return is_idle_timing(player, #back_dash_input, true) end,
          action = function()
             queue_input_sequence_and_wait(player, back_dash_input)
             dash_duration:begin()
@@ -1588,10 +1588,10 @@ function followup_back_dash:followups(player) return back_dash_followups end
 local followup_forward_dash = Followup:new("followup_forward_dash")
 
 function followup_forward_dash:setup(player, stage, actions, i_actions)
-   local dash_duration = Delay:new(#forward_dash_input + forward_dash_duration + 1 - 3)
+   local dash_duration = Delay:new(forward_dash_duration + 1 - 3)
    local setup = {
       {
-         condition = function() return is_idle_timing(player, 1, true) end,
+         condition = function() return is_idle_timing(player, #forward_dash_input, true) end,
          action = function()
             queue_input_sequence_and_wait(player, forward_dash_input)
             dash_duration:begin()

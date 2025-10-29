@@ -18,25 +18,37 @@ local additional_moves = {
    alex = {"d_HP"},
    chunli = {"d_HP", "d_MK", "HP_HP"},
    elena = {"LP_MK", "MP_HP"},
-   gouki = {"d_MK", "gohadouken_LP", "gohadouken_MP", "gohadouken_HP", "tatsumaki_LK", "tatsumaki_MK", "tatsumaki_HK"},
+   gouki = {
+      "d_MK", "gohadouken_air_LP", "gohadouken_air_MP", "gohadouken_air_HP", "tatsumaki_air_LK", "tatsumaki_air_MK",
+      "tatsumaki_air_HK"
+   },
    hugo = {"d_HP"},
    ibuki = {"LP_f_HP", "HP_f_MK", "LK_f_MK", "kunai_LP", "kunai_MP", "kunai_HP", "kunai_EXP"},
-   ken = {"tatsumaki_LK", "tatsumaki_MK", "tatsumaki_HK", "tatsumaki_EXK"},
+   ken = {"tatsumaki_air_LK", "tatsumaki_air_MK", "tatsumaki_air_HK", "tatsumaki_air_EXK"},
    makoto = {"tsurugi_LK", "tsurugi_MK", "tsurugi_HK", "tsurugi_EXK"},
    necro = {"drill_LK", "drill_MK", "drill_HK"},
-   oro = {"hitobashira", "hitobashira_EXK"},
-   ryu = {"tatsumaki_LK", "tatsumaki_MK", "tatsumaki_HK", "tatsumaki_EXK"},
+   oro = {"hitobashira_air", "hitobashira_air_EXK"},
+   ryu = {"tatsumaki_air_LK", "tatsumaki_air_MK", "tatsumaki_air_HK", "tatsumaki_air_EXK"},
    shingouki = {
-      "d_MK", "gohadouken_LP", "gohadouken_MP", "gohadouken_HP", "tatsumaki_LK", "tatsumaki_MK", "tatsumaki_HK"
+      "d_MK", "gohadouken_air_LP", "gohadouken_air_MP", "gohadouken_air_HP", "tatsumaki_air_LK", "tatsumaki_air_MK",
+      "tatsumaki_air_HK"
    },
-   twelve = {"axe_LP", "axe_MP", "axe_HP", "axe_EX", "dra_LK", "dra_MK", "dra_HK", "dra_EXP"},
+   twelve = {"axe_air_LP", "axe_air_MP", "axe_air_HP", "axe_air_EXP", "dra_LK", "dra_MK", "dra_HK", "dra_EXK"},
    yang = {"MK_raigeki_MK", "raigeki_LK", "raigeki_MK", "raigeki_HK"},
    yun = {"LP_f_HP", "raigeki_LK", "raigeki_MK", "raigeki_HK"}
 }
 
 local move_inputs
 
-local target_combos = {HP_HP = true, LP_MK = true, MP_HP = true, LP_f_HP = true, HP_f_MK = true, LK_f_MK = true}
+local target_combos = {
+   HP_HP = true,
+   LP_MK = true,
+   MP_HP = true,
+   LP_f_HP = true,
+   HP_f_MK = true,
+   LK_f_MK = true,
+   MK_raigeki_MK = true
+}
 
 local jump_inputs = {
    jump_forward = {{"up", "forward"}, {"up", "forward"}, {"up", "forward"}},
@@ -45,11 +57,8 @@ local jump_inputs = {
    sjump_forward = {{"down"}, {"forward", "up"}, {"forward", "up"}, {"forward", "up"}},
    sjump_neutral = {{"down"}, {"up"}, {"up"}, {"up"}},
    sjump_back = {{"down"}, {"back", "up"}, {"back", "up"}, {"back", "up"}},
-   air_dash_low = {{"up", "forward"}, {"up", "forward"}, {"up", "forward"}, {}, {}, {"forward"}},
-   air_dash_high = {
-      {"up", "forward"}, {"up", "forward"}, {"up", "forward"}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-      {}, {}, {"forward"}, {}, {"forward"}
-   }
+   air_dash_forward = {{"forward"}, {}, {"forward"}},
+   air_dash_back = {{"back"}, {}, {"back"}}
 }
 
 local function update_character(char_str)
@@ -61,7 +70,9 @@ local function update_character(char_str)
       second_jumps = twelve_jumps
    end
    moves = copytable(moves_default)
-   if additional_moves[char_str] then for _, name in ipairs(additional_moves[char_str]) do table.insert(moves, name) end end
+   if additional_moves[char_str] then
+      for _, name in ipairs(additional_moves[char_str]) do table.insert(moves, name) end
+   end
 end
 
 local function init(char_str)
@@ -80,9 +91,10 @@ local function init(char_str)
       HP_HP = {{"HP"}, {"HP"}},
       LP_MK = {{"LP"}, {"MK"}},
       MP_HP = {{"MP"}, {"HP"}},
-      tatsumaki_LK = move_data.get_move_inputs_by_name("gouki", "tatsumaki", "LK"),
-      tatsumaki_MK = move_data.get_move_inputs_by_name("gouki", "tatsumaki", "MK"),
-      tatsumaki_HK = move_data.get_move_inputs_by_name("gouki", "tatsumaki", "HK"),
+      tatsumaki_air_LK = move_data.get_move_inputs_by_name("gouki", "tatsumaki", "LK"),
+      tatsumaki_air_MK = move_data.get_move_inputs_by_name("gouki", "tatsumaki", "MK"),
+      tatsumaki_air_HK = move_data.get_move_inputs_by_name("gouki", "tatsumaki", "HK"),
+      tatsumaki_air_EXK = move_data.get_move_inputs_by_name("gouki", "tatsumaki", "EXK"),
       gohadouken_air_LP = move_data.get_move_inputs_by_name("gouki", "gohadouken", "LP"),
       gohadouken_air_MP = move_data.get_move_inputs_by_name("gouki", "gohadouken", "MP"),
       gohadouken_air_HP = move_data.get_move_inputs_by_name("gouki", "gohadouken", "HP"),
@@ -117,17 +129,11 @@ local function init(char_str)
    }
 end
 
-local function get_jump_names()
-   return jumps
-end
+local function get_jump_names() return jumps end
 
-local function get_second_jump_names()
-   return second_jumps
-end
+local function get_second_jump_names() return second_jumps end
 
-local function get_attack_names()
-   return moves
-end
+local function get_attack_names() return moves end
 
 local function get_menu_jump_names()
    local jump_names = copytable(jumps)
@@ -188,16 +194,25 @@ local function get_move_framedata(char_str, jump_name, move_name)
 end
 
 local function create_settings(dummy)
-   local data = {jump_offset_mode = 1, attack_delay_mode = 1, show_jump_arc = false, show_jump_info = false, jumps = {}}
+   local data = {
+      jump_replay_mode = 1,
+      player_position_mode = 1,
+      dummy_offset_mode = 1,
+      attack_delay_mode = 1,
+      show_jump_arc = false,
+      show_jump_info = false,
+      automatic_replay = true,
+      jumps = {}
+   }
    local jump = {
       jump_name = 2,
       player_position = {math.floor(dummy.other.pos_x), math.floor(dummy.other.pos_x)},
       dummy_offset = {math.floor(dummy.pos_x - dummy.other.pos_x), math.floor(dummy.pos_x - dummy.other.pos_x + 20)},
       dummy_offset_mode = 1,
       second_jump_name = 1,
-      second_jump_delay = 0,
+      second_jump_delay = {8, 8},
       attack_name = 1,
-      attack_delay = {5, 5},
+      attack_delay = {6, 6},
       attack_delay_mode = 1,
       followup = {special_button = 1, option_select = 1, normal_button = 1, special = 1, type = 1, motion = 1},
       followup_delay = 0
