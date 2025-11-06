@@ -120,7 +120,7 @@ local function draw_jump_arc(jump_arc)
       end
       return color
    end
-   local current_point = gamestate.frame_number - jump_queued_frame
+   local current_point = gamestate.frame_number - jump_queued_frame + 1
    local selected_points = {}
    for i, point in pairs(jump_arc) do
       local color = get_color(i)
@@ -770,7 +770,7 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
 
       local followup_command = {
          condition = function()
-            return advanced_control.is_landing_timing(player, #followup_input, true) and
+            return advanced_control.is_landing_timing(player, #followup_input - followup_delay, true) and
                        advanced_control.is_idle_timing(player, #followup_input - followup_delay + followup_adjustment,
                                                        true) and (not is_throw or
                        advanced_control.is_throw_vulnerable_timing(player.other,
@@ -912,7 +912,8 @@ local function stop()
       is_active = false
       inputs.unblock_input(1)
       inputs.unblock_input(2)
-      training.disable_dummy[jumpins_dummy.id] = false
+      training.disable_dummy[1] = false
+      training.disable_dummy[2] = false
       advanced_control.clear_all()
       hud.unregister_draw(jumpins_display)
       hud.clear_info_text()

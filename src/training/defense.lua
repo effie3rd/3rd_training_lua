@@ -12,7 +12,7 @@ local advanced_control = require("src.control.advanced_control")
 local write_memory = require("src.control.write_memory")
 local memory_addresses = require("src.control.memory_addresses")
 local defense_tables = require("src.training.defense_tables")
-local defense_classes = require("src.training.defense.defense_classes")
+local training_classes = require("src.training.training_classes")
 local training = require("src.training")
 local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
@@ -29,7 +29,8 @@ local states = {
    WAIT_FOR_SETUP = 6,
    FOLLOWUP = 7,
    RUNNING = 8,
-   END = 9
+   BEFORE_END = 9,
+   END = 10
 }
 
 local setup_states = {INIT = 1, SET_POSITIONS = 2, MOVE_PLAYERS = 3, CONTINUE_SETUP = 4}
@@ -639,12 +640,12 @@ local function update()
                local player_response
 
                if player.is_blocking or player.is_being_thrown then
-                  player_response = defense_classes.Action_Type.BLOCK
+                  player_response = training_classes.Action_Type.BLOCK
                end
                if player.is_throwing or player.is_in_throw_tech or dummy.is_being_thrown then
-                  player_response = defense_classes.Action_Type.THROW
+                  player_response = training_classes.Action_Type.THROW
                elseif player.character_state_byte == 4 then
-                  player_response = defense_classes.Action_Type.ATTACK
+                  player_response = training_classes.Action_Type.ATTACK
                end
 
                for i, action in ipairs(action_queue) do
@@ -657,12 +658,12 @@ local function update()
                end
                if player_response then
                   local target
-                  if player_response == defense_classes.Action_Type.BLOCK then
-                     target = defense_classes.Action_Type.THROW
-                  elseif player_response == defense_classes.Action_Type.THROW then
-                     target = defense_classes.Action_Type.ATTACK
-                  elseif player_response == defense_classes.Action_Type.ATTACK then
-                     target = defense_classes.Action_Type.BLOCK
+                  if player_response == training_classes.Action_Type.BLOCK then
+                     target = training_classes.Action_Type.THROW
+                  elseif player_response == training_classes.Action_Type.THROW then
+                     target = training_classes.Action_Type.ATTACK
+                  elseif player_response == training_classes.Action_Type.ATTACK then
+                     target = training_classes.Action_Type.BLOCK
                   end
                   if target then
                      for _, followup_list in ipairs(defense_data.followups) do

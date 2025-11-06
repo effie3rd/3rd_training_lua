@@ -252,7 +252,10 @@ local function print_pline(line)
    end
 end
 
-local function update_player_animation(player)
+local function update_player_animation(previous_input, player)
+   if player.has_animation_just_changed then
+      next_animation[player] = animations.NONE
+   end
    -- animation changes next frame
    if player.has_just_blocked then
       if not player.received_connection_is_projectile and player.other.pos_y >=
@@ -272,6 +275,16 @@ local function update_player_animation(player)
          next_animation[player] = animations.PARRY_AIR
       end
    end
+   local player_framedata = fd.frame_data[player.char_str]
+   if player.animation == player_framedata.parry_low and not tools.is_pressing_down(player, previous_input) then
+      if player.animation_frame == #player.animation_frame_data.frames - 1 then
+         next_animation[player] = animations.STANDING_BEGIN
+      end
+   elseif player.animation == player_framedata.parry_high and tools.is_pressing_down(player, previous_input) then
+            if player.animation_frame == #player.animation_frame_data.frames - 1 then
+         next_animation[player] = animations.CROUCHING_BEGIN
+      end
+   end
 end
 
 local function predict_next_animation(player, input)
@@ -280,7 +293,7 @@ local function predict_next_animation(player, input)
    if player.is_idle then
       if player.is_standing then
          if tools.is_pressing_down(player, input) then
-            if player.action ~= 30 then next_animation[player] = animations.CROUCHING_BEGIN end
+            if player.action ~= 30 and player.action ~= 25 then next_animation[player] = animations.CROUCHING_BEGIN end
          elseif tools.is_pressing_forward(player, input) then
             if player.action == 23 or player.action == 30 then
                next_animation[player] = animations.WALK_FORWARD
@@ -297,7 +310,9 @@ local function predict_next_animation(player, input)
          end
       elseif player.is_crouching then
          if not tools.is_pressing_down(player, input) then
-            if player.action ~= 31 then next_animation[player] = animations.STANDING_BEGIN end
+            if player.action ~= 31 and player.action ~= 26 then
+               next_animation[player] = animations.STANDING_BEGIN
+            end
          elseif tools.is_pressing_back(player, input) then
             next_animation[player] = animations.BLOCK_LOW_PROXIMITY
          end
@@ -534,9 +549,7 @@ local function predict_pushbox_pushback(p1, p1_motion_data, p1_line, p2, p2_moti
       if fdata and fdata.frames and fdata.frames[lines[player][index].frame + 1] and
           fdata.frames[lines[player][index].frame + 1].boxes then
          local boxes = tools.get_boxes(fdata.frames[lines[player][index].frame + 1].boxes, {"push"})
-         if #boxes > 0 then
-            pushboxes[player.id] = boxes[1]
-         end
+         if #boxes > 0 then pushboxes[player.id] = boxes[1] end
       end
       if not pushboxes[player.id] then pushboxes[player.id] = tools.get_pushboxes(player) end
    end
@@ -1046,7 +1059,6 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
    dummy_line[0] = {animation = dummy.animation, frame = dummy.animation_frame, delta = 0}
 
    local predicted_state = {}
-
    for _, player_line in pairs(player_lines) do
       local player_motion_data = init_motion_data(player)
       local dummy_motion_data = init_motion_data(dummy)
@@ -1118,17 +1130,19 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                         next_hit_id = math.min(j + 1, #fdata.hit_frames)
                      end
                   end
+                  if predicted_frame.animation ~= player.animation then current_hit_id = 0 end
+
                   if fdata.infinite_loop then
                      current_hit_id = (player.animation_miss_count + player.animation_connection_count) %
                                           #fdata.hit_frames
-                     if #fdata.hit_frames == 1 then should_test = true end
-                  end
-                  if predicted_frame.animation ~= player.animation then current_hit_id = 0 end
-
-                  if next_hit_id > current_hit_id then should_test = true end
-                  if fdata.infinite_loop and
-                      (player.animation_connection_count + player.animation_miss_count >= fdata.max_hits) then
-                     should_test = false
+                     if #fdata.hit_frames == 1 or next_hit_id ~= current_hit_id then
+                        should_test = true
+                     end
+                     if (player.animation_connection_count + player.animation_miss_count >= fdata.max_hits) then
+                        should_test = false
+                     end
+                  else
+                     if next_hit_id > current_hit_id then should_test = true end
                   end
 
                   if should_test then
@@ -1231,6 +1245,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                                                  frames_prediction)[1]
          end
          if not proj_line or #proj_line == 0 then proj_line = create_line(projectile, frames_prediction) end
+
          local proj_motion_data = init_motion_data(projectile)
          if (not projectile.placeholder and projectile.cooldown - frames_prediction <= 0) or
              (projectile.placeholder and projectile.animation_start_frame - gamestate.frame_number > 0 and
@@ -1335,9 +1350,9 @@ local function predict_frames_before_landing(player)
    return -1
 end
 
-local function update_before(input, player, dummy)
-   update_player_animation(player)
-   update_player_animation(dummy)
+local function update_before(previous_input, player, dummy)
+   update_player_animation(previous_input, player)
+   update_player_animation(previous_input, dummy)
 end
 
 local function update_after(input, player, dummy)

@@ -46,8 +46,10 @@ local training = require("src.training")
 local prediction = require("src.modules.prediction")
 local advanced_control = require("src.control.advanced_control")
 local defense = require("src.training.defense")
-local unblockables = require("src.training.unblockables")
 local jumpins = require("src.training.jumpins")
+local footsies = require("src.training.footsies")
+local unblockables = require("src.training.unblockables")
+local geneijin  = require("src.training.geneijin")
 local dummy_control = require("src.control.dummy_control")
 local draw = require("src.ui.draw")
 local hud = require("src.ui.hud")
@@ -67,7 +69,7 @@ local after_load_state_callback = {}
 local loading_bar_loaded = 0
 local loading_bar_total = loading.get_total_files()
 
-local special_training_modes = {defense, jumpins, unblockables}
+local special_training_modes = {defense, jumpins, footsies, unblockables, geneijin}
 
 Load_State_Caller = ""
 
@@ -179,6 +181,8 @@ local function on_load_state()
    if Load_State_Caller == "" or Load_State_Caller == "3rd_training" then -- player loaded savestate
       inputs.unblock_input(1)
       inputs.unblock_input(2)
+      training.disable_dummy[1] = false
+      training.disable_dummy[2] = false
       menu.open_after_match_start = false
    end
 
@@ -222,7 +226,7 @@ local function before_frame()
    inputs.update_input()
    joypad.set(inputs.input)
 
-   if gamestate.is_in_character_select then character_select.update_character_select(inputs.input) end
+   if gamestate.is_in_character_select or gamestate.is_in_vs_screen then character_select.update_character_select(inputs.input) end
    if settings.training.fast_forward_intro then training.update_fast_forward() end
 
    local gesture = inputs.interpret_gesture(gamestate.P1)
@@ -241,7 +245,7 @@ local function before_frame()
 
       frame_advantage.frame_advantage_update(training.player, training.dummy)
 
-      prediction.update_before(inputs.input, training.player, training.dummy)
+      prediction.update_before(inputs.previous_input, training.player, training.dummy)
 
       if not training.disable_dummy[training.dummy.id] and not menu.is_open or jumpins.is_active then
          dummy_control.update_blocking(inputs.input, training.player, training.dummy, settings.training.blocking_mode,

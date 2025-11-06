@@ -1,7 +1,10 @@
 local tools = require("src.tools")
 
 local move_list = tools.read_object_from_json_file("data/move_list.json") or {}
-local kara_command_throws = {"kara_power_bomb", "kara_karakusa_lk", "kara_karakusa_hk", "kara_capture_and_deadly_blow", "kara_zenpou_yang", "kara_zenpou_yun"}
+local kara_command_throws = {
+   "kara_power_bomb", "kara_karakusa_lk", "kara_karakusa_hk", "kara_capture_and_deadly_blow", "kara_zenpou_yang",
+   "kara_zenpou_yun"
+}
 
 local function get_move_inputs_by_name(char, name, button)
    local sequence = {}
@@ -9,6 +12,15 @@ local function get_move_inputs_by_name(char, name, button)
       if move.name == name then
          sequence = tools.deepcopy(move.input)
          break
+      end
+   end
+
+   if #sequence == 0 then
+      local underscore = string.find(name, "_")
+      if underscore then
+         button = string.sub(name, underscore + 1)
+         name = string.sub(name, 1, underscore - 1)
+         return get_move_inputs_by_name(char, name, button)
       end
    end
 
@@ -36,6 +48,11 @@ local function get_move_inputs_by_name(char, name, button)
                   table.insert(sequence[i], j, "HK")
                   table.insert(sequence[i], j, "MK")
                   table.insert(sequence[i], j, "LK")
+               elseif type(button) == "table" then
+                  for _, b in ipairs(button) do
+                     table.remove(sequence[i], j)
+                     table.insert(sequence[i], j, b)
+                  end
                else
                   table.remove(sequence[i], j)
                   table.insert(sequence[i], j, button)

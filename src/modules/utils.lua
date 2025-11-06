@@ -41,16 +41,51 @@ local function get_backward_walk_distance(player, n_frames)
    return math.abs(n_frames * character_specific[player.char_str].backward_walk_speed)
 end
 
-local function is_in_opponent_throw_range(player)
+local function is_in_opponent_throw_range(player, tolerance)
+   tolerance = tolerance or 0
    local dist = math.abs(player.other.pos_x - player.pos_x)
    local opponent_throw_range = framedata.get_hitbox_max_range_by_name(player.other.char_str, "throw_neutral") or 40
-   if opponent_throw_range >= dist - character_specific[player.char_str].pushbox_width / 2 then return true end
+   if opponent_throw_range - tolerance >= dist - character_specific[player.char_str].pushbox_width / 2 then
+      return true
+   end
    return false
 end
 
+local function get_box_connection_distance(attacker, attack_boxes, defender, defender_boxes, box_types)
+   box_types = box_types or {"vulnerability", "ext.vulnerability"}
+   local hurt_boxes = tools.get_boxes(defender_boxes, box_types)
+   if not hurt_boxes then return nil end
+
+   local furthest = 0
+   for _, hit_box in ipairs(attack_boxes) do
+      local hit_b = tools.format_box(hit_box)
+      for __, hurt_box in ipairs(hurt_boxes) do
+         local hurt_b = tools.format_box(hurt_box)
+         if not (hurt_b.bottom + hurt_b.height < hit_b.bottom or hurt_b.bottom > hit_b.bottom + hit_b.height) then
+            if math.abs(hurt_b.left) > furthest then furthest = math.abs(hurt_b.left) end
+         end
+      end
+   end
+
+   return furthest
+end
+
 local motion_to_menu_text = {
-   dir_5 = "menu_neutral", dir_6 = "menu_forward", dir_3 = "menu_down_forward", dir_2 = "menu_down", dir_1 = "menu_down_back", dir_4 = "menu_back", dir_7 = "menu_jump_back", dir_8 = "menu_jump_neutral", dir_9 = "menu_jump_forward", sjump_back = "menu_sjump_back", sjump_neutral = "menu_sjump_neutral",
-   sjump_forward = "menu_sjump_forward", back_dash = "menu_back_dash", forward_dash = "menu_forward_dash", kara_throw = "menu_kara_throw"
+   dir_5 = "menu_neutral",
+   dir_6 = "menu_forward",
+   dir_3 = "menu_down_forward",
+   dir_2 = "menu_down",
+   dir_1 = "menu_down_back",
+   dir_4 = "menu_back",
+   dir_7 = "menu_jump_back",
+   dir_8 = "menu_jump_neutral",
+   dir_9 = "menu_jump_forward",
+   sjump_back = "menu_sjump_back",
+   sjump_neutral = "menu_sjump_neutral",
+   sjump_forward = "menu_sjump_forward",
+   back_dash = "menu_back_dash",
+   forward_dash = "menu_forward_dash",
+   kara_throw = "menu_kara_throw"
 }
 local function create_move_data_from_selection(move_selection_settings, player)
    local type = move_selection_settings.type
@@ -93,5 +128,6 @@ return {
    get_forward_walk_distance = get_forward_walk_distance,
    get_backward_walk_distance = get_backward_walk_distance,
    is_in_opponent_throw_range = is_in_opponent_throw_range,
+   get_box_connection_distance = get_box_connection_distance,
    create_move_data_from_selection = create_move_data_from_selection
 }

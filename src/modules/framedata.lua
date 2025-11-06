@@ -9,11 +9,7 @@ local slow_jumpers = {"alex", "necro", "urien", "remy", "twelve", "oro"}
 
 local really_slow_jumpers = {"q", "hugo"}
 
-local function clear_frame_data()
-   for _, char in ipairs(frame_data_keys) do
-      frame_data[char] = {}
-   end
-end
+local function clear_frame_data() for _, char in ipairs(frame_data_keys) do frame_data[char] = {} end end
 
 local function is_slow_jumper(str)
    for i = 1, #slow_jumpers do if str == slow_jumpers[i] then return true end end
@@ -532,10 +528,37 @@ local function get_last_hit_frame(char_str, anim)
    return hf
 end
 
+local function get_pushback_by_name(char_str, name, button, hit_id)
+   local pb = 0
+   hit_id = hit_id or 1
+   local anim, fdata = find_frame_data_by_name(char_str, name, button)
+   if fdata and fdata.pushback and fdata.pushback[hit_id] then
+      for _, value in ipairs(fdata.pushback[hit_id]) do pb = pb + value end
+   end
+   return pb
+end
+
 local function is_infinite_loop(char_str, anim)
    local fdata = frame_data[char_str][anim]
    if fdata and fdata.infinite_loop then return true end
    return false
+end
+
+local function get_hitboxes(char_str, anim, frame)
+   if frame_data[char_str][anim] and frame_data[char_str][anim].frames and frame_data[char_str][anim].frames[frame + 1] and
+       frame_data[char_str][anim].frames[frame + 1].boxes and
+       tools.has_boxes(frame_data[char_str][anim].frames[frame + 1].boxes, {"attack", "throw"}) then
+      return frame_data[char_str][anim].frames[frame + 1].boxes
+   end
+   return {}
+end
+
+local function get_hitboxes_by_name(char_str, name, button, frame)
+   local anim, fdata = find_frame_data_by_name(char_str, name, button)
+   if anim then
+      return get_hitboxes(char_str, anim, frame)
+   end
+   return {}
 end
 
 local function get_hurtboxes(char_str, anim, frame)
@@ -557,9 +580,9 @@ local function get_hitbox_max_range(char_str, anim, hit_id)
       for i = 1, fdata.hit_frames[hit_id][2] + 1 do
          velocity = velocity + acceleration
          total_movement = total_movement + velocity
-         if fdata.frames.movement then total_movement = total_movement + fdata.frames.movement[1] end
-         if fdata.frames.velocity then velocity = velocity + fdata.frames.velocity[1] end
-         if fdata.frames.acceleration then acceleration = acceleration + fdata.frames.acceleration[1] end
+         if fdata.frames[i].movement then total_movement = total_movement + fdata.frames[i].movement[1]  end
+         if fdata.frames[i].velocity then velocity = velocity + fdata.frames[i].velocity[1] end
+         if fdata.frames[i].acceleration then acceleration = acceleration + fdata.frames[i].acceleration[1] end
       end
       local farthest_box = 0
       for i = fdata.hit_frames[hit_id][1] + 1, fdata.hit_frames[hit_id][2] + 1 do
@@ -602,11 +625,14 @@ return {
    get_kara_distance_by_name = get_kara_distance_by_name,
    get_first_hit_frame_by_name = get_first_hit_frame_by_name,
    get_first_idle_frame_by_name = get_first_idle_frame_by_name,
+   get_pushback_by_name = get_pushback_by_name,
    get_first_hit_frame = get_first_hit_frame,
    get_next_hit_frame = get_next_hit_frame,
    get_last_hit_frame = get_last_hit_frame,
    find_move_frame_data = find_move_frame_data,
    is_infinite_loop = is_infinite_loop,
+   get_hitboxes_by_name = get_hitboxes_by_name,
+   get_hitboxes = get_hitboxes,
    get_hurtboxes = get_hurtboxes,
    get_hitbox_max_range = get_hitbox_max_range,
    get_hitbox_max_range_by_name = get_hitbox_max_range_by_name,

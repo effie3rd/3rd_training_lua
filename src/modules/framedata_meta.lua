@@ -1122,7 +1122,7 @@ frame_data_meta["yun"]["63bc"] = { hit_type = {4}}                             -
 frame_data_meta["yun"]["65bc"] = { hit_type = {4}}                             --uf_HK
 frame_data_meta["yun"]["75a4"] = { hit_type = {3}}                               --tc_1
 frame_data_meta["yun"]["6e14"] = { hit_type = {3, 3}}                            --tc_2
-frame_data_meta["yun"]["748c"] = { hit_type = {3, 3}}                            --tc_1_ext
+frame_data_meta["yun"]["748c"] = { hit_type = {1, 1}}                            --tc_1_ext
 frame_data_meta["yun"]["6c24"] = { hit_type = {3}}                               --tc_2_ext
 frame_data_meta["yun"]["76a4"] = { hit_type = {3, 3}}                            --tc_4_ext
 frame_data_meta["yun"]["9d14"] = { hit_type = {3}}                               --tc_5_ext
@@ -1295,7 +1295,7 @@ frame_data_meta["projectiles"]["80"] = { hit_type = {3}}                        
 frame_data_meta["projectiles"]["87"] = { hit_type = {3}}                         --light_of_virtue_EXK_ext
 frame_data_meta["projectiles"]["81"] = { hit_type = {3}}                         --light_of_virtue_EXP_ext
 frame_data_meta["projectiles"]["85"] = { hit_type = {2}}                         --light_of_virtue_EXK
--- frame_data_meta["projectiles"]["86"] = { hit_type = {1}}                         --light_of_virtue_EXK
+frame_data_meta["projectiles"]["86"] = { hit_type = {2}}                         --light_of_virtue_EXK
 frame_data_meta["projectiles"]["00_ndl_lp"] = {hit_type = {3}}                         --ndl_LP
 frame_data_meta["projectiles"]["00_ndl_mp"] = {hit_type = {3}}                         --ndl_MP
 frame_data_meta["projectiles"]["00_ndl_hp"] = {hit_type = {3}}                         --ndl_HP

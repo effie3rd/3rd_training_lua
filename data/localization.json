@@ -403,6 +403,22 @@
     "en": "HK",
     "jp": "大K"
   },
+  "followup_d_lk": {
+    "en": "D+LK",
+    "jp": "屈小K"
+  },
+  "followup_mp_d_lk": {
+    "en": "MP D+LK",
+    "jp": "中P 屈小K"
+  },
+  "followup_zenpou": {
+    "en": "zenpoutenshin",
+    "jp": "前方転身"
+  },
+  "followup_crab_walk": {
+    "en": "crab walk",
+    "jp": "超移動"
+  },
   "followup_throw": {
     "en": "throw",
     "jp": "投げ"
@@ -1296,7 +1312,7 @@
     "jp": "投げ"
   },
   "menu_d_HP": {
-    "en": "D+HK",
+    "en": "D+HP",
     "jp": "下大P"
   },
   "menu_d_MK": {
@@ -1455,6 +1471,22 @@
     "en": "HK raigeki",
     "jp": "大K 雷撃"
   },
+  "menu_moves": {
+    "en": "Moves",
+    "jp": "技名"
+  },
+  "menu_walk_out": {
+    "en": "Walk Out",
+    "jp": "下がり"
+  },
+  "menu_accuracy": {
+    "en": "Accuracy",
+    "jp": "精度"
+  },
+  "menu_distance_judgement": {
+    "en": "Distance Judgement",
+    "jp": "距離判定"
+  },
   "status_jump": {
     "en": "Jump",
     "jp_8": "ジャンプ"
@@ -1554,6 +1586,10 @@
   "dump_state_display": {
     "en": "Dump State Display",
     "jp": "ダンプステート表示"
+  },
+  "debug_variables_display": {
+    "en": "Debug Variables Display",
+    "jp": "デバグ変数表示"
   },
   "debug_frames_display": {
     "en": "Debug Frames Display",

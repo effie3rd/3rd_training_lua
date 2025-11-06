@@ -13,6 +13,7 @@ local frame_number = 0
 local stage = 0
 local match_state = 0
 local is_in_character_select = false
+local is_in_vs_screen = false
 local is_before_curtain = false
 local is_in_match = false
 local has_match_just_started = false
@@ -235,6 +236,7 @@ local function read_game_vars()
    match_state = memory.readbyte(memory_addresses.global.match_state) -- 1 before curtain, 2 after curtain, 9 character select
 
    is_in_character_select = match_state == 0x09 and memory.readbyte(memory_addresses.global.menu_state) == 2
+   is_in_vs_screen = match_state == 0x09 and memory.readbyte(memory_addresses.global.menu_state) == 3
 
    is_in_match = ((p1_locked == 0xFF or p2_locked == 0xFF) and match_state == 0x02)
 
@@ -534,7 +536,9 @@ local function read_player_vars(player)
    end
 
    if player.freeze_just_ended and player.character_state_byte == 1 then
-      player.additional_recovery_time = get_additional_recovery_delay(player.char_str, player.is_crouching)
+      if player.is_blocking then
+         player.additional_recovery_time = get_additional_recovery_delay(player.char_str, player.is_crouching)
+      end
       player.is_in_recovery = true
    end
 
@@ -716,11 +720,7 @@ local function read_player_vars(player)
                   player.animation_miss_count = 0
                   player.self_chain = false
                end
-               if player.animation_frame_data.infinite_loop then
-                  player.animation_action_count = 0
-                  player.animation_connection_count = 0
-                  player.animation_miss_count = 0
-               end
+               if player.animation_frame_data.infinite_loop then player.animation_action_count = 0 end
                player.current_hit_id = 0
                player.animation_frame = resync_target
                player.animation_start_frame = frame_number - resync_target - player.animation_freeze_frames
@@ -769,9 +769,10 @@ local function read_player_vars(player)
    -- is blocking/has just blocked/has just been hit/has_just_parried
    player.blocking_id = memory.readbyte(player.addresses.blocking_id)
    player.has_just_blocked = false
-   if (player.just_received_connection and player.received_connection_marker ~= 0xFFF1 and total_received_hit_count_diff == 0) or
-       (player.just_received_connection and player.other.animation == "baac" and player.received_connection_marker == 0xFFF1 and
-           total_received_hit_count_diff == 0 and (player.action == 30 or player.action == 31)) then -- chun st.HP bug
+   if (player.just_received_connection and player.received_connection_marker ~= 0xFFF1 and total_received_hit_count_diff ==
+       0) or
+       (player.just_received_connection and player.other.animation == "baac" and player.received_connection_marker ==
+           0xFFF1 and total_received_hit_count_diff == 0 and (player.action == 30 or player.action == 31)) then -- chun st.HP bug
       player.has_just_blocked = true
       log(player.prefix, "fight", "block")
       if debug_state_variables then print(string.format("%d - %s blocked", frame_number, player.prefix)) end
@@ -796,7 +797,8 @@ local function read_player_vars(player)
 
    player.has_just_parried = false
 
-   if player.just_received_connection and player.received_connection_marker == 0xFFF1 and total_received_hit_count_diff == 0 then
+   if player.just_received_connection and player.received_connection_marker == 0xFFF1 and total_received_hit_count_diff ==
+       0 then
       player.has_just_parried = true
       if player.other.animation == "baac" and player.action ~= 23 then player.has_just_parried = false end -- chun st.HP bug
       log(player.prefix, "fight", "parry")
@@ -1372,7 +1374,6 @@ local function read_player_vars(player)
    if previous_throw_invulnerability_cooldown > 0 and player.throw_invulnerability_cooldown == 0 then
       player.throw_recovery_frame = frame_number
    end
-
    if player.has_just_woke_up then
       player.throw_invulnerability_cooldown = 7
    elseif player.has_just_ended_recovery then
@@ -1381,6 +1382,8 @@ local function read_player_vars(player)
       player.throw_invulnerability_cooldown = player.recovery_time + 7 + player.additional_recovery_time
    elseif player.remaining_wakeup_time > 0 then
       player.throw_invulnerability_cooldown = player.remaining_wakeup_time + 7
+   elseif player.just_received_connection or player.remaining_freeze_frames > 0 then
+      player.throw_invulnerability_cooldown = 10
    end
 end
 
@@ -1742,6 +1745,8 @@ setmetatable(gamestate, {
          return match_state
       elseif key == "is_in_character_select" then
          return is_in_character_select
+      elseif key == "is_in_vs_screen" then
+         return is_in_vs_screen
       elseif key == "is_in_match" then
          return is_in_match
       elseif key == "is_before_curtain" then

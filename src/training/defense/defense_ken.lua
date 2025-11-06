@@ -1,24 +1,24 @@
-local frame_data = require("src.modules.framedata")
+local framedata = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
 local move_data = require("src.modules.move_data")
 local stage_data = require("src.modules.stage_data")
 local inputs = require("src.control.inputs")
 local advanced_control = require("src.control.advanced_control")
-local defense_classes = require("src.training.defense.defense_classes")
+local training_classes = require("src.training.training_classes")
 local prediction = require("src.modules.prediction")
 local tools = require("src.tools")
 local utils = require("src.modules.utils")
 
 local Delay = advanced_control.Delay
-local Setup, Followup, Action_Type, Setup_Type = defense_classes.Setup, defense_classes.Followup,
-                                                 defense_classes.Action_Type, defense_classes.Setup_Type
+local Setup, Followup, Action_Type, Setup_Type = training_classes.Setup, training_classes.Followup,
+                                                 training_classes.Action_Type, training_classes.Setup_Type
 local is_idle_timing, is_wakeup_timing, is_landing_timing = advanced_control.is_idle_timing,
                                                             advanced_control.is_wakeup_timing,
                                                             advanced_control.is_landing_timing
 local is_throw_vulnerable_timing = advanced_control.is_throw_vulnerable_timing
 local queue_input_sequence_and_wait, all_commands_complete = advanced_control.queue_input_sequence_and_wait,
                                                              advanced_control.all_commands_complete
-local character_specific = frame_data.character_specific
+local character_specific = framedata.character_specific
 
 local jump_forward_input
 local jump_mk_input
@@ -88,38 +88,38 @@ local function init()
    block_low_long_input = {}
    for i = 1, 16 do table.insert(block_low_long_input, {"down", "back"}) end
    forward_dash_input = {{"forward"}, {}, {"forward"}}
-   forward_dash_duration = frame_data.get_first_idle_frame_by_name("ken", "dash_forward")
+   forward_dash_duration = framedata.get_first_idle_frame_by_name("ken", "dash_forward")
    back_dash_input = {{"back"}, {}, {"back"}}
-   back_dash_duration = frame_data.get_first_idle_frame_by_name("ken", "dash_back")
+   back_dash_duration = framedata.get_first_idle_frame_by_name("ken", "dash_back")
 
    d_lk_input = {{"down", "LK"}}
-   d_lk_hit_frame = frame_data.get_first_hit_frame_by_name("ken", "d_LK")
+   d_lk_hit_frame = framedata.get_first_hit_frame_by_name("ken", "d_LK")
 
    cl_mp_input = {{"MP"}}
-   cl_mp_hit_frame = frame_data.get_first_hit_frame_by_name("ken", "cl_MP")
+   cl_mp_hit_frame = framedata.get_first_hit_frame_by_name("ken", "cl_MP")
 
    d_mp_input = {{"down", "MP"}}
-   d_mp_hit_frame = frame_data.get_first_hit_frame_by_name("ken", "d_MP")
+   d_mp_hit_frame = framedata.get_first_hit_frame_by_name("ken", "d_MP")
    d_mk_input = {{"down", "MK"}}
-   d_mk_hit_frame = frame_data.get_first_hit_frame_by_name("ken", "d_MK")
+   d_mk_hit_frame = framedata.get_first_hit_frame_by_name("ken", "d_MK")
    hk_input = {{"HK"}}
-   hk_hit_frame = frame_data.get_first_hit_frame_by_name("ken", "HK")
+   hk_hit_frame = framedata.get_first_hit_frame_by_name("ken", "HK")
 
    b_mk_input = {{"back", "MK"}}
-   b_mk_hit_frame = frame_data.get_first_hit_frame_by_name("ken", "b_MK")
+   b_mk_hit_frame = framedata.get_first_hit_frame_by_name("ken", "b_MK")
 
    lp_shoryu_input = move_data.get_move_inputs_by_name("ken", "shoryuken", "LP")
-   lp_shoryu_hit_frame = frame_data.get_first_hit_frame_by_name("ken", "shoryuken_LP")
+   lp_shoryu_hit_frame = framedata.get_first_hit_frame_by_name("ken", "shoryuken_LP")
 
    shippu_input = move_data.get_move_inputs_by_name("ken", "shippu")
-   shippu_hit_frame = frame_data.get_first_hit_frame_by_name("ken", "shippu")
+   shippu_hit_frame = framedata.get_first_hit_frame_by_name("ken", "shippu")
 
    kara_throw_input = {{"back", "MK"}, {"back", "LP", "LK"}}
-   b_mk_kara_dist = frame_data.get_kara_distance_by_name("ken", "b_MK")
+   b_mk_kara_dist = framedata.get_kara_distance_by_name("ken", "b_MK")
 
    throw_input = {{"forward", "LP", "LK"}}
    throw_hit_frame = 2
-   throw_range = frame_data.get_hitbox_max_range_by_name("ken", "throw_neutral")
+   throw_range = framedata.get_hitbox_max_range_by_name("ken", "throw_neutral")
    b_mk_kara_throw_range = throw_range + b_mk_kara_dist
 end
 
@@ -193,7 +193,7 @@ function punish_d_mk_lp_shoryu:is_valid(player, stage, predicted_state)
    if player.has_just_hit then
       if player.animation_frame_data and player.animation_frame_data.name == "d_MK" then
          if player.other.is_crouching and player.other.char_str ~= "yang" then return dist <= 66 end
-         return dist <= frame_data.get_contact_distance(player) + 18
+         return dist <= framedata.get_contact_distance(player) + 18
       end
    else
       if get_frame_advantage(player) > d_mk_hit_frame + 1 then
@@ -359,7 +359,7 @@ function punish_mp_hp_shoryu:is_valid(player, stage, predicted_state)
       if player.animation_frame_data and player.animation_frame_data.name == "tc_1_ext" then
          if player.other.is_crouching then return dist <= 50 end
          if player.other.is_crouching and player.other.char_str ~= "yang" then return dist <= 66 end
-         return dist <= frame_data.get_contact_distance(player) + 18
+         return dist <= framedata.get_contact_distance(player) + 18
       end
    else
       if get_frame_advantage(player) > cl_mp_hit_frame + 1 then
@@ -518,7 +518,6 @@ function followup_punish:setup(player, stage, actions, i_actions)
    end
    local selected_punish = tools.select_weighted(valid_punishes)
    if selected_punish then
-      print(selected_punish.action.name)
       return selected_punish.action:setup(player, stage, actions, i_actions)
    end
    self.is_valid_punish = false
@@ -643,7 +642,7 @@ function followup_far_mp:should_execute(player, stage, actions, i_actions)
       dist = math.abs(predicted_state.dummy_motion_data[#predicted_state.dummy_motion_data].pos_x -
                           predicted_state.player_motion_data[#predicted_state.player_motion_data].pos_x)
    end
-   return dist >= frame_data.get_contact_distance(player) + 25 and dist <= frame_data.get_contact_distance(player) + 40
+   return dist >= framedata.get_contact_distance(player) + 25 and dist <= framedata.get_contact_distance(player) + 40
 end
 
 local followup_b_mk = Followup:new("followup_b_mk", Action_Type.ATTACK)
@@ -718,6 +717,8 @@ function followup_block:setup(player, stage, actions, i_actions)
          condition = function()
             if player.other.is_waking_up then
                return is_wakeup_timing(player.other, 1)
+            elseif player.character_state_byte == 1 then
+               return true
             else
                return is_idle_timing(player, 1)
             end
@@ -749,10 +750,10 @@ function followup_block:run(player, stage, actions, i_actions)
          local hit_type = 1
          local fdata_meta = fdm.frame_data_meta[player.other.char_str][player.other.animation]
          if fdata_meta and fdata_meta.hit_type then
-            hit_type = fdata_meta.hit_type[player.other.current_hit_id]
+            hit_type = fdata_meta.hit_type[player.other.current_hit_id + 1]
             if hit_type == 4 then
-               if frame_data.get_next_hit_frame(player.other.char_str, player.other.animation,
-                                                player.other.current_hit_id) >= reaction_time then
+               if framedata.get_next_hit_frame(player.other.char_str, player.other.animation,
+                                                player.other.current_hit_id + 1) >= reaction_time then
                   self.block_input = block_high_input
                end
             end
@@ -761,12 +762,10 @@ function followup_block:run(player, stage, actions, i_actions)
 
       self.next_action = actions[i_actions + 1]
       if self.next_action and self.next_action.block_condition and self.next_action:block_condition(player, self) then
-         print("this?") --debug
          return true, {score = 0}
       end
       -- print(self.blocked_frames, self.block_time, self.has_blocked, self:should_block(player)) -- debug
       if self.blocked_frames < self.block_time then
-         print(self.blocked_frames , self.block_time)
          self:extend(player)
       else
          if self:should_block(player) then
@@ -778,11 +777,13 @@ function followup_block:run(player, stage, actions, i_actions)
                return true, {score = -3, should_end = true}
             elseif self.has_parried then
                return true, {should_punish = true}
-            elseif self.has_blocked and not player.other.is_airborne then
+            elseif self.has_blocked and not player.other.is_airborne and player.remaining_freeze_frames == 0 then
                local recovery_time = player.recovery_time + player.additional_recovery_time + 1
                local opponent_recovery_time = prediction.get_frames_until_idle(player.other, nil, nil, 100)
                if opponent_recovery_time - recovery_time >= block_punish_threshold then
                   return true, {should_punish = true}
+               else
+                  return true, {score = 1, should_end = true}
                end
             else
                return true, {score = 1}
@@ -830,7 +831,7 @@ function followup_mp_hp:setup(player, stage, actions, i_actions)
    self.connection_count = 0
    self.min_walk_frames = 4
    self.max_walk_frames = 14
-   self.attack_range = frame_data.get_contact_distance(player) + 20
+   self.attack_range = framedata.get_contact_distance(player) + 20
    self.attack_range_reduction = 5
    if player.other.char_str == "yang" or player.other.char_str == "yun" then
       self.attack_range = self.attack_range - 4
@@ -910,7 +911,7 @@ function followup_mp_hp:should_execute(player, stage, actions, i_actions)
    local previous_action = actions[i_actions - 1]
    if previous_action and (previous_action.type == Action_Type.WALK_FORWARD) then return true end
    local dist = math.abs(player.other.pos_x - player.pos_x)
-   return dist <= frame_data.get_contact_distance(player) + 20
+   return dist <= framedata.get_contact_distance(player) + 20
 end
 
 local followup_d_lk_d_lk = Followup:new("followup_d_lk_d_lk", Action_Type.ATTACK)
@@ -920,7 +921,7 @@ function followup_d_lk_d_lk:setup(player, stage, actions, i_actions)
    self.min_walk_frames = 4
    self.max_walk_frames = 14
    self.attack_range_reduction = 0
-   self.attack_range = frame_data.get_contact_distance(player) + 32
+   self.attack_range = framedata.get_contact_distance(player) + 32
    if not utils.is_in_opponent_throw_range(player) then self.min_walk_frames = 6 end
    self.previous_action = actions[i_actions - 1]
    return {
@@ -982,7 +983,7 @@ function followup_d_lk_d_lk:should_execute(player, stage, actions, i_actions)
    local previous_action = actions[i_actions - 1]
    if previous_action and (previous_action.type == Action_Type.WALK_FORWARD) then return true end
    local dist = math.abs(player.other.pos_x - player.pos_x)
-   return dist <= frame_data.get_contact_distance(player) + 32
+   return dist <= framedata.get_contact_distance(player) + 32
 end
 
 local followup_d_mp = Followup:new("followup_d_mp", Action_Type.ATTACK)
@@ -1269,7 +1270,7 @@ end
 function followup_forward_down:run(player, stage, actions, i_actions)
    if player.has_just_parried then self.has_parried = true end
    if self.has_parried then
-      local next_hit_delta = frame_data.get_next_hit_frame(player.other.char_str, player.other.animation,
+      local next_hit_delta = framedata.get_next_hit_frame(player.other.char_str, player.other.animation,
                                                            player.other.current_hit_id) - player.other.animation_frame
       if next_hit_delta <= 0 then next_hit_delta = 99 end
       if player.other.animation_frame_data then
@@ -1341,7 +1342,7 @@ end
 function followup_down_forward:run(player, stage, actions, i_actions)
    if player.has_just_parried then self.has_parried = true end
    if self.has_parried then
-      local next_hit_delta = frame_data.get_next_hit_frame(player.other.char_str, player.other.animation,
+      local next_hit_delta = framedata.get_next_hit_frame(player.other.char_str, player.other.animation,
                                                            player.other.current_hit_id) - player.other.animation_frame
       if next_hit_delta <= 0 then next_hit_delta = 99 end
       if player.other.animation_frame_data then
@@ -1413,7 +1414,7 @@ function followup_react:should_execute(player, stage, actions, i_actions)
                                                               player.other.remaining_freeze_frames + 10)
    local dist = math.abs(predicted_state.dummy_motion_data[#predicted_state.dummy_motion_data].pos_x -
                              predicted_state.player_motion_data[#predicted_state.player_motion_data].pos_x)
-   local opponent_throw_range = frame_data.get_hitbox_max_range_by_name(player.other.char_str, "throw_neutral")
+   local opponent_throw_range = framedata.get_hitbox_max_range_by_name(player.other.char_str, "throw_neutral")
    local throwable_box_extension = 4
    if opponent_throw_range < dist - character_specific[player.char_str].pushbox_width / 2 - 2 - throwable_box_extension then
       return true
@@ -1501,7 +1502,7 @@ end
 function followup_walk_out:run(player, stage, actions, i_actions)
    if all_commands_complete(player) then
       local dist = math.abs(player.other.pos_x - player.pos_x)
-      local opponent_throw_range = frame_data.get_hitbox_max_range_by_name(player.other.char_str, "throw_neutral")
+      local opponent_throw_range = framedata.get_hitbox_max_range_by_name(player.other.char_str, "throw_neutral")
       local throwable_box_extension = 0
       local next_action = actions[i_actions + 1]
       if next_action and next_action.type == Action_Type.BLOCK then throwable_box_extension = 4 end
@@ -1537,8 +1538,8 @@ end
 function followup_walk_out:should_execute(player, stage, actions, i_actions)
    local current_stage = stage_data.stages[stage]
    local sign = tools.sign(player.other.pos_x - player.pos_x)
-   local dist = math.max(math.abs(player.other.pos_x - player.pos_x), frame_data.get_contact_distance(player))
-   local opponent_throw_range = frame_data.get_hitbox_max_range_by_name(player.other.char_str, "throw_neutral")
+   local dist = math.max(math.abs(player.other.pos_x - player.pos_x), framedata.get_contact_distance(player))
+   local opponent_throw_range = framedata.get_hitbox_max_range_by_name(player.other.char_str, "throw_neutral")
    local walk_frames = walk_out_max_frames
    local walk_dist = utils.get_backward_walk_distance(player, walk_frames)
    return (player.pos_x - sign * walk_dist >= current_stage.left +
@@ -1704,7 +1705,7 @@ function setup_close_d_lk:get_soft_reset_range(player, stage)
    }
 end
 
-function setup_close_d_lk:get_dummy_offset(player) return frame_data.get_contact_distance(player) end
+function setup_close_d_lk:get_dummy_offset(player) return framedata.get_contact_distance(player) end
 
 function setup_close_d_lk:setup(player, stage, actions, i_actions)
    local block_delay = Delay:new(d_lk_hit_frame)
@@ -1750,7 +1751,7 @@ function setup_close_mp:get_soft_reset_range(player, stage)
    }
 end
 
-function setup_close_mp:get_dummy_offset(player) return frame_data.get_contact_distance(player) end
+function setup_close_mp:get_dummy_offset(player) return framedata.get_contact_distance(player) end
 
 function setup_close_mp:setup(player, stage, actions, i_actions)
    local block_delay = Delay:new(cl_mp_hit_frame)
@@ -1814,7 +1815,7 @@ function setup_cross_up_mk:setup(player, stage, actions, i_actions)
 
    local jump_mk_delay = Delay:new(jump_mk_frame)
 
-   local anim, fdata = frame_data.find_frame_data_by_name("ken", "uf_MK")
+   local anim, fdata = framedata.find_frame_data_by_name("ken", "uf_MK")
    local jump_mk_hit_frame = 0
    if fdata then jump_mk_hit_frame = fdata.hit_frames[1][1] end
 
@@ -1867,7 +1868,7 @@ function setup_wakeup:get_soft_reset_range(player, stage)
    }
 end
 
-function setup_wakeup:get_dummy_offset(player) return frame_data.get_contact_distance(player) end
+function setup_wakeup:get_dummy_offset(player) return framedata.get_contact_distance(player) end
 
 function setup_wakeup:setup(player, stage, actions, i_actions)
    local setup = {

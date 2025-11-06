@@ -377,7 +377,7 @@ Check_Box_Grid_Item.__name = "Check_Box_Grid_Item"
 function Check_Box_Grid_Item:new(name, object, list, max_cols, on_change)
    local obj = {
       name = name,
-      object = object,
+      object = object or {},
       list = list,
       indent = false,
       default_value = false,
@@ -481,7 +481,7 @@ function Check_Box_Grid_Item:calc_dimensions()
 
    local total_space = self.width - w
    local total_width = 0
-   self.cols = math.min(self.max_cols, #self.object)
+   self.cols = self.max_cols
    local shrunk = false
    local j = 1
    while j <= #self.list do

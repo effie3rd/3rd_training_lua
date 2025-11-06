@@ -502,9 +502,9 @@ local data_path = "data/" .. game_data.rom_name .. "/"
 local framedata_path = data_path .. "framedata/"
 local frame_data_file_ext = "_framedata.json"
 local final_props = {
-   "name", "frames", "hit_frames", "idle_frames", "loops", "pushback", "advantage", "uses_velocity", "air",
+   "name", "frames", "hit_frames", "idle_frames", "loops", "pushback", "uses_velocity", "air",
    "infinite_loop", "max_hits", "cooldown", "self_chain", "exceptions", "landing_height"
-}
+} --  "advantage"
 local final_frame_props = {
    "hash", "boxes", "movement", "velocity", "acceleration", "loop", "next_anim", "optional_anim", "wakeup",
    "bypass_freeze", "projectile"

@@ -4,14 +4,14 @@ local move_data = require("src.modules.move_data")
 local stage_data = require("src.modules.stage_data")
 local inputs = require("src.control.inputs")
 local advanced_control = require("src.control.advanced_control")
-local defense_classes = require("src.training.defense.defense_classes")
+local training_classes = require("src.training.training_classes")
 local prediction = require("src.modules.prediction")
 local tools = require("src.tools")
 local utils = require("src.modules.utils")
 
 local Delay = advanced_control.Delay
-local Setup, Followup, Action_Type, Setup_Type = defense_classes.Setup, defense_classes.Followup,
-                                                 defense_classes.Action_Type, defense_classes.Setup_Type
+local Setup, Followup, Action_Type, Setup_Type = training_classes.Setup, training_classes.Followup,
+                                                 training_classes.Action_Type, training_classes.Setup_Type
 local is_idle_timing, is_wakeup_timing, is_landing_timing = advanced_control.is_idle_timing,
                                                             advanced_control.is_wakeup_timing,
                                                             advanced_control.is_landing_timing

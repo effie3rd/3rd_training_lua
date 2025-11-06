@@ -1,7 +1,7 @@
 -- debug options
 local developer_mode = true
 local recording_framedata = false
-local debug_hitboxes = true and developer_mode
+local debug_hitboxes = false and developer_mode
 local assert_enabled = developer_mode
 local log_enabled = developer_mode
 local log_categories_display = {
@@ -22,6 +22,7 @@ local player_debug_variables = {
 
 local show_dump_state_display = false
 local show_debug_frames_display = false
+local show_debug_variables_display = true
 local show_memory_view_display = false
 local show_memory_results_display = true
 
@@ -47,6 +48,8 @@ setmetatable(debug, {
          return show_dump_state_display
       elseif key == "show_debug_frames_display" then
          return show_debug_frames_display
+      elseif key == "show_debug_variables_display" then
+         return show_debug_variables_display
       elseif key == "show_memory_view_display" then
          return show_memory_view_display
       elseif key == "show_memory_results_display" then
@@ -69,6 +72,8 @@ setmetatable(debug, {
          show_dump_state_display = value
       elseif key == "show_debug_frames_display" then
          show_debug_frames_display = value
+      elseif key == "show_debug_variables_display" then
+         show_debug_variables_display = value
       elseif key == "show_memory_view_display" then
          show_memory_view_display = value
       elseif key == "show_memory_results_display" then

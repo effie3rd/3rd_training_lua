@@ -218,7 +218,7 @@ local function charge_display(player)
                       charge_object.reset_time / charge_object.max_reset, colors.gauges.cooldown_fill,
                       colors.gauges.background, colors.gauges.outline, true)
       if settings.training.charge_overcharge_on and charge_object.overcharge ~= 0 and charge_object.overcharge < 42 then
-         draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1,
+         draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 2,
                          charge_object.overcharge / charge_object.max_charge, overcharge_color,
                          colors.gauges.background, colors.gauges.outline, true)
          local w = get_text_dimensions(charge_time_text, "en")
@@ -331,27 +331,26 @@ end
 
 local air_combo_expired_color = 0x2013
 local air_time_bar_max_width = 121
-local air_time_bar_max_height = 3
+local air_time_bar_max_height = 5
 local function air_time_display(player, dummy)
-   local offset_x = 225
+   local offset_x = 226
    local offset_y = 50
    local juggle_count = memory.readbyte(dummy.addresses.juggle_count)
    local air_time = math.floor((memory.readbyte(dummy.addresses.juggle_time) + 1) / 2)
    local air_time_bar_width = tools.round((air_time / 121) * air_time_bar_max_width)
    local x, y = get_text_dimensions(tostring(juggle_count), "en")
-   render_text(offset_x - x, offset_y - 2, juggle_count, "en", nil)
-   offset_x = offset_x + 4
+   render_text(offset_x - x, offset_y - 1, juggle_count, "en", nil)
+   offset_x = offset_x + 3
 
    if air_time ~= 128 then
-      gui.drawbox(offset_x, offset_y, offset_x + air_time_bar_width, offset_y + air_time_bar_max_height,
-                  colors.gauges.cooldown_fill)
       if air_time > 0 then
          x, y = get_text_dimensions(tostring(air_time), "en")
          render_text(offset_x - x / 2 + air_time_bar_width, offset_y + 6, air_time, "en", nil)
       end
    end
-   gui.drawbox(offset_x, offset_y, offset_x + air_time_bar_max_width, offset_y + air_time_bar_max_height,
-               colors.gauges.background, colors.gauges.outline)
+   draw.draw_gauge(offset_x, offset_y, air_time_bar_max_width, air_time_bar_max_height,
+                        air_time / 121, colors.gauges.cooldown_fill,
+                        colors.gauges.background, colors.gauges.outline, false)
    if dummy.pos_y > 0 and air_time == 128 then
       color_player(dummy, air_combo_expired_color)
    else
@@ -360,7 +359,7 @@ local function air_time_display(player, dummy)
 end
 
 local denjin_display_bar_max_width = 80
-local denjin_display_bar_max_height = 3
+local denjin_display_bar_max_height = 2
 local denjin_display_text_padding = 4
 local denjin_display_is_charging = false
 local denjin_time = 8
@@ -377,9 +376,7 @@ local function denjin_display(player)
       denjin_value = 3
       denjin_display_is_charging = true
    end
-   if not (player.animation == "774c" or player.animation == "90b4") then
-      denjin_display_is_charging = false
-   end
+   if not (player.animation == "774c" or player.animation == "90b4") then denjin_display_is_charging = false end
    if denjin_display_is_charging and player.superfreeze_decount == 0 then
       denjin_time = memory.readbyte(player.addresses.denjin_time)
       denjin_value = memory.readbyte(player.addresses.denjin_level)
@@ -412,11 +409,15 @@ local function denjin_display(player)
    local denjin_display_bar_width = (max_timer - denjin_time) / max_timer * denjin_display_bar_max_width
    local w, h = get_text_dimensions(denjin_level, "en")
    render_text(x - w - denjin_display_text_padding + 1, y, denjin_level, "en")
-   render_text(x + denjin_display_bar_max_width + denjin_display_text_padding, y, tostring(max_timer - denjin_time), "en")
+   render_text(x + denjin_display_bar_max_width + denjin_display_text_padding, y, tostring(max_timer - denjin_time),
+               "en")
    y = y + 2
-   gui.drawbox(x, y, x + denjin_display_bar_width, y + denjin_display_bar_max_height, barColor)
-   gui.drawbox(x, y, x + denjin_display_bar_max_width, y + denjin_display_bar_max_height, colors.gauges.background,
-               colors.gauges.outline)
+   -- gui.drawbox(x, y, x + denjin_display_bar_width, y + denjin_display_bar_max_height, barColor)
+   -- gui.drawbox(x, y, x + denjin_display_bar_max_width, y + denjin_display_bar_max_height, colors.gauges.background,
+   --             colors.gauges.outline)
+      draw.draw_gauge(x, y, denjin_display_bar_max_width, denjin_display_bar_max_height,
+                        denjin_display_bar_width / denjin_display_bar_max_width, barColor,
+                        colors.gauges.background, colors.gauges.outline, false)
 
 end
 
@@ -697,45 +698,6 @@ local function attack_range_display()
       end
    end
 end
---[[ 
-frame_gauge_data = {}
-frame_gauge_data.startup = 1
-frame_gauge_data.hit = 1
-frame_gauge_data.recovery = 1
-frame_gauge_data.advantage = 1
-function frame_gauge()
-
-  local y = 46
-  local unit_width = 4
-  local unit_height = 7
-  local num_units = 70
-  local green = 0x00FF00FF
-
-  local x = (draw.SCREEN_WIDTH - num_units * unit_width) / 2
---   for i = 0, num_units-1 do
---     local color = colorscale(green, .8)
---     gui.drawbox(x+i*unit_width,y,x+i*unit_width+unit_width,y+unit_height,0x00FF00FF,color)
---   end
-  for i = 0, 30 do
-    local color = colors.colorscale(green, 1-i%5*.1)
-    gui.drawbox(x+i*unit_width+1,y,x+i*unit_width+unit_width,y+unit_height,color,color)
-  end
-  for i = 31, num_units-1 do
-    local color = colors.colorscale(0xFF0000FF, 1-i%5*.1)
-    gui.drawbox(x+i*unit_width+1,y+1,x+i*unit_width+unit_width,y-1+unit_height,color,color)
-  end
-
-
-  --attack conn hit or boxes
---   if player.has_just_attacked then
-    --reset --nope for combos
-    --look ahead in frame data
---   end
-  --dash
-gui.drawbox(x,y,x+num_units*unit_width+1,y+unit_height,0x00000000,0x000000FF)
-
-render_text(x+25*unit_width,y,"10","en")
-end ]]
 
 local last_hit_history = nil
 local last_hit_history_size = 2
@@ -901,7 +863,7 @@ local function stun_timer_display(player)
                          player.stun_timer / stun_timer_max_value, colors.gauges.cooldown_fill,
                          colors.gauges.background, colors.gauges.outline)
 
-         render_text(pos_x + stun_timer_half_width - tools.round(text_w / 2), pos_y - text_h + 1, stun_text, "en")
+         render_text(pos_x + stun_timer_half_width - tools.round(text_w / 2), pos_y - text_h, stun_text, "en")
       end
    end
 end
@@ -1179,15 +1141,15 @@ local function display_draw_distances(p1_object, p2_object, mid_distance_height,
       for __, box in ipairs(player.boxes) do
          box = tools.format_box(box)
          if box_types[box.type] then
-            local l, r
+            local l, r, b, t
             if player.flip_x == 0 then
                l = px + box.left
             else
                l = px - box.left - box.width
             end
-            local r = l + box.width
-            local b = py + box.bottom
-            local t = b + box.height
+            r = l + box.width
+            b = py + box.bottom
+            t = b + box.height
 
             if height >= b and height <= t then
                has_boxes = true
@@ -1212,14 +1174,13 @@ local function display_draw_distances(p1_object, p2_object, mid_distance_height,
 
    local text_default_color = 0xF7FFF7FF
    local text_default_border_color = 0x000000FF
-   local function display_distance(p1_object, p2_object, height, box_types, p1_reference_point, p2_reference_point,
-                                   color)
+   local function display_distance(p1_object, p2_object, height, box_types, p1_ref_point, p2_ref_point, color)
       local y = math.min(p1_object.pos_y + height, p2_object.pos_y + height)
       local p1_l, p1_r, p2_l, p2_r
       local p1_result, p2_result = false, false
-      if p1_reference_point == 2 then p1_result, p1_l, p1_r = find_closest_box_at_height(p1_object, y, box_types) end
+      if p1_ref_point == 2 then p1_result, p1_l, p1_r = find_closest_box_at_height(p1_object, y, box_types) end
       if not p1_result then p1_l, p1_r = p1_object.pos_x, p1_object.pos_x end
-      if p2_reference_point == 2 then p2_result, p2_l, p2_r = find_closest_box_at_height(p2_object, y, box_types) end
+      if p2_ref_point == 2 then p2_result, p2_l, p2_r = find_closest_box_at_height(p2_object, y, box_types) end
       if not p2_result then p2_l, p2_r = p2_object.pos_x, p2_object.pos_x end
 
       local line_result, screen_l, screen_r = get_screen_line_between_boxes(p1_l, p1_r, p2_l, p2_r)

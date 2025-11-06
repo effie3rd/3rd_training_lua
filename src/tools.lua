@@ -11,7 +11,7 @@ local function round(n) return math.floor(n + 0.5) end
 
 local function sign(n) return n > 0 and 1 or (n == 0 and 0 or -1) end
 
-local function flip_to_sign(flip_x) return flip_x == 0 and -1 or (flip_x == 1 and 1) end
+local function flip_to_sign(flip_x) return (flip_x == 0 and -1) or (flip_x == 1 and 1) end
 
 local function bool_xor(a, b) return (a or b) and not (a and b) end
 
@@ -80,7 +80,11 @@ local function memory_readword_reverse(addr)
    return bit.bor(bit.lshift(b, 8), a)
 end
 
-local function clamp(number, min, max) return math.max(math.min(number, max), min) end
+local function clamp(val, min, max)
+   if val < min then val = min end
+   if val > max then val = max end
+   return val
+end
 
 local function check_input_down_autofire(player_object, input, autofire_rate, autofire_time)
    autofire_rate = autofire_rate or 4
@@ -349,6 +353,61 @@ local function sequence_to_name(seq)
    return btn
 end
 
+local function name_to_sequence(name)
+   local underscore = string.find(name, "_")
+   local remaining = name
+   local seq = {}
+   if underscore then
+      local directions = string.sub(name, 1, underscore - 1)
+      if directions and #directions <= 2 then
+         remaining = string.sub(name, underscore + 1)
+         for i = 1, #directions do
+            local dir = string.sub(directions, i, i)
+            if dir == "d" then
+               table.insert(seq, "down")
+            elseif dir == "u" then
+               table.insert(seq, "up")
+            elseif dir == "f" then
+               table.insert(seq, "forward")
+            elseif dir == "b" then
+               table.insert(seq, "back")
+            end
+         end
+      else
+         return nil
+      end
+   end
+
+   if remaining then
+      local plus = string.find(remaining, "+")
+      local left, right
+      local to_check = {remaining}
+      if plus then
+         left = string.sub(remaining, 1, plus - 1)
+         right = string.sub(remaining, plus + 1)
+         to_check = {left, right}
+      end
+      for i = 1, #to_check do
+         if to_check[i] == "LP" then
+            table.insert(seq, "LP")
+         elseif to_check[i] == "MP" then
+            table.insert(seq, "MP")
+         elseif to_check[i] == "HP" then
+            table.insert(seq, "HP")
+         elseif to_check[i] == "LK" then
+            table.insert(seq, "LK")
+         elseif to_check[i] == "MK" then
+            table.insert(seq, "MK")
+         elseif to_check[i] == "HK" then
+            table.insert(seq, "HK")
+         else
+            return nil
+         end
+      end
+   end
+   return {seq}
+end
+
 local function enum(names, opts)
    opts = opts or {}
    local e = {}
@@ -371,6 +430,14 @@ local function select_weighted(list)
       cumulative = cumulative + item.weight
       if r <= cumulative then return item end
    end
+end
+
+local function random_normal_range(min, max, mean, stddev)
+   local u1 = math.random()
+   local u2 = math.random()
+   local z = math.sqrt(-2 * math.log(u1)) * math.cos(2 * math.pi * u2)
+   local val = mean + z * stddev
+   return clamp(val, min, max)
 end
 
 local function wrap_index(i, num)
@@ -436,8 +503,10 @@ return {
    is_pressing_down = is_pressing_down,
    input_to_text = input_to_text,
    sequence_to_name = sequence_to_name,
+   name_to_sequence = name_to_sequence,
    enum = enum,
    select_weighted = select_weighted,
+   random_normal_range = random_normal_range,
    wrap_index = wrap_index,
    bound_index = bound_index,
    get_calling_module_name = get_calling_module_name

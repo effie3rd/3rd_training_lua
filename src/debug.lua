@@ -70,15 +70,15 @@ local function show_dump_state_display()
    end
 end
 
-local debug_display = {}
-local function debuggui(name, var) if name and var then table.insert(debug_display, {name, var}) end end
+local debug_framedata_data = {}
+local function debuggui(name, var) if name and var then table.insert(debug_framedata_data, {name, tostring(var)}) end end
 
-local function debug_update_framedata(player, projectiles)
+local function debug_update_framedata()
    if gamestate.is_in_match then
-      -- player = gamestate.P2
+      local player = gamestate.P1
       local other = player.other
 
-      debug_display = {}
+      debug_framedata_data = {}
       debuggui("frame", gamestate.frame_number)
       debuggui("state", require("src.modules.record_framedata").state)
       debuggui("anim", player.animation)
@@ -93,7 +93,7 @@ local function debug_update_framedata(player, projectiles)
       -- debuggui("just conn", tostring(other.has_just_connected))
       -- debuggui("hit id", player.current_hit_id)
       -- debuggui("max hit id", player.max_hit_id)
-      debuggui("is recovery", tostring(other.is_in_recovery))
+      debuggui("is recovery", other.is_in_recovery)
       -- debuggui("proj", player.total_received_projectiles_count)
       debuggui("throw invul", player.throw_invulnerability_cooldown)
       debuggui("throw r f", player.throw_recovery_frame)
@@ -112,7 +112,7 @@ local function debug_update_framedata(player, projectiles)
 
       debuggui("screenx", gamestate.screen_x)
 
-      for _, obj in pairs(projectiles) do
+      for _, obj in pairs(gamestate.projectiles) do
          if obj.emitter_id == player.id and obj.alive then
             -- debuggui("s_type", obj.projectile_start_type)
             debuggui("type", obj.projectile_type)
@@ -142,15 +142,16 @@ local function debug_update_framedata(player, projectiles)
    end
 end
 
-local debug_framedata_display_max_width = 0
-local function debug_framedata_display(right_side)
+local debug_variable_display_max_width = 0
+local function variable_display(display_list, right_side)
+   if #display_list == 0 then return end
    local x_offset, y_offset = 2, 32
    local x_padding, y_padding = 5, 4
    local height, y_spacing = 0, 1
    local gui_box_bg_color = colors.menu.background
    local max_width, total_height = 0, 0
-   for i = 1, #debug_display do
-      local w, h = get_text_dimensions(string.format("%s: %s", debug_display[i][1], debug_display[i][2]), "en")
+   for i = 1, #display_list do
+      local w, h = get_text_dimensions(string.format("%s: %s", display_list[i][1], display_list[i][2]), "en")
       if w > max_width then
          max_width = w
       end
@@ -161,15 +162,34 @@ local function debug_framedata_display(right_side)
    total_height = total_height + 2 * y_padding - y_spacing
    local x, y = x_offset, y_offset
    if right_side then
-      if max_width > debug_framedata_display_max_width then
-         debug_framedata_display_max_width = max_width
+      if max_width > debug_variable_display_max_width then
+         debug_variable_display_max_width = max_width
       end
-      x = draw.SCREEN_WIDTH - x_offset - debug_framedata_display_max_width
+      x = draw.SCREEN_WIDTH - x_offset - debug_variable_display_max_width
    end
    gui.box(x, y, x + max_width, y + total_height, gui_box_bg_color, gui_box_bg_color)
-   for i = 1, #debug_display do
-      render_text(x + x_padding, y + y_padding + (height + y_spacing) * (i - 1), string.format("%s: %s", debug_display[i][1], debug_display[i][2]), "en")
+   for i = 1, #display_list do
+      render_text(x + x_padding, y + y_padding + (height + y_spacing) * (i - 1), string.format("%s: %s", display_list[i][1], display_list[i][2]), "en")
    end
+end
+
+local function debug_framedata_display(right_side)
+   variable_display(debug_framedata_data, right_side)
+end
+
+local debug_variables = {}
+local function add_debug_variable(name, getter)
+   if name and getter then table.insert(debug_variables, {name, tostring(getter()), getter}) end
+end
+
+local function update_debug_variables()
+   for i, var in ipairs(debug_variables) do
+      var[2] = tostring(var[3]())
+   end
+end
+
+local function debug_variables_display(right_side)
+   variable_display(debug_variables, right_side)
 end
 
 local draw_hitbox_queue = {}
@@ -476,7 +496,8 @@ local ff = false
 
 local function run_debug()
    if debug_settings.show_dump_state_display then dump_variables() end
-   if debug_settings.show_debug_frames_display then debug_update_framedata(gamestate.P1, gamestate.projectiles) end
+   if debug_settings.show_debug_frames_display then debug_update_framedata() end
+   if debug_settings.show_debug_variables_display then update_debug_variables() end
 
    if gamestate.frame_number % 2000 == 0 then
       collectgarbage()
@@ -567,13 +588,13 @@ end
 
 local function draw_debug()
    local menu = require("src.ui.menu")
-   -- if not menu.is_open then
-      -- memory_display()
+   if not menu.is_open then
       if debug_settings.show_dump_state_display then show_dump_state_display() end
       if debug_settings.show_debug_frames_display then debug_framedata_display(true) end
+      if debug_settings.show_debug_variables_display then debug_variables_display(true) end
       if debug_settings.show_memory_view_display then show_memory_view_display() end
       if debug_settings.show_memory_results_display then show_memory_results_display() end
-   -- end
+   end
 
    for k, boxes_list in pairs(draw_hitbox_queue) do
       if k > gamestate.frame_number then
@@ -609,6 +630,7 @@ local debug = {
    run_debug = run_debug,
    draw_debug = draw_debug,
    debug_things = debug_things,
+   add_debug_variable = add_debug_variable,
    log_update = log_update,
    log = log,
    log_draw = log_draw,

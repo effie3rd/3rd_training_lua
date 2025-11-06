@@ -16,6 +16,10 @@ local defense_tables = require("src.training.defense_tables")
 local defense = require("src.training.defense")
 local jumpins_tables = require("src.training.jumpins_tables")
 local jumpins = require("src.training.jumpins")
+local geneijin = require("src.training.geneijin")
+local geneijin_tables = require("src.training.geneijin_tables")
+local footsies = require("src.training.footsies")
+local footsies_tables = require("src.training.footsies_tables")
 
 local is_initialized = false
 local is_open = false
@@ -40,6 +44,7 @@ local main_menu, training_sub_menus, training_mode_item
 local defense_opponent_item, start_defense_item, defense_score_item, defense_setup_item, defense_character_select_item,
       defense_learning_item
 local jumpins_edit, jumpins_training_tab, jumpins_edit_menu, jumpins_edit_settings, current_jump_settings
+local footsies_training_tab, geneijin_training_tab
 local jumpins_edit_jump_index = 1
 
 local counter_attack_settings
@@ -66,7 +71,7 @@ local counter_attack_move_selection_data = {
 local jumpins_edit_move_selection_items = tools.deepcopy(counter_attack_move_selection_items)
 local jumpins_edit_move_selection_data = tools.deepcopy(counter_attack_move_selection_data)
 
-local special_training_modes = {defense, jumpins, unblockables}
+local special_training_modes = {defense, jumpins, footsies, unblockables, geneijin}
 local close_menu
 
 local function update_recording_items()
@@ -307,6 +312,25 @@ local function update_defense_items()
       i = i + 1
    end
    defense_sub_menu_entries[6 + i] = defense_learning_item
+end
+
+local function update_footsies_items()
+   footsies_tables.init(footsies.footsies_dummy.char_str)
+   local saved_player = settings.special_training.footsies.match_savestate_player
+   if saved_player ~= "" then footsies_training_tab.start_item.name = {"menu_start", "  (", "menu_" .. saved_player, ")"} end
+   local saved_dummy = settings.special_training.footsies.match_savestate_dummy
+   if saved_dummy == "" then saved_dummy = training.dummy.char_str end
+   footsies_training_tab.score_item.object = settings.special_training.footsies.characters[saved_dummy]
+   footsies_training_tab.walk_out_item.object = settings.special_training.footsies.characters[saved_dummy]
+   footsies_training_tab.moves_item.object = settings.special_training.footsies.characters[saved_dummy].moves
+   footsies_training_tab.moves_item.list = footsies_tables.get_menu_move_names()
+end
+
+local function update_geneijin_items()
+   if not settings.special_training.geneijin then settings.special_training.geneijin = geneijin_tables.create_settings() end
+   geneijin_training_tab.moves_item.object = settings.special_training.geneijin.moves
+   local saved_player = settings.special_training.geneijin.match_savestate_player
+   if saved_player ~= "" then geneijin_training_tab.start_item.name = {"menu_start", "  (", "menu_" .. saved_player, ")"} end
 end
 
 local function reset_unblockables_followup()
@@ -736,6 +760,7 @@ local function create_dummy_tab()
                                        menu_tables.quick_stand_mode, 1),
          menu_items.Button_Menu_Item:new("swap_dummy", function()
             training.toggle_swap_characters()
+            require("src.ui.hud").add_player_label(training.player, "hud_player")
             require("src.ui.hud").add_player_label(training.dummy, "hud_dummy")
             update_counter_attack_items()
          end)
@@ -1060,7 +1085,6 @@ local function create_training_tab()
    jumpins_edit_menu.on_close = function() training.freeze_game() end
 
    jumpins_training_tab = {}
-
    jumpins_training_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
       close_menu(true)
       jumpins.start(settings.special_training.jumpins)
@@ -1112,6 +1136,79 @@ local function create_training_tab()
    jumpins_training_tab.automatic_replay_item = menu_items.On_Off_Menu_Item:new("menu_automatic_replay",
                                                                                 jumpins_edit_settings,
                                                                                 "automatic_replay", 1)
+
+   footsies_training_tab = {}
+   footsies_training_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
+      close_menu(true)
+      footsies.start()
+   end)
+   footsies_training_tab.start_item.legend_text = "legend_lp_select"
+   footsies_training_tab.start_item.is_enabled = function()
+      return is_frame_data_loaded() and settings.special_training.footsies.savestate_player ~= ""
+   end
+   footsies_training_tab.start_item.is_unselectable = function()
+      return not footsies_training_tab.start_item.is_enabled()
+   end
+   footsies_training_tab.score_item = menu_items.Label_Menu_Item:new("menu_score", {"menu_score", ": ", "value"},
+                                                       {}, "score",
+                                                       false, true)
+   footsies_training_tab.character_select_item = menu_items.Button_Menu_Item:new("character_select", function()
+      close_menu(true)
+      footsies.start_character_select()
+   end)
+   footsies_training_tab.character_select_item.legend_text = "legend_lp_select"
+   footsies_training_tab.character_select_item.is_enabled = function()
+      return is_frame_data_loaded() and settings.special_training.footsies.savestate_player ~= ""
+   end
+   footsies_training_tab.character_select_item.is_unselectable = function()
+      return not footsies_training_tab.character_select_item.is_enabled()
+   end
+   footsies_training_tab.moves_item = menu_items.Check_Box_Grid_Item:new("menu_moves",
+                                                                         {1},
+                                                                         {"1"}, 4)
+
+   footsies_training_tab.walk_out_item = menu_items.On_Off_Menu_Item:new("menu_walk_out", {walk_out = true}, "walk_out")
+   footsies_training_tab.accuracy_item = menu_items.Slider_Menu_Item:new("menu_accuracy", 100, {80, 80},
+                                                                             {0, 100})
+   footsies_training_tab.accuracy_item.disable_mode_switch = true
+   footsies_training_tab.accuracy_item.legend_text = ""
+   footsies_training_tab.distance_judgement_item = menu_items.Slider_Menu_Item:new("menu_distance_judgement", 100, {80, 80},
+                                                                             {0, 100})
+   footsies_training_tab.distance_judgement_item.disable_mode_switch = true
+   footsies_training_tab.distance_judgement_item.legend_text = ""
+
+   geneijin_training_tab = {}
+   geneijin_training_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
+      close_menu(true)
+      geneijin.start()
+   end)
+   geneijin_training_tab.start_item.legend_text = "legend_lp_select"
+   geneijin_training_tab.start_item.is_enabled = function()
+      return is_frame_data_loaded() and settings.special_training.geneijin.savestate_player ~= ""
+   end
+   geneijin_training_tab.start_item.is_unselectable = function()
+      return not geneijin_training_tab.start_item.is_enabled()
+   end
+   geneijin_training_tab.score_item = menu_items.Label_Menu_Item:new("menu_score", {"menu_score", ": ", "value"},
+                                                       settings.special_training.geneijin, "score",
+                                                       false, true)
+   geneijin_training_tab.character_select_item = menu_items.Button_Menu_Item:new("character_select", function()
+      close_menu(true)
+      geneijin.start_character_select()
+   end)
+   geneijin_training_tab.character_select_item.legend_text = "legend_lp_select"
+   geneijin_training_tab.character_select_item.is_enabled = function()
+      return is_frame_data_loaded() and settings.special_training.geneijin.savestate_player ~= ""
+   end
+   geneijin_training_tab.character_select_item.is_unselectable = function()
+      return not geneijin_training_tab.character_select_item.is_enabled()
+   end
+
+   geneijin_training_tab.moves_item = menu_items.Check_Box_Grid_Item:new("menu_moves",
+                                                                         settings.special_training.geneijin.moves,
+                                                                         geneijin_tables.get_menu_move_names(), 4)
+
+
    training_sub_menus = {
       {name = "training_defense", entries = {training_mode_item}}, {
          name = "training_jumpins",
@@ -1122,7 +1219,14 @@ local function create_training_tab()
             jumpins_training_tab.attack_delay_mode_item, jumpins_training_tab.show_jump_arc_item,
             jumpins_training_tab.show_jump_info_item, jumpins_training_tab.automatic_replay_item
          }
-      }, {name = "training_footsies", entries = {training_mode_item}}, {
+      },{
+         name = "training_footsies",
+         entries = {
+            training_mode_item, footsies_training_tab.start_item, footsies_training_tab.score_item,
+            footsies_training_tab.character_select_item, footsies_training_tab.moves_item, footsies_training_tab.walk_out_item,
+            footsies_training_tab.accuracy_item, footsies_training_tab.distance_judgement_item
+         }
+      }, {
          name = "training_unblockables",
          entries = {
             training_mode_item, start_unblockables_item, unblockables_type_item, unblockables_followup_item,
@@ -1131,8 +1235,8 @@ local function create_training_tab()
       }, {
          name = "training_geneijin",
          entries = {
-            training_mode_item,
-            menu_items.Button_Menu_Item:new("character_select", require("src.modules.record_framedata").save_frame_data)
+            training_mode_item, geneijin_training_tab.start_item, geneijin_training_tab.score_item, geneijin_training_tab.character_select_item,
+            geneijin_training_tab.moves_item
          }
       }, {
          name = "training_denjin",
@@ -1167,6 +1271,7 @@ local function create_debug_tab()
       header = menu_items.Header_Menu_Item:new("menu_title_debug"),
       entries = {
          menu_items.On_Off_Menu_Item:new("dump_state_display", debug_settings, "show_dump_state_display"),
+         menu_items.On_Off_Menu_Item:new("debug_variables_display", debug_settings, "show_debug_variables_display"),
          menu_items.On_Off_Menu_Item:new("debug_frames_display", debug_settings, "show_debug_frames_display"),
          menu_items.On_Off_Menu_Item:new("memory_view_display", debug_settings, "show_memory_view_display"),
          menu_items.On_Off_Menu_Item:new("show_predicted_hitboxes", debug_settings, "show_predicted_hitbox"),
@@ -1203,7 +1308,9 @@ local function update_menu_items()
    update_recording_items()
    update_training_tab_page()
    update_defense_items()
+   update_footsies_items()
    update_unblockables_items()
+   update_geneijin_items()
 end
 
 local function open_menu()
