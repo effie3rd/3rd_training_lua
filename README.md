@@ -86,4 +86,4 @@
   
 ### Installation
   - Fightcade
-<table><tr><td> Paste files into 'fbneo-training-mode' directory, overwriting all files. Click "Training" from fightcade menu to run. </td></tr></table>
+<table><tr><td>Paste files into 'fbneo-training-mode' directory, overwriting all files.</td></tr><tr><td>Click "Training" from fightcade menu to run.</td></tr></table>
