@@ -81,9 +81,5 @@
   - Jumping attacks that hit behind a cornered opponent were not blocked
   - Improved consistency of reversal execution for charge/360 moves.
 
-### Notes
-  - Dummy blocking is imperfect, so if you absolutely need something parried then enable the auto parrying option. Be aware that it might parry things that are normally impossible to parry.
-  
 ### Installation
-  - Fightcade
 <table><tr><td>Paste files into 'fbneo-training-mode' directory, overwriting all files.<br>Click "Training" from fightcade menu to run.</td></tr></table>
