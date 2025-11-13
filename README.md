@@ -39,10 +39,10 @@
   - Attack Range: Shows the maximum range of the last 1-3 attacks
   - Blocking Direction: Shows the input the dummy used to block. Good for ambiguous crossups
   - Red Parry Miss Indicator: If you attempted a red parry and failed, red number pops up showing how many frames you were off by.
-  - Stun Timer - Shows remaining stun time.
+  - Stun Timer: Shows remaining stun time.
   - Air Time: Colors the opponent blue when they can no longer be juggled. The coloring is delayed by 2 frames so please use the gauge as the source of truth.
   - Parry/Charge
-    - Appearance update
+    - Appearance tweak
     - Tweaked follow player code
     - Compact display for parry display
     - 360/720 and Denjin displays added
@@ -76,10 +76,10 @@
 
 ### Bug Fixes
   - Fixed detection of connected hits/projectiles
-  - Blocking of multi-hit attacks and supers
+  - Blocking of various attacks and supers
   - The same move performed in frame perfect succession was not blocked
   - Jumping attacks that hit behind a cornered opponent were not blocked
-  - Improved consistency of reversal execution for charge/360 moves.
+  - Improved the consistency of reversals for charge/360 moves.
 
 ### Installation
 <table><tr><td>Paste files into 'fbneo-training-mode' directory, overwriting all files.<br>Click "Training" from fightcade menu to run.</td></tr></table>
