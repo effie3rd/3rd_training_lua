@@ -12,7 +12,7 @@
    
 ### Prediction
   - Now uses subpixel positions and velocity based movement for everything.
-  - Able to parry unblockables, tengu stones, and other nonsense
+  - Able to parry unblockables, tengu stones, seiei enbu, and other nonsense
   - Wakeup prediction - Dummy can now do reversals after loading a savestate.
   
 ### Menu Redesign
