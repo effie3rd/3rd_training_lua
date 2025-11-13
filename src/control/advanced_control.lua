@@ -217,7 +217,6 @@ end
 
 local function update(input, player, dummy)
    update_programmed_movement()
-   -- print(prediction.get_frames_until_idle(player, player.animation, player.animation_frame, frames_prediction))
 end
 local function clear_all() programmed_movement_queue = {} end
 

@@ -466,6 +466,8 @@ local function urien_midscreen_setup_anago(player)
    local aegis_delay = Delay:new(6)
    local walk_delay = Delay:new(10)
 
+   if player.other.char_str == "hugo" then walk_delay:reset(11) end
+
    local commands = {
       {condition = nil, action = function() queue_input_sequence_and_wait(player, d_HP, 0, true) end}, {
          condition = function() return is_idle_timing(player, #ex_headbutt) end,
@@ -920,8 +922,12 @@ local function urien_mid_screen_anago_followup_d_lk(player)
    local d_hp = {{"down", "HP"}}
 
    local walk_delay = Delay:new(8)
-   if player.other.char_str == "hugo" or player.other.char_str == "alex" or player.other.char_str == "dudley" then
+   if player.other.char_str == "hugo" or player.other.char_str == "dudley" or player.other.char_str == "necro"then
       walk_delay:reset(10)
+   elseif player.other.char_str == "alex" then
+      walk_delay:reset(12)
+   elseif player.other.char_str == "ken" or player.other.char_str == "ryu" or player.other.char_str == "gouki" then
+      walk_delay:reset(16)
    elseif player.other.char_str == "ibuki" then
       walk_delay:reset(18)
    elseif player.other.char_str == "makoto" then
@@ -1632,7 +1638,15 @@ local function oro_midscreen_followup_back_dash_down_lk(player)
          walk_back = {{"back"}, {"back"}, {"back"}, {"back"}, {"back"}, {"back"}, {"back"}, {"back"}}
       elseif player.other.char_str == "q" then
          walk_back = {{"back"}, {"back"}, {"back"}, {"back"}}
-      elseif player.other.char_str == "hugo" or player.other.char_str == "twelve" then
+      elseif player.other.char_str == "hugo" then
+         walk_back = {{"back"}}
+         table.insert(commands, 4, {
+            condition = function() return is_idle_timing(player, 1, true) end,
+            action = function()
+               queue_input_sequence_and_wait(player, {{"forward"}, {"forward"}, {"forward"}, {"forward"}}, 0, true)
+            end
+         })
+      elseif player.other.char_str == "twelve" then
          walk_back = {{"back"}}
       end
       local walk = {
@@ -1725,8 +1739,8 @@ local unblockables_data = {
       reset_offset_x = 700,
       setup = urien_midscreen_setup_tackle_dash,
       followups = {
-         {name = "F+MK", commands = urien_midscreen_tackle_dash_followup_f_mk},
-         {name = "D+LK", commands = urien_midscreen_tackle_dash_followup_d_lk},
+         {name = "menu_f_MK", commands = urien_midscreen_tackle_dash_followup_f_mk},
+         {name = "menu_d_LK", commands = urien_midscreen_tackle_dash_followup_d_lk},
          {name = "throw", commands = urien_midscreen_tackle_dash_followup_throw}
       }
    },
@@ -1736,8 +1750,8 @@ local unblockables_data = {
       setup = urien_midscreen_setup_ex_head_sphere,
       followups = {
          {name = "jump_HK", commands = urien_mid_screen_ex_head_sphere_followup_jump_hk},
-         {name = "F+MK", commands = urien_mid_screen_ex_head_sphere_followup_f_mk},
-         {name = "D+LK", commands = urien_mid_screen_ex_head_sphere_followup_d_lk},
+         {name = "menu_f_MK", commands = urien_mid_screen_ex_head_sphere_followup_f_mk},
+         {name = "menu_d_LK", commands = urien_mid_screen_ex_head_sphere_followup_d_lk},
          {name = "throw", commands = urien_mid_screen_ex_head_sphere_followup_throw}
       }
    },
@@ -1747,8 +1761,8 @@ local unblockables_data = {
       setup = urien_midscreen_setup_ex_head_standard,
       followups = {
          {name = "uoh", commands = urien_mid_screen_ex_head_standard_followup_leap},
-         {name = "F+MK", commands = urien_mid_screen_ex_head_standard_followup_f_mk},
-         {name = "D+LK", commands = urien_mid_screen_ex_head_standard_followup_d_lk},
+         {name = "menu_f_MK", commands = urien_mid_screen_ex_head_standard_followup_f_mk},
+         {name = "menu_d_LK", commands = urien_mid_screen_ex_head_standard_followup_d_lk},
          {name = "throw", commands = urien_mid_screen_ex_head_standard_followup_throw}
       }
    },
@@ -1757,9 +1771,9 @@ local unblockables_data = {
       reset_offset_x = 600,
       setup = urien_midscreen_setup_anago,
       followups = {
-         {name = "D+LK", commands = urien_mid_screen_anago_followup_d_lk},
-         {name = "D+LK_dash", commands = urien_mid_screen_anago_followup_d_lk_dash},
-         {name = "F+MK", commands = urien_mid_screen_anago_followup_f_mk}
+         {name = "menu_d_LK", commands = urien_mid_screen_anago_followup_d_lk},
+         {name = "menu_d_LK_dash", commands = urien_mid_screen_anago_followup_d_lk_dash},
+         {name = "menu_f_MK", commands = urien_mid_screen_anago_followup_f_mk}
       }
    },
    urien_corner_standard = {
@@ -1792,8 +1806,8 @@ local unblockables_data = {
       setup = oro_midscreen_setup_hp_yagyou_dash_dash,
       followups = {
          {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
-         {name = "back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
-         {name = "back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
+         {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
+         {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
       }
    },
    oro_midscreen_mp_yagyou = {
@@ -1802,8 +1816,8 @@ local unblockables_data = {
       setup = oro_midscreen_setup_mp_yagyou_dash_dash,
       followups = {
          {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
-         {name = "back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
-         {name = "back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
+         {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
+         {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
       }
    },
    oro_midscreen_lp_yagyou = {
@@ -1812,8 +1826,8 @@ local unblockables_data = {
       setup = oro_midscreen_setup_lp_yagyou_dash_dash,
       followups = {
          {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
-         {name = "back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
-         {name = "back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
+         {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
+         {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
       }
    },
    oro_midscreen_mp_mp = {
@@ -1822,8 +1836,8 @@ local unblockables_data = {
       setup = oro_midscreen_setup_mp_mp_lp_yagyou,
       followups = {
          {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
-         {name = "back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
-         {name = "back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
+         {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
+         {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
       }
    },
    oro_midscreen_mp_yagyou_walk = {
@@ -1832,8 +1846,8 @@ local unblockables_data = {
       setup = oro_midscreen_setup_mp_yagyou_dash_walk,
       followups = {
          {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
-         {name = "back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
-         {name = "back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
+         {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
+         {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
       }
    }
 }

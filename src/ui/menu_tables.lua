@@ -42,17 +42,17 @@ local stun_mode = {
 
 local meter_mode = {"menu_off", "gauge_reset_value", "gauge_reset_zero", "gauge_reset_max", "gauge_infinite"}
 
-local player_options = {"off", "P1", "P2", "P1+P2"}
+local player_options = {"menu_off", "P1", "P2", "P1+P2"}
 
-local display_input_history_mode = {"off", "P1", "P2", "P1+P2", "moving"}
+local display_input_history_mode = {"menu_off", "P1", "P2", "P1+P2", "moving"}
+local display_frame_advantage_mode = {"menu_off", "menu_number", "menu_table", "menu_both"}
 
 local display_attack_bars_mode = {"menu_off", "menu_1_line", "menu_2_lines"}
 
 local language = {"english", "japanese"}
 
 local special_training_mode = {
-   "training_defense", "training_jumpins", "training_footsies", "training_unblockables", "training_geneijin",
-   "training_denjin"
+   "training_defense", "training_jumpins", "training_footsies", "training_unblockables", "training_geneijin"
 }
 
 local challenge_mode = {"hadou_festival"}
@@ -91,6 +91,7 @@ local menu_tables = {
    stun_mode = stun_mode,
    player_options = player_options,
    display_input_history_mode = display_input_history_mode,
+   display_frame_advantage_mode = display_frame_advantage_mode,
    display_attack_bars_mode = display_attack_bars_mode,
    language = language,
    special_training_mode = special_training_mode,

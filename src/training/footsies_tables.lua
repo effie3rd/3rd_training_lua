@@ -28,9 +28,9 @@ local move_names = {
       "f_MP", "MK", "d_MP", "d_MK", "d_HK", "slash_elbow_LP", "slash_elbow_MP", "slash_elbow_HP", "slash_elbow_EXP",
       "kara_throw"
    },
-   chunli = {"d_MP", "d_MK", "HP", "b_HP", "HK", "hazanshuu_LK", "kara_throw"},
+   chunli = {"MP", "d_MP", "d_MK", "HP", "b_HP", "HK", "d_HK", "hazanshuu_LK", "kara_throw"},
    dudley = {"MP", "d_MP", "f_MK", "HP", "f_HP", "HK", "d_HK"},
-   elena = {"d_MP", "d_MK", "HK", "d_HK", "mallet_smash_LP", "mallet_smash_EXP", "kara_throw"},
+   elena = {"d_MP", "f_MK", "d_MK", "HK", "d_HK", "kara_throw"}, --, "mallet_smash_LP", "mallet_smash_EXP"
    gill = {"MK", "d_MK", "d_HK", "HP"},
    gouki = {"d_MP", "MK", "d_MK", "d_HK", "gohadouken_HP"},
    hugo = {
@@ -39,7 +39,7 @@ local move_names = {
    },
    ibuki = {"MP", "MK", "d_MP", "d_MK", "f_HK"},
    ken = {"d_MP", "d_MK", "HK", "d_HK", "hadouken_EXP"},
-   makoto = {"MP", "d_MP", "d_MK", "d_HK", "kara_karakusa_lk"},
+   makoto = {"MP", "d_MP", "d_MK", "d_HP", "d_HK", "kara_karakusa_lk"},
    necro = {"d_LK", "MP", "HP", "b_MP", "b_MK", "d_MK", "d_HP", "d_HK", "denji_blast_LP"},
    oro = {"MP", "MK", "HK", "d_MP", "d_MK", "d_HK", "kara_throw", "nichirin_LP", "niouriki", "kara_niouriki"},
    q = {"MK", "d_MK", "HP", "b_HP", "d_HP", "kara_throw", "capture_and_deadly_blow_HK", "kara_capture_and_deadly_blow"},
@@ -61,7 +61,7 @@ local input_button_data = {
    chunli = {kara_throw = {"MK"}},
    elena = {kara_throw = {"forward", "MK"}},
    makoto = {kara_karakusa_lk = {"HK"}},
-   q = {kara_throw = {"back", "HP"}, kara_capture_and_deadly_blow = {"HK"}}
+   q = {kara_throw = {"back", "MP"}, kara_capture_and_deadly_blow = {"HK"}}
 }
 
 local relevant_move_default = {
@@ -87,8 +87,8 @@ local relevant_move_default = {
    yang = "d_MK",
    yun = "d_MK"
 }
-
 local recent_moves = {}
+local recent_move_timeout = 20 * 60
 
 local walk_forward_input = {{"forward"}}
 local walk_back_input = {{"back"}}
@@ -101,8 +101,6 @@ local walk_out_followups
 
 local current_attack
 
-local block_punish_threshold = 8
-
 local walk_forward_times = {10}
 local walk_back_times = {10}
 local current_walk_time = 0
@@ -110,9 +108,16 @@ local walk_time_data_max = 10
 
 local accuracy = 100
 
-local distance_judgement_range = {0, 50}
-local default_dev = 20
+local distance_judgement_max = 60
 local distance_judgement = 100
+
+local walk_in_range = 8
+local walk_in_range_min = 8
+
+local last_back_input = 0
+local last_forward_input = 0
+
+local dash_input_window = 8
 
 local function update_walk_time(player)
    if player.previous_action == 2 and player.action ~= 2 then
@@ -129,6 +134,15 @@ local function update_walk_time(player)
    elseif player.action == 3 then
       if player.previous_action ~= 3 then current_walk_time = 0 end
       current_walk_time = current_walk_time + 1
+   end
+end
+
+local function update_recent_attacks(player)
+   if player.has_just_attacked then
+      local hit_frame = framedata.get_first_hit_frame(player.char_str, player.animation)
+      local hitboxes = framedata.get_hitboxes(player.char_str, player.animation, hit_frame)
+      local range = framedata.get_hitbox_max_range(player.char_str, player.animation)
+      recent_moves[player.animation] = {start_frame = gamestate.frame_number, hitboxes = hitboxes, range = range}
    end
 end
 
@@ -158,6 +172,29 @@ local function get_expected_distance(player, n_frames)
    return math.abs(player.other.pos_x - player.pos_x)
 end
 
+local function get_recent_attack()
+   local attack
+   local range = 0
+   for anim, data in pairs(recent_moves) do
+      if gamestate.frame_number - data.start_frame < recent_move_timeout then
+         if data.range > range then
+            range = data.range
+            attack = data
+         end
+      end
+   end
+   if not attack then
+      local most_recent_frame = 0
+      for anim, data in pairs(recent_moves) do
+         if data.start_frame > most_recent_frame then
+            most_recent_frame = data.start_frame
+            attack = data
+         end
+      end
+   end
+   return attack
+end
+
 local function handle_interruptions(player, stage, actions, i_actions)
    if (player.has_just_been_hit and not player.is_being_thrown) or player.other.has_just_parried then
       return true, {score = 1, should_end = true}
@@ -169,13 +206,57 @@ local function handle_interruptions(player, stage, actions, i_actions)
    return false
 end
 
+local function get_execute_distance(player, action_type)
+   local dist = get_expected_distance(player.other, #current_attack.data.input + current_attack.data.hit_frame + 1)
+   local movement = 0
+   if action_type == Action_Type.WALK_FORWARD then
+      movement = character_specific[player.char_str].forward_walk_speed
+   elseif action_type == Action_Type.WALK_BACKWARD then
+      movement = character_specific[player.char_str].backward_walk_speed
+   end
+
+   local box_types = {"vulnerability", "ext.vulnerability"}
+   if current_attack.data.type == "throw" then box_types = {"throwable"} end
+   return dist -
+              utils.get_box_connection_distance(player, current_attack.data.hitboxes, player.other, player.other.boxes,
+                                                box_types, current_attack.data.should_hit) -
+              current_attack.data.execute_range - movement
+end
+
+local function is_in_execute_range(player, action_type)
+   local remaining_dist = get_execute_distance(player, action_type)
+   if current_attack.data.should_hit then
+      if remaining_dist <= 0 then return true end
+   else
+      if remaining_dist >= 0 then return true end
+   end
+   return false
+end
+
 local followup_attack = Followup:new("followup_attack", Action_Type.ATTACK)
 
 function followup_attack:setup(player, stage, actions, i_actions)
-   print(current_attack.data.input)
+   self.end_delay = 12
+   self.opponent_has_been_thrown = false
+   local input_delay = Delay:new(6)
+   local should_delay = false
+   if current_attack.data.name == "hadouken_EXP" or current_attack.data.name == "gohadouken_HP" then
+      local previous_action = actions[i_actions - 1]
+      if previous_action and
+         previous_action.type == Action_Type.WALK_FORWARD then
+         should_delay = true
+      end
+   end
    return {
       {
-         condition = function() return is_idle_timing(player, #current_attack.data.input, true) end,
+         condition = function()
+            if should_delay and not input_delay:is_complete() then return false end
+            if current_attack.data.type == "attack" then
+               return is_idle_timing(player, #current_attack.data.input, true)
+            else
+               return is_throw_vulnerable_timing(player.other, #current_attack.data.input, true)
+            end
+         end,
          action = function() queue_input_sequence_and_wait(player, current_attack.data.input, nil, true) end
       }
    }
@@ -183,8 +264,16 @@ end
 
 function followup_attack:run(player, stage, actions, i_actions)
    if all_commands_complete(player) then
-      if player.has_just_hit then return true, {score = -1, should_end = true} end
-      if player.other.has_just_blocked then return true, {score = 0, should_end = true} end
+      if player.has_just_missed or player.other.is_attacking or player.has_just_been_blocked or
+          player.other.has_just_blocked then return true, {score = 0, should_block = true} end
+      if player.has_just_hit or player.other.has_just_been_hit then return true, {score = -1, should_end = true} end
+      if player.is_idle then return true, {score = 0, should_end = true} end
+      if player.is_in_throw_tech or player.other.is_in_throw_tech then return true, {score = 0, should_end = true} end
+      if player.other.has_just_been_thrown then self.opponent_has_been_thrown = true end
+      if self.opponent_has_been_thrown then
+         self.end_delay = self.end_delay - 1
+         if self.end_delay <= 0 then return true, {score = -1, should_end = true} end
+      end
    end
    return handle_interruptions(player, stage, actions, i_actions)
 end
@@ -195,29 +284,40 @@ function followup_attack:is_valid(player, stage, actions, i_actions)
        (previous_action.type == Action_Type.WALK_FORWARD or previous_action.type == Action_Type.WALK_BACKWARD) then
       return true
    end
-   return self:should_execute(player, stage, actions, i_actions)
+   return is_in_execute_range(player)
 end
 
 function followup_attack:should_execute(player, stage, actions, i_actions)
-   local dist = get_expected_distance(player.other, #current_attack.data.input + current_attack.data.hit_frame + 1)
-   local margin = 0
-   -- if player.action == 2 then margin = character_specific[player.char_str].forward_walk_speed
-   -- elseif player.action == 3 then margin = character_specific[player.char_str].backward_walk_speed end
-   local box_types = {"vulnerability", "ext.vulnerability"}
-   if current_attack.data.type == "throw" then box_types = {"throwable"} end
-   print(current_attack.data.name, dist, utils.get_box_connection_distance(player, current_attack.data.hitboxes,
-                                                                           player.other, player.other.boxes, box_types),
-         current_attack.data.execute_range)
-   if dist -
-       utils.get_box_connection_distance(player, current_attack.data.hitboxes, player.other, player.other.boxes,
-                                         box_types) - current_attack.data.execute_range <= margin then return true end
-   return false
+   local previous_action = actions[i_actions - 1]
+   if previous_action and
+       (previous_action.type == Action_Type.WALK_FORWARD or previous_action.type == Action_Type.WALK_BACKWARD) then
+      return true
+   end
+   return is_in_execute_range(player)
 end
 
 function followup_attack:walk_in_condition(player, walk_followup)
-   if self:should_execute(player) then return true end
-   walk_followup:extend(player)
-   return false
+   local dist = get_execute_distance(player)
+   local should_walk = false
+   if current_attack.data.should_hit then
+      if dist > 0 then should_walk = true end
+   else
+      if dist > character_specific[player.char_str].forward_walk_speed then should_walk = true end
+   end
+   if should_walk then walk_followup:extend(player) end
+   return not should_walk
+end
+
+function followup_attack:walk_out_condition(player, walk_followup)
+   local dist = get_execute_distance(player)
+   local should_walk = false
+   if current_attack.data.should_hit then
+      if dist < character_specific[player.char_str].backward_walk_speed then should_walk = true end
+   else
+      if dist < 0 then should_walk = true end
+   end
+   if should_walk then walk_followup:extend(player) end
+   return not should_walk
 end
 
 local followup_walk_in = Followup:new("followup_walk_in", Action_Type.WALK_FORWARD)
@@ -226,6 +326,7 @@ function followup_walk_in:setup(player, stage, actions, i_actions)
    self.min_walk_frames = 4
    self.max_walk_frames = 600
    self.walked_frames = 0
+   last_forward_input = gamestate.frame_number
 
    local setup = {
       {condition = nil, action = function() inputs.queue_input_sequence(player, walk_forward_input, 0, true) end}
@@ -253,6 +354,18 @@ function followup_walk_in:extend(player)
    inputs.queue_input_sequence(player, walk_forward_input, 0, true)
 end
 
+function followup_walk_in:is_valid(player, stage, actions, i_actions)
+   if gamestate.frame_number - last_forward_input < dash_input_window then return false end
+   local dist = get_execute_distance(player, Action_Type.WALK_FORWARD)
+
+   if current_attack.data.should_hit then
+      if dist > 0 then return true end
+   else
+      if dist > character_specific[player.char_str].forward_walk_speed then return true end
+   end
+   return false
+end
+
 function followup_walk_in:followups() return walk_in_followups end
 
 function followup_walk_in:label() return {self.name, " ", self.walked_frames, "hud_f"} end
@@ -260,10 +373,13 @@ function followup_walk_in:label() return {self.name, " ", self.walked_frames, "h
 local followup_walk_out = Followup:new("followup_walk_out", Action_Type.WALK_BACKWARD)
 
 function followup_walk_out:setup(player, stage, actions, i_actions)
-   self.min_walk_frames = 4
-   self.max_walk_frames = 30
+   self.min_walk_frames = 8
+   self.max_walk_frames = 80
    self.walked_frames = 0
-
+   local distance_judgement_range = distance_judgement_max - distance_judgement_max * distance_judgement / 100
+   local offset = tools.random_quadratic(0, distance_judgement_range, 0, 0.6)
+   self.execute_range = get_recent_attack().range + offset
+   last_back_input = gamestate.frame_number
    local setup = {
       {condition = nil, action = function() inputs.queue_input_sequence(player, walk_back_input, 0, true) end}
    }
@@ -272,14 +388,25 @@ end
 
 function followup_walk_out:run(player, stage, actions, i_actions)
    if all_commands_complete(player) then
+      local stage_left, stage_right = utils.get_stage_limits(stage, player.char_str)
+      if player.pos_x <= stage_left or player.pos_x >= stage_right then return true, {score = 0} end
       self.next_action = actions[i_actions + 1]
-      if self.next_action and self.next_action.walk_in_condition and self.next_action:walk_in_condition(player, self) then
-         return true, {score = 0}
-      end
-      if self.walked_frames < self.max_walk_frames then
+
+      if self.walked_frames < self.min_walk_frames then
          self:extend(player)
       else
-         return true, {score = 0}
+         local dist = get_expected_distance(player.other, 1)
+         local attack = get_recent_attack()
+         if self.walked_frames < self.max_walk_frames and dist -
+             utils.get_box_connection_distance(player.other, attack.hitboxes, player, player.boxes) - self.execute_range <=
+             0 then
+            self:extend(player)
+         else
+            if self.next_action and self.next_action.walk_out_condition and
+                self.next_action:walk_out_condition(player, self) then
+               return true, {score = 0}
+            end
+         end
       end
    end
    return handle_interruptions(player, stage, actions, i_actions)
@@ -291,8 +418,23 @@ function followup_walk_out:extend(player)
 end
 
 function followup_walk_out:walk_in_condition(player, walk_followup)
-   if walk_followup.walked_frames < self.min_walk_frames then return false end
-   return true
+   local dist = get_expected_distance(player.other, 1)
+   local attack = get_recent_attack()
+   if dist - utils.get_box_connection_distance(player.other, attack.hitboxes, player, player.boxes) - attack.range +
+       walk_in_range <= 0 then return true end
+   walk_followup:extend(player)
+   return false
+end
+
+function followup_walk_out:is_valid(player, stage, actions, i_actions)
+   if gamestate.frame_number - last_back_input < dash_input_window then return false end
+   local dist = get_execute_distance(player, Action_Type.WALK_BACKWARD)
+   if current_attack.data.should_hit then
+      if dist < character_specific[player.char_str].backward_walk_speed then return true end
+   else
+      if dist < 0 then return true end
+   end
+   return false
 end
 
 function followup_walk_out:should_execute(player, stage, actions, i_actions) return not (player.other.action == 2) end
@@ -339,11 +481,10 @@ local followup_block = Followup:new("followup_block", Action_Type.BLOCK)
 
 function followup_block:setup(player, stage, actions, i_actions)
    self.blocked_frames = 0
-   self.block_time = 8
+   self.block_time = 12
    self.block_input = block_low_input
    self.has_blocked = false
    self.has_parried = false
-   self.has_hit = false
    self.next_action = actions[i_actions + 1]
    if self.next_action and self.next_action.block_condition then
       if self.next_action:should_execute(player, stage, actions, i_actions + 1) then
@@ -364,9 +505,11 @@ function followup_block:setup(player, stage, actions, i_actions)
             end
          end,
          action = function()
-            inputs.queue_input_sequence(player, self.block_input)
-            self.blocked_frames = self.blocked_frames + 1
-            self.block_time = self.block_time + player.other.recovery_time + player.other.remaining_wakeup_time
+            if player.other.is_attacking then
+               inputs.queue_input_sequence(player, self.block_input)
+               self.blocked_frames = self.blocked_frames + 1
+               self.block_time = self.block_time + player.other.recovery_time + player.other.remaining_wakeup_time
+            end
          end
       }
    }
@@ -395,12 +538,11 @@ function followup_block:run(player, stage, actions, i_actions)
             end
          end
       end
-      if player.has_just_hit then self.has_hit = true end
+      if player.has_just_hit then return true, {score = -1, should_end = true} end
       self.next_action = actions[i_actions + 1]
       if self.next_action and self.next_action.block_condition and self.next_action:block_condition(player, self) then
          return true, {score = 0}
       end
-      -- print(self.blocked_frames, self.block_time, self.has_blocked, self:should_block(player)) -- debug
       if self.blocked_frames < self.block_time then
          self:extend(player)
       else
@@ -438,15 +580,26 @@ end
 
 function followup_block:extend(player)
    self.blocked_frames = self.blocked_frames + 1
-   inputs.queue_input_sequence(player, self.block_input)
+   if player.other.is_attacking then inputs.queue_input_sequence(player, self.block_input) end
 end
 
 local menu_move_names = {}
 local function init(char_str)
    moves = {}
    menu_move_names = {}
+   recent_moves = {}
+   last_back_input = 0
+   last_forward_input = 0
+   local anim = framedata.find_move_frame_data(char_str, relevant_move_default[char_str]) or "none"
+   local hf = framedata.get_first_hit_frame_by_name(char_str, relevant_move_default[char_str])
+   local hb = framedata.get_hitboxes_by_name(char_str, relevant_move_default[char_str], nil, hf)
+   local r = framedata.get_hitbox_max_range_by_name(char_str, relevant_move_default[char_str], nil, -1)
+   recent_moves[anim] = {start_frame = gamestate.frame_number, hitboxes = hb, range = r}
    for i, move_name in ipairs(move_names[char_str]) do
       local hit_frame = framedata.get_first_hit_frame_by_name(char_str, move_name)
+      if tools.table_contains({"cold_blue_kick_LK", "cold_blue_kick_MK", "cold_blue_kick_HK"}, move_name) then
+         hit_frame = framedata.get_last_hit_frame_by_name(char_str, move_name)
+      end
       local input = tools.name_to_sequence(move_name)
       local button
       if not input then
@@ -461,32 +614,56 @@ local function init(char_str)
          input = input or {},
          hit_frame = hit_frame,
          hitboxes = framedata.get_hitboxes_by_name(char_str, move_name, nil, hit_frame),
-         range = framedata.get_hitbox_max_range_by_name(char_str, move_name)
+         range = framedata.get_hitbox_max_range_by_name(char_str, move_name, nil, -1)
       }
+      if move_name == "cold_blue_kick_EXK" then
+         data.range = framedata.get_hitbox_max_range_by_name(char_str, move_name, nil, 1)
+      end
       if move_name == "kara_throw" then
          local name = tools.sequence_to_name({data.input[1]})
          local kara_dist = framedata.get_kara_distance_by_name(char_str, name)
          data.hit_frame = framedata.get_first_hit_frame_by_name(char_str, "throw_neutral")
          data.hitboxes = framedata.get_hitboxes_by_name(char_str, "throw_neutral", nil, data.hit_frame)
+         data.hit_frame = data.hit_frame + 1
          data.range = kara_dist + framedata.get_hitbox_max_range_by_name(char_str, "throw_neutral")
          data.type = "throw"
+         if char_str == "chunli" then data.min_range = 45 end
       elseif move_name == "kara_niouriki" or move_name == "kara_capture_and_deadly_blow" then
+         local name = tools.sequence_to_name({data.input[1]})
          if move_name == "kara_niouriki" then
             data.hit_frame = framedata.get_first_hit_frame_by_name(char_str, "niouriki")
             data.hitboxes = framedata.get_hitboxes_by_name(char_str, "niouriki", nil, data.hit_frame)
+            data.hit_frame = data.hit_frame + 1
+            data.range = framedata.get_hitbox_max_range_by_name(char_str, "niouriki")
          elseif move_name == "kara_capture_and_deadly_blow" then
-            data.hit_frame = framedata.get_first_hit_frame_by_name(char_str, "capture_and_deadly_blow")
+            data.hit_frame = framedata.get_first_hit_frame_by_name(char_str, "capture_and_deadly_blow", "HK")
             data.hitboxes = framedata.get_hitboxes_by_name(char_str, "capture_and_deadly_blow", "HK", data.hit_frame)
+            data.hit_frame = data.hit_frame + 14
+            data.range = framedata.get_hitbox_max_range_by_name(char_str, "capture_and_deadly_blow", "HK")
+            name = "b_MP"
          end
-         local name = tools.sequence_to_name({data.input[1]})
          local kara_dist = framedata.get_kara_distance_by_name(char_str, name)
          data.range = data.range + kara_dist
          data.type = "throw"
       elseif move_name == "kara_karakusa_lk" then
          data.hit_frame = framedata.get_first_hit_frame_by_name(char_str, "karakusa", "HK")
          data.hitboxes = framedata.get_hitboxes_by_name(char_str, "karakusa", "HK", data.hit_frame)
+         data.hit_frame = data.hit_frame + 8
+         data.min_range = 97
          data.range = data.range + 41
          data.type = "throw"
+      elseif move_name == "gohadouken_HP" then
+         data.hit_frame = 7
+         data.hitboxes = framedata.get_hitboxes(char_str, "C6", 0)
+         data.range = 140
+      elseif move_name == "hadouken_EXP" then
+         data.hit_frame = 8
+         data.hitboxes = framedata.get_hitboxes(char_str, "03", 0)
+         data.range = 140
+      elseif move_name == "ndl_EXP" then
+         data.hit_frame = 8
+         data.hitboxes = framedata.get_hitboxes(char_str, "01_ndl_exp", 0)
+         data.range = 140
       end
       table.insert(menu_move_names, "menu_" .. move_name)
       table.insert(moves, {data = data, default_weight = 1, weight = 1})
@@ -500,8 +677,8 @@ local function create_settings()
       data.characters[char] = {}
       data.characters[char].score = 0
       data.characters[char].walk_out = true
-      data.characters[char].accuracy = 80
-      data.characters[char].dist_judgement = 80
+      data.characters[char].accuracy = {80, 80}
+      data.characters[char].dist_judgement = {80, 80}
       data.characters[char].moves = {}
       for j, move in ipairs(moves) do table.insert(data.characters[char].moves, false) end
    end
@@ -521,19 +698,21 @@ walk_out_followups = {{action = followup_attack, default_weight = 1, weight = 1,
 local function get_menu_move_names() return menu_move_names end
 local function get_moves() return moves end
 local function get_followups() return followups end
-local function select_attack()
+local function select_attack(player)
    local valid_moves = {}
    for i, move in ipairs(moves) do if move.active then table.insert(valid_moves, move) end end
    current_attack = tools.select_weighted(valid_moves)
    if not current_attack then current_attack = moves[1] end
    current_attack.data.should_hit = math.random() < accuracy / 100
-   local stddev = default_dev - default_dev * distance_judgement / 100 + 0.000001
-   local offset = math.abs(
-                      tools.random_normal_range(distance_judgement_range[1], distance_judgement_range[2], 0, stddev))
+   local distance_judgement_range = distance_judgement_max - distance_judgement_max * distance_judgement / 100
+   local offset = tools.random_quadratic(0, distance_judgement_range, 0, 0.6)
    if current_attack.data.should_hit then offset = -1 + offset * -1 end
-   current_attack.data.execute_range = current_attack.data.range + offset
-
-   print(current_attack.data.name, current_attack.data.should_hit, current_attack.data.range, offset) -- debug
+   current_attack.data.execute_range = math.max(current_attack.data.range + offset,
+                                                framedata.get_contact_distance(player) - 1)
+   if current_attack.data.min_range then
+      current_attack.data.execute_range = math.max(current_attack.data.execute_range, current_attack.data.min_range)
+   end
+   walk_in_range = walk_in_range_min + offset
 end
 local function get_current_attack() return current_attack end
 local function reset_weights()
@@ -557,7 +736,8 @@ local footsies_tables = {
    walk_in = walk_in,
    walk_out = walk_out,
    block = block,
-   update_walk_time = update_walk_time
+   update_walk_time = update_walk_time,
+   update_recent_attacks = update_recent_attacks
 }
 
 setmetatable(footsies_tables, {

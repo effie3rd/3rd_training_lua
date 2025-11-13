@@ -171,8 +171,7 @@ end
 
 local function handle_interruptions(player, stage, actions, i_actions)
    if (player.has_just_been_hit and not player.is_being_thrown) then
-      return true, {score = 3, should_end = true}
-   end
+      return true, {score = 3, should_end = true} end
    if (player.is_being_thrown and player.throw_tech_countdown <= 0) then
       local score = 3
       local hit_with_command_throw = memory.readbyte(player.other.addresses.hit_with_command_throw) > 0
@@ -341,6 +340,7 @@ function followup_d_lk:run(player, stage, actions, i_actions)
          return true, {should_punish = true}
       end
       if player.has_just_missed then return true, {score = 0} end
+      if player.other.has_just_parried then return true, {score = -1, should_reselect = true} end
    end
    return handle_interruptions(player, stage, actions, i_actions)
 end
@@ -386,6 +386,9 @@ function followup_mp_d_lk:run(player, stage, actions, i_actions)
    end
    if player.has_just_hit and player.other.is_airborne then return true, {score = -1, should_end = true} end
    if player.has_just_missed then return true, {score = 0} end
+   if player.other.has_just_parried and self.connection_count == 2 then
+      return true, {score = -1, should_reselect = true}
+   end
    return handle_interruptions(player, stage, actions, i_actions)
 end
 
@@ -490,7 +493,12 @@ local followup_pause = Followup:new("followup_pause", Action_Type.ATTACK)
 
 function followup_pause:setup(player, stage, actions, i_actions)
    self.timer = Delay:new(12)
-   return {{condition = function() return player.action == 0 or player.action == 11 end , action = function() self.timer:begin() end}}
+   return {
+      {
+         condition = function() return player.action == 0 or player.action == 11 end,
+         action = function() self.timer:begin() end
+      }
+   }
 end
 
 function followup_pause:run(player, stage, actions, i_actions)
@@ -511,6 +519,7 @@ function followup_block:setup(player, stage, actions, i_actions)
    self.blocked_frames = 0
    self.block_time = 8
    self.block_input = block_low_input
+   self.switch_blocking = nil
    self.has_blocked = false
    self.has_parried = false
    self.has_hit = false
@@ -557,14 +566,28 @@ function followup_block:run(player, stage, actions, i_actions)
          local fdata_meta = fdm.frame_data_meta[player.other.char_str][player.other.animation]
          if fdata_meta and fdata_meta.hit_type then
             hit_type = fdata_meta.hit_type[player.other.current_hit_id + 1]
-            if hit_type == 4 then
-               if framedata.get_next_hit_frame(player.other.char_str, player.other.animation,
-                                               player.other.current_hit_id + 1) >= reaction_time then
-                  self.block_input = block_high_input
+            if hit_type == 2 or hit_type == 4 then
+               local startup = framedata.get_next_hit_frame(player.other.char_str, player.other.animation,
+                                                            player.other.current_hit_id)
+               if startup >= reaction_time then
+                  if hit_type == 4 then
+                     self.switch_blocking = {
+                        start_frame = gamestate.frame_number + startup - 1,
+                        input = block_high_input
+                     }
+                  else
+                     self.block_input = {start_frame = gamestate.frame_number + startup - 1, input = block_low_input}
+                  end
                end
             end
          end
       end
+
+      if self.switch_blocking and gamestate.frame_number >= self.switch_blocking.start_frame then
+         self.block_input = self.switch_blocking.input
+         self.switch_blocking = nil
+      end
+
       if player.has_just_hit then self.has_hit = true end
       self.next_action = actions[i_actions + 1]
       if self.next_action and self.next_action.block_condition and self.next_action:block_condition(player, self) then
@@ -623,7 +646,7 @@ end
 
 function followup_block:extend(player)
    self.blocked_frames = self.blocked_frames + 1
-   inputs.queue_input_sequence(player, self.block_input)
+   inputs.queue_input_sequence(player, self.block_input, 0, true)
 end
 
 local followup_walk_in = Followup:new("followup_walk_in", Action_Type.WALK_FORWARD)

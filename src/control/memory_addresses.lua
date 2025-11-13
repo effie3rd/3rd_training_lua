@@ -166,7 +166,11 @@ local addresses = {
 
          received_connection_marker = P1_base + 0x32E,
          received_connection_type = P1_base + 0x339, -- 2 or 4 is projectile
-         received_connection_strength = P1_base + 0x34F -- 0 LP, 2 MP, 4 HP, 1 LK, 3 MK, 5 HK, 0x8 LP Special, 0x10 Throw, 0x18 LP Command Throw, etc.
+         received_connection_strength = P1_base + 0x34F, -- 0 LP, 2 MP, 4 HP, 1 LK, 3 MK, 5 HK, 0x8 LP Special, 0x10 Throw, 0x18 LP Command Throw, etc.
+
+         universal_cancel = 0x02068E8D,
+         infinite_projectiles = 0x02068FB8,
+         infinite_juggle = 0x206902E
       }, {
          base = P2_base,
 
@@ -285,7 +289,11 @@ local addresses = {
 
          received_connection_marker = P2_base + 0x32E,
          received_connection_type = P2_base + 0x339,
-         received_connection_strength = P2_base + 0x34F
+         received_connection_strength = P2_base + 0x34F,
+
+         universal_cancel = 0x02069325,
+         infinite_projectiles = 0x02069450,
+         infinite_juggle = 0x20694C6
       }
    },
    offsets = {}

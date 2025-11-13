@@ -40,13 +40,14 @@ local dir_8_inactive = gd.createFromPng("images/controller/8_dir_s_inactive.png"
 
 local img_dir_inactive = {[2] = dir_2_inactive, [4] = dir_4_inactive, [6] = dir_6_inactive, [8] = dir_8_inactive}
 
+local controller_style_menu_names = {}
 local controller_styles = {
-   "rose", "cherry", "blueberry", "sky", "blood_orange", "salmon", "grape", "lavender", "lemon", "champagne", "matcha",
-   "lime", "retro_scifi", "watermelon", "macaron", "famicom", "van_gogh", "munch", "hokusai", "monet", "dali",
-   "classic", "hyper_reflector", "cyberpunk", "2077", "aurora", "ursa_major", "crab_nebula", "pillars_of_creation",
-   "sunset", "fly_by_night", "lake", "airplane", "warm_rainbow", "soft_rainbow", "pearl", "beach", "nether",
-   "blue_planet", "poison", "moon", "blood_moon", "volcano", "desert_sun", "canyon", "redgreen", "acid", "dawn",
-   "picnic", "gelato", "patrick", "01"
+   "hyper_reflector", "rose", "cherry", "blueberry", "sky", "blood_orange", "salmon", "grape", "lavender", "lemon",
+   "champagne", "matcha", "lime", "retro_scifi", "watermelon", "macaron", "famicom", "van_gogh", "munch", "hokusai",
+   "monet", "dali", "classic", "2077", "aurora", "ursa_major", "pillars_of_creation", "sunset",
+   "fly_by_night", "lake", "traffic_lights", "warm_rainbow", "soft_rainbow", "pearl", "beach", "nether", "blue_planet",
+   "poison", "moon", "blood_moon", "volcano", "desert_sun", "canyon", "acid", "dawn", "picnic", "gelato", "patrick",
+   "01"
 }
 
 local img_button_small = {}
@@ -68,6 +69,7 @@ for i = 1, #controller_styles do
    table.insert(img_button_big[name], gd.createFromPng("images/controller/LK_b_" .. name .. ".png"):gdStr())
    table.insert(img_button_big[name], gd.createFromPng("images/controller/MK_b_" .. name .. ".png"):gdStr())
    table.insert(img_button_big[name], gd.createFromPng("images/controller/HK_b_" .. name .. ".png"):gdStr())
+   table.insert(controller_style_menu_names, "style_" .. name)
 end
 
 local img_hold = gd.createFromPng("images/controller/hold_s.png"):gdStr()
@@ -78,9 +80,9 @@ local scroll_up_arrow = gd.createFromPng("images/menu/scroll_up.png"):gdStr()
 local scroll_down_arrow = gd.createFromPng("images/menu/scroll_down.png"):gdStr()
 local img_dot = gd.createFromPng("images/controller/dot.png"):gdStr()
 
-local draw = {controller_styles = controller_styles}
+local image_tables = {controller_styles = controller_styles, controller_style_menu_names = controller_style_menu_names}
 
-setmetatable(draw, {
+setmetatable(image_tables, {
    __index = function(_, key)
       if key == "img_dir_big" then
          return img_dir_big
@@ -112,4 +114,4 @@ setmetatable(draw, {
    end
 })
 
-return draw
+return image_tables

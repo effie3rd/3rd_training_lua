@@ -5,12 +5,6 @@ local tools = require("src.tools")
 
 local character_specific = framedata.character_specific
 
-local function get_side(player_x, opponent_x, player_previous_x, opponent_previous_x)
-   local diff = math.floor(player_x) - math.floor(opponent_x)
-   if diff == 0 then diff = math.floor(player_previous_x) - math.floor(opponent_previous_x) end
-   return diff > 0 and 2 or 1
-end
-
 local function has_projectiles(player)
    for _, projectile in pairs(require("src.gamestate").projectiles) do
       if (projectile.emitter_id == player.id or (projectile.emitter_id == player.other.id and projectile.is_converted)) then
@@ -51,23 +45,43 @@ local function is_in_opponent_throw_range(player, tolerance)
    return false
 end
 
-local function get_box_connection_distance(attacker, attack_boxes, defender, defender_boxes, box_types)
+local function get_box_connection_distance(attacker, attack_boxes, defender, defender_boxes, box_types, get_closest)
    box_types = box_types or {"vulnerability", "ext.vulnerability"}
    local hurt_boxes = tools.get_boxes(defender_boxes, box_types)
    if not hurt_boxes then return nil end
 
    local furthest = 0
+   local relevant_box
+
    for _, hit_box in ipairs(attack_boxes) do
       local hit_b = tools.format_box(hit_box)
-      for __, hurt_box in ipairs(hurt_boxes) do
-         local hurt_b = tools.format_box(hurt_box)
-         if not (hurt_b.bottom + hurt_b.height < hit_b.bottom or hurt_b.bottom > hit_b.bottom + hit_b.height) then
+      if math.abs(hit_b.left) > furthest then
+         furthest = math.abs(hit_b.left)
+         relevant_box = hit_b
+      end
+   end
+
+   if not relevant_box then return 0 end
+
+   furthest = 0
+   local closest = -1
+   for __, hurt_box in ipairs(hurt_boxes) do
+      local hurt_b = tools.format_box(hurt_box)
+      if not get_closest then
+         if not (hurt_b.bottom + hurt_b.height < relevant_box.bottom or hurt_b.bottom > relevant_box.bottom +
+             relevant_box.height) then
             if math.abs(hurt_b.left) > furthest then furthest = math.abs(hurt_b.left) end
+         end
+      else
+         if closest == -1 then closest = math.abs(hurt_b.left) end
+         if not (hurt_b.bottom + hurt_b.height < relevant_box.bottom or hurt_b.bottom > relevant_box.bottom +
+             relevant_box.height) then
+            if math.abs(hurt_b.left) < closest then closest = math.abs(hurt_b.left) end
          end
       end
    end
 
-   return furthest
+   if get_closest then return closest else return furthest end
 end
 
 local motion_to_menu_text = {
@@ -121,7 +135,6 @@ local function create_move_data_from_selection(move_selection_settings, player)
 end
 
 return {
-   get_side = get_side,
    has_projectiles = has_projectiles,
    get_stage_limits = get_stage_limits,
    get_stage_screen_limits = get_stage_screen_limits,

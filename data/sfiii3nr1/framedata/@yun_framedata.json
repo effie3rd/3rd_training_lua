@@ -60,174 +60,221 @@
       }],
     "idle_frames":[[15,22]],
     "name":"LP",
-    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "advantage":[8]
+    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "4654":{
     "hit_frames":[[17,21]],
-    "uses_velocity":true,
-    "name":"f_HP",
-    "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[41,49]],
     "frames":[{
         "hash":"1691020600",
         "acceleration":[-1.625,0],
         "velocity":[11,0]
       },{
         "hash":"1691010600",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1692020c00",
+        "velocity":[1.625,0],
         "movement":[1,0]
       },{
         "hash":"1692010c00",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1693021200",
+        "velocity":[1.625,0],
         "movement":[1,0]
       },{
         "hash":"1693011200",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1694021800",
+        "velocity":[1.625,0],
         "movement":[9,0]
       },{
         "hash":"1694011800",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1695021e00",
+        "velocity":[1.625,0],
         "movement":[-1,0]
       },{
         "hash":"1695011e00",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1696022400",
+        "velocity":[1.625,0],
         "movement":[-6,0]
       },{
         "hash":"1696012400",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1697032a00",
+        "velocity":[1.625,0],
         "movement":[2,0]
       },{
         "hash":"1697022a00",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1697012a00",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1698023000",
+        "velocity":[1.625,0],
         "movement":[1,0]
       },{
         "hash":"1698013000",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1699013601",
+        "velocity":[1.625,0],
         "boxes":[[5,51,14,-95,20],[5,51,15,24,20],[5,48,20,-93,44]],
         "movement":[-11,0]
       },{
+        "velocity":[1.625,0],
         "boxes":[[5,51,14,-70,16],[5,51,14,29,20]],
         "hash":"169a023c01",
         "movement":[-11,0]
       },{
         "hash":"169a013c01",
+        "velocity":[1.625,0],
         "boxes":[[5,51,14,-70,16],[5,51,14,29,20]],
         "movement":[-11,0]
       },{
         "hash":"169b024201",
+        "velocity":[1.625,0],
         "boxes":[[5,51,14,-70,16],[5,51,14,29,20]],
         "movement":[-11,0]
       },{
         "hash":"169b014201",
+        "velocity":[1.625,0],
         "boxes":[[5,51,14,-70,16],[5,51,14,29,20]],
         "movement":[-11,0]
       },{
         "hash":"169c024801",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"169c014801",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"169d024e01",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"169d014e01",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"169e025401",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"169e015401",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"169f025a01",
+        "velocity":[1.625,0],
         "movement":[-12,0]
       },{
         "hash":"169f015a01",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"16a0026001",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"16a0016001",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"16a1026601",
+        "velocity":[1.625,0],
         "movement":[-17,0]
       },{
         "hash":"16a1016601",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"16a2026c01",
+        "velocity":[1.625,0],
         "movement":[-18,0]
       },{
         "hash":"16a2016c01",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"16a3027201",
+        "velocity":[1.625,0],
         "movement":[-22,0]
       },{
         "hash":"16a3017201",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"16a4027801",
+        "velocity":[1.625,0],
         "movement":[-30,0]
       },{
         "hash":"16a4017801",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1241037e01",
+        "velocity":[1.625,0],
         "movement":[-19,0]
       },{
         "hash":"1241027e01",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1241017e01",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1240038401",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1240028401",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1240018401",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"123f038a01",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"123f028a01",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"123f018a01",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"123ffa9001",
+        "velocity":[1.625,0],
         "movement":[-11,0],
         "next_anim":[["idle"]]
       }],
-    "advantage":[14]
+    "idle_frames":[[41,49]],
+    "name":"f_HP",
+    "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "a014":{
     "hit_frames":[[13,14]],
@@ -305,14 +352,11 @@
       },{
         "hash":"1684036601",
         "next_anim":[["idle"]]
-      }],
-    "advantage":[14]
+      }]
   },
   "3840":{
     "hit_frames":[[10,20]],
     "name":"zesshou_MP",
-    "uses_velocity":true,
-    "advantage":[14],
     "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1540011200"
@@ -385,11 +429,12 @@
       },{
         "hash":"154bfa5401",
         "next_anim":[["3620",38]]
-      }]
+      }],
+    "uses_velocity":true
   },
   "0050":{
     "name":"u_MK_ext",
-    "uses_velocity":false,
+    "idle_frames":[[2,18]],
     "frames":[{
         "hash":"126c010000"
       },{
@@ -430,13 +475,12 @@
         "hash":"123ffa2000",
         "next_anim":[["idle"]]
       }],
-    "idle_frames":[[2,18]]
+    "uses_velocity":false
   },
   "415c":{
     "hit_frames":[[5,8]],
     "name":"MP",
     "idle_frames":[[21,23]],
-    "advantage":[11],
     "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1]],
     "frames":[{
         "hash":"138d010c00"
@@ -498,10 +542,7 @@
       }]
   },
   "a8c0":{
-    "loops":[[27,80]],
-    "uses_velocity":true,
-    "name":"jump_back",
-    "idle_frames":[[0,80]],
+    "landing_height":2.5,
     "frames":[{
         "hash":"1280030400",
         "acceleration":[0,-0.59375],
@@ -751,9 +792,13 @@
         "boxes":[[1,51,44,-20,40],[2,51,44,-21,42],[3,92,20,-18,19],[3,89,14,-21,50],[3,77,11,-16,44],[3,40,36,-30,58]],
         "loop":27
       }],
-    "landing_height":2.5
+    "idle_frames":[[0,80]],
+    "name":"jump_back",
+    "loops":[[27,80]],
+    "uses_velocity":true
   },
   "af60":{
+    "idle_frames":[[0,6],[8,28]],
     "name":"block_high_proximity",
     "frames":[{
         "hash":"1297020000",
@@ -844,21 +889,11 @@
         "hash":"1297fa1c00",
         "next_anim":[["idle"]],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]]
-      }],
-    "idle_frames":[[0,6],[8,28]]
+      }]
   },
   "510c":{
     "hit_frames":[[4,5]],
-    "exceptions":{
-      "1432021400":2,
-      "1432011400":3,
-      "1431021000":0,
-      "1431011000":1
-    },
-    "name":"d_LP",
     "self_chain":true,
-    "advantage":[8],
-    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1431020400"
       },{
@@ -886,10 +921,19 @@
       },{
         "hash":"1437042801",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "name":"d_LP",
+    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "exceptions":{
+      "1432021400":2,
+      "1432011400":3,
+      "1431021000":0,
+      "1431011000":1
+    }
   },
   "standing_begin":"a5e0",
   "2078":{
+    "idle_frames":[[27,28]],
     "name":"kobokushiEXP",
     "frames":[{
         "hash":"14e0020600"
@@ -950,12 +994,11 @@
       },{
         "hash":"14e0fa4800",
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[27,28]]
+      }]
   },
   "f6a0":{
     "name":"jump_recovery",
-    "uses_velocity":false,
+    "idle_frames":[[0,0],[2,3]],
     "frames":[{
         "hash":"126d010000",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,86,14,-10,16],[3,64,28,-4,28],[3,38,24,-20,44],[3,0,36,-4,28]]
@@ -967,16 +1010,15 @@
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]]
       },{
         "hash":"126f010800",
-        "next_anim":[["f530",4]],
-        "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]]
+        "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
+        "next_anim":[["f530",4]]
       }],
-    "idle_frames":[[0,0],[2,3]]
+    "uses_velocity":false
   },
   "590c":{
     "hit_frames":[[3,9]],
     "name":"u_MP",
     "air":true,
-    "advantage":[11],
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"146d010800",
@@ -1040,11 +1082,7 @@
   },
   "8724":{
     "hit_frames":[[2,3]],
-    "idle_frames":[[5,10]],
-    "name":"d_LP_geneijin",
     "self_chain":true,
-    "advantage":[14],
-    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1431010000"
       },{
@@ -1070,13 +1108,13 @@
       },{
         "hash":"123efa1400",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "idle_frames":[[5,10]],
+    "name":"d_LP_geneijin",
+    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "a9e0":{
-    "loops":[[25,72]],
-    "uses_velocity":true,
-    "name":"sjump_forward",
-    "idle_frames":[[1,72]],
+    "landing_height":9.09375,
     "frames":[{
         "hash":"1270050400",
         "acceleration":[-0.09375,-0.46875],
@@ -1302,12 +1340,16 @@
         "boxes":[[1,51,44,-20,40],[2,51,44,-21,42],[3,92,20,-18,19],[3,89,14,-21,50],[3,77,11,-16,44],[3,40,36,-30,58]],
         "loop":25
       }],
-    "landing_height":9.09375
+    "idle_frames":[[1,72]],
+    "name":"sjump_forward",
+    "loops":[[25,72]],
+    "uses_velocity":true
   },
   "7a2c":{
-    "hit_frames":[[6,7],[8,9]],
-    "name":"cl_HP_geneijin",
     "idle_frames":[[11,16]],
+    "name":"cl_HP_geneijin",
+    "pushback":[[4],[7],[8],[9],[8]],
+    "hit_frames":[[6,7],[8,9]],
     "frames":[{
         "hash":"13c6010000"
       },{
@@ -1363,15 +1405,12 @@
         "hash":"1238fa5a02",
         "bypass_freeze":true,
         "next_anim":[["idle"]]
-      }],
-    "pushback":[[4],[7],[8],[9],[8]]
+      }]
   },
   "402c":{
-    "hit_frames":[[4,6]],
-    "name":"cl_MP",
     "idle_frames":[[14,21]],
-    "advantage":[11],
-    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0]],
+    "name":"cl_MP",
+    "hit_frames":[[4,6]],
     "frames":[{
         "hash":"13d7010c00"
       },{
@@ -1430,10 +1469,6 @@
   },
   "7938":{
     "hit_frames":[[10,15],[16,20]],
-    "uses_velocity":true,
-    "name":"tetsuzan_HP_geneijin",
-    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0],[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[33,37]],
     "frames":[{
         "hash":"1540010600"
       },{
@@ -1549,7 +1584,10 @@
         "hash":"123ffa9002",
         "next_anim":[["idle"]]
       }],
-    "advantage":[14,16]
+    "idle_frames":[[33,37]],
+    "name":"tetsuzan_HP_geneijin",
+    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0],[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "a1ec":{
     "hit_frames":[[3,4]],
@@ -1594,14 +1632,12 @@
       }],
     "idle_frames":[[11,13]],
     "name":"cl_LP",
-    "pushback":[[3,5,6,7,6,4,1,0,0]],
-    "advantage":[8]
+    "pushback":[[3,5,6,7,6,4,1,0,0]]
   },
   "920c":{
     "hit_frames":[[5,9]],
     "name":"u_HK_geneijin",
     "air":true,
-    "advantage":[11],
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"149e030400",
@@ -1708,7 +1744,6 @@
     "hit_frames":[[3,8]],
     "name":"uf_MP_geneijin",
     "air":true,
-    "advantage":[11],
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"146d010400",
@@ -1771,8 +1806,6 @@
     "hit_frames":[[13,21]],
     "name":"f_MK_geneijin",
     "uses_velocity":true,
-    "advantage":[11],
-    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"13fa010600",
         "acceleration":[-0.0625,-0.4375],
@@ -1780,15 +1813,18 @@
         "movement":[8,0]
       },{
         "hash":"13fb010c00",
+        "velocity":[0.0625,0.4375],
         "movement":[13,-3.5]
       },{
         "hash":"13fc021200",
+        "velocity":[0.0625,0.4375],
         "movement":[13,-3.5]
       },{
         "hash":"13fc011200",
-        "movement":[-3,-3.5]
+        "ignore_motion":true
       },{
-        "hash":"13fd031800"
+        "hash":"13fd031800",
+        "velocity":[0.0625,0.4375]
       },{
         "hash":"13fd021800"
       },{
@@ -1833,14 +1869,13 @@
         "hash":"1404014201",
         "boxes":[[5,40,17,-68,49]],
         "next_anim":[["08a8",0]]
-      }]
+      }],
+    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "7468":{
-    "hit_frames":[[7,10],[11,15]],
-    "name":"tetsuzan_LP_geneijin",
     "idle_frames":[[24,28]],
-    "advantage":[14,14],
-    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0],[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "name":"tetsuzan_LP_geneijin",
+    "hit_frames":[[7,10],[11,15]],
     "frames":[{
         "hash":"1543011800",
         "movement":[12,0]
@@ -1922,9 +1957,11 @@
       },{
         "hash":"123ffa9002",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0],[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "a650":{
+    "name":"jump_startup",
     "frames":[{
         "hash":"1240020000",
         "boxes":[[1,0,70,-21,42],[2,51,44,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]]
@@ -1938,8 +1975,7 @@
         "hash":"1240fa0800",
         "boxes":[[1,0,70,-21,42],[2,51,44,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
         "next_anim":[["a6c0",0],["a7c0",0],["a8c0",0]]
-      }],
-    "name":"jump_startup"
+      }]
   },
   "9a3c":{
     "hit_frames":[[6,21]],
@@ -1955,11 +1991,11 @@
       },{
         "hash":"150b010400",
         "boxes":[[1,51,44,-20,40]],
-        "movement":[-8,2.25]
+        "ignore_motion":true
       },{
         "hash":"150c020800",
         "boxes":[[1,51,44,-20,40]],
-        "movement":[-8,2.25]
+        "ignore_motion":true
       },{
         "hash":"150c010800",
         "boxes":[[1,51,44,-20,40]]
@@ -2020,15 +2056,10 @@
     "loops":[[10,21]],
     "name":"raigeki_HK_geneijin",
     "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[11]
+    "air":true
   },
   "76a4":{
     "hit_frames":[[4,4],[11,14],[37,40]],
-    "idle_frames":[[31,31]],
-    "name":"tc_4_ext",
-    "advantage":[23],
-    "pushback":[[3],[0],[3],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]],
     "frames":[{
         "hash":"1438020000"
       },{
@@ -2247,7 +2278,10 @@
         "hash":"1437fa3c02",
         "next_anim":[["idle"]]
       }],
-    "loops":[[58,73]]
+    "loops":[[58,73]],
+    "name":"tc_4_ext",
+    "pushback":[[3],[0],[3],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]],
+    "idle_frames":[[31,31]]
   },
   "block_high":"bc5c",
   "a460":{
@@ -3497,9 +3531,9 @@
       }]
   },
   "a0b8":{
-    "idle_frames":[[29,41]],
     "name":"dash_back",
     "uses_velocity":true,
+    "idle_frames":[[29,41]],
     "frames":[{
         "hash":"12b8010600",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,72,18,-20,23],[3,60,14,-27,48],[3,33,26,-21,47],[3,0,32,-22,48]],
@@ -3672,8 +3706,8 @@
       }]
   },
   "ace0":{
-    "idle_frames":[[0,0]],
     "name":"walk_transition",
+    "idle_frames":[[0,0]],
     "uses_velocity":true,
     "frames":[{
         "hash":"1201fa0000",
@@ -3684,10 +3718,6 @@
   },
   "7d64":{
     "hit_frames":[[9,11]],
-    "uses_velocity":true,
-    "name":"f_HP_geneijin",
-    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[20,24]],
     "frames":[{
         "hash":"1692010000",
         "acceleration":[-1.625,0],
@@ -3695,84 +3725,112 @@
         "movement":[12,0]
       },{
         "hash":"1693010600",
+        "velocity":[1.625,0],
         "movement":[1,0]
       },{
         "hash":"1694010c00",
+        "velocity":[1.625,0],
         "movement":[9,0]
       },{
         "hash":"1695011200",
+        "velocity":[1.625,0],
         "movement":[-1,0]
       },{
         "hash":"1696011800",
+        "velocity":[1.625,0],
         "movement":[-6,0]
       },{
         "hash":"1697031e00",
+        "velocity":[1.625,0],
         "movement":[2,0]
       },{
         "hash":"1697021e00",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1697011e00",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"1698012400",
+        "velocity":[1.625,0],
         "movement":[1,0]
       },{
         "hash":"1699012a01",
+        "velocity":[1.625,0],
         "boxes":[[5,51,14,-95,20],[5,51,15,24,20],[5,48,20,-93,44]],
         "movement":[-11,0]
       },{
+        "velocity":[1.625,0],
         "boxes":[[5,51,14,-70,16],[5,51,14,29,20]],
         "hash":"169a013001",
         "movement":[-11,0]
       },{
         "hash":"169b013601",
+        "velocity":[1.625,0],
         "boxes":[[5,51,14,-70,16],[5,51,14,29,20]],
         "movement":[-11,0]
       },{
         "hash":"169c013c01",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"169d014201",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"169e014801",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"169f014e01",
+        "velocity":[1.625,0],
         "movement":[-12,0]
       },{
         "hash":"16a0015401",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"16a1015a01",
+        "velocity":[1.625,0],
         "movement":[-17,0]
       },{
         "hash":"16a2016001",
+        "velocity":[1.625,0],
         "movement":[-18,0]
       },{
         "hash":"16a3016601",
+        "velocity":[1.625,0],
         "movement":[-22,0]
       },{
         "hash":"16a4016c01",
+        "velocity":[1.625,0],
         "movement":[-30,0]
       },{
         "hash":"1241017201",
+        "velocity":[1.625,0],
         "movement":[-19,0]
       },{
         "hash":"1240017801",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"123f017e01",
+        "velocity":[1.625,0],
         "movement":[-11,0]
       },{
         "hash":"123ffa8401",
+        "velocity":[1.625,0],
         "movement":[-11,0],
         "next_anim":[["idle"]]
       }],
-    "advantage":[14]
+    "idle_frames":[[20,24]],
+    "name":"f_HP_geneijin",
+    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "fefc":{
+    "name":"throw_neutral_ext",
     "frames":[{
         "hash":"14b2030c00"
       },{
@@ -3796,13 +3854,12 @@
       },{
         "hash":"1516011800",
         "next_anim":[["0694",0]]
-      }],
-    "name":"throw_neutral_ext"
+      }]
   },
   "block_high_air":"bbec",
   "f8b0":{
     "name":"jump_recovery",
-    "uses_velocity":false,
+    "idle_frames":[[0,0],[2,2]],
     "frames":[{
         "hash":"128d010000",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,86,14,-10,16],[3,64,28,-4,28],[3,38,24,-20,44],[3,0,36,-4,28]]
@@ -3811,14 +3868,14 @@
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,86,14,-10,16],[3,64,28,-4,28],[3,38,24,-20,44],[3,0,36,-4,28]]
       },{
         "hash":"128f010c00",
-        "next_anim":[["f530",4]],
-        "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]]
+        "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
+        "next_anim":[["f530",4]]
       }],
-    "idle_frames":[[0,0],[2,2]]
+    "uses_velocity":false
   },
   "f530":{
     "name":"jump_recovery",
-    "uses_velocity":false,
+    "idle_frames":[[0,0],[2,16]],
     "frames":[{
         "hash":"127d010000",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,86,14,-10,16],[3,64,28,-4,28],[3,38,24,-20,44],[3,0,36,-4,28]]
@@ -3869,14 +3926,14 @@
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]]
       },{
         "hash":"123ffa1800",
-        "next_anim":[["idle"]],
-        "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]]
+        "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
+        "next_anim":[["idle"]]
       }],
-    "idle_frames":[[0,0],[2,16]]
+    "uses_velocity":false
   },
   "1508":{
     "name":"sourairengeki_ext",
-    "uses_velocity":false,
+    "idle_frames":[[9,12]],
     "frames":[{
         "hash":"1531020000"
       },{
@@ -3906,13 +3963,12 @@
         "hash":"123ffa1400",
         "next_anim":[["idle"]]
       }],
-    "idle_frames":[[9,12]]
+    "uses_velocity":false
   },
   "5ffc":{
     "hit_frames":[[3,8]],
     "name":"uf_MP",
     "air":true,
-    "advantage":[11],
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"146d010800",
@@ -3975,8 +4031,6 @@
     "hit_frames":[[13,27]],
     "name":"zesshou_HP",
     "uses_velocity":true,
-    "advantage":[14],
-    "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1540011200"
       },{
@@ -4058,14 +4112,13 @@
         "hash":"154a024e01",
         "boxes":[[5,58,11,-68,46],[5,44,14,-50,40]],
         "next_anim":[["3620",38]]
-      }]
+      }],
+    "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "59f8":{
-    "hit_frames":[[10,15]],
-    "name":"kobokushi_geneijin",
     "idle_frames":[[17,22]],
-    "advantage":[16],
-    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "name":"kobokushi_geneijin",
+    "hit_frames":[[10,15]],
     "frames":[{
         "hash":"14e0010600"
       },{
@@ -4125,7 +4178,8 @@
       },{
         "hash":"1238fa8401",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "959c":{
     "hit_frames":[[4,15]],
@@ -4417,8 +4471,7 @@
     "loops":[[37,76],[77,92]],
     "name":"uf_LK_geneijin",
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[8]
+    "air":true
   },
   "66bc":{
     "hit_frames":[[6,21]],
@@ -4434,11 +4487,11 @@
       },{
         "hash":"150b010800",
         "boxes":[[1,51,44,-20,40]],
-        "movement":[-8,2.25]
+        "ignore_motion":true
       },{
         "hash":"150c020c00",
         "boxes":[[1,51,44,-20,40]],
-        "movement":[-8,2.25]
+        "ignore_motion":true
       },{
         "hash":"150c010c00",
         "boxes":[[1,51,44,-20,40]]
@@ -4499,15 +4552,10 @@
     "loops":[[10,21]],
     "name":"raigeki_HK",
     "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[11]
+    "air":true
   },
   "748c":{
     "hit_frames":[[3,6]],
-    "uses_velocity":true,
-    "name":"tc_1_ext",
-    "pushback":[[3,5,6,7,6,4,1,0,0]],
-    "idle_frames":[[14,19]],
     "frames":[{
         "hash":"13e3020600",
         "movement":[10,0]
@@ -4536,39 +4584,49 @@
         "hash":"13e8021e01",
         "acceleration":[0,-1]
       },{
-        "hash":"13e8011e01"
+        "hash":"13e8011e01",
+        "velocity":[0,1]
       },{
         "hash":"13e9032401",
+        "velocity":[0,1],
         "movement":[-10,0]
       },{
-        "hash":"13e9022401"
+        "hash":"13e9022401",
+        "velocity":[0,1]
       },{
-        "hash":"13e9012401"
+        "hash":"13e9012401",
+        "velocity":[0,1]
       },{
-        "hash":"13ea022a01"
+        "hash":"13ea022a01",
+        "velocity":[0,1]
       },{
-        "hash":"13ea012a01"
+        "hash":"13ea012a01",
+        "velocity":[0,1]
       },{
-        "hash":"13eb023001"
+        "hash":"13eb023001",
+        "velocity":[0,1]
       },{
-        "hash":"13eb013001"
+        "hash":"13eb013001",
+        "velocity":[0,1]
       },{
-        "hash":"123f023601"
+        "hash":"123f023601",
+        "velocity":[0,1]
       },{
-        "hash":"123f013601"
+        "hash":"123f013601",
+        "velocity":[0,1]
       },{
         "hash":"123ffa3c01",
+        "velocity":[0,1],
         "next_anim":[["idle"]]
       }],
-    "advantage":[11]
+    "idle_frames":[[14,19]],
+    "name":"tc_1_ext",
+    "pushback":[[3,5,6,7,6,4,1,0,0]],
+    "uses_velocity":true
   },
   "a3dc":{
     "hit_frames":[[2,2]],
-    "idle_frames":[[5,6]],
-    "name":"cl_LP_geneijin",
     "self_chain":true,
-    "advantage":[10],
-    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"13c1010000"
       },{
@@ -4585,10 +4643,14 @@
       },{
         "hash":"13c0fa1801",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "idle_frames":[[5,6]],
+    "name":"cl_LP_geneijin",
+    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "walk_forward":"9cd8",
   "adb8":{
+    "idle_frames":[[15,17]],
     "name":"parry_low",
     "frames":[{
         "hash":"129b010000",
@@ -4662,8 +4724,7 @@
         "hash":"161b041e00",
         "boxes":[[1,0,48,-21,42],[2,0,8,-25,46],[3,43,20,-12,24],[3,36,18,-24,52],[3,19,17,-28,55],[3,0,19,-34,63]],
         "next_anim":[["a5e0",0]]
-      }],
-    "idle_frames":[[15,17]]
+      }]
   },
   "529c":{
     "hit_frames":[[5,5],[12,14]],
@@ -4671,8 +4732,6 @@
     "exceptions":{
       "1231020c00":4
     },
-    "advantage":[23],
-    "pushback":[[3],[0]],
     "frames":[{
         "hash":"1438020400"
       },{
@@ -4745,7 +4804,8 @@
       },{
         "hash":"1437fa4002",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "pushback":[[3],[0]]
   },
   "63d0":{
     "hit_frames":[[28,33],[46,51],[64,69],[82,87]],
@@ -5036,14 +5096,11 @@
     "name":"pa",
     "infinite_loop":true,
     "pushback":[[3,5,6,7,6,4,1,0,0],[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "loops":[[36,71]],
-    "advantage":[8,8]
+    "loops":[[36,71]]
   },
   "8978":{
     "hit_frames":[[4,5],[13,16]],
     "name":"nishoukyaku_LK",
-    "uses_velocity":true,
-    "advantage":[11],
     "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1533010c00",
@@ -5128,13 +5185,11 @@
       },{
         "hash":"126b019002",
         "next_anim":[["16c8",0]]
-      }]
+      }],
+    "uses_velocity":true
   },
   "a7c0":{
-    "loops":[[27,80],[81,98],[99,110]],
-    "uses_velocity":true,
-    "name":"jump_neutral",
-    "idle_frames":[[0,80]],
+    "landing_height":4.5625,
     "frames":[{
         "hash":"1260030400",
         "acceleration":[0,-0.59375],
@@ -5449,9 +5504,13 @@
         "loop":99,
         "next_anim":[["f6f0",0]]
       }],
-    "landing_height":4.5625
+    "idle_frames":[[0,80]],
+    "name":"jump_neutral",
+    "loops":[[27,80],[81,98],[99,110]],
+    "uses_velocity":true
   },
   "a3e0":{
+    "idle_frames":[[0,12]],
     "name":"crouching_begin",
     "frames":[{
         "hash":"1230010000",
@@ -5493,13 +5552,11 @@
         "hash":"1235fa1800",
         "boxes":[[1,0,48,-21,42],[2,0,8,-25,46],[3,43,20,-12,24],[3,36,18,-24,52],[3,19,17,-28,55],[3,0,19,-34,63]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[0,12]]
+      }]
   },
   "548c":{
     "hit_frames":[[6,8]],
     "name":"d_MK",
-    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0]],
     "frames":[{
         "hash":"1610030600"
       },{
@@ -5547,11 +5604,11 @@
         "hash":"161a034201",
         "next_anim":[["idle"]]
       }],
-    "advantage":[11]
+    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0]]
   },
   "0e28":{
     "name":"uoh_ext",
-    "uses_velocity":false,
+    "idle_frames":[[5,16]],
     "frames":[{
         "hash":"126f010000"
       },{
@@ -5588,13 +5645,12 @@
         "hash":"123ffa1400",
         "next_anim":[["idle"]]
       }],
-    "idle_frames":[[5,16]]
+    "uses_velocity":false
   },
   "1e28":{
     "hit_frames":[[24,33]],
     "name":"kobokushi",
     "idle_frames":[[38,55]],
-    "advantage":[10],
     "pushback":[[4,7,9,10,12,9,6,5,4,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"14e0020c00"
@@ -5728,6 +5784,7 @@
       }]
   },
   "f954":{
+    "name":"throw_forward_ext",
     "frames":[{
         "hash":"14cf035400",
         "movement":[-16,0]
@@ -5804,14 +5861,11 @@
       },{
         "hash":"14d9fa9c00",
         "next_anim":[["idle"]]
-      }],
-    "name":"throw_forward_ext"
+      }]
   },
   "8bf8":{
     "hit_frames":[[6,7],[15,18]],
     "name":"nishoukyaku_MK",
-    "uses_velocity":true,
-    "advantage":[11],
     "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,-1.8125]],
     "frames":[{
         "hash":"1533010c00",
@@ -5904,9 +5958,11 @@
       },{
         "hash":"126c019602",
         "next_anim":[["16c8",0]]
-      }]
+      }],
+    "uses_velocity":true
   },
   "cbe4":{
+    "idle_frames":[[33,47]],
     "name":"wakeup_ext",
     "frames":[{
         "hash":"13320c0400",
@@ -6053,8 +6109,7 @@
         "hash":"123efa4000",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[33,47]]
+      }]
   },
   "580c":{
     "hit_frames":[[2,70]],
@@ -6278,10 +6333,10 @@
     "loops":[[23,70]],
     "name":"u_LP",
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[8]
+    "air":true
   },
   "a690":{
+    "name":"sjump_startup",
     "frames":[{
         "hash":"127f040000",
         "boxes":[[1,0,62,-21,42],[2,51,44,-21,42],[3,56,18,-28,23],[3,50,20,-25,46],[3,29,20,-28,52],[3,0,28,-34,58]]
@@ -6298,28 +6353,25 @@
         "hash":"127ffa0400",
         "boxes":[[1,0,62,-21,42],[2,51,44,-21,42],[3,56,18,-28,23],[3,50,20,-25,46],[3,29,20,-28,52],[3,0,28,-34,58]],
         "next_anim":[["a9e0",0],["aae0",0],["abe0",0]]
-      }],
-    "name":"sjump_startup"
+      }]
   },
   "62f0":{
     "hit_frames":[[13,21]],
     "name":"uoh_geneijin",
     "uses_velocity":true,
-    "advantage":[11],
-    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"12b1040400",
         "acceleration":[0,-0.4375],
         "velocity":[2,4.5]
       },{
         "hash":"12b1030400",
-        "movement":[-2,-4.5]
+        "ignore_motion":true
       },{
         "hash":"12b1020400",
-        "movement":[-2,-4.5]
+        "ignore_motion":true
       },{
         "hash":"12b1010400",
-        "movement":[-2,-4.5]
+        "ignore_motion":true
       },{
         "hash":"146d030800"
       },{
@@ -6372,9 +6424,11 @@
       },{
         "hash":"1475012401",
         "next_anim":[["0e28",0]]
-      }]
+      }],
+    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "e980":{
+    "name":"wakeup",
     "frames":[{
         "hash":"1329030000",
         "boxes":[[1,0,48,-21,42]],
@@ -6464,11 +6518,11 @@
         "hash":"1370012800",
         "boxes":[[1,0,48,-21,42]],
         "next_anim":[["cbe4",13]]
-      }],
-    "name":"wakeup"
+      }]
   },
   "15d8":{
     "name":"nishoukyaku_geneijin_ext",
+    "uses_velocity":false,
     "frames":[{
         "hash":"126f010000"
       },{
@@ -6480,15 +6534,10 @@
       },{
         "hash":"123ffa1000",
         "next_anim":[["idle"]]
-      }],
-    "uses_velocity":false
+      }]
   },
   "3620":{
     "hit_frames":[[7,11]],
-    "uses_velocity":true,
-    "name":"zesshou_LP",
-    "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[34,37],[50,53]],
     "frames":[{
         "hash":"1540011200"
       },{
@@ -6553,48 +6602,63 @@
         "movement":[8,-0.625]
       },{
         "hash":"154c025a01",
+        "velocity":[0,0.375],
         "movement":[-4,0]
       },{
         "hash":"154c015a01",
+        "velocity":[0,0.375],
         "movement":[-4,0]
       },{
         "hash":"154d036001",
+        "velocity":[0,0.375],
         "movement":[15,0]
       },{
         "hash":"154d026001",
+        "velocity":[0,0.375],
         "movement":[-4,0]
       },{
         "hash":"154d016001",
+        "velocity":[0,0.375],
         "movement":[-4,0]
       },{
         "hash":"154e036601",
+        "velocity":[0,0.375],
         "movement":[14,0]
       },{
         "hash":"154e026601",
+        "velocity":[0,0.375],
         "movement":[-4,0]
       },{
         "hash":"154e016601",
+        "velocity":[0,0.375],
         "movement":[-4,0]
       },{
         "hash":"123a016c01",
+        "velocity":[0,0.375],
         "movement":[-4,0]
       },{
         "hash":"1239017201",
+        "velocity":[0,0.375],
         "movement":[-4,0]
       },{
         "hash":"123f047801",
+        "velocity":[0,0.375],
         "movement":[-4,0]
       },{
         "hash":"123f037801",
+        "velocity":[0,0.375],
         "movement":[-4,0]
       },{
         "hash":"123f027801",
+        "velocity":[0,0.375],
         "movement":[-4,0]
       },{
         "hash":"123f017801",
+        "velocity":[0,0.375],
         "movement":[-4,0]
       },{
         "hash":"123ffa7e01",
+        "velocity":[0,0.375],
         "movement":[-4,0],
         "next_anim":[["idle"]]
       },{
@@ -6633,13 +6697,15 @@
         "hash":"123ffa7e00",
         "next_anim":[["idle"]]
       }],
-    "advantage":[14]
+    "idle_frames":[[34,37],[50,53]],
+    "name":"zesshou_LP",
+    "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "48bc":{
     "hit_frames":[[3,5]],
     "name":"LK",
     "idle_frames":[[12,17]],
-    "advantage":[8],
     "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"13e3010c00",
@@ -6689,6 +6755,7 @@
   },
   "parry_low":"adb8",
   "bc5c":{
+    "idle_frames":[[20,25]],
     "name":"block_high",
     "frames":[{
         "hash":"129c010000",
@@ -6777,15 +6844,12 @@
         "hash":"1297fa1400",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[20,25]]
+      }]
   },
   "60ec":{
-    "hit_frames":[[5,8]],
-    "name":"uf_HP",
     "air":true,
-    "advantage":[11],
-    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "name":"uf_HP",
+    "hit_frames":[[5,8]],
     "frames":[{
         "hash":"146d010800",
         "boxes":[[1,51,44,-20,40]]
@@ -6841,9 +6905,12 @@
         "hash":"1477012c01",
         "boxes":[[1,51,44,-20,40]],
         "next_anim":[["a6c0",18]]
-      }]
+      }],
+    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "5f40":{
+    "hit_frames":[[5,6]],
+    "name":"zenpou_geneijin",
     "frames":[{
         "hash":"14b0020c00"
       },{
@@ -6919,9 +6986,7 @@
       },{
         "hash":"14b0fa4201",
         "next_anim":[["idle"]]
-      }],
-    "name":"zenpou_geneijin",
-    "hit_frames":[[5,6]]
+      }]
   },
   "976c":{
     "hit_frames":[[6,12]],
@@ -7254,10 +7319,10 @@
     "loops":[[30,73],[74,93],[94,105]],
     "name":"u_MK_geneijin",
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[11]
+    "air":true
   },
   "f6f0":{
+    "idle_frames":[[2,12]],
     "name":"u_HK_ext",
     "uses_velocity":false,
     "frames":[{
@@ -7287,10 +7352,11 @@
       },{
         "hash":"123ffa1800",
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[2,12]]
+      }]
   },
   "4f80":{
+    "hit_frames":[[7,8]],
+    "name":"zenpou",
     "frames":[{
         "hash":"14b0031200"
       },{
@@ -7370,15 +7436,10 @@
       },{
         "hash":"14b0fa4801",
         "next_anim":[["idle"]]
-      }],
-    "name":"zenpou",
-    "hit_frames":[[7,8]]
+      }]
   },
   "aae0":{
-    "loops":[[25,72]],
-    "uses_velocity":true,
-    "name":"sjump_neutral",
-    "idle_frames":[[1,72]],
+    "landing_height":3.375,
     "frames":[{
         "hash":"1260050400",
         "acceleration":[0,-0.46875],
@@ -7604,9 +7665,13 @@
         "boxes":[[1,51,44,-20,40],[2,51,44,-21,42],[3,92,20,-18,19],[3,89,14,-21,50],[3,77,11,-16,44],[3,40,36,-30,58]],
         "loop":25
       }],
-    "landing_height":3.375
+    "idle_frames":[[1,72]],
+    "name":"sjump_neutral",
+    "loops":[[25,72]],
+    "uses_velocity":true
   },
   "ae70":{
+    "idle_frames":[[16,16]],
     "name":"parry_air",
     "frames":[{
         "hash":"12a5020000",
@@ -7675,15 +7740,12 @@
         "hash":"1267010c00",
         "boxes":[[1,51,44,-20,40],[2,51,44,-21,42],[3,98,20,-7,19],[3,88,14,-21,50],[3,70,20,-16,44],[3,32,36,-24,48]],
         "next_anim":[["a7c0",20]]
-      }],
-    "idle_frames":[[16,16]]
+      }]
   },
   "80b4":{
-    "hit_frames":[[5,13]],
-    "name":"cl_MK_geneijin",
     "idle_frames":[[15,31]],
-    "advantage":[20],
-    "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "name":"cl_MK_geneijin",
+    "hit_frames":[[5,13]],
     "frames":[{
         "hash":"13ed030000"
       },{
@@ -7758,7 +7820,8 @@
       },{
         "hash":"123ffa4801",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "98ac":{
     "hit_frames":[[6,21]],
@@ -7774,11 +7837,11 @@
       },{
         "hash":"150b010400",
         "boxes":[[1,51,44,-20,40]],
-        "movement":[-6,2.25]
+        "ignore_motion":true
       },{
         "hash":"150c020800",
         "boxes":[[1,51,44,-20,40]],
-        "movement":[-6,2.25]
+        "ignore_motion":true
       },{
         "hash":"150c010800",
         "boxes":[[1,51,44,-20,40]]
@@ -7839,11 +7902,11 @@
     "loops":[[10,21]],
     "name":"raigeki_MK_geneijin",
     "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[11]
+    "air":true
   },
   "d3bc":{
     "name":"wakeup_quick_reverse_ext",
+    "uses_velocity":true,
     "frames":[{
         "hash":"1370020000",
         "boxes":[[1,0,48,-21,42],[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-12,23],[3,60,14,-27,51],[3,33,26,-25,47],[3,0,32,-23,58]],
@@ -7940,8 +8003,7 @@
         "next_anim":[["idle"]],
         "movement":[-1.5,0],
         "wakeup":true
-      }],
-    "uses_velocity":true
+      }]
   },
   "78b4":{
     "hit_frames":[[3,5]],
@@ -8022,6 +8084,7 @@
     "pushback":[[4],[7],[8],[9],[8],[6],[3],[2],[1],[0],[0],[0],[0]]
   },
   "9c48":{
+    "idle_frames":[[0,11]],
     "name":"standing_turn",
     "frames":[{
         "hash":"1219030000",
@@ -8060,15 +8123,12 @@
         "hash":"121ffa1c00",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[0,11]]
+      }]
   },
   "5dfc":{
-    "hit_frames":[[5,9]],
-    "name":"u_HK",
     "air":true,
-    "advantage":[11],
-    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "name":"u_HK",
+    "hit_frames":[[5,9]],
     "frames":[{
         "hash":"149e030800",
         "boxes":[[1,51,44,-20,40]]
@@ -8154,7 +8214,8 @@
         "hash":"126a013401",
         "boxes":[[1,51,44,-20,40]],
         "next_anim":[["a7c0",30]]
-      }]
+      }],
+    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "wakeups":["cbe4","e980","d3bc","d5dc","ebd0","eb00","eca0"],
   "92fc":{
@@ -8448,11 +8509,11 @@
     "loops":[[21,68],[69,92]],
     "name":"uf_LP_geneijin",
     "pushback":[[3,4,6,7,4,3,1,0,0],[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[8,8]
+    "air":true
   },
   "parry_air":"ae70",
   "0dac":{
+    "name":"throw_forward_ext",
     "frames":[{
         "hash":"1540040600"
       },{
@@ -8526,13 +8587,12 @@
       },{
         "hash":"14ce013600",
         "next_anim":[["f954",0]]
-      }],
-    "name":"throw_forward_ext"
+      }]
   },
   "standing":"b860",
   "03e0":{
     "name":"u_HP_ext",
-    "uses_velocity":false,
+    "idle_frames":[[2,20]],
     "frames":[{
         "hash":"126c010000"
       },{
@@ -8577,13 +8637,12 @@
         "hash":"123ffa2000",
         "next_anim":[["idle"]]
       }],
-    "idle_frames":[[2,20]]
+    "uses_velocity":false
   },
   "6e14":{
     "hit_frames":[[10,14]],
     "name":"tc_2_ext",
     "idle_frames":[[34,45]],
-    "advantage":[16],
     "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"16c2010c00"
@@ -8692,6 +8751,7 @@
       }]
   },
   "5288":{
+    "name":"geneijin",
     "frames":[{
         "hash":"15f0074800"
       },{
@@ -8769,15 +8829,10 @@
       },{
         "hash":"15fdfaa200",
         "next_anim":[["idle"]]
-      }],
-    "name":"geneijin"
+      }]
   },
   "6a78":{
     "hit_frames":[[18,23]],
-    "uses_velocity":true,
-    "name":"tetsuzan_MP",
-    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[39,48]],
     "frames":[{
         "hash":"1541010c00",
         "movement":[12,0]
@@ -8909,13 +8964,16 @@
         "hash":"123ffa9001",
         "next_anim":[["idle"]]
       }],
-    "advantage":[14]
+    "idle_frames":[[39,48]],
+    "name":"tetsuzan_MP",
+    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "9cd8":{
     "loops":[[2,43]],
     "name":"walk_forward",
-    "uses_velocity":true,
     "idle_frames":[[0,117]],
+    "uses_velocity":true,
     "frames":[{
         "hash":"1256020000",
         "velocity":[3.75,0],
@@ -9280,8 +9338,6 @@
     "hit_frames":[[8,9],[17,20]],
     "name":"nishoukyaku_HK",
     "uses_velocity":true,
-    "advantage":[11],
-    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,-2.8125,0,0]],
     "frames":[{
         "hash":"1533010c00",
         "movement":[4,0]
@@ -9381,13 +9437,14 @@
       },{
         "hash":"126c019602",
         "next_anim":[["16c8",0]]
-      }]
+      }],
+    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,-2.8125,0,0]]
   },
   "walk_back":"9de8",
   "d5dc":{
-    "idle_frames":[[27,37]],
     "name":"wakeup_quick_ext",
     "uses_velocity":true,
+    "idle_frames":[[27,37]],
     "frames":[{
         "hash":"132d030000",
         "boxes":[[1,0,48,-21,42]],
@@ -9520,6 +9577,8 @@
       }]
   },
   "a50c":{
+    "hit_frames":[[2,2]],
+    "name":"throw_neutral",
     "frames":[{
         "hash":"14b0020c00"
       },{
@@ -9575,15 +9634,12 @@
       },{
         "hash":"14b0fa3601",
         "next_anim":[["idle"]]
-      }],
-    "name":"throw_neutral",
-    "hit_frames":[[2,2]]
+      }]
   },
   "59fc":{
     "hit_frames":[[8,12]],
     "name":"u_HP",
     "air":true,
-    "advantage":[11],
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1478010800",
@@ -9654,8 +9710,8 @@
   "jump_recovery":"f600",
   "walk_transition":"ace0",
   "02a0":{
-    "idle_frames":[[2,10]],
     "name":"u_LP_ext",
+    "idle_frames":[[2,10]],
     "uses_velocity":true,
     "frames":[{
         "hash":"146b010000",
@@ -9735,10 +9791,7 @@
   },
   "block_high_proximity":"af60",
   "abe0":{
-    "loops":[[25,72]],
-    "uses_velocity":true,
-    "name":"sjump_back",
-    "idle_frames":[[1,72]],
+    "landing_height":9.09375,
     "frames":[{
         "hash":"1280050400",
         "acceleration":[0.0625,-0.46875],
@@ -9964,7 +10017,10 @@
         "boxes":[[1,51,44,-20,40],[2,51,44,-21,42],[3,92,20,-18,19],[3,89,14,-21,50],[3,77,11,-16,44],[3,40,36,-30,58]],
         "loop":25
       }],
-    "landing_height":9.09375
+    "idle_frames":[[1,72]],
+    "name":"sjump_back",
+    "loops":[[25,72]],
+    "uses_velocity":true
   },
   "crouching_begin":"a3e0",
   "53bc":{
@@ -10000,14 +10056,11 @@
       },{
         "hash":"1442012001",
         "next_anim":[["idle"]]
-      }],
-    "advantage":[8]
+      }]
   },
   "3c98":{
     "hit_frames":[[13,21],[22,27]],
     "name":"zesshou_EXP",
-    "uses_velocity":true,
-    "advantage":[14],
     "pushback":[[0],[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1540011200"
@@ -10090,7 +10143,8 @@
         "hash":"154a024e02",
         "boxes":[[5,58,11,-68,46],[5,44,14,-50,40]],
         "next_anim":[["3620",38]]
-      }]
+      }],
+    "uses_velocity":true
   },
   "crouching":"a460",
   "aed0":{
@@ -10109,11 +10163,9 @@
     "idle_frames":[[0,2]]
   },
   "9d14":{
-    "hit_frames":[[9,12]],
-    "name":"tc_5_ext",
     "idle_frames":[[42,54]],
-    "advantage":[14],
-    "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "name":"tc_5_ext",
+    "hit_frames":[[9,12]],
     "frames":[{
         "hash":"15b0040000",
         "movement":[5,0]
@@ -10239,14 +10291,14 @@
       },{
         "hash":"123ffa7201",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "parry_high":"ad00",
   "77b4":{
     "hit_frames":[[3,4]],
     "name":"cl_MP_geneijin",
     "idle_frames":[[9,12]],
-    "advantage":[8],
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"13d7010000"
@@ -10576,15 +10628,12 @@
     "loops":[[21,68],[69,92]],
     "name":"uf_LP",
     "pushback":[[3,4,6,7,4,3,1,0,0],[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[8,8]
+    "air":true
   },
   "42a4":{
-    "hit_frames":[[6,8],[9,11]],
-    "name":"cl_HP",
     "idle_frames":[[25,42]],
-    "advantage":[11,11],
-    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1],[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0]],
+    "name":"cl_HP",
+    "hit_frames":[[6,8],[9,11]],
     "frames":[{
         "hash":"13c6010600"
       },{
@@ -10684,13 +10733,13 @@
       },{
         "hash":"1238fa6c02",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1],[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "87b4":{
     "hit_frames":[[3,4]],
     "name":"d_MP_geneijin",
     "idle_frames":[[6,10]],
-    "advantage":[13],
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1430010000"
@@ -10722,8 +10771,6 @@
   "4d2c":{
     "hit_frames":[[19,24]],
     "name":"f_MK",
-    "uses_velocity":true,
-    "advantage":[11],
     "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"13fa010c00",
@@ -10732,24 +10779,27 @@
         "movement":[8,0]
       },{
         "hash":"13fb031200",
+        "velocity":[0.0625,0.4375],
         "movement":[13,-3.5]
       },{
         "hash":"13fb021200",
-        "movement":[-3,-3.5]
+        "ignore_motion":true
       },{
         "hash":"13fb011200",
-        "movement":[-3,-3.5]
+        "ignore_motion":true
       },{
         "hash":"13fc031800",
+        "velocity":[0.0625,0.4375],
         "movement":[13,-3.5]
       },{
         "hash":"13fc021800",
-        "movement":[-3,-3.5]
+        "ignore_motion":true
       },{
         "hash":"13fc011800",
-        "movement":[-3,-3.5]
+        "ignore_motion":true
       },{
-        "hash":"13fd021e00"
+        "hash":"13fd021e00",
+        "velocity":[0.0625,0.4375]
       },{
         "hash":"13fd011e00"
       },{
@@ -10791,9 +10841,11 @@
         "hash":"1404014801",
         "boxes":[[5,40,17,-68,49]],
         "next_anim":[["08a8",0]]
-      }]
+      }],
+    "uses_velocity":true
   },
   "08a8":{
+    "idle_frames":[[8,19]],
     "name":"f_MK_ext",
     "uses_velocity":false,
     "frames":[{
@@ -10837,14 +10889,12 @@
       },{
         "hash":"123ffa1400",
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[8,19]]
+      }]
   },
   "75a4":{
     "hit_frames":[[3,8]],
     "name":"tc_1_ext",
     "idle_frames":[[24,26]],
-    "advantage":[14],
     "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"138e010000",
@@ -10916,7 +10966,6 @@
     "hit_frames":[[6,7]],
     "name":"MK_geneijin",
     "idle_frames":[[15,19]],
-    "advantage":[11],
     "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"16d2010000"
@@ -11264,13 +11313,11 @@
     "loops":[[37,76],[77,92]],
     "name":"uf_LK",
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[8]
+    "air":true
   },
   "9de8":{
-    "loops":[[2,45]],
     "name":"walk_back",
-    "uses_velocity":true,
+    "loops":[[2,45]],
     "idle_frames":[[0,115]],
     "frames":[{
         "hash":"1258020000",
@@ -11624,12 +11671,12 @@
         "hash":"122f012000",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,73,18,-6,23],[3,60,15,-23,51],[3,33,26,-21,47],[3,0,32,-26,60]],
         "next_anim":[["ace0",0]]
-      }]
+      }],
+    "uses_velocity":true
   },
   "8854":{
     "hit_frames":[[3,3],[10,11]],
     "name":"d_HP_geneijin",
-    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0],[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1438010000"
       },{
@@ -11661,13 +11708,12 @@
         "hash":"1435013002",
         "next_anim":[["idle"]]
       }],
-    "advantage":[13,13]
+    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0],[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "94cc":{
     "hit_frames":[[5,8]],
     "name":"uf_HP_geneijin",
     "air":true,
-    "advantage":[11],
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"146d010400",
@@ -11727,6 +11773,7 @@
       }]
   },
   "0694":{
+    "name":"throw_neutral_ext",
     "frames":[{
         "hash":"1517031200"
       },{
@@ -11958,14 +12005,12 @@
       },{
         "hash":"1517013c05",
         "next_anim":[["fefc",0]]
-      }],
-    "name":"throw_neutral_ext"
+      }]
   },
   "6810":{
     "hit_frames":[[14,19]],
     "name":"tetsuzan_LP",
     "idle_frames":[[33,42]],
-    "advantage":[14],
     "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1543021800",
@@ -12938,15 +12983,13 @@
     "loops":[[30,73]],
     "name":"u_MK",
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[11]
+    "air":true
   },
   "93d8":{
     "hit_frames":[[6,7],[14,15]],
     "name":"nishoukyaku_geneijin",
-    "uses_velocity":true,
-    "advantage":[17,17],
     "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0],[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true,
     "frames":[{
         "hash":"1533010600",
         "movement":[4,0]
@@ -13030,10 +13073,6 @@
   },
   "76d0":{
     "hit_frames":[[8,12],[13,17]],
-    "uses_velocity":true,
-    "name":"tetsuzan_MP_geneijin",
-    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0],[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[28,32]],
     "frames":[{
         "hash":"1542011200",
         "movement":[12,0]
@@ -13136,13 +13175,15 @@
         "hash":"123ffa9002",
         "next_anim":[["idle"]]
       }],
-    "advantage":[14,16]
+    "idle_frames":[[28,32]],
+    "name":"tetsuzan_MP_geneijin",
+    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0],[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "994c":{
     "hit_frames":[[5,9]],
     "name":"uf_HK_geneijin",
     "air":true,
-    "advantage":[11],
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"149e030400",
@@ -13232,11 +13273,9 @@
       }]
   },
   "6c24":{
-    "hit_frames":[[7,12]],
-    "name":"tc_2_ext",
     "idle_frames":[[27,38]],
-    "advantage":[14],
-    "pushback":[[2,3,3,3,3,3,2,1,0,0,0,0,0,0,0]],
+    "name":"tc_2_ext",
+    "hit_frames":[[7,12]],
     "frames":[{
         "hash":"13d5010600"
       },{
@@ -13333,13 +13372,13 @@
       },{
         "hash":"1238fa7201",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "pushback":[[2,3,3,3,3,3,2,1,0,0,0,0,0,0,0]]
   },
   "4a04":{
     "hit_frames":[[7,10]],
     "name":"cl_MK",
     "idle_frames":[[26,31]],
-    "advantage":[14],
     "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"13ed010400"
@@ -13415,7 +13454,6 @@
   "51dc":{
     "hit_frames":[[4,8]],
     "name":"d_MP",
-    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0]],
     "frames":[{
         "hash":"1430010800"
       },{
@@ -13454,9 +13492,10 @@
         "hash":"1436032401",
         "next_anim":[["idle"]]
       }],
-    "advantage":[11]
+    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0]]
   },
   "aff0":{
+    "idle_frames":[[0,5]],
     "name":"block_low_proximity",
     "frames":[{
         "hash":"129e020000",
@@ -13480,8 +13519,7 @@
         "hash":"12a1040c00",
         "boxes":[[1,0,48,-21,42],[2,0,8,-25,46],[3,43,20,-12,24],[3,36,18,-24,52],[3,19,17,-28,55],[3,0,19,-34,63]],
         "next_anim":[["bccc",0]]
-      }],
-    "idle_frames":[[0,5]]
+      }]
   },
   "63bc":{
     "hit_frames":[[6,12]],
@@ -13776,15 +13814,12 @@
     "loops":[[30,73],[74,93]],
     "name":"uf_MK",
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[11]
+    "air":true
   },
   "8a04":{
-    "hit_frames":[[3,4]],
-    "name":"d_MK_geneijin",
     "idle_frames":[[9,10]],
-    "advantage":[11],
-    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0]],
+    "name":"d_MK_geneijin",
+    "hit_frames":[[3,4]],
     "frames":[{
         "hash":"1610010000"
       },{
@@ -13810,7 +13845,8 @@
       },{
         "hash":"123efa1400",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0]]
   },
   "630c":{
     "hit_frames":[[6,21]],
@@ -13826,11 +13862,11 @@
       },{
         "hash":"150b010800",
         "boxes":[[1,51,44,-20,40]],
-        "movement":[-1,2.25]
+        "ignore_motion":true
       },{
         "hash":"150c020c00",
         "boxes":[[1,51,44,-20,40]],
-        "movement":[-1,2.25]
+        "ignore_motion":true
       },{
         "hash":"150c010c00",
         "boxes":[[1,51,44,-20,40]]
@@ -13891,10 +13927,10 @@
     "loops":[[10,21]],
     "name":"raigeki_LK",
     "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[11]
+    "air":true
   },
   "ebd0":{
+    "name":"wakeup_quick",
     "frames":[{
         "hash":"1328020000",
         "boxes":[[1,0,48,-21,42]],
@@ -13953,8 +13989,7 @@
         "boxes":[[1,0,48,-21,42]],
         "movement":[0.25,0],
         "next_anim":[["d5dc",0]]
-      }],
-    "name":"wakeup_quick"
+      }]
   },
   "bccc":{
     "name":"block_low",
@@ -14034,8 +14069,8 @@
     "idle_frames":[[20,20]]
   },
   "9ef8":{
-    "idle_frames":[[23,38]],
     "name":"dash_forward",
+    "idle_frames":[[23,38]],
     "uses_velocity":true,
     "frames":[{
         "hash":"12b1030c00",
@@ -14046,25 +14081,28 @@
       },{
         "hash":"12b1020c00",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,63,17,-26,24],[3,53,14,-25,47],[3,32,20,-26,51],[3,0,31,-38,69]],
-        "movement":[-9,-2.25]
+        "ignore_motion":true
       },{
         "hash":"12b1010c00",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,66,16,-27,24],[3,56,14,-27,49],[3,34,21,-28,52],[3,0,34,-38,74]],
-        "movement":[-9,-2.25]
+        "ignore_motion":true
       },{
         "hash":"12b2021200",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,16,-29,25],[3,59,14,-28,52],[3,37,21,-29,54],[3,0,36,-37,78]],
         "movement":[3,-2.25]
       },{
         "hash":"12b2011200",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,73,15,-30,25],[3,62,14,-30,54],[3,39,22,-31,55],[3,0,39,-37,83]],
-        "movement":[-9,-2.25]
+        "ignore_motion":true
       },{
         "hash":"12b3081800",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,76,14,-31,26],[3,65,14,-32,57],[3,42,22,-32,57],[3,0,42,-37,88]],
         "movement":[3,-2.25]
       },{
         "hash":"12b3081800",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,76,14,-31,26],[3,65,14,-32,57],[3,42,22,-32,57],[3,0,42,-37,88]]
       },{
         "hash":"12b3071800",
@@ -14112,80 +14150,99 @@
         "movement":[0,0.375]
       },{
         "hash":"12b5012400",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,72,14,-31,26],[3,65,14,-32,57],[3,35,28,-32,57],[3,0,34,-36,64]],
         "movement":[-5.5,0]
       },{
         "hash":"12b6043000",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,62,-21,42],[2,0,16,-21,42],[3,58,18,-14,23],[3,50,12,-21,46],[3,29,20,-22,52],[3,0,28,-25,58]],
         "movement":[2.5,0]
       },{
         "hash":"12b6033000",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,62,-21,42],[2,0,16,-21,42],[3,60,18,-14,23],[3,52,12,-21,47],[3,29,22,-23,52],[3,0,28,-28,59]],
         "movement":[-5.5,0]
       },{
         "hash":"12b6023000",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,62,-21,42],[2,0,16,-21,42],[3,61,18,-13,23],[3,53,13,-22,48],[3,29,23,-24,52],[3,0,28,-30,60]],
         "movement":[-5.5,0]
       },{
         "hash":"12b6013000",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,62,-21,42],[2,0,16,-21,42],[3,63,18,-13,23],[3,55,13,-22,49],[3,29,25,-25,53],[3,0,28,-33,60]],
         "movement":[-5.5,0]
       },{
         "hash":"12b7043600",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,62,-21,42],[2,0,16,-21,42],[3,64,18,-13,23],[3,56,13,-22,50],[3,29,26,-26,53],[3,0,28,-34,61]],
         "movement":[-5.5,0]
       },{
         "hash":"12b7033600",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,62,-21,42],[2,0,16,-21,42],[3,65,18,-12,23],[3,57,14,-23,50],[3,29,27,-26,53],[3,0,28,-36,61]],
         "movement":[-5.5,0]
       },{
         "hash":"12b7023600",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,62,-21,42],[2,0,16,-21,42],[3,65,18,-12,23],[3,57,14,-23,51],[3,29,27,-27,53],[3,0,28,-37,62]],
         "movement":[-5.5,0]
       },{
         "hash":"12b7013600",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,62,-21,42],[2,0,16,-21,42],[3,66,18,-12,23],[3,58,14,-23,51],[3,29,28,-27,53],[3,0,28,-38,62]],
         "movement":[-5.5,0]
       },{
         "hash":"1241043c00",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,66,18,-12,23],[3,58,14,-23,51],[3,29,28,-27,53],[3,0,28,-38,62]],
         "movement":[-5.5,0]
       },{
         "hash":"1241033c00",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,67,18,-11,23],[3,59,14,-23,51],[3,30,28,-25,52],[3,0,29,-37,61]],
         "movement":[-5.5,0]
       },{
         "hash":"1241023c00",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,68,18,-11,23],[3,59,14,-23,51],[3,31,27,-24,50],[3,0,30,-36,60]],
         "movement":[-5.5,0]
       },{
         "hash":"1241013c00",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,69,18,-10,23],[3,60,14,-23,51],[3,32,27,-22,49],[3,0,31,-35,59]],
         "movement":[-5.5,0]
       },{
         "hash":"1240044200",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
         "movement":[-5.5,0]
       },{
         "hash":"1240034200",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
         "movement":[-5.5,0]
       },{
         "hash":"1240024200",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
         "movement":[-5.5,0]
       },{
         "hash":"1240014200",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
         "movement":[-5.5,0]
       },{
         "hash":"1240fa4800",
+        "velocity":[0.25,0.375],
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
         "movement":[-5.5,0],
         "next_anim":[["idle"]]
       }]
   },
   "0540":{
+    "idle_frames":[[2,17]],
     "name":"raigeki_LK_ext",
     "uses_velocity":false,
     "frames":[{
@@ -14228,12 +14285,11 @@
       },{
         "hash":"123ffa2a00",
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[2,17]]
+      }]
   },
   "f740":{
     "name":"jump_recovery",
-    "uses_velocity":false,
+    "idle_frames":[[0,0],[2,2]],
     "frames":[{
         "hash":"126d010000",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,86,14,-10,16],[3,64,28,-4,28],[3,38,24,-20,44],[3,0,36,-4,28]]
@@ -14242,16 +14298,17 @@
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,86,14,-10,16],[3,64,28,-4,28],[3,38,24,-20,44],[3,0,36,-4,28]]
       },{
         "hash":"126f010800",
-        "next_anim":[["f530",4]],
-        "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]]
+        "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
+        "next_anim":[["f530",4]]
       }],
-    "idle_frames":[[0,0],[2,2]]
+    "uses_velocity":false
   },
   "block_low_proximity":"aff0",
   "7bbc":{
-    "hit_frames":[[6,7]],
-    "name":"HP_geneijin",
     "idle_frames":[[12,21]],
+    "name":"HP_geneijin",
+    "pushback":[[4],[7],[8],[9],[8],[6],[3],[2],[1],[0]],
+    "hit_frames":[[6,7]],
     "frames":[{
         "hash":"1397010000"
       },{
@@ -14321,15 +14378,10 @@
         "hash":"1238fa6001",
         "bypass_freeze":true,
         "next_anim":[["idle"]]
-      }],
-    "pushback":[[4],[7],[8],[9],[8],[6],[3],[2],[1],[0]]
+      }]
   },
   "6f48":{
     "hit_frames":[[10,16],[17,22]],
-    "uses_velocity":true,
-    "name":"tetsuzan_EXP",
-    "pushback":[[4,3,2,1,0,0,0,0,0,0,0,0,0,0,0],[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[42,51]],
     "frames":[{
         "hash":"1540010c00"
       },{
@@ -14476,9 +14528,12 @@
         "hash":"123ffa9602",
         "next_anim":[["idle"]]
       }],
-    "advantage":[22,14]
+    "idle_frames":[[42,51]],
+    "name":"tetsuzan_EXP",
+    "uses_velocity":true
   },
   "ad00":{
+    "idle_frames":[[15,22]],
     "name":"parry_high",
     "frames":[{
         "hash":"13a3020000",
@@ -14567,10 +14622,10 @@
         "hash":"1297fa2400",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[15,22]]
+      }]
   },
   "f7e0":{
+    "idle_frames":[[0,0],[2,3]],
     "name":"jump_recovery",
     "uses_velocity":false,
     "frames":[{
@@ -14584,16 +14639,14 @@
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]]
       },{
         "hash":"128f010800",
-        "next_anim":[["f530",4]],
-        "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]]
-      }],
-    "idle_frames":[[0,0],[2,3]]
+        "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
+        "next_anim":[["f530",4]]
+      }]
   },
   "4ed4":{
     "hit_frames":[[14,17]],
     "name":"HK",
     "idle_frames":[[40,52]],
-    "advantage":[14],
     "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"15af010c00"
@@ -14791,35 +14844,43 @@
       },{
         "hash":"13bb028402",
         "next_anim":[["4be0",0]],
+        "velocity":[0.21875,0],
         "boxes":[[5,58,25,-64,59],[5,0,77,-54,31]],
         "movement":[-3.5625,0]
       },{
         "hash":"13bb028402",
+        "velocity":[0.21875,0],
         "boxes":[[5,58,25,-64,59],[5,0,77,-54,31]],
         "movement":[-2.5625,0]
       },{
         "hash":"13bb028402",
+        "velocity":[0.21875,0],
         "boxes":[[5,58,25,-64,59],[5,0,77,-54,31]],
         "movement":[-2.5625,0]
       },{
         "hash":"13bb028402",
+        "velocity":[0.21875,0],
         "boxes":[[5,58,25,-64,59],[5,0,77,-54,31]],
         "movement":[-2.5625,0]
       },{
         "hash":"13bb028402",
+        "velocity":[0.21875,0],
         "boxes":[[5,58,25,-64,59],[5,0,77,-54,31]],
         "movement":[-2.5625,0]
       },{
         "hash":"13bb028402",
+        "velocity":[0.21875,0],
         "boxes":[[5,58,25,-64,59],[5,0,77,-54,31]],
         "movement":[-2.5625,0]
       },{
         "hash":"13bb028402",
+        "velocity":[0.21875,0],
         "boxes":[[5,58,25,-64,59],[5,0,77,-54,31]],
         "loop":24,
         "movement":[-2.5625,0]
       },{
         "hash":"13bb028402",
+        "velocity":[0.21875,0],
         "boxes":[[5,58,25,-64,59],[5,0,77,-54,31]],
         "movement":[-2.5625,0]
       },{
@@ -14877,7 +14938,6 @@
     "idle_frames":[[43,54]],
     "name":"sourairengeki",
     "pushback":[[0],[7],[6],[4],[1],[0],[0],[5],[6]],
-    "advantage":[18,15],
     "loops":[[24,31]]
   },
   "8f9c":{
@@ -15117,15 +15177,12 @@
     "loops":[[36,75]],
     "name":"u_LK_geneijin",
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[8]
+    "air":true
   },
   "7f9c":{
-    "hit_frames":[[3,4]],
-    "name":"LK_geneijin",
     "idle_frames":[[6,11]],
-    "advantage":[10],
-    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "name":"LK_geneijin",
+    "hit_frames":[[3,4]],
     "frames":[{
         "hash":"13e3010000",
         "movement":[10,0]
@@ -15157,13 +15214,11 @@
       },{
         "hash":"123ffa3c01",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "a6c0":{
-    "loops":[[27,80],[81,98]],
-    "uses_velocity":true,
-    "name":"jump_forward",
-    "idle_frames":[[0,80]],
+    "landing_height":2.5,
     "frames":[{
         "hash":"1270030400",
         "acceleration":[0,-0.59375],
@@ -15496,7 +15551,10 @@
         "hash":"127b013000",
         "next_anim":[["f5b0",0]]
       }],
-    "landing_height":2.5
+    "idle_frames":[[0,80]],
+    "name":"jump_forward",
+    "loops":[[27,80],[81,98]],
+    "uses_velocity":true
   },
   "5b6c":{
     "hit_frames":[[3,14]],
@@ -15735,10 +15793,10 @@
     "loops":[[36,75]],
     "name":"u_LK",
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[8]
+    "air":true
   },
   "16c8":{
+    "idle_frames":[[9,11]],
     "name":"nishoukyaku_LK_ext",
     "uses_velocity":false,
     "frames":[{
@@ -15767,10 +15825,10 @@
       },{
         "hash":"121ffa1c00",
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[9,11]]
+      }]
   },
   "eb00":{
+    "name":"wakeup",
     "frames":[{
         "hash":"1328020000",
         "boxes":[[1,0,48,-21,42]],
@@ -15854,13 +15912,12 @@
         "hash":"1332fa2c00",
         "boxes":[[1,0,48,-21,42]],
         "next_anim":[["cbe4",0]]
-      }],
-    "name":"wakeup"
+      }]
   },
   "5c30":{
     "hit_frames":[[7,12],[13,18],[19,21]],
     "name":"zesshou_geneijin",
-    "uses_velocity":true,
+    "pushback":[[4],[0],[0],[0],[0],[0],[4],[0],[0]],
     "frames":[{
         "hash":"1540010600"
       },{
@@ -15949,25 +16006,31 @@
         "movement":[8,-0.625]
       },{
         "hash":"154d016003",
+        "velocity":[-0.25,0.375],
         "movement":[7.25,0]
       },{
         "hash":"154e016603",
+        "velocity":[-0.25,0.375],
         "movement":[6.25,0]
       },{
         "hash":"123a016c03",
+        "velocity":[-0.25,0.375],
         "movement":[-11.75,0]
       },{
         "hash":"1239017203",
+        "velocity":[-0.25,0.375],
         "movement":[-11.75,0]
       },{
         "hash":"123f017803",
+        "velocity":[-0.25,0.375],
         "movement":[-11.75,0]
       },{
         "hash":"123ffa7e03",
+        "velocity":[-0.25,0.375],
         "movement":[-11.75,0],
         "next_anim":[["idle"]]
       }],
-    "pushback":[[4],[0],[0],[0],[0],[0],[4],[0],[0]]
+    "uses_velocity":true
   },
   "9158":{
     "hit_frames":[[4,5],[12,15]],
@@ -16066,6 +16129,7 @@
     "pushback":[[0]]
   },
   "bbec":{
+    "idle_frames":[[23,28]],
     "name":"block_high_air",
     "frames":[{
         "hash":"1295010000",
@@ -16163,11 +16227,11 @@
         "hash":"1290fa1400",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[23,28]]
+      }]
   },
   "crouching_turn":"a540",
   "eca0":{
+    "name":"wakeup_quick_reverse",
     "frames":[{
         "hash":"132e030000",
         "boxes":[[1,0,48,-21,42]],
@@ -16181,13 +16245,11 @@
         "boxes":[[1,0,48,-21,42]],
         "movement":[0.25,0],
         "next_anim":[["d3bc",0]]
-      }],
-    "name":"wakeup_quick_reverse"
+      }]
   },
   "4390":{
     "hit_frames":[[1,9],[20,20],[67,69]],
     "name":"youhou",
-    "pushback":[[-11,-7,-4,-2,-1,-1,0,-1,1,0,0,0],[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0],[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"13cb012400",
         "movement":[4,0]
@@ -16363,13 +16425,12 @@
         "hash":"162a01f603",
         "next_anim":[["7ba0",208]]
       }],
-    "advantage":[19,22,11]
+    "pushback":[[-11,-7,-4,-2,-1,-1,0,-1,1,0,0,0],[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0],[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "447c":{
     "hit_frames":[[9,10]],
     "name":"HP",
     "idle_frames":[[34,53]],
-    "advantage":[14],
     "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1397010600"
@@ -16494,8 +16555,6 @@
   "4be0":{
     "hit_frames":[[12,14],[25,27],[44,47],[56,57]],
     "name":"sourairengeki_ext",
-    "uses_velocity":true,
-    "advantage":[18,21,14,14],
     "pushback":[[0],[0],[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0],[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"13bc020000",
@@ -16647,9 +16706,8 @@
         "hash":"152b019604",
         "boxes":[[5,52,28,-96,73],[5,42,21,-57,39]]
       },{
-        "velocity":[-2.16796875,0],
-        "hash":"152c02c004",
-        "movement":[-6.625,-2.375]
+        "ignore_motion":true,
+        "hash":"152c02c004"
       },{
         "hash":"152c01c004"
       },{
@@ -16714,15 +16772,12 @@
       },{
         "hash":"153003d804",
         "movement":[-1,0]
-      }]
+      }],
+    "uses_velocity":true
   },
   "a45c":{
     "hit_frames":[[3,3]],
-    "idle_frames":[[6,10]],
-    "name":"LP_geneijin",
     "self_chain":true,
-    "advantage":[10],
-    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1686020000"
       },{
@@ -16747,9 +16802,13 @@
       },{
         "hash":"1690fa2401",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "idle_frames":[[6,10]],
+    "name":"LP_geneijin",
+    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "f6d4":{
+    "idle_frames":[[49,54]],
     "name":"zenpou_ext",
     "frames":[{
         "hash":"14b2030600",
@@ -16882,12 +16941,11 @@
       },{
         "hash":"1290fa9600",
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[49,54]]
+      }]
   },
   "f600":{
     "name":"jump_recovery",
-    "uses_velocity":false,
+    "idle_frames":[[0,0],[2,2]],
     "frames":[{
         "hash":"127d010000",
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,86,14,-10,16],[3,64,28,-4,28],[3,38,24,-20,44],[3,0,36,-4,28]]
@@ -16896,16 +16954,15 @@
         "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,86,14,-10,16],[3,64,28,-4,28],[3,38,24,-20,44],[3,0,36,-4,28]]
       },{
         "hash":"126f010800",
-        "next_anim":[["f530",4]],
-        "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]]
+        "boxes":[[1,0,70,-21,42],[2,0,16,-21,42],[3,70,18,-10,23],[3,60,14,-23,51],[3,33,26,-21,47],[3,0,32,-34,58]],
+        "next_anim":[["f530",4]]
       }],
-    "idle_frames":[[0,0],[2,2]]
+    "uses_velocity":false
   },
   "8564":{
     "hit_frames":[[8,13]],
     "name":"HK_geneijin",
     "idle_frames":[[19,30]],
-    "advantage":[16],
     "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"15b0010000"
@@ -16981,7 +17038,7 @@
   },
   "fef0":{
     "name":"tc_6_ext",
-    "uses_velocity":false,
+    "idle_frames":[[2,21]],
     "frames":[{
         "hash":"1486010000"
       },{
@@ -17028,9 +17085,10 @@
         "hash":"123ffa2400",
         "next_anim":[["idle"]]
       }],
-    "idle_frames":[[2,21]]
+    "uses_velocity":false
   },
   "a540":{
+    "idle_frames":[[0,14]],
     "name":"crouching_turn",
     "frames":[{
         "hash":"124e030000",
@@ -17078,8 +17136,7 @@
         "hash":"1255fa2000",
         "boxes":[[1,0,48,-21,42],[2,0,8,-25,46],[3,43,20,-12,24],[3,36,18,-24,52],[3,19,17,-28,55],[3,0,19,-34,63]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[0,14]]
+      }]
   },
   "7ba0":{
     "hit_frames":[[0,8],[19,21],[67,69],[114,115],[161,163]],
@@ -17637,15 +17694,15 @@
       },{
         "hash":"150b020800",
         "boxes":[[1,51,44,-20,40]],
-        "movement":[-6,2.25]
+        "ignore_motion":true
       },{
         "hash":"150b010800",
         "boxes":[[1,51,44,-20,40]],
-        "movement":[-6,2.25]
+        "ignore_motion":true
       },{
         "hash":"150c020c00",
         "boxes":[[1,51,44,-20,40]],
-        "movement":[-6,2.25]
+        "ignore_motion":true
       },{
         "hash":"150c010c00",
         "boxes":[[1,51,44,-20,40]]
@@ -17709,28 +17766,26 @@
     "loops":[[12,23]],
     "name":"raigeki_MK",
     "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[11]
+    "air":true
   },
   "5e50":{
     "hit_frames":[[15,23]],
     "name":"uoh",
-    "uses_velocity":true,
-    "advantage":[11],
     "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true,
     "frames":[{
         "hash":"12b1040800",
         "acceleration":[0,-0.4375],
         "velocity":[2,4.5]
       },{
         "hash":"12b1030800",
-        "movement":[-2,-4.5]
+        "ignore_motion":true
       },{
         "hash":"12b1020800",
-        "movement":[-2,-4.5]
+        "ignore_motion":true
       },{
         "hash":"12b1010800",
-        "movement":[-2,-4.5]
+        "ignore_motion":true
       },{
         "hash":"146d030c00"
       },{
@@ -17787,10 +17842,6 @@
   },
   "6ce0":{
     "hit_frames":[[22,27]],
-    "uses_velocity":true,
-    "name":"tetsuzan_HP",
-    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[45,54]],
     "frames":[{
         "hash":"1540010600"
       },{
@@ -17935,12 +17986,14 @@
         "hash":"123ffa9001",
         "next_anim":[["idle"]]
       }],
-    "advantage":[14]
+    "idle_frames":[[45,54]],
+    "name":"tetsuzan_HP",
+    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "6b14":{
     "hit_frames":[[2,6]],
     "name":"tc_6_ext",
-    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"147a010400"
       },{
@@ -17978,15 +18031,11 @@
         "hash":"1478013801",
         "optional_anim":[["a6c0",18]]
       }],
-    "advantage":[11]
+    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "8964":{
     "hit_frames":[[2,3]],
-    "idle_frames":[[5,10]],
-    "name":"d_LK_geneijin",
     "self_chain":true,
-    "advantage":[14],
-    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0]],
     "frames":[{
         "hash":"1444010000"
       },{
@@ -18012,11 +18061,14 @@
       },{
         "hash":"123efa1400",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "idle_frames":[[5,10]],
+    "name":"d_LK_geneijin",
+    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0]]
   },
   "f5b0":{
     "name":"u_MP_ext",
-    "uses_velocity":false,
+    "idle_frames":[[2,12]],
     "frames":[{
         "hash":"127d010000"
       },{
@@ -18045,13 +18097,12 @@
         "hash":"123ffa1800",
         "next_anim":[["idle"]]
       }],
-    "idle_frames":[[2,12]]
+    "uses_velocity":false
   },
   "4b24":{
     "hit_frames":[[9,11]],
     "name":"MK",
     "idle_frames":[[27,34]],
-    "advantage":[11],
     "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"16d2010600"
@@ -18143,7 +18194,6 @@
     "hit_frames":[[5,9]],
     "name":"uf_HK",
     "air":true,
-    "advantage":[11],
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"149e030800",
@@ -18235,7 +18285,6 @@
   "8ae4":{
     "hit_frames":[[8,9]],
     "name":"d_HK_geneijin",
-    "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1675010000",
         "movement":[8,0]
@@ -18292,7 +18341,7 @@
         "movement":[-2,0],
         "next_anim":[["idle"]]
       }],
-    "advantage":[14]
+    "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0]]
   },
   "8c8c":{
     "hit_frames":[[2,70]],
@@ -18516,15 +18565,12 @@
     "loops":[[23,70]],
     "name":"u_LP_geneijin",
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[8]
+    "air":true
   },
   "8d6c":{
-    "hit_frames":[[3,9]],
-    "name":"u_MP_geneijin",
     "air":true,
-    "advantage":[11],
-    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "name":"u_MP_geneijin",
+    "hit_frames":[[3,9]],
     "frames":[{
         "hash":"146d010400",
         "boxes":[[1,51,44,-20,40]]
@@ -18583,7 +18629,8 @@
         "hash":"1477012c01",
         "boxes":[[1,51,44,-20,40]],
         "next_anim":[["a6c0",18]]
-      }]
+      }],
+    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "96cc":{
     "hit_frames":[[6,21]],
@@ -18599,11 +18646,11 @@
       },{
         "hash":"150b010400",
         "boxes":[[1,51,44,-20,40]],
-        "movement":[-1,2.25]
+        "ignore_motion":true
       },{
         "hash":"150c020800",
         "boxes":[[1,51,44,-20,40]],
-        "movement":[-1,2.25]
+        "ignore_motion":true
       },{
         "hash":"150c010800",
         "boxes":[[1,51,44,-20,40]]
@@ -18664,8 +18711,7 @@
     "loops":[[10,21]],
     "name":"raigeki_LK_geneijin",
     "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[11]
+    "air":true
   },
   "9f04":{
     "hit_frames":[[2,6]],
@@ -18707,14 +18753,12 @@
       },{
         "hash":"1478013801",
         "optional_anim":[["a6c0",18]]
-      }],
-    "advantage":[11]
+      }]
   },
   "8e4c":{
     "hit_frames":[[8,12]],
     "name":"u_HP_geneijin",
     "air":true,
-    "advantage":[11],
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"1478010400",

@@ -19,7 +19,7 @@
         "default_border": "0x000000FF"
       },
       "menu": {
-        "background": "0x171717F0",
+        "background": "0x171717E8",
         "outline": "0x4b068aD0",
         "divider": "0x9333ea0E",
         "gauge_background": "0x00000033",
@@ -76,8 +76,8 @@
       "text": {
         "default": "0xFFFFFFFF",
         "selected": "0x1de1d9FF",
-        "inactive": "0x375483FF",
-        "disabled": "0x192a44FF",
+        "inactive": "0x4367A2FF",
+        "disabled": "0x28426BFF",
         "button_activated": "0x4819e3FF"
       },
       "hud_text": {
@@ -100,7 +100,7 @@
         "outline": "0x000000FF",
         "background": "0x00000044",
         "valid_fill": "0x1de1d9FF",
-        "cooldown_fill": "0x375483FF",
+        "cooldown_fill": "0x4367A2FF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
         "meter": "0x00E6F7FF",
@@ -163,7 +163,7 @@
       "menu": {
         "background": "0x101120E8",
         "outline": "0x9a585cD0",
-        "divider": "0xa45d610F",
+        "divider": "0xaf64680F",
         "gauge_background": "0xFFFFFF22",
         "gauge_border": "0x000000FF"
       },
@@ -171,11 +171,11 @@
         "outline": "0x000000FF",
         "background": "0x00000044",
         "valid_fill": "0xdf7567FF",
-        "cooldown_fill": "0x353b82FF",
+        "cooldown_fill": "0x3c428fFF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
         "meter": "0x00E6F7FF",
-        "denjin": "0x353b82FF"
+        "denjin": "0xdf7567FF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -220,7 +220,7 @@
         "selected": "0x00efacFF",
         "inactive": "0x319cc0FF",
         "disabled": "0x23728fFF",
-        "button_activated": "0x5541a6FF"
+        "button_activated": "0x6047dcFF"
       },
       "hud_text": {
         "default": "0xFFFFFFFF",
@@ -234,7 +234,7 @@
       "menu": {
         "background": "0x121019E8",
         "outline": "0x421373D0",
-        "divider": "0x4f168a10",
+        "divider": "0x651cb110",
         "gauge_background": "0xFFFFFF22",
         "gauge_border": "0x000000FF"
       },
@@ -242,11 +242,11 @@
         "outline": "0x000000FF",
         "background": "0x00000044",
         "valid_fill": "0x00cbaeFF",
-        "cooldown_fill": "0x562a83FF",
+        "cooldown_fill": "0x632f98FF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
         "meter": "0x00E6F7FF",
-        "denjin": "0x562a83FF"
+        "denjin": "0x00efacFF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -284,14 +284,14 @@
     }
   },
   {
-    "name": "wave",
+    "name": "magma",
     "colors": {
       "text": {
         "default": "0xFFFFFFFF",
-        "selected": "0x1acdefFF",
-        "inactive": "0x3a71b1FF",
-        "disabled": "0x3a71b1FF",
-        "button_activated": "0x10FF10FF"
+        "selected": "0xb63214FF",
+        "inactive": "0xdc7e39FF",
+        "disabled": "0x494339FF",
+        "button_activated": "0xe99622FF"
       },
       "hud_text": {
         "default": "0xFFFFFFFF",
@@ -303,21 +303,92 @@
         "default_border": "0x000000FF"
       },
       "menu": {
-        "background": "0x02051bE0",
-        "outline": "0x1acdefD0",
-        "divider": "0x1acdef0F",
+        "background": "0x0d0c12E0",
+        "outline": "0xc9bfb4E0",
+        "divider": "0xc9bfb40C",
         "gauge_background": "0xFFFFFF22",
         "gauge_border": "0x000000FF"
       },
       "gauges": {
         "outline": "0x000000FF",
         "background": "0x00000044",
-        "valid_fill": "0x115eeeFF",
-        "cooldown_fill": "0x042bc2FF",
+        "valid_fill": "0xdf6c1cFF",
+        "cooldown_fill": "0x494640FF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
         "meter": "0x00E6F7FF",
-        "denjin": "0x042bc2FF"
+        "denjin": "0xdf6c1cFF"
+      },
+      "parry": {
+        "text_validity": "0xFFFFFFFF",
+        "text_success": "0x10FF10FF",
+        "text_failure": "0xFF1010FF"
+      },
+      "charge": {
+        "text_validity": "0xFFFFFFFF",
+        "text_success": "0x10FF10FF",
+        "text_failure": "0xFF1010FF",
+        "overcharge": "0x4900FF80"
+      },
+      "last_hit_bars": {
+        "life": "0xFFFFFFFF",
+        "stun": "0xE60000FF"
+      },
+      "red_parry_miss": "0xFF5941FF",
+      "bonuses": {
+        "damage": "0xFF7184FF",
+        "defense": "0xD6E3EFFF",
+        "stun": "0xD6E3EFFF"
+      },
+      "hitboxes": {
+        "vulnerability": "0x0000FFFF",
+        "attack": "0xFF0000FF",
+        "throwable": "0x00FF00FF",
+        "throw": "0xFFFF00FF",
+        "push": "0xFF00FFFF",
+        "extvulnerability": "0x00FFFFFF"
+      },
+      "score": {
+        "plus": "0x40C7FFFF",
+        "minus": "0x9652FFFF"
+      }
+    }
+  },
+  {
+    "name": "moth",
+    "colors": {
+      "text": {
+        "default": "0xFFFFFFFF",
+        "selected": "0xeda44fFF",
+        "inactive": "0x8dafcdFF",
+        "disabled": "0x746183FF",
+        "button_activated": "0x7421b6FF"
+      },
+      "hud_text": {
+        "default": "0xFFFFFFFF",
+        "success": "0x10FF10FF",
+        "failure": "0xFF1010FF"
+      },
+      "gui_text": {
+        "default": "0xFFFFFFFF",
+        "default_border": "0x000000FF"
+      },
+      "menu": {
+        "background": "0x121013E8",
+        "outline": "0xdfae82D0",
+        "divider": "0xdfae820E",
+        "gauge_background": "0x00000033",
+        "gauge_border": "0x000000FF"
+      },
+      "gauges": {
+        "outline": "0x000000FF",
+        "background": "0x00000044",
+        "valid_fill": "0xeda44fFF",
+        "cooldown_fill": "0x8dafcdFF",
+        "life": "0x00CD4CFF",
+        "stun": "0xE60000FF",
+        "meter": "0x00E6F7FF",
+        "denjin": "0xeda44fFF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -362,7 +433,7 @@
         "selected": "0x6527ffFF",
         "inactive": "0x90c4a4FF",
         "disabled": "0x3f4BA8FF",
-        "button_activated": "0xddf8d0FF"
+        "button_activated": "0x1ade1aFF"
       },
       "hud_text": {
         "default": "0xFFFFFFFF",
@@ -383,12 +454,12 @@
       "gauges": {
         "outline": "0x000000FF",
         "background": "0x00000044",
-        "valid_fill": "0x3c9691FF",
-        "cooldown_fill": "0x531750FF",
+        "valid_fill": "0x6527ffFF",
+        "cooldown_fill": "0x77d99dFF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
         "meter": "0x00E6F7FF",
-        "denjin": "0x3c9691FF"
+        "denjin": "0x6527ffFF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -459,78 +530,7 @@
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
         "meter": "0x00E6F7FF",
-        "denjin": "0x02051bC0"
-      },
-      "parry": {
-        "text_validity": "0xFFFFFFFF",
-        "text_success": "0x10FF10FF",
-        "text_failure": "0xFF1010FF"
-      },
-      "charge": {
-        "text_validity": "0xFFFFFFFF",
-        "text_success": "0x10FF10FF",
-        "text_failure": "0xFF1010FF",
-        "overcharge": "0x4900FF80"
-      },
-      "last_hit_bars": {
-        "life": "0xFFFFFFFF",
-        "stun": "0xE60000FF"
-      },
-      "red_parry_miss": "0xFF5941FF",
-      "bonuses": {
-        "damage": "0xFF7184FF",
-        "defense": "0xD6E3EFFF",
-        "stun": "0xD6E3EFFF"
-      },
-      "hitboxes": {
-        "vulnerability": "0x0000FFFF",
-        "attack": "0xFF0000FF",
-        "throwable": "0x00FF00FF",
-        "throw": "0xFFFF00FF",
-        "push": "0xFF00FFFF",
-        "extvulnerability": "0x00FFFFFF"
-      },
-      "score": {
-        "plus": "0x40C7FFFF",
-        "minus": "0x9652FFFF"
-      }
-    }
-  },
-  {
-    "name": "retro_scifi",
-    "colors": {
-      "text": {
-        "default": "0xFFFFFFFF",
-        "selected": "0x3c9691FF",
-        "inactive": "0x909090FF",
-        "disabled": "0x909090FF",
-        "button_activated": "0x10FF10FF"
-      },
-      "hud_text": {
-        "default": "0xFFFFFFFF",
-        "success": "0x10FF10FF",
-        "failure": "0xFF1010FF"
-      },
-      "gui_text": {
-        "default": "0xFFFFFFFF",
-        "default_border": "0x000000FF"
-      },
-      "menu": {
-        "background": "0x1F1F1FF0",
-        "outline": "0xADD79CF0",
-        "divider": "0xADD79C0F",
-        "gauge_background": "0xFFFFFF22",
-        "gauge_border": "0x000000FF"
-      },
-      "gauges": {
-        "outline": "0x000000FF",
-        "background": "0x00000044",
-        "valid_fill": "0x3c9691FF",
-        "cooldown_fill": "0x531750FF",
-        "life": "0x00CD4CFF",
-        "stun": "0xE60000FF",
-        "meter": "0x00E6F7FF",
-        "denjin": "0x531750FF"
+        "denjin": "0xebb700C0"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -575,7 +575,7 @@
         "selected": "0xb70101FF",
         "inactive": "0x8a8989FF",
         "disabled": "0x4b4948FF",
-        "button_activated": "0x10FF10FF"
+        "button_activated": "0x13ebbfFF"
       },
       "hud_text": {
         "default": "0xFFFFFFFF",
@@ -596,12 +596,12 @@
       "gauges": {
         "outline": "0x000000FF",
         "background": "0x00000044",
-        "valid_fill": "0x3c9691FF",
-        "cooldown_fill": "0x531750FF",
+        "valid_fill": "0x3da2e7FF",
+        "cooldown_fill": "0xe78a33FF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
         "meter": "0x00E6F7FF",
-        "denjin": "0x531750FF"
+        "denjin": "0x3da2e7FF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",
@@ -646,7 +646,7 @@
         "selected": "0x0062d4FF",
         "inactive": "0x83868aFF",
         "disabled": "0x414246FF",
-        "button_activated": "0x10FF10FF"
+        "button_activated": "0xe8511dFF"
       },
       "hud_text": {
         "default": "0xFFFFFFFF",
@@ -667,12 +667,83 @@
       "gauges": {
         "outline": "0x000000FF",
         "background": "0x00000044",
-        "valid_fill": "0x3c9691FF",
-        "cooldown_fill": "0x531750FF",
+        "valid_fill": "0x3da2e7FF",
+        "cooldown_fill": "0xe78a33FF",
         "life": "0x00CD4CFF",
         "stun": "0xE60000FF",
         "meter": "0x00E6F7FF",
-        "denjin": "0x531750FF"
+        "denjin": "0x3da2e7FF"
+      },
+      "parry": {
+        "text_validity": "0xFFFFFFFF",
+        "text_success": "0x10FF10FF",
+        "text_failure": "0xFF1010FF"
+      },
+      "charge": {
+        "text_validity": "0xFFFFFFFF",
+        "text_success": "0x10FF10FF",
+        "text_failure": "0xFF1010FF",
+        "overcharge": "0x4900FF80"
+      },
+      "last_hit_bars": {
+        "life": "0xFFFFFFFF",
+        "stun": "0xE60000FF"
+      },
+      "red_parry_miss": "0xFF5941FF",
+      "bonuses": {
+        "damage": "0xFF7184FF",
+        "defense": "0xD6E3EFFF",
+        "stun": "0xD6E3EFFF"
+      },
+      "hitboxes": {
+        "vulnerability": "0x0000FFFF",
+        "attack": "0xFF0000FF",
+        "throwable": "0x00FF00FF",
+        "throw": "0xFFFF00FF",
+        "push": "0xFF00FFFF",
+        "extvulnerability": "0x00FFFFFF"
+      },
+      "score": {
+        "plus": "0x40C7FFFF",
+        "minus": "0x9652FFFF"
+      }
+    }
+  },
+  {
+    "name": "classic_green",
+    "colors": {
+      "text": {
+        "default": "0xFFFFFFFF",
+        "selected": "0x10c717FF",
+        "inactive": "0x83868aFF",
+        "disabled": "0x414246FF",
+        "button_activated": "0xe8511dFF"
+      },
+      "hud_text": {
+        "default": "0xFFFFFFFF",
+        "success": "0x10FF10FF",
+        "failure": "0xFF1010FF"
+      },
+      "gui_text": {
+        "default": "0xFFFFFFFF",
+        "default_border": "0x000000FF"
+      },
+      "menu": {
+        "background": "0x151515F0",
+        "outline": "0x10c717E0",
+        "divider": "0x10c7170F",
+        "gauge_background": "0xFFFFFF22",
+        "gauge_border": "0x000000FF"
+      },
+      "gauges": {
+        "outline": "0x000000FF",
+        "background": "0x00000044",
+        "valid_fill": "0x3da2e7FF",
+        "cooldown_fill": "0xe78a33FF",
+        "life": "0x00CD4CFF",
+        "stun": "0xE60000FF",
+        "meter": "0x00E6F7FF",
+        "denjin": "0x3da2e7FF"
       },
       "parry": {
         "text_validity": "0xFFFFFFFF",

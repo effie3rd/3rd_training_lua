@@ -413,6 +413,7 @@
     "name":"jump_neutral"
   },
   "edd4":{
+    "idle_frames":[[0,14]],
     "name":"standing_begin",
     "frames":[{
         "hash":"0636010000",
@@ -460,15 +461,10 @@
         "hash":"063bfa1400",
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[0,14]]
+      }]
   },
   "5e54":{
     "hit_frames":[[9,10],[11,12]],
-    "uses_velocity":true,
-    "name":"flash_chop_EXP",
-    "pushback":[[12,11,11,10,10,9,8,7,7,6,5,4],[12,11,11,10,10,9,8,7,7,6,5,4,3,2,2,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[28,30]],
     "frames":[{
         "hash":"08b1020600",
         "movement":[-8,0]
@@ -550,11 +546,15 @@
         "hash":"068efa6602",
         "next_anim":[["idle"]]
       }],
-    "advantage":[11,14]
+    "idle_frames":[[28,30]],
+    "name":"flash_chop_EXP",
+    "pushback":[[12,11,11,10,10,9,8,7,7,6,5,4],[12,11,11,10,10,9,8,7,7,6,5,4,3,2,2,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "579c":{
     "hit_frames":[[3,19]],
     "name":"air_knee_smash_EXK",
+    "uses_velocity":true,
     "frames":[{
         "hash":"0632011800"
       },{
@@ -664,10 +664,10 @@
       },{
         "hash":"065cf95a01",
         "next_anim":[["466c",0]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "19d8":{
+    "idle_frames":[[34,46]],
     "name":"wakeup_ext",
     "frames":[{
         "hash":"06d90c0400",
@@ -811,8 +811,7 @@
         "hash":"063bfa5400",
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[34,46]]
+      }]
   },
   "531c":{
     "hit_frames":[[6,11]],
@@ -906,8 +905,9 @@
   },
   "f0c4":{
     "landing_height":6.375,
-    "uses_velocity":true,
     "idle_frames":[[0,131]],
+    "uses_velocity":true,
+    "name":"jump_back",
     "frames":[{
         "hash":"065d040400",
         "acceleration":[0,-0.5625],
@@ -1308,16 +1308,11 @@
         "hash":"06699e3400",
         "next_anim":[["356c",0]],
         "boxes":[[1,52,50,-28,56],[2,52,50,-28,56],[3,98,19,-36,26],[3,89,25,-43,63],[3,64,25,-35,58],[3,38,26,-38,57]]
-      }],
-    "name":"jump_back"
+      }]
   },
   "a394":{
     "hit_frames":[[4,5]],
-    "idle_frames":[[15,25]],
-    "name":"cl_LP",
     "self_chain":true,
-    "advantage":[8],
-    "pushback":[[9,7,6,5,4,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"076a020000"
       },{
@@ -1373,12 +1368,15 @@
       },{
         "hash":"0748fa2401",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "idle_frames":[[15,25]],
+    "name":"cl_LP",
+    "pushback":[[9,7,6,5,4,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "2098":{
-    "idle_frames":[[29,40],[45,56]],
     "name":"wakeup_quick_ext",
     "uses_velocity":true,
+    "idle_frames":[[29,40],[45,56]],
     "frames":[{
         "hash":"08d6040000",
         "boxes":[[1,0,59,-28,56]]
@@ -1583,10 +1581,9 @@
       }]
   },
   "b094":{
-    "hit_frames":[[11,13]],
-    "name":"MK",
     "idle_frames":[[28,33]],
-    "advantage":[11],
+    "name":"MK",
+    "hit_frames":[[11,13]],
     "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"079a010000"
@@ -1666,10 +1663,6 @@
   },
   "8294":{
     "hit_frames":[[15,15]],
-    "uses_velocity":true,
-    "name":"slash_elbow_LK",
-    "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[33,41]],
     "frames":[{
         "hash":"0955020000",
         "movement":[16,0]
@@ -1784,304 +1777,317 @@
         "hash":"0748fa7801",
         "next_anim":[["idle"]]
       }],
-    "advantage":[14]
+    "idle_frames":[[33,41]],
+    "name":"slash_elbow_LK",
+    "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "standing_begin":"edd4",
   "710c":{
-    "idle_frames":[[91,96]],
     "name":"spiral_ddt_ext",
     "uses_velocity":true,
+    "idle_frames":[[91,96]],
     "frames":[{
         "hash":"0997020600",
+        "velocity":[0.03125,0.4375],
         "movement":[19.40625,4.55859375]
       },{
         "hash":"0997010600",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"0999030c00",
+        "velocity":[0.03125,0.4375],
         "movement":[26.40625,6.55859375]
       },{
         "hash":"0999020c00",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"0999010c00",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"099b031200",
+        "velocity":[0.03125,0.4375],
         "movement":[61.40625,-21.44140625]
       },{
         "hash":"099b021200",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"099b011200",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"099d021800",
+        "velocity":[0.03125,0.4375],
         "movement":[25.40625,-9.44140625]
       },{
         "hash":"099d011800",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"099f021e00",
+        "velocity":[0.03125,0.4375],
         "movement":[-0.59375,-15.44140625]
       },{
         "hash":"099f011e00",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a1042400",
+        "velocity":[0.03125,0.4375],
         "movement":[-43.59375,6.55859375]
       },{
         "hash":"09a1032400",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a1022400",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a1012400",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a2042a00",
+        "velocity":[0.03125,0.4375],
         "movement":[-28.59375,-9.44140625]
       },{
         "hash":"09a2032a00",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a2022a00",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a2012a00",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a3053000",
+        "velocity":[0.03125,0.4375],
         "movement":[1.40625,4.55859375]
       },{
         "hash":"09a3043000",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a3033000",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a3023000",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a3013000",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a5063600",
+        "velocity":[0.03125,0.4375],
         "movement":[11.40625,-15.44140625]
       },{
         "hash":"09a5053600",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a5043600",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a5033600",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a5023600",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a5013600",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09c9033c00",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09c9023c00",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09c9013c00",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a6034201",
+        "velocity":[0.03125,0.4375],
         "movement":[-0.59375,-0.44140625]
       },{
         "hash":"09a6024201",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a6014201",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a7045401",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a7035401",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a7025401",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a7015401",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a8055a01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a8045a01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a8035a01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a8025a01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a8015a01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a9056001",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a9046001",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a9036001",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a9026001",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09a9016001",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09aa076601",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09aa066601",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09aa056601",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09aa046601",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09aa036601",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09aa026601",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09aa016601",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09ab056c01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09ab046c01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09ab036c01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09ab026c01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"09ab016c01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08da037201",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08da027201",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08da017201",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08db037801",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08db027801",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08db017801",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08dc037e01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08dc027e01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08dc017e01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08dd038401",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08dd028401",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08dd018401",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08de038a01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08de028a01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08de018a01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08e0039001",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08e0029001",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"08e0019001",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"0637039601",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"0637029601",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"0637019601",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"0638039c01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"0638029c01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"0638019c01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"063903a201",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"063902a201",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"063901a201",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"063a03a801",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"063a02a801",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"063a01a801",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"063b03ae01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"063b02ae01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"063b01ae01",
-        "movement":[-2.59375,-0.44140625]
+        "ignore_motion":true
       },{
         "hash":"063bfab401",
-        "movement":[-2.59375,-0.44140625],
+        "ignore_motion":true,
         "next_anim":[["idle"]]
       }]
   },
@@ -2236,11 +2242,11 @@
       },{
         "hash":"08bd01d204",
         "next_anim":[["688c",0]]
-      }],
-    "advantage":[14,14,14,16]
+      }]
   },
   "8cb4":{
     "name":"spiral_ddt",
+    "uses_velocity":true,
     "frames":[{
         "hash":"068b060400"
       },{
@@ -2293,8 +2299,7 @@
         "hash":"09d5011400",
         "movement":[0,0.00390625],
         "next_anim":[["8bd4",18]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "0328":{
     "name":"block_high_air",
@@ -2389,11 +2394,9 @@
     "idle_frames":[[23,25]]
   },
   "a534":{
-    "hit_frames":[[4,6]],
-    "name":"MP",
     "idle_frames":[[19,24]],
-    "advantage":[12],
-    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "name":"MP",
+    "hit_frames":[[4,6]],
     "frames":[{
         "hash":"0770030000",
         "movement":[8,0]
@@ -2450,9 +2453,11 @@
       },{
         "hash":"0748fa4e01",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "e6f4":{
+    "idle_frames":[[0,15]],
     "name":"standing_turn",
     "frames":[{
         "hash":"060d030000",
@@ -2503,8 +2508,7 @@
         "hash":"06a6fa1000",
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[0,15]]
+      }]
   },
   "0418":{
     "name":"block_low",
@@ -2584,9 +2588,9 @@
     "idle_frames":[[20,20]]
   },
   "eec4":{
-    "landing_height":1.375,
-    "uses_velocity":true,
     "idle_frames":[[0,131]],
+    "name":"jump_forward",
+    "landing_height":1.375,
     "frames":[{
         "hash":"0650040400",
         "acceleration":[0,-0.5625],
@@ -2988,7 +2992,7 @@
         "next_anim":[["356c",0]],
         "boxes":[[1,52,50,-28,56],[2,52,50,-28,56],[3,98,19,-36,26],[3,89,25,-43,63],[3,64,25,-35,58],[3,38,26,-38,57]]
       }],
-    "name":"jump_forward"
+    "uses_velocity":true
   },
   "a444":{
     "hit_frames":[[4,5]],
@@ -3055,10 +3059,10 @@
       }],
     "idle_frames":[[14,24]],
     "name":"LP",
-    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "advantage":[8]
+    "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "f67c":{
+    "idle_frames":[[15,27]],
     "name":"parry_high",
     "frames":[{
         "hash":"0766020000",
@@ -3160,64 +3164,65 @@
         "hash":"0748fa2000",
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[15,27]]
+      }]
   },
   "b714":{
     "hit_frames":[[13,14],[15,17]],
     "name":"d_HP",
     "uses_velocity":true,
-    "advantage":[14,14],
-    "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0],[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"07ca030600",
         "acceleration":[-0.0625,-0.25],
         "velocity":[2,2]
       },{
         "hash":"07ca020600",
-        "movement":[-2,-2]
+        "ignore_motion":true
       },{
         "hash":"07ca010600",
-        "movement":[-2,-2]
+        "ignore_motion":true
       },{
         "hash":"07cb040c00",
+        "velocity":[0.0625,0.25],
         "movement":[15,-2]
       },{
         "hash":"07cb030c00",
-        "movement":[-2,-2]
+        "ignore_motion":true
       },{
         "hash":"07cb020c00",
-        "movement":[-2,-2]
+        "ignore_motion":true
       },{
         "hash":"07cb010c00",
-        "movement":[-2,-2]
+        "ignore_motion":true
       },{
         "hash":"07cc061200",
+        "velocity":[0.0625,0.25],
         "movement":[5,-2]
       },{
         "hash":"07cc051200",
-        "movement":[-2,-2]
+        "ignore_motion":true
       },{
         "hash":"07cc041200",
-        "movement":[-2,-2]
+        "ignore_motion":true
       },{
         "hash":"07cc031200",
-        "movement":[-2,-2]
+        "ignore_motion":true
       },{
         "hash":"07cc021200",
-        "movement":[-2,-2]
+        "ignore_motion":true
       },{
         "hash":"07cc011200",
-        "movement":[-2,-2]
+        "ignore_motion":true
       },{
+        "velocity":[0.0625,0.25],
         "boxes":[[5,80,15,-43,31],[5,39,41,-50,28]],
         "movement":[14,-2],
         "hash":"07cd021801"
       },{
         "hash":"07cd011801",
         "boxes":[[5,80,15,-43,31],[5,39,41,-50,28]],
-        "movement":[-2,-2]
+        "ignore_motion":true
       },{
+        "velocity":[0.0625,0.25],
         "boxes":[[5,99,17,-47,22],[5,110,17,-38,53]],
         "movement":[32,0],
         "hash":"07ce032402"
@@ -3258,12 +3263,14 @@
       },{
         "hash":"07cfed3002",
         "next_anim":[["41b4",0]]
-      }]
+      }],
+    "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0],[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "f4d4":{
     "landing_height":11.9375,
-    "uses_velocity":true,
     "idle_frames":[[1,134]],
+    "uses_velocity":true,
+    "name":"sjump_back",
     "frames":[{
         "hash":"065d060600",
         "acceleration":[0,-0.59375],
@@ -3673,12 +3680,12 @@
         "hash":"0669a14e00",
         "next_anim":[["356c",0]],
         "boxes":[[1,52,50,-28,56],[2,52,50,-28,56],[3,98,19,-36,26],[3,89,25,-43,63],[3,64,25,-35,58],[3,38,26,-38,57]]
-      }],
-    "name":"sjump_back"
+      }]
   },
   "5624":{
     "hit_frames":[[8,19]],
     "name":"air_knee_smash_HK",
+    "uses_velocity":true,
     "frames":[{
         "hash":"0632011200"
       },{
@@ -3780,8 +3787,7 @@
       },{
         "hash":"065cfa4e01",
         "next_anim":[["466c",0]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "ec94":{
     "loops":[[0,263]],
@@ -4585,6 +4591,7 @@
   },
   "4624":{
     "name":"power_bomb_LP_ext",
+    "uses_velocity":true,
     "frames":[{
         "hash":"0862040c00",
         "movement":[6,0]
@@ -4698,81 +4705,107 @@
         "movement":[0,3.375]
       },{
         "hash":"0896025401",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0896015401",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897045a01",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897035a01",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897025a01",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897015a01",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"08970c6001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"08970b6001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"08970a6001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897096001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897086001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897076001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897066001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897056001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897046001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897036001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897026001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897016001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0898036601",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0898026601",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0898016601",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0903036c01",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0903026c01",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0903016c01",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0902027201",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0902017201",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"065d028a01",
@@ -4780,7 +4813,8 @@
         "velocity":[-5,6.625],
         "movement":[-2,16]
       },{
-        "hash":"065d028a01"
+        "hash":"065d028a01",
+        "velocity":[0,0.5625]
       },{
         "hash":"065d018a01",
         "next_anim":[["f0c4",4]]
@@ -4790,19 +4824,15 @@
         "movement":[-3,16],
         "velocity":[-6.5,7.625]
       },{
-        "hash":"065d028a00"
+        "hash":"065d028a00",
+        "velocity":[0,0.5625]
       },{
         "hash":"065d018a00",
         "next_anim":[["f0c4",4]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "849c":{
     "hit_frames":[[18,18]],
-    "uses_velocity":true,
-    "name":"slash_elbow_MK",
-    "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[42,50]],
     "frames":[{
         "hash":"0955020000",
         "movement":[16,0]
@@ -4943,14 +4973,13 @@
         "hash":"0748fa9601",
         "next_anim":[["idle"]]
       }],
-    "advantage":[14]
+    "idle_frames":[[42,50]],
+    "name":"slash_elbow_MK",
+    "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "bd6c":{
-    "hit_frames":[[5,7]],
     "air":true,
-    "name":"u_MP",
-    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "uses_velocity":true,
     "frames":[{
         "hash":"09b9010400",
         "boxes":[[1,52,50,-28,56]]
@@ -5313,9 +5342,13 @@
         "next_anim":[["36bc",0]],
         "boxes":[[1,52,50,-28,56]]
       }],
-    "advantage":[11]
+    "hit_frames":[[5,7]],
+    "name":"u_MP",
+    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "ed64":{
+    "idle_frames":[[0,8]],
     "name":"crouching_turn",
     "frames":[{
         "hash":"0645030000",
@@ -5345,8 +5378,7 @@
         "hash":"064afa1400",
         "boxes":[[1,0,59,-28,56],[2,0,8,-32,60],[3,48,20,-27,44],[3,43,20,-40,72],[3,23,19,-44,86],[3,0,22,-46,91]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[0,8]]
+      }]
   },
   "block_high":"0398",
   "638c":{
@@ -5474,84 +5506,111 @@
         "movement":[0,3.375]
       },{
         "hash":"0896025401",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0896015401",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897045a01",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897035a01",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897025a01",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897015a01",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"08970e6001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"08970d6001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"08970c6001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"08970b6001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"08970a6001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897096001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897086001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897076001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897066001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897056001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897046001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897036001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897026001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0897016001",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0898036601",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0898026601",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0898016601",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0903026c01",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0903016c01",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0902027201",
+        "velocity":[0,0.625],
         "movement":[-2,0]
       },{
         "hash":"0902017201",
+        "velocity":[0,0.625],
         "movement":[-2,0],
         "next_anim":[["4624",80]]
       }],
@@ -5560,6 +5619,7 @@
   "block_low":"0418",
   "jump_recovery":"356c",
   "ee84":{
+    "name":"sjump_startup",
     "frames":[{
         "hash":"0631020000",
         "boxes":[[1,0,72,-28,56],[2,52,50,-28,56],[3,65,19,-23,32],[3,55,19,-37,74],[3,34,21,-35,69],[3,0,34,-44,88]]
@@ -5582,8 +5642,7 @@
         "hash":"0632fa0800",
         "boxes":[[1,0,59,-28,56],[2,52,50,-28,56],[3,48,20,-27,44],[3,43,20,-40,72],[3,23,19,-44,86],[3,0,22,-46,91]],
         "next_anim":[["f1e4",0],["f35c",0],["f4d4",0]]
-      }],
-    "name":"sjump_startup"
+      }]
   },
   "4aac":{
     "name":"power_bomb_HP_ext",
@@ -5728,87 +5787,115 @@
         "movement":[0,7.5]
       },{
         "hash":"0896025401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0896015401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897045a01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897035a01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897025a01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897015a01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897106001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"08970f6001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"08970e6001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"08970d6001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"08970c6001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"08970b6001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"08970a6001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897096001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897086001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897076001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897066001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897056001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897046001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897036001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897026001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0897016001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0898036601",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0898026601",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0898016601",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0903026c01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0903016c01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0902017201",
+        "velocity":[0,0.625],
         "movement":[-4,0],
         "next_anim":[["4624",80]]
       }],
@@ -5817,293 +5904,312 @@
   "f64c":{
     "idle_frames":[[0,0]],
     "name":"walk_transition",
-    "uses_velocity":true,
     "frames":[{
         "hash":"0601fa0000",
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "movement":[-2.5,0],
         "next_anim":[["idle"],["e9b4",0],["eae4",0]]
-      }]
+      }],
+    "uses_velocity":true
   },
   "block_high_air":"0328",
   "5524":{
-    "idle_frames":[[86,89]],
     "name":"stungun_headbutt_ext",
+    "idle_frames":[[86,89]],
     "uses_velocity":true,
     "frames":[{
         "hash":"077f060c00",
+        "velocity":[0,1.09375],
         "movement":[-4.5,1.21875]
       },{
         "hash":"077f050c00",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"077f040c00",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"077f030c00",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"077f020c00",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"077f010c00",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0784021800",
+        "velocity":[0,1.09375],
         "movement":[-8.5,14.21875]
       },{
         "hash":"0784011800",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0785021e00",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0785011e00",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0787022401",
+        "velocity":[0,1.09375],
         "movement":[3.5,14.21875]
       },{
         "hash":"0787012401",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789042a01",
+        "velocity":[0,1.09375],
         "movement":[7.5,14.21875]
       },{
         "hash":"0789032a01",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789022a01",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789012a01",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078a023001",
+        "velocity":[0,1.09375],
         "movement":[3.5,14.21875]
       },{
         "hash":"078a013001",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0784021801",
+        "velocity":[0,1.09375],
         "movement":[-8.5,14.21875]
       },{
         "hash":"0784011801",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0785021e01",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0785011e01",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0787022402",
+        "velocity":[0,1.09375],
         "movement":[3.5,14.21875]
       },{
         "hash":"0787012402",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789042a02",
+        "velocity":[0,1.09375],
         "movement":[7.5,14.21875]
       },{
         "hash":"0789032a02",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789022a02",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789012a02",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078a023002",
+        "velocity":[0,1.09375],
         "movement":[3.5,14.21875]
       },{
         "hash":"078a013002",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0784021802",
+        "velocity":[0,1.09375],
         "movement":[-8.5,14.21875]
       },{
         "hash":"0784011802",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0785021e02",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0785011e02",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0787022403",
+        "velocity":[0,1.09375],
         "movement":[3.5,14.21875]
       },{
         "hash":"0787012403",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789042a03",
+        "velocity":[0,1.09375],
         "movement":[7.5,14.21875]
       },{
         "hash":"0789032a03",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789022a03",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789012a03",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078a023003",
+        "velocity":[0,1.09375],
         "movement":[3.5,14.21875]
       },{
         "hash":"078a013003",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0784023c03",
+        "velocity":[0,1.09375],
         "movement":[-16.5,14.21875]
       },{
         "hash":"0784013c03",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0785024203",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0785014203",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0786044803",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0786034803",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0786024803",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0786014803",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"07870a4e04",
+        "velocity":[0,1.09375],
         "movement":[3.5,14.21875]
       },{
         "hash":"0787094e04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0787084e04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0787074e04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0787064e04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0787054e04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0787044e04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0787034e04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0787024e04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0787014e04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"07890c5404",
+        "velocity":[0,1.09375],
         "movement":[7.5,14.21875]
       },{
         "hash":"07890b5404",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"07890a5404",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789095404",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789085404",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789075404",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789065404",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789055404",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789045404",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789035404",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789025404",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"0789015404",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078a025a04",
+        "velocity":[0,1.09375],
         "movement":[3.5,14.21875]
       },{
         "hash":"078a015a04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078b036004",
+        "velocity":[0,1.09375],
         "movement":[-8.5,14.21875]
       },{
         "hash":"078b026004",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078b016004",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078c046604",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078c036604",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078c026604",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078c016604",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078d046c04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078d036c04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078d026c04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"078d016c04",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"068f047204",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"068f037204",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"068f027204",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"068f017204",
-        "movement":[-4.5,14.21875]
+        "ignore_motion":true
       },{
         "hash":"068ffa7804",
-        "movement":[-4.5,14.21875],
+        "ignore_motion":true,
         "next_anim":[["idle"]]
       }]
   },
   "f71c":{
+    "idle_frames":[[15,17]],
     "name":"parry_low",
     "frames":[{
         "hash":"09d0010000",
@@ -6175,8 +6281,7 @@
         "hash":"0647021000",
         "boxes":[[1,0,59,-28,56],[2,0,8,-32,60],[3,48,20,-27,44],[3,43,20,-40,72],[3,23,19,-44,86],[3,0,22,-46,91]],
         "next_anim":[["edd4",0]]
-      }],
-    "idle_frames":[[15,17]]
+      }]
   },
   "b7fc":{
     "hit_frames":[[5,6]],
@@ -6184,8 +6289,6 @@
     "exceptions":{
       "063a011000":13
     },
-    "advantage":[8],
-    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"07c8010000"
       },{
@@ -6251,9 +6354,11 @@
       },{
         "hash":"07dc015c01",
         "optional_anim":[["babc",8]]
-      }]
+      }],
+    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "f9cc":{
+    "idle_frames":[[0,6],[8,28]],
     "name":"block_high_proximity",
     "frames":[{
         "hash":"0675040000",
@@ -6344,28 +6449,26 @@
         "hash":"067afa1400",
         "next_anim":[["idle"]],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]]
-      }],
-    "idle_frames":[[0,6],[8,28]]
+      }]
   },
   "72d4":{
     "hit_frames":[[15,24]],
     "name":"uoh",
-    "uses_velocity":true,
-    "advantage":[11],
     "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true,
     "frames":[{
         "hash":"0631040400",
         "acceleration":[0,-0.4375],
         "velocity":[2,4.5]
       },{
         "hash":"0631030400",
-        "movement":[-2,-4.5]
+        "ignore_motion":true
       },{
         "hash":"0631020400",
-        "movement":[-2,-4.5]
+        "ignore_motion":true
       },{
         "hash":"0631010400",
-        "movement":[-2,-4.5]
+        "ignore_motion":true
       },{
         "hash":"0840060800"
       },{
@@ -6422,6 +6525,7 @@
       }]
   },
   "62d4":{
+    "name":"throw_neutral_ext",
     "frames":[{
         "hash":"0869060600"
       },{
@@ -6479,14 +6583,12 @@
       },{
         "hash":"086d011e00",
         "next_anim":[["4434",0]]
-      }],
-    "name":"throw_neutral_ext"
+      }]
   },
   "ae64":{
     "hit_frames":[[5,7]],
     "name":"LK",
     "idle_frames":[[18,23]],
-    "advantage":[8],
     "pushback":[[3,5,6,7,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"0790020000",
@@ -6547,9 +6649,10 @@
       }]
   },
   "be7c":{
-    "hit_frames":[[8,10]],
-    "name":"u_HP",
     "air":true,
+    "name":"u_HP",
+    "uses_velocity":true,
+    "hit_frames":[[8,10]],
     "frames":[{
         "hash":"0803020400",
         "boxes":[[1,52,50,-28,56]]
@@ -6911,11 +7014,11 @@
         "hash":"065c9f3801",
         "next_anim":[["36bc",0]],
         "boxes":[[1,52,50,-28,56]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "6df4":{
     "name":"air_stampede_MK",
+    "uses_velocity":true,
     "frames":[{
         "hash":"068e010400"
       },{
@@ -6972,37 +7075,34 @@
       },{
         "hash":"093ef62c00",
         "next_anim":[["7094",0]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "5c34":{
     "loops":[[15,23]],
     "name":"air_knee_smash_LK_ext",
-    "uses_velocity":true,
     "idle_frames":[[78,85],[138,145]],
+    "uses_velocity":true,
     "frames":[{
         "hash":"0843030c00",
-        "movement":[-2.875,-8.3125]
+        "ignore_motion":true
       },{
         "hash":"0843020c00",
-        "movement":[-2.875,-8.3125]
+        "ignore_motion":true
       },{
         "hash":"0843010c00",
-        "movement":[-2.875,-8.3125]
+        "ignore_motion":true
       },{
         "hash":"0844031200",
-        "movement":[-2.875,-8.3125]
+        "ignore_motion":true
       },{
         "hash":"0844021200",
-        "movement":[-2.875,-8.3125]
+        "ignore_motion":true
       },{
         "hash":"0844011200",
-        "movement":[-2.875,-8.3125]
+        "ignore_motion":true
       },{
         "hash":"0845031e00",
-        "acceleration":[0.375,-0.0625],
-        "velocity":[1.5,-1.75],
-        "movement":[-2.875,-8.3125]
+        "ignore_motion":true
       },{
         "hash":"0845021e00"
       },{
@@ -7046,369 +7146,490 @@
         "movement":[0,7.9375]
       },{
         "hash":"0848014201",
+        "velocity":[0,0.625],
         "movement":[4,0]
       },{
         "hash":"0849014801",
+        "velocity":[0,0.625],
         "movement":[4,0]
       },{
         "hash":"084a024e01",
+        "velocity":[0,0.625],
         "movement":[4,0]
       },{
         "hash":"084a014e01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084b085401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084b075401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084b065401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084b055401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084b045401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084b035401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084b025401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084b015401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084c025a01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084c015a01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084d036001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084d026001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084d016001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084e036601",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084e026601",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084e016601",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084f036c01",
+        "velocity":[0,0.625],
         "movement":[-17,0]
       },{
         "hash":"084f026c01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"084f016c01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0850027201",
+        "velocity":[0,0.625],
         "movement":[-24,0]
       },{
         "hash":"0850017201",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0832027801",
+        "velocity":[0,0.625],
         "movement":[-10,60]
       },{
         "hash":"0832017801",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0833037e01",
+        "velocity":[0,0.625],
         "movement":[-28,8]
       },{
         "hash":"0833027e01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0833017e01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0834038401",
+        "velocity":[0,0.625],
         "movement":[-18,-6]
       },{
         "hash":"0834028401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0834018401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"082f028a01",
+        "velocity":[0,0.625],
         "movement":[-30,-20]
       },{
         "hash":"082f018a01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0830029001",
+        "velocity":[0,0.625],
         "movement":[-8,-28]
       },{
         "hash":"0830019001",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0636049601",
+        "velocity":[0,0.625],
         "movement":[-8,-14]
       },{
         "hash":"0636039601",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0636029601",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0636019601",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0637039c01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0637029c01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"0637019c01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063803a201",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063802a201",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063801a201",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063904a801",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063903a801",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063902a801",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063901a801",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063a04ae01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063a03ae01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063a02ae01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063a01ae01",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063b04b401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063b03b401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063b02b401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063b01b401",
+        "velocity":[0,0.625],
         "movement":[-4,0]
       },{
         "hash":"063bfaba01",
+        "velocity":[0,0.625],
         "movement":[-4,0],
         "next_anim":[["idle"]]
       },{
         "hash":"0848014200",
-        "movement":[3.5,0]
+        "movement":[3.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0849014800",
-        "movement":[3.5,0]
+        "movement":[3.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084a024e00",
-        "movement":[3.5,0]
+        "movement":[3.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084a014e00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084b085400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084b075400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084b065400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084b055400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084b045400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084b035400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084b025400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084b015400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084c025a00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084c015a00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084d036000",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084d026000",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084d016000",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084e036600",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084e026600",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084e016600",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084f036c00",
-        "movement":[-17.5,0]
+        "movement":[-17.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084f026c00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"084f016c00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0850027200",
-        "movement":[-24.5,0]
+        "movement":[-24.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0850017200",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0832027800",
-        "movement":[-10.5,60]
+        "movement":[-10.5,60],
+        "velocity":[0,0.625]
       },{
         "hash":"0832017800",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0833037e00",
-        "movement":[-28.5,8]
+        "movement":[-28.5,8],
+        "velocity":[0,0.625]
       },{
         "hash":"0833027e00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0833017e00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0834038400",
-        "movement":[-18.5,-6]
+        "movement":[-18.5,-6],
+        "velocity":[0,0.625]
       },{
         "hash":"0834028400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0834018400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"082f028a00",
-        "movement":[-30.5,-20]
+        "movement":[-30.5,-20],
+        "velocity":[0,0.625]
       },{
         "hash":"082f018a00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0830029000",
-        "movement":[-8.5,-28]
+        "movement":[-8.5,-28],
+        "velocity":[0,0.625]
       },{
         "hash":"0830019000",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0636049600",
-        "movement":[-8.5,-14]
+        "movement":[-8.5,-14],
+        "velocity":[0,0.625]
       },{
         "hash":"0636039600",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0636029600",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0636019600",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0637039c00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0637029c00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"0637019c00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063803a200",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063802a200",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063801a200",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063904a800",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063903a800",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063902a800",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063901a800",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063a04ae00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063a03ae00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063a02ae00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063a01ae00",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063b04b400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063b03b400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063b02b400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063b01b400",
-        "movement":[-4.5,0]
+        "movement":[-4.5,0],
+        "velocity":[0,0.625]
       },{
         "hash":"063bfaba00",
         "next_anim":[["idle"]],
+        "velocity":[0,0.625],
         "movement":[-4.5,0]
       }]
   },
   "362c":{
+    "name":"wakeup",
     "frames":[{
         "hash":"08d3020000",
         "boxes":[[1,0,59,-28,56]],
@@ -7453,11 +7674,11 @@
         "hash":"08d6011800",
         "boxes":[[1,0,59,-28,56]],
         "next_anim":[["19d8",13]]
-      }],
-    "name":"wakeup"
+      }]
   },
   "walk_forward":"e754",
   "41b4":{
+    "idle_frames":[[7,10]],
     "name":"d_HP_ext",
     "uses_velocity":false,
     "frames":[{
@@ -7484,13 +7705,11 @@
       },{
         "hash":"063bfa1800",
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[7,10]]
+      }]
   },
   "babc":{
     "hit_frames":[[11,12]],
     "name":"d_HK",
-    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0]],
     "frames":[{
         "hash":"07e8020000"
       },{
@@ -7584,10 +7803,11 @@
         "hash":"07c6043c01",
         "next_anim":[["idle"]]
       }],
-    "advantage":[14]
+    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0]]
   },
   "1fb8":{
     "name":"wakeup_quick_reverse_ext",
+    "uses_velocity":true,
     "frames":[{
         "hash":"08d6030000",
         "boxes":[[1,0,59,-28,56]]
@@ -7662,8 +7882,7 @@
         "boxes":[[1,0,59,-28,56]],
         "movement":[-4,0],
         "next_anim":[["2098",24]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "7284":{
     "hit_frames":[[0,1]],
@@ -7675,6 +7894,7 @@
         "movement":[0,-0.15234375]
       },{
         "hash":"093f010400",
+        "velocity":[0,0.84765625],
         "boxes":[[5,0,88,-34,44]],
         "movement":[-3,0],
         "next_anim":[["70e4",2]]
@@ -7682,11 +7902,9 @@
     "uses_velocity":true
   },
   "af7c":{
-    "hit_frames":[[5,7]],
-    "name":"cl_MK",
     "idle_frames":[[20,25]],
-    "advantage":[13],
-    "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "name":"cl_MK",
+    "hit_frames":[[5,7]],
     "frames":[{
         "hash":"0790030000",
         "movement":[8,0]
@@ -7747,14 +7965,11 @@
       },{
         "hash":"069afa3c01",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "871c":{
     "hit_frames":[[20,20]],
-    "uses_velocity":true,
-    "name":"slash_elbow_HK",
-    "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[44,53]],
     "frames":[{
         "hash":"0955020000",
         "movement":[16,0]
@@ -7903,13 +8118,15 @@
         "hash":"0748fa9601",
         "next_anim":[["idle"]]
       }],
-    "advantage":[14]
+    "idle_frames":[[44,53]],
+    "name":"slash_elbow_HK",
+    "pushback":[[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "ad04":{
     "hit_frames":[[8,11]],
     "name":"b_HP",
     "idle_frames":[[35,36]],
-    "advantage":[14],
     "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"0751030000"
@@ -7997,6 +8214,7 @@
   },
   "8d34":{
     "name":"spiral_ddt",
+    "uses_velocity":true,
     "frames":[{
         "hash":"068b050400"
       },{
@@ -8056,10 +8274,10 @@
       },{
         "hash":"09d5011400",
         "next_anim":[["8bd4",18]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "0398":{
+    "idle_frames":[[20,22]],
     "name":"block_high",
     "frames":[{
         "hash":"0678020000",
@@ -8139,8 +8357,7 @@
         "hash":"067afa1800",
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[20,22]]
+      }]
   },
   "572c":{
     "name":"hyper_bomb_ext",
@@ -8531,90 +8748,119 @@
         "movement":[0,5.625]
       },{
         "hash":"0896010803",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0897020e03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0897010e03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0898041403",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0898031403",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0898021403",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0898011403",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0899101a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"08990f1a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"08990e1a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"08990d1a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"08990c1a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"08990b1a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"08990a1a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0899091a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0899081a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0899071a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0899061a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0899051a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0899041a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0899031a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0899021a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0899011a03",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"089a032003",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"089a022003",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"089a012003",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0903022603",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0903012603",
+        "velocity":[0,0.6875],
         "movement":[-5,0]
       },{
         "hash":"0902012c03",
+        "velocity":[0,0.6875],
         "movement":[-5,0],
         "next_anim":[["4624",80]]
       }],
@@ -8623,7 +8869,6 @@
   "e9b4":{
     "idle_frames":[[17,26]],
     "name":"dash_forward",
-    "uses_velocity":true,
     "frames":[{
         "hash":"0686020c00",
         "acceleration":[-0.125,-0.375],
@@ -8632,6 +8877,7 @@
         "movement":[29.5,0]
       },{
         "hash":"0686020c00",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,76,19,-18,32],[3,65,23,-30,70],[3,37,28,-33,77],[3,0,37,-37,100]]
       },{
         "hash":"0686010c00",
@@ -8670,70 +8916,87 @@
         "movement":[8,0.375]
       },{
         "hash":"068a012400",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,72,-28,56],[2,0,16,-28,56],[3,68,19,-22,32],[3,60,23,-30,71],[3,33,27,-32,74],[3,0,33,-42,92]],
         "movement":[-6.125,0]
       },{
         "hash":"068b022a00",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,72,-28,56],[2,0,16,-28,56],[3,63,19,-26,32],[3,56,23,-33,71],[3,32,24,-35,71],[3,0,32,-45,92]],
         "movement":[-6.125,0]
       },{
         "hash":"068b012a00",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,72,-28,56],[2,0,16,-28,56],[3,65,19,-28,32],[3,57,23,-34,69],[3,32,25,-35,70],[3,0,32,-45,91]],
         "movement":[-6.125,0]
       },{
         "hash":"068c033000",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,72,-28,56],[2,0,16,-28,56],[3,68,19,-29,32],[3,59,23,-35,67],[3,32,26,-34,69],[3,0,32,-45,90]],
         "movement":[-6.125,0]
       },{
         "hash":"068c023000",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,72,-28,56],[2,0,16,-28,56],[3,72,19,-31,32],[3,62,22,-35,66],[3,33,29,-34,67],[3,0,33,-44,90]],
         "movement":[-6.125,0]
       },{
         "hash":"068c013000",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,72,-28,56],[2,0,16,-28,56],[3,78,19,-32,32],[3,66,22,-36,64],[3,33,32,-33,66],[3,0,33,-44,89]],
         "movement":[-6.125,0]
       },{
         "hash":"068d033600",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-34,32],[3,71,21,-37,62],[3,34,36,-33,65],[3,0,34,-44,88]],
         "movement":[-6.125,0]
       },{
         "hash":"068d023600",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-30,32],[3,71,20,-37,66],[3,34,36,-32,65],[3,0,34,-44,88]],
         "movement":[-6.125,0]
       },{
         "hash":"068d013600",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-27,32],[3,71,20,-37,70],[3,34,36,-31,65],[3,0,34,-44,88]],
         "movement":[-6.125,0]
       },{
         "hash":"068e043c00",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "movement":[-6.125,0]
       },{
         "hash":"068e033c00",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "movement":[-6.125,0]
       },{
         "hash":"068e023c00",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "movement":[-6.125,0]
       },{
         "hash":"068e013c00",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "movement":[-6.125,0]
       },{
         "hash":"068efa4200",
+        "velocity":[0.125,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "movement":[-6.125,0],
         "next_anim":[["idle"]]
-      }]
+      }],
+    "uses_velocity":true
   },
   "70e4":{
-    "idle_frames":[[26,45]],
+    "hit_frames":[[0,0],[1,1]],
     "name":"air_stampede_LK_ext",
+    "idle_frames":[[26,45]],
     "uses_velocity":true,
     "frames":[{
         "hash":"093f010400",
         "movement":[-3.875,0],
+        "velocity":[0.0625,0.75],
         "boxes":[[5,0,88,-34,44]]
       },{
         "hash":"093f020400",
@@ -8742,139 +9005,182 @@
         "movement":[0,4.25]
       },{
         "hash":"0941020800",
+        "velocity":[0.0625,0.75],
         "movement":[11.6875,0]
       },{
         "hash":"0941010800",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0902020c00",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0902010c00",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0903031000",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0903021000",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0903011000",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0904041400",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0904031400",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0904021400",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0904011400",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0905051800",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0905041800",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0905031800",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0905021800",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0905011800",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0906041c00",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0906031c00",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0906021c00",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0906011c00",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0907032000",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0907022000",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0907012000",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0908032400",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0908022400",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0908012400",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0909032800",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0909022800",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0909012800",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"090a022c00",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"090a012c00",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"090b033000",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"090b023000",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"090b013000",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"090c043400",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"090c033400",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"090c023400",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"090c013400",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0927043800",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0927033800",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0927023800",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0927013800",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0]
       },{
         "hash":"0601013c00",
+        "velocity":[0.0625,0.75],
         "movement":[5.6875,0]
       },{
         "hash":"0601fa4000",
+        "velocity":[0.0625,0.75],
         "movement":[-0.3125,0],
         "next_anim":[["idle"]]
-      }],
-    "hit_frames":[[0,0],[1,1]]
+      }]
   },
   "bf94":{
     "hit_frames":[[4,97]],
@@ -9183,10 +9489,10 @@
     "loops":[[8,61],[62,85],[86,97]],
     "name":"u_LK",
     "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "air":true,
-    "advantage":[8]
+    "air":true
   },
   "3d9c":{
+    "idle_frames":[[8,28]],
     "name":"spiral_ddt_ext",
     "uses_velocity":false,
     "frames":[{
@@ -9248,10 +9554,11 @@
       },{
         "hash":"063bfa2400",
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[8,28]]
+      }]
   },
   "63a4":{
+    "hit_frames":[[2,3]],
+    "name":"hyper_bomb",
     "frames":[{
         "hash":"0862021800",
         "movement":[6,0]
@@ -9335,16 +9642,10 @@
       },{
         "hash":"068efa4801",
         "next_anim":[["idle"]]
-      }],
-    "name":"hyper_bomb",
-    "hit_frames":[[2,3]]
+      }]
   },
   "c1c4":{
-    "hit_frames":[[8,11]],
     "air":true,
-    "name":"u_HK",
-    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "uses_velocity":true,
     "frames":[{
         "hash":"0850030400",
         "boxes":[[1,52,50,-28,56]]
@@ -9707,11 +10008,15 @@
         "next_anim":[["36bc",0]],
         "boxes":[[1,52,50,-28,56]]
       }],
-    "advantage":[14]
+    "hit_frames":[[8,11]],
+    "name":"u_HK",
+    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "8bd4":{
     "hit_frames":[[20,22]],
     "name":"spiral_ddt",
+    "uses_velocity":true,
     "frames":[{
         "hash":"068b070400"
       },{
@@ -9795,13 +10100,12 @@
       },{
         "hash":"09d2042c01",
         "next_anim":[["3d9c",0]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "eae4":{
-    "idle_frames":[[21,26]],
     "name":"dash_back",
     "uses_velocity":true,
+    "idle_frames":[[21,26]],
     "frames":[{
         "hash":"069f010600",
         "acceleration":[0.5625,-0.375],
@@ -9810,10 +10114,12 @@
         "movement":[-21.875,0]
       },{
         "hash":"06a0020c00",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,100,19,-14,32],[3,81,25,-22,60],[3,42,39,-32,61],[3,0,42,-44,72]],
         "movement":[-8,-1.8125]
       },{
         "hash":"06a0020c00",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,100,19,-14,32],[3,81,25,-22,60],[3,42,39,-32,61],[3,0,42,-44,72]]
       },{
         "hash":"06a0010c00",
@@ -9855,50 +10161,62 @@
         "movement":[0,1.1875]
       },{
         "hash":"0695022400",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,90,19,-44,32],[3,75,23,-51,62],[3,42,33,-41,65],[3,0,42,-42,74]],
         "movement":[1.25,0]
       },{
         "hash":"0695012400",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,84,19,-32,32],[3,73,21,-40,63],[3,38,35,-33,66],[3,0,38,-43,81]],
         "movement":[1.25,0]
       },{
         "hash":"0697032a00",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,77,19,-21,32],[3,70,19,-29,63],[3,34,36,-26,66],[3,0,34,-44,88]],
         "movement":[1.25,0]
       },{
         "hash":"0697022a00",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,77,19,-21,32],[3,70,19,-29,63],[3,34,36,-26,66],[3,0,34,-44,88]],
         "movement":[1.25,0]
       },{
         "hash":"0697012a00",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,78,19,-21,32],[3,70,19,-30,64],[3,34,36,-26,66],[3,0,34,-44,88]],
         "movement":[1.25,0]
       },{
         "hash":"0698033000",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,79,19,-21,32],[3,70,19,-30,65],[3,34,36,-27,66],[3,0,34,-44,88]],
         "movement":[1.25,0]
       },{
         "hash":"0698023000",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,80,19,-22,32],[3,70,19,-31,66],[3,34,36,-27,66],[3,0,34,-44,88]],
         "movement":[1.25,0]
       },{
         "hash":"0698013000",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,81,19,-22,32],[3,70,19,-32,68],[3,34,36,-28,66],[3,0,34,-44,88]],
         "movement":[1.25,0]
       },{
         "hash":"0699023600",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,82,19,-22,32],[3,71,19,-34,69],[3,34,36,-28,65],[3,0,34,-44,88]],
         "movement":[1.25,0]
       },{
         "hash":"0699013600",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,84,19,-23,32],[3,71,19,-35,72],[3,34,36,-29,65],[3,0,34,-44,88]],
         "movement":[1.25,0]
       },{
         "hash":"069a013c00",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "movement":[1.25,0]
       },{
         "hash":"069afa4200",
+        "velocity":[-0.5625,0.375],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "movement":[1.25,0],
         "next_anim":[["idle"]]
@@ -10127,8 +10445,9 @@
   },
   "f35c":{
     "landing_height":11.9375,
-    "uses_velocity":true,
     "idle_frames":[[1,134]],
+    "uses_velocity":true,
+    "name":"sjump_neutral",
     "frames":[{
         "hash":"0650060600",
         "acceleration":[0,-0.59375],
@@ -10538,10 +10857,10 @@
         "hash":"065ca14e00",
         "next_anim":[["356c",0]],
         "boxes":[[1,52,50,-28,56],[2,52,50,-28,56],[3,98,19,-36,26],[3,89,25,-43,63],[3,64,25,-35,58],[3,38,26,-38,57]]
-      }],
-    "name":"sjump_neutral"
+      }]
   },
   "ec14":{
+    "idle_frames":[[0,18]],
     "name":"crouching_begin",
     "frames":[{
         "hash":"0630020000",
@@ -10601,10 +10920,10 @@
         "hash":"0635fa1800",
         "boxes":[[1,0,59,-28,56],[2,0,8,-32,60],[3,48,20,-27,44],[3,43,20,-40,72],[3,23,19,-44,86],[3,0,22,-46,91]],
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[0,18]]
+      }]
   },
   "389c":{
+    "name":"wakeup_quick",
     "frames":[{
         "hash":"06ca020000",
         "boxes":[[1,0,59,-28,56]],
@@ -10687,42 +11006,39 @@
         "boxes":[[1,0,59,-28,56]],
         "movement":[0.25,0],
         "next_anim":[["2098",0]]
-      }],
-    "name":"wakeup_quick"
+      }]
   },
   "6074":{
-    "loops":[[17,28]],
     "name":"air_knee_smash_HK_ext",
+    "loops":[[17,28]],
     "uses_velocity":true,
     "frames":[{
         "hash":"0843030c00",
-        "movement":[-10.125,-7.1875]
+        "ignore_motion":true
       },{
         "hash":"0843020c00",
-        "movement":[-10.125,-7.1875]
+        "ignore_motion":true
       },{
         "hash":"0843010c00",
-        "movement":[-10.125,-7.1875]
+        "ignore_motion":true
       },{
         "hash":"0844051200",
-        "movement":[-10.125,-7.1875]
+        "ignore_motion":true
       },{
         "hash":"0844041200",
-        "movement":[-10.125,-7.1875]
+        "ignore_motion":true
       },{
         "hash":"0844031200",
-        "movement":[-10.125,-7.1875]
+        "ignore_motion":true
       },{
         "hash":"0844021200",
-        "movement":[-10.125,-7.1875]
+        "ignore_motion":true
       },{
         "hash":"0844011200",
-        "movement":[-10.125,-7.1875]
+        "ignore_motion":true
       },{
         "hash":"0845031e00",
-        "acceleration":[0.375,-0.0625],
-        "velocity":[-4.75,1.375],
-        "movement":[-10.125,-7.1875]
+        "ignore_motion":true
       },{
         "hash":"0845021e00"
       },{
@@ -10775,7 +11091,6 @@
     "hit_frames":[[7,11]],
     "name":"f_MP",
     "idle_frames":[[22,23]],
-    "advantage":[11],
     "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"074b020000"
@@ -10841,120 +11156,156 @@
   "c5ec":{
     "loops":[[1,11]],
     "name":"d_HP_air_ext",
-    "uses_velocity":true,
     "idle_frames":[[13,36]],
+    "uses_velocity":true,
     "frames":[{
         "hash":"0829014e00",
         "velocity":[0,16.5],
         "movement":[0,3.5]
       },{
         "hash":"0829025a00",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"0829015a00",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"082a026000",
+        "velocity":[0.0625,0.5],
         "movement":[14.125,0]
       },{
         "hash":"082a016000",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"082b026600",
+        "velocity":[0.0625,0.5],
         "movement":[14.125,0]
       },{
         "hash":"082b016600",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"082c026c00",
+        "velocity":[0.0625,0.5],
         "movement":[14.125,0]
       },{
         "hash":"082c016c00",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"082d037200",
+        "velocity":[0.0625,0.5],
         "movement":[14.125,0]
       },{
         "hash":"082d027200",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"082d017200",
+        "velocity":[0.0625,0.5],
         "loop":1,
         "movement":[-3.875,0]
       },{
         "hash":"0637047e00",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"0637037e00",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"0637027e00",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"0637017e00",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"0638048400",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"0638038400",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"0638028400",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"0638018400",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"0639058a00",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"0639048a00",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"0639038a00",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"0639028a00",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"0639018a00",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"063a059000",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"063a049000",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"063a039000",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"063a029000",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"063a019000",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"063b069600",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"063b059600",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"063b049600",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"063b039600",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"063b029600",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"063b019600",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0]
       },{
         "hash":"063bfa9c00",
+        "velocity":[0.0625,0.5],
         "movement":[-3.875,0],
         "next_anim":[["idle"]]
       }]
@@ -11015,14 +11366,13 @@
       },{
         "hash":"07c6033001",
         "next_anim":[["idle"]]
-      }],
-    "advantage":[11]
+      }]
   },
   "e754":{
     "loops":[[6,53]],
     "name":"walk_forward",
-    "uses_velocity":true,
     "idle_frames":[[0,111]],
+    "uses_velocity":true,
     "frames":[{
         "hash":"09c3010000",
         "velocity":[2.5,0],
@@ -11427,6 +11777,7 @@
   "7044":{
     "hit_frames":[[0,1]],
     "name":"air_stampede_LK_ext",
+    "uses_velocity":true,
     "frames":[{
         "hash":"093f020400",
         "velocity":[0,8.25],
@@ -11434,16 +11785,16 @@
         "movement":[0,0.25]
       },{
         "hash":"093f010400",
+        "velocity":[0.0625,0.75],
         "boxes":[[5,0,88,-34,44]],
         "movement":[-0.3125,0],
         "next_anim":[["70e4",0]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "f1e4":{
-    "landing_height":11.9375,
-    "uses_velocity":true,
     "idle_frames":[[1,134]],
+    "landing_height":11.9375,
+    "name":"sjump_forward",
     "frames":[{
         "hash":"0650060600",
         "acceleration":[0,-0.59375],
@@ -11854,9 +12205,10 @@
         "next_anim":[["356c",0]],
         "boxes":[[1,52,50,-28,56],[2,52,50,-28,56],[3,98,19,-36,26],[3,89,25,-43,63],[3,64,25,-35,58],[3,38,26,-38,57]]
       }],
-    "name":"sjump_forward"
+    "uses_velocity":true
   },
   "4434":{
+    "name":"throw_neutral_ext",
     "frames":[{
         "hash":"086d011e00"
       },{
@@ -11998,13 +12350,12 @@
       },{
         "hash":"087bfa7201",
         "next_anim":[["idle"]]
-      }],
-    "name":"throw_neutral_ext"
+      }]
   },
   "f79c":{
-    "idle_frames":[[16,72]],
     "name":"parry_air",
     "uses_velocity":true,
+    "idle_frames":[[16,72]],
     "frames":[{
         "hash":"0683020000",
         "boxes":[[1,52,50,-28,56],[2,52,50,-28,56],[3,84,19,-48,26],[3,81,25,-42,62],[3,64,21,-41,68],[3,40,26,-36,65]],
@@ -12243,9 +12594,8 @@
       }]
   },
   "e614":{
-    "loops":[[0,249]],
-    "name":"standing",
     "idle_frames":[[0,249]],
+    "name":"standing",
     "frames":[{
         "hash":"0601040000",
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]]
@@ -12998,14 +13348,11 @@
         "next_anim":[["idle"]],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "loop":0
-      }]
+      }],
+    "loops":[[0,249]]
   },
   "c324":{
-    "hit_frames":[[10,20]],
     "air":true,
-    "name":"d_HP_air",
-    "pushback":[[21,17,12,11,11,10,10,9,9,8,7,6,5,4,2,0,0,0,0,0,0,0,0,0,0,0]],
-    "uses_velocity":true,
     "frames":[{
         "hash":"0682020400",
         "boxes":[[1,52,50,-28,56]]
@@ -13017,7 +13364,7 @@
       },{
         "hash":"07f8010800",
         "boxes":[[1,52,50,-28,56]],
-        "movement":[-6,-0.5]
+        "ignore_motion":true
       },{
         "hash":"07f9060c00",
         "boxes":[[1,52,50,-28,56]]
@@ -13119,9 +13466,13 @@
         "boxes":[[1,63,32,-36,56]],
         "next_anim":[["c5ec",0]]
       }],
-    "advantage":[14]
+    "hit_frames":[[10,20]],
+    "name":"d_HP_air",
+    "pushback":[[21,17,12,11,11,10,10,9,9,8,7,6,5,4,2,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "ee44":{
+    "name":"jump_startup",
     "frames":[{
         "hash":"0631020000",
         "boxes":[[1,0,72,-28,56],[2,52,50,-28,56],[3,65,19,-23,32],[3,55,19,-37,74],[3,34,21,-35,69],[3,0,34,-44,88]]
@@ -13138,10 +13489,10 @@
         "hash":"0631fa0800",
         "boxes":[[1,0,72,-28,56],[2,52,50,-28,56],[3,65,19,-23,32],[3,55,19,-37,74],[3,34,21,-35,69],[3,0,34,-44,88]],
         "next_anim":[["eec4",0],["efc4",0],["f0c4",0]]
-      }],
-    "name":"jump_startup"
+      }]
   },
   "356c":{
+    "idle_frames":[[0,0],[2,32]],
     "name":"jump_recovery",
     "uses_velocity":false,
     "frames":[{
@@ -13242,14 +13593,14 @@
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]]
       },{
         "hash":"063bfa2800",
-        "next_anim":[["idle"]],
-        "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]]
-      }],
-    "idle_frames":[[0,0],[2,32]]
+        "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
+        "next_anim":[["idle"]]
+      }]
   },
   "crouching_begin":"ec14",
   "6ec4":{
     "name":"air_stampede_HK",
+    "uses_velocity":true,
     "frames":[{
         "hash":"068e010400"
       },{
@@ -13308,10 +13659,10 @@
       },{
         "hash":"093ef52c00",
         "next_anim":[["70e4",1]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "f95c":{
+    "idle_frames":[[0,2]],
     "name":"block_high_air_proximity",
     "frames":[{
         "hash":"0671030400",
@@ -13323,18 +13674,15 @@
         "hash":"0671010400",
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,86,19,-23,32],[3,71,19,-37,74],[3,34,36,-30,65],[3,0,34,-44,88]],
         "next_anim":[["f9cc",5]]
-      }],
-    "idle_frames":[[0,2]]
+      }]
   },
   "block_low_proximity":"fa3c",
   "parry_air":"f79c",
   "parry_low":"f71c",
   "a9fc":{
-    "hit_frames":[[9,12]],
-    "name":"f_HP",
     "idle_frames":[[30,37]],
-    "advantage":[18],
-    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "name":"f_HP",
+    "hit_frames":[[9,12]],
     "frames":[{
         "hash":"0835030000",
         "movement":[16,0]
@@ -13424,9 +13772,12 @@
       },{
         "hash":"069afa4e01",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "6144":{
+    "hit_frames":[[7,8]],
+    "name":"power_bomb_MP",
     "frames":[{
         "hash":"0860050c00"
       },{
@@ -13536,16 +13887,10 @@
       },{
         "hash":"068efa4201",
         "next_anim":[["idle"]]
-      }],
-    "name":"power_bomb_MP",
-    "hit_frames":[[7,8]]
+      }]
   },
   "bc0c":{
-    "hit_frames":[[4,15]],
     "air":true,
-    "name":"u_LP",
-    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "uses_velocity":true,
     "frames":[{
         "hash":"07f0030400",
         "boxes":[[1,52,50,-28,56]]
@@ -13908,14 +14253,13 @@
         "next_anim":[["36bc",0]],
         "boxes":[[1,52,50,-28,56]]
       }],
-    "advantage":[8]
+    "hit_frames":[[4,15]],
+    "name":"u_LP",
+    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "899c":{
     "hit_frames":[[9,14],[20,20]],
-    "uses_velocity":true,
-    "name":"slash_elbow_EXK",
-    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0],[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[44,55]],
     "frames":[{
         "hash":"0955020600",
         "movement":[16,0]
@@ -14071,10 +14415,14 @@
         "hash":"0748fa8402",
         "next_anim":[["idle"]]
       }],
-    "advantage":[14,16]
+    "idle_frames":[[44,55]],
+    "name":"slash_elbow_EXK",
+    "pushback":[[4,7,9,10,12,9,6,5,4,3,2,1,0,0,0],[5,8,10,11,13,10,7,6,5,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "6f94":{
     "name":"air_stampede_EXK",
+    "uses_velocity":true,
     "frames":[{
         "hash":"068e010800"
       },{
@@ -14155,8 +14503,7 @@
         "velocity":[0,0.00390625],
         "movement":[0,0.00390625],
         "next_anim":[["7284",0]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "a7dc":{
     "hit_frames":[[14,17]],
@@ -14256,6 +14603,7 @@
     "idle_frames":[[34,39]]
   },
   "3a8c":{
+    "name":"wakeup_quick_reverse",
     "frames":[{
         "hash":"06d3020000",
         "boxes":[[1,0,59,-28,56]],
@@ -14301,22 +14649,11 @@
         "boxes":[[1,0,59,-28,56]],
         "movement":[0.25,0],
         "next_anim":[["1fb8",0]]
-      }],
-    "name":"wakeup_quick_reverse"
+      }]
   },
   "b4bc":{
     "hit_frames":[[4,5]],
-    "exceptions":{
-      "09ca021200":2,
-      "09ce010c00":0,
-      "09ca031200":1,
-      "09ca011200":3,
-      "063a011000":13
-    },
-    "name":"d_LP",
     "self_chain":true,
-    "advantage":[8],
-    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"09ca040000",
         "movement":[16,0]
@@ -14353,11 +14690,21 @@
       },{
         "hash":"07c6033c01",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "name":"d_LP",
+    "pushback":[[4,7,8,9,8,6,3,2,1,0,0,0,0,0,0,0,0,0,0,0]],
+    "exceptions":{
+      "09ca021200":2,
+      "09ce010c00":0,
+      "09ca031200":1,
+      "09ca011200":3,
+      "063a011000":13
+    }
   },
   "54ac":{
     "hit_frames":[[7,16]],
     "name":"air_knee_smash_MK",
+    "uses_velocity":true,
     "frames":[{
         "hash":"0632011200"
       },{
@@ -14453,11 +14800,10 @@
       },{
         "hash":"065cf84e01",
         "next_anim":[["466c",0]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "688c":{
-    "hit_frames":[[8,9]],
+    "idle_frames":[[51,54]],
     "name":"boomerang_raid_ext",
     "frames":[{
         "hash":"0860061200"
@@ -14579,11 +14925,12 @@
         "hash":"068efa4801",
         "next_anim":[["idle"]]
       }],
-    "idle_frames":[[51,54]]
+    "hit_frames":[[8,9]]
   },
   "crouching_turn":"ed64",
   "walk_transition":"f64c",
   "fa3c":{
+    "idle_frames":[[0,5]],
     "name":"block_low_proximity",
     "frames":[{
         "hash":"067b040000",
@@ -14607,11 +14954,12 @@
         "hash":"067c020400",
         "boxes":[[1,0,59,-28,56],[2,0,8,-32,60],[3,48,20,-27,44],[3,43,20,-40,72],[3,23,19,-44,86],[3,0,22,-46,91]],
         "next_anim":[["0418",0]]
-      }],
-    "idle_frames":[[0,5]]
+      }]
   },
   "walk_back":"e884",
   "c9ec":{
+    "hit_frames":[[2,2]],
+    "name":"throw_neutral",
     "frames":[{
         "hash":"0745020800"
       },{
@@ -14663,12 +15011,11 @@
       },{
         "hash":"0748fa2001",
         "next_anim":[["idle"]]
-      }],
-    "name":"throw_neutral",
-    "hit_frames":[[2,2]]
+      }]
   },
   "488c":{
     "name":"power_bomb_MP_ext",
+    "uses_velocity":true,
     "frames":[{
         "hash":"0862040c00",
         "movement":[6,0]
@@ -14793,90 +15140,118 @@
         "velocity":[0,10.625]
       },{
         "hash":"0896025401",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0896015401",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0897045a01",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0897035a01",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0897025a01",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0897015a01",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"08970e6001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"08970d6001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"08970c6001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"08970b6001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"08970a6001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0897096001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0897086001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0897076001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0897066001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0897056001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0897046001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0897036001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0897026001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0897016001",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0898036601",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0898026601",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0898016601",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0903026c01",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0903016c01",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0902027201",
+        "velocity":[0,0.625],
         "movement":[-3,0]
       },{
         "hash":"0902017201",
+        "velocity":[0,0.625],
         "movement":[-3,0],
         "next_anim":[["4624",80]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "6014":{
+    "hit_frames":[[6,7]],
+    "name":"power_bomb_LP",
     "frames":[{
         "hash":"0860040c00"
       },{
@@ -14972,13 +15347,11 @@
       },{
         "hash":"068efa4201",
         "next_anim":[["idle"]]
-      }],
-    "name":"power_bomb_LP",
-    "hit_frames":[[6,7]]
+      }]
   },
   "477c":{
     "name":"uoh_ext",
-    "uses_velocity":false,
+    "idle_frames":[[5,16]],
     "frames":[{
         "hash":"0631030000"
       },{
@@ -15015,11 +15388,11 @@
         "hash":"063bfa2800",
         "next_anim":[["idle"]]
       }],
-    "idle_frames":[[5,16]]
+    "uses_velocity":false
   },
   "466c":{
     "name":"air_knee_smash_LK_ext",
-    "uses_velocity":false,
+    "idle_frames":[[13,20],[34,36]],
     "frames":[{
         "hash":"0903020000"
       },{
@@ -15097,13 +15470,12 @@
         "hash":"06a6fa1000",
         "next_anim":[["idle"]]
       }],
-    "idle_frames":[[13,20],[34,36]]
+    "uses_velocity":false
   },
   "e884":{
-    "loops":[[6,63]],
-    "name":"walk_back",
-    "uses_velocity":true,
     "idle_frames":[[0,63]],
+    "name":"walk_back",
+    "loops":[[6,63]],
     "frames":[{
         "hash":"09c6010000",
         "velocity":[-2.125,0],
@@ -15300,15 +15672,12 @@
         "next_anim":[["f64c",0]],
         "boxes":[[1,0,86,-28,56],[2,0,16,-28,56],[3,99,19,-26,32],[3,83,23,-31,63],[3,43,39,-32,63],[3,0,42,-37,73]],
         "loop":6
-      }]
+      }],
+    "uses_velocity":true
   },
   "crouching":"ec94",
   "5aec":{
     "hit_frames":[[15,17]],
-    "uses_velocity":true,
-    "name":"flash_chop_MP",
-    "pushback":[[12,11,11,10,10,9,8,7,7,6,5,4,3,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[37,38]],
     "frames":[{
         "hash":"08b1040000",
         "movement":[-8,0]
@@ -15404,22 +15773,27 @@
         "hash":"068efa6601",
         "next_anim":[["idle"]]
       }],
-    "advantage":[16]
+    "idle_frames":[[37,38]],
+    "name":"flash_chop_MP",
+    "pushback":[[12,11,11,10,10,9,8,7,7,6,5,4,3,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "standing_turn":"e6f4",
   "standing":"e614",
   "69d4":{
     "hit_frames":[[25,27]],
     "name":"stungun_headbutt",
+    "uses_velocity":true,
     "frames":[{
         "hash":"0903013000",
         "acceleration":[0,-1.09375],
         "velocity":[4.5,13.125]
       },{
         "hash":"0902013600",
-        "movement":[-4.5,-13.125]
+        "ignore_motion":true
       },{
-        "hash":"0651023c00"
+        "hash":"0651023c00",
+        "velocity":[0,1.09375]
       },{
         "hash":"0651013c00"
       },{
@@ -15474,15 +15848,10 @@
         "hash":"07f3f98a01",
         "boxes":[[6,-8,78,-98,61]],
         "next_anim":[["492c",0],["5524",0]]
-      }],
-    "uses_velocity":true
+      }]
   },
   "5cac":{
     "hit_frames":[[19,22]],
-    "uses_velocity":true,
-    "name":"flash_chop_HP",
-    "pushback":[[12,11,11,10,10,9,8,7,7,6,5,4,3,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[40,42]],
     "frames":[{
         "hash":"08b1050000",
         "movement":[-8,0]
@@ -15588,38 +15957,39 @@
         "hash":"068efa6001",
         "next_anim":[["idle"]]
       }],
-    "advantage":[16]
+    "idle_frames":[[40,42]],
+    "name":"flash_chop_HP",
+    "pushback":[[12,11,11,10,10,9,8,7,7,6,5,4,3,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "5f44":{
-    "loops":[[16,24]],
     "name":"air_knee_smash_MK_ext",
     "uses_velocity":true,
+    "loops":[[16,24]],
     "frames":[{
         "hash":"0843030c00",
-        "movement":[-6.5,-7.75]
+        "ignore_motion":true
       },{
         "hash":"0843020c00",
-        "movement":[-6.5,-7.75]
+        "ignore_motion":true
       },{
         "hash":"0843010c00",
-        "movement":[-6.5,-7.75]
+        "ignore_motion":true
       },{
         "hash":"0844041200",
-        "movement":[-6.5,-7.75]
+        "ignore_motion":true
       },{
         "hash":"0844031200",
-        "movement":[-6.5,-7.75]
+        "ignore_motion":true
       },{
         "hash":"0844021200",
-        "movement":[-6.5,-7.75]
+        "ignore_motion":true
       },{
         "hash":"0844011200",
-        "movement":[-6.5,-7.75]
+        "ignore_motion":true
       },{
         "hash":"0845031e00",
-        "acceleration":[0.375,-0.0625],
-        "velocity":[-1.625,-0.1875],
-        "movement":[-6.5,-7.75]
+        "ignore_motion":true
       },{
         "hash":"0845021e00"
       },{
@@ -15672,6 +16042,7 @@
         "movement":[0,6.5]
       },{
         "hash":"093f010400",
+        "velocity":[0.0625,0.75],
         "boxes":[[5,0,88,-34,44]],
         "movement":[-2.1875,0],
         "next_anim":[["70e4",0]]
@@ -15679,6 +16050,7 @@
     "uses_velocity":true
   },
   "378c":{
+    "name":"wakeup",
     "frames":[{
         "hash":"06cb020000",
         "boxes":[[1,0,59,-28,56]],
@@ -15774,10 +16146,10 @@
         "hash":"06d9fa3c00",
         "boxes":[[1,0,59,-28,56]],
         "next_anim":[["19d8",0]]
-      }],
-    "name":"wakeup"
+      }]
   },
   "36bc":{
+    "idle_frames":[[2,34]],
     "name":"u_LP_ext",
     "uses_velocity":false,
     "frames":[{
@@ -15851,10 +16223,11 @@
       },{
         "hash":"063bfa2c00",
         "next_anim":[["idle"]]
-      }],
-    "idle_frames":[[2,34]]
+      }]
   },
   "6274":{
+    "hit_frames":[[8,9]],
+    "name":"power_bomb_HP",
     "frames":[{
         "hash":"0860060c00"
       },{
@@ -15972,13 +16345,11 @@
       },{
         "hash":"068efa4201",
         "next_anim":[["idle"]]
-      }],
-    "name":"power_bomb_HP",
-    "hit_frames":[[8,9]]
+      }]
   },
   "492c":{
     "name":"stungun_headbutt_ext",
-    "uses_velocity":false,
+    "idle_frames":[[17,39]],
     "frames":[{
         "hash":"0631030000"
       },{
@@ -16061,12 +16432,11 @@
         "hash":"063bfa2800",
         "next_anim":[["idle"]]
       }],
-    "idle_frames":[[17,39]]
+    "uses_velocity":false
   },
   "b634":{
     "hit_frames":[[7,8]],
     "name":"d_MP",
-    "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
     "frames":[{
         "hash":"07c7020000"
       },{
@@ -16118,14 +16488,12 @@
         "movement":[-8,0],
         "next_anim":[["idle"]]
       }],
-    "advantage":[11]
+    "pushback":[[4,7,9,10,11,8,6,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "b224":{
-    "hit_frames":[[16,20]],
-    "name":"HK",
     "idle_frames":[[50,61]],
-    "advantage":[19],
-    "pushback":[[21,17,12,11,11,10,10,9,9,8,7,6,5,4,2,0,0,0,0,0,0,0,0,0,0,0]],
+    "name":"HK",
+    "hit_frames":[[16,20]],
     "frames":[{
         "hash":"07a8020000",
         "movement":[-16,0]
@@ -16261,14 +16629,11 @@
       },{
         "hash":"069afa9c01",
         "next_anim":[["idle"]]
-      }]
+      }],
+    "pushback":[[21,17,12,11,11,10,10,9,9,8,7,6,5,4,2,0,0,0,0,0,0,0,0,0,0,0]]
   },
   "5944":{
     "hit_frames":[[11,12]],
-    "uses_velocity":true,
-    "name":"flash_chop_LP",
-    "pushback":[[12,11,11,10,10,9,8,7,7,6,5,4,3,2,2,0,0,0,0,0,0,0,0,0,0,0]],
-    "idle_frames":[[30,31]],
     "frames":[{
         "hash":"08b1030000",
         "movement":[-8,0]
@@ -16348,14 +16713,13 @@
         "hash":"068efa6001",
         "next_anim":[["idle"]]
       }],
-    "advantage":[14]
+    "idle_frames":[[30,31]],
+    "name":"flash_chop_LP",
+    "pushback":[[12,11,11,10,10,9,8,7,7,6,5,4,3,2,2,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   },
   "c0e4":{
-    "hit_frames":[[9,11]],
     "air":true,
-    "name":"u_MK",
-    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
-    "uses_velocity":true,
     "frames":[{
         "hash":"09af030400",
         "boxes":[[1,52,50,-28,56]]
@@ -16718,6 +17082,9 @@
         "next_anim":[["36bc",0]],
         "boxes":[[1,52,50,-28,56]]
       }],
-    "advantage":[11]
+    "hit_frames":[[9,11]],
+    "name":"u_MK",
+    "pushback":[[3,4,6,7,4,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],
+    "uses_velocity":true
   }
 }

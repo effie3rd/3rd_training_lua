@@ -131,7 +131,7 @@ local function start()
       is_active = true
       player = gamestate.P1
       dummy = gamestate.P2
-      ensure_training_settings()
+      require("src.control.recording").set_recording_state(inputs.input, 1)
       geneijin_tables.init()
       apply_settings()
       geneijin_tables.reset_weights()
@@ -148,8 +148,8 @@ local function start_character_select()
       is_active = true
       player = gamestate.P1
       dummy = gamestate.P2
-      training.swap_characters = false
-      ensure_training_settings()
+      require("src.control.recording").set_recording_state(inputs.input, 1)
+      training.reset_swap_characters()
       geneijin_tables.init()
       apply_settings()
       geneijin_tables.reset_weights()
@@ -279,11 +279,13 @@ local function update()
          if state == states.FOLLOWUP then
             i_actions = i_actions + 1
             local next_move = action_queue[i_actions]
-            print(next_move.action.name) -- debug
             advanced_control.queue_programmed_movement(dummy, next_move.action:setup(dummy, gamestate.stage, actions,
                                                                                      i_actions))
             if next_move.action.type == training_classes.Action_Type.ATTACK or next_move.action.type ==
-                training_classes.Action_Type.THROW then has_attacked = true end
+                training_classes.Action_Type.THROW then
+               has_attacked = true
+               is_player_wakeup = false
+            end
             followup_start_frame = gamestate.frame_number
             state = states.RUNNING
          end

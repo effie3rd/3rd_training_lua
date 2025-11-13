@@ -323,9 +323,21 @@
     "en": "Mode",
     "jp": "モード"
   },
+  "menu_work_in_progress": {
+    "en": "Work in progress",
+    "jp": "作成中"
+  },
+  "menu_challenge": {
+    "en": "Challenge",
+    "jp": "挑戦"
+  },
   "menu_start": {
     "en": "Start",
     "jp": "スタート"
+  },
+  "menu_reset": {
+    "en": "Reset",
+    "jp": "リセット"
   },
   "menu_type": {
     "en": "Type",
@@ -562,6 +574,18 @@
   "P1+P2": {
     "en": "P1+P2",
     "jp": "P1+P2"
+  },
+  "menu_number": {
+    "en": "number",
+    "jp": "数字"
+  },
+  "menu_table": {
+    "en": "table",
+    "jp": "一覧"
+  },
+  "menu_both": {
+    "en": "both",
+    "jp": "両方"
   },
   "moving": {
     "en": "moving",
@@ -815,9 +839,241 @@
     "en": "hyper reflector",
     "jp": "ハイパーリフレクター"
   },
+  "theme_arabian_sea": {
+    "en": "arabian sea",
+    "jp": "アラビア海"
+  },
   "theme_dusk": {
     "en": "dusk",
     "jp": "夕暮れ"
+  },
+  "theme_aurora": {
+    "en": "aurora",
+    "jp": "オーロラ"
+  },
+  "theme_magma": {
+    "en": "magma",
+    "jp": "マグマ"
+  },
+  "theme_moth": {
+    "en": "moth",
+    "jp": "モス"
+  },
+  "theme_abyss": {
+    "en": "abyss",
+    "jp": "アビス"
+  },
+  "theme_glass": {
+    "en": "glass",
+    "jp": "グラス"
+  },
+  "theme_classic_red": {
+    "en": "classic red",
+    "jp": "クラシック赤"
+  },
+  "theme_classic_blue": {
+    "en": "classic blue",
+    "jp": "クラシック青"
+  },
+  "theme_classic_green": {
+    "en": "classic green",
+    "jp": "クラシック緑"
+  },
+  "style_hyper_reflector": {
+    "en": "hyper reflector",
+    "jp": "ハイパーリフレクター"
+  },
+  "style_rose": {
+    "en": "rose",
+    "jp": "ローズ"
+  },
+  "style_cherry": {
+    "en": "cherry",
+    "jp": "桜ん坊"
+  },
+  "style_blueberry": {
+    "en": "blueberry",
+    "jp": "ブルーベリー"
+  },
+  "style_sky": {
+    "en": "sky",
+    "jp": "青空"
+  },
+  "style_blood_orange": {
+    "en": "blood orange",
+    "jp": "ブラッドオレンジ"
+  },
+  "style_salmon": {
+    "en": "salmon",
+    "jp": "鮭"
+  },
+  "style_grape": {
+    "en": "grape",
+    "jp": "葡萄"
+  },
+  "style_lavender": {
+    "en": "lavender",
+    "jp": "ラベンダー"
+  },
+  "style_lemon": {
+    "en": "lemon",
+    "jp": "レモン"
+  },
+  "style_champagne": {
+    "en": "champagne",
+    "jp": "シャンペン"
+  },
+  "style_matcha": {
+    "en": "matcha",
+    "jp": "抹茶"
+  },
+  "style_lime": {
+    "en": "lime",
+    "jp": "ライム"
+  },
+  "style_retro_scifi": {
+    "en": "retro scifi",
+    "jp": "レトロサイファイ"
+  },
+  "style_watermelon": {
+    "en": "watermelon",
+    "jp": "西瓜"
+  },
+  "style_macaron": {
+    "en": "macaron",
+    "jp": "マカロン"
+  },
+  "style_famicom": {
+    "en": "famicom",
+    "jp": "ファミコン"
+  },
+  "style_van_gogh": {
+    "en": "van gogh",
+    "jp": "バンゴッホ"
+  },
+  "style_munch": {
+    "en": "munch",
+    "jp": "ムンク"
+  },
+  "style_hokusai": {
+    "en": "hokusai",
+    "jp": "北斎"
+  },
+  "style_monet": {
+    "en": "monet",
+    "jp": "モネ"
+  },
+  "style_dali": {
+    "en": "dali",
+    "jp": "ダリ"
+  },
+  "style_classic": {
+    "en": "classic",
+    "jp": "クラシック"
+  },
+  "style_2077": {
+    "en": "2077",
+    "jp": "2077"
+  },
+  "style_aurora": {
+    "en": "aurora",
+    "jp": "オーロラ"
+  },
+  "style_ursa_major": {
+    "en": "ursa major",
+    "jp": "大熊座"
+  },
+  "style_pillars_of_creation": {
+    "en": "pillars of creation",
+    "jp": "創造の柱"
+  },
+  "style_sunset": {
+    "en": "sunset",
+    "jp": "夕焼け"
+  },
+  "style_fly_by_night": {
+    "en": "fly by night",
+    "jp": "夜逃げ"
+  },
+  "style_lake": {
+    "en": "lake",
+    "jp": "湖"
+  },
+  "style_traffic_lights": {
+    "en": "traffic lights",
+    "jp": "信号"
+  },
+  "style_warm_rainbow": {
+    "en": "warm rainbow",
+    "jp": "暖かい虹"
+  },
+  "style_soft_rainbow": {
+    "en": "soft rainbow",
+    "jp": "柔らかい虹"
+  },
+  "style_pearl": {
+    "en": "pearl",
+    "jp": "パール"
+  },
+  "style_beach": {
+    "en": "beach",
+    "jp": "砂浜"
+  },
+  "style_nether": {
+    "en": "nether",
+    "jp": "ネザー"
+  },
+  "style_blue_planet": {
+    "en": "blue planet",
+    "jp": "青い惑星"
+  },
+  "style_poison": {
+    "en": "poison",
+    "jp": "ポイズン"
+  },
+  "style_moon": {
+    "en": "moon",
+    "jp": "ムーン"
+  },
+  "style_blood_moon": {
+    "en": "blood moon",
+    "jp": "ブラッドムーン"
+  },
+  "style_volcano": {
+    "en": "volcano",
+    "jp": "火山"
+  },
+  "style_desert_sun": {
+    "en": "desert sun",
+    "jp": "砂漠太陽"
+  },
+  "style_canyon": {
+    "en": "canyon",
+    "jp": "谷"
+  },
+  "style_acid": {
+    "en": "acid",
+    "jp": "アシッド"
+  },
+  "style_dawn": {
+    "en": "dawn",
+    "jp": "夜明け"
+  },
+  "style_picnic": {
+    "en": "picnic",
+    "jp": "ピクニック"
+  },
+  "style_gelato": {
+    "en": "gelato",
+    "jp": "ジェラート"
+  },
+  "style_patrick": {
+    "en": "patrick",
+    "jp": "パトリック"
+  },
+  "style_01": {
+    "en": "01",
+    "jp": "01"
   },
   "hud_slot": {
     "en": "Slot",
@@ -842,6 +1098,10 @@
   "hud_dummy": {
     "en": "Dummy",
     "jp_8": "ダミー"
+  },
+  "hud_player": {
+    "en": "Player",
+    "jp_8": "プレイヤー"
   },
   "hud_p1": {
     "en": "P1",
@@ -870,10 +1130,6 @@
   "hud_duration": {
     "en": "duration",
     "jp_8": "期間"
-  },
-  "famicom": {
-    "en": "famicom",
-    "jp": "ファミコン"
   },
   "language": {
     "en": "Language",
@@ -1087,15 +1343,15 @@
     "en": "HK kneedrop",
     "jp": "大ニードロップ"
   },
-  "D+LK_dash": {
+  "menu_d_LK_dash": {
     "en": "D+LK dash",
     "jp": "屈小K・前ステ"
   },
-  "back_dash_jump_MK": {
+  "menu_back_dash_jump_MK": {
     "en": "back dash · jump MK",
     "jp": "バクステ・ジャンプ中K"
   },
-  "back_dash_down_LK": {
+  "menu_back_dash_down_LK": {
     "en": "back dash · D+LK",
     "jp": "バクステ・屈小K"
   },
@@ -1307,17 +1563,81 @@
     "en": "HK",
     "jp": "大K"
   },
+  "menu_d_LP": {
+    "en": "_LP",
+    "jp": "下小P"
+  },
+  "menu_d_MP": {
+    "en": "_MP",
+    "jp": "下中P"
+  },
+  "menu_d_HP": {
+    "en": "_HP",
+    "jp": "下大P"
+  },
+  "menu_d_LK": {
+    "en": "_LK",
+    "jp": "下小K"
+  },
+  "menu_d_MK": {
+    "en": "_MK",
+    "jp": "下中K"
+  },
+  "menu_d_HK": {
+    "en": "_HK",
+    "jp": "下大K"
+  },
+  "menu_b_LP": {
+    "en": "_LP",
+    "jp": "後小P"
+  },
+  "menu_b_MP": {
+    "en": "_MP",
+    "jp": "後中P"
+  },
+  "menu_b_HP": {
+    "en": "_HP",
+    "jp": "後大P"
+  },
+  "menu_b_LK": {
+    "en": "_LK",
+    "jp": "後小K"
+  },
+  "menu_b_MK": {
+    "en": "_MK",
+    "jp": "後中K"
+  },
+  "menu_b_HK": {
+    "en": "_HK",
+    "jp": "後大K"
+  },
+  "menu_f_LP": {
+    "en": "_LP",
+    "jp": "前小P"
+  },
+  "menu_f_MP": {
+    "en": "_MP",
+    "jp": "前中P"
+  },
+  "menu_f_HP": {
+    "en": "_HP",
+    "jp": "前大P"
+  },
+  "menu_f_LK": {
+    "en": "_LK",
+    "jp": "前小K"
+  },
+  "menu_f_MK": {
+    "en": "_MK",
+    "jp": "前中K"
+  },
+  "menu_f_HK": {
+    "en": "_HK",
+    "jp": "前大K"
+  },
   "menu_throw": {
     "en": "throw",
     "jp": "投げ"
-  },
-  "menu_d_HP": {
-    "en": "D+HP",
-    "jp": "下大P"
-  },
-  "menu_d_MK": {
-    "en": "D+MK",
-    "jp": "下中K"
   },
   "menu_HP_HP": {
     "en": "HP · HP",
@@ -1330,6 +1650,18 @@
   "menu_MP_HP": {
     "en": "MP · HP",
     "jp": "中P・大P"
+  },
+  "menu_LP_f_HP": {
+    "en": "LP · F+HP",
+    "jp": "小P・前大P"
+  },
+  "menu_HP_f_MK": {
+    "en": "HP · F+MK",
+    "jp": "大P・前中K"
+  },
+  "menu_LK_f_MK": {
+    "en": "LK · F+MK",
+    "jp": "小K・前中K"
   },
   "menu_tatsumaki_air_LK": {
     "en": "LK tatsumaki",
@@ -1358,18 +1690,6 @@
   "menu_gohadouken_air_HP": {
     "en": "HP gohadouken",
     "jp": "大P 斬空波動拳"
-  },
-  "menu_LP_f_HP": {
-    "en": "LP · F+HP",
-    "jp": "小P・前大P"
-  },
-  "menu_HP_f_MK": {
-    "en": "HP · F+MK",
-    "jp": "大P・前中K"
-  },
-  "menu_LK_f_MK": {
-    "en": "LK · F+MK",
-    "jp": "小K・前中K"
   },
   "menu_kunai_LP": {
     "en": "LP kunai",
@@ -1470,6 +1790,126 @@
   "menu_raigeki_HK": {
     "en": "HK raigeki",
     "jp": "大K 雷撃"
+  },
+  "menu_slash_elbow_LP": {
+    "en": "LP slash elbow",
+    "jp": "小P スラッシュエルボー"
+  },
+  "menu_slash_elbow_MP": {
+    "en": "MP slash elbow",
+    "jp": "中P スラッシュエルボー"
+  },
+  "menu_slash_elbow_HP": {
+    "en": "HP slash elbow",
+    "jp": "大P スラッシュエルボー"
+  },
+  "menu_slash_elbow_EXP": {
+    "en": "EX slash elbow",
+    "jp": "EX スラッシュエルボー"
+  },
+  "menu_hazanshuu_LK": {
+    "en": "LK hazanshuu",
+    "jp": "小K 覇山蹴"
+  },
+  "menu_mallet_smash_LP": {
+    "en": "LP mallet smash",
+    "jp": "小P マレットスマッシュ"
+  },
+  "menu_mallet_smash_EXP": {
+    "en": "EX mallet smash",
+    "jp": "EX マレットスマッシュ"
+  },
+  "menu_gohadouken_HP": {
+    "en": "HP gohadouken",
+    "jp": "大P 豪波動拳"
+  },
+  "menu_giant_palm_bomber_LP": {
+    "en": "LP giant palm bomber",
+    "jp": "小P ジャイアントパームボンバー"
+  },
+  "menu_giant_palm_bomber_MP": {
+    "en": "MP giant palm bomber",
+    "jp": "中P ジャイアントパームボンバー"
+  },
+  "menu_giant_palm_bomber_HP": {
+    "en": "HP giant palm bomber",
+    "jp": "大P ジャイアントパームボンバー"
+  },
+  "menu_giant_palm_bomber_EXP": {
+    "en": "EX giant palm bomber",
+    "jp": "EX ジャイアントパームボンバー"
+  },
+  "menu_hadouken_EXP": {
+    "en": "EX hadouken",
+    "jp": "EX 波動拳"
+  },
+  "menu_kara_karakusa_lk": {
+    "en": "kara karakusa LK",
+    "jp": "移動唐草小K"
+  },
+  "menu_denji_blast_LP": {
+    "en": "LP denji blast",
+    "jp": "小P 電磁ブラスト"
+  },
+  "menu_nichirin_LP": {
+    "en": "LP nichirin",
+    "jp": "小P 日輪掌"
+  },
+  "menu_niouriki": {
+    "en": "niouriki",
+    "jp": "仁王力"
+  },
+  "menu_kara_niouriki": {
+    "en": "kara niouriki",
+    "jp": "移動仁王力"
+  },
+  "menu_capture_and_deadly_blow_HK": {
+    "en": "HK capture and deadly blow",
+    "jp": "捕獲及び痛恨打撃"
+  },
+  "menu_kara_capture_and_deadly_blow": {
+    "en": "kara capture and deadly blow",
+    "jp": "移動捕獲及び痛恨打撃"
+  },
+  "menu_cold_blue_kick_LK": {
+    "en": "LK cold blue kick",
+    "jp": "小K 冷たく蒼いルグレ"
+  },
+  "menu_cold_blue_kick_MK": {
+    "en": "MK cold blue kick",
+    "jp": "中K 冷たく蒼いルグレ"
+  },
+  "menu_cold_blue_kick_HK": {
+    "en": "HK cold blue kick",
+    "jp": "大K 冷たく蒼いルグレ"
+  },
+  "menu_cold_blue_kick_EXK": {
+    "en": "EX cold blue kick",
+    "jp": "EX 冷たく蒼いルグレ"
+  },
+  "menu_tourouzan_LP": {
+    "en": "LP tourouzan",
+    "jp": "小P 蟷螂斬"
+  },
+  "menu_tourouzan_MP": {
+    "en": "MP tourouzan",
+    "jp": "中P 蟷螂斬"
+  },
+  "menu_tourouzan_HP": {
+    "en": "HP tourouzan",
+    "jp": "大P 蟷螂斬"
+  },
+  "menu_tourouzan_EXP": {
+    "en": "EX tourouzan",
+    "jp": "EX 蟷螂斬"
+  },
+  "menu_zesshou_LP": {
+    "en": "LP zesshou",
+    "jp": "小P 絶招歩法"
+  },
+  "menu_tetsuzan_LP": {
+    "en": "LP tetsuzan",
+    "jp": "小P 鉄山靠"
   },
   "menu_moves": {
     "en": "Moves",

@@ -43,6 +43,7 @@ prefix = "buttons_"
 
 buttons = ["LP","MP","HP","LK","MK","HK"]
 styles ={
+    "hyper_reflector" : ["#ec4899", "#ec4899", "#ec4899", "#9333ea", "#9333ea", "#9333ea"],
     "rose" : ["#ff66b3", "#ff0080", "#890045", "#ff66b3", "#ff0080", "#890045"],
     "cherry" : ["#93121c", "#7f151d", "#5b0f14", "#93121c", "#7f151d", "#5b0f14"],
     "blueberry" : ["#2c678d", "#2e4b7d", "#2c244e", "#2c678d", "#2e4b7d", "#2c244e"],
@@ -65,17 +66,14 @@ styles ={
     "monet" : ["#7a7d9e", "#3e76b1", "#d4946e", "#1e4566", "#3a5c66", "#d25058"],
     "dali" : ["#d9d3b3", "#3097c0", "#5f84aa", "#db7d1b", "#a7381a", "#441e0b"],
     "classic" : ["#ffd300", "#ff7108", "#c80d0d", "#ffd300", "#ff7108", "#c80d0d"],
-    "hyper_reflector" : ["#ec4899", "#ec4899", "#ec4899", "#9333ea", "#9333ea", "#9333ea"],
-    "cyberpunk" : ["#46d4de", "#46d4de", "#46d4de", "#f237c2", "#f237c2", "#f237c2"],
     "2077" : ["#fdf500", "#46d4de", "#f237c2", "#fdf500", "#46d4de", "#f237c2"],
     "aurora" : ["#00eeac", "#00cbad", "#1f82a7", "#7f28b9", "#562a84", "#4d379d"],
     "ursa_major" : ["#7084ff", "#702686", "#512475", "#13b8ce", "#069bbb", "#065977"],
-    "crab_nebula" : ["#f5be60", "#b186c8", "#c33027", "#c05137", "#6053a7", "#750d08"],
     "pillars_of_creation" : ["#319cbe", "#2b4f77", "#b27b9f", "#f4c261", "#d09354", "#521014"],
     "sunset" : ["#f8a93d", "#df6553", "#ce445a", "#962660", "#5a0e67", "#3917c0"],
     "fly_by_night" : ["#afbccd", "#819cba", "#65779d", "#6b69a6", "#514f81", "#433e76"],
     "lake" : ["#2185b6", "#08445c", "#195c32", "#2d6479", "#122d42", "#034f42"],
-    "airplane" : ["#68d0bd", "#458390", "#325a63", "#f53f18", "#ba1a1f", "#891b2a"],
+    "traffic_lights" : ["#49ceb3", "#44c9eb", "#40dd56", "#f7e664", "#f57448", "#dd3a38"],
     "warm_rainbow" : ["#f6dcac", "#faaa68", "#f65625", "#55b1bc", "#028393", "#0a3a82"],
     "soft_rainbow" : ["#fed48b", "#91b67a", "#427b7f", "#fa9452", "#f55553", "#713b73"],
     "pearl" : ["#eed3d0", "#d4c6d9", "#9ac6d4", "#74c1ee", "#699cc2", "#867fa5"],
@@ -88,15 +86,12 @@ styles ={
     "volcano" : ["#fd724e", "#a02f40", "#69223a", "#382d43", "#352641", "#261b2e"],
     "desert_sun" : ["#fb9c32", "#e44c1d", "#cf3122", "#313b9a", "#6f3799", "#503f89"],
     "canyon" : ["#a9d4f6", "#6391dc", "#6b8cc2", "#e188a8", "#db5381", "#825389"],
-    "redgreen" : ["#bb1750", "#631b34", "#411d31", "#30e1b9", "#0eaf9b", "#0b8a8f"],
     "acid" : ["#fcf660", "#b2d942", "#52c33f", "#166e7a", "#254d70", "#252446"],
     "dawn" : ["#ffb48f", "#ef9d7f", "#cc8c83", "#adc0de", "#9aabc9", "#8797b5"],
     "picnic" : ["#96bbdb", "#5e6ea0", "#3e3c65", "#fffbd9", "#e3d8bb", "#b1725b"],
     "gelato" : ["#5e4a71", "#ce9358", "#ac546a", "#ddcc99", "#7bac62", "#526d88"],
     "patrick" : ["#f38f80", "#a9d055", "#674892", "#f38f80", "#a9d055", "#674892"],
     "01" : ["#8f5ec9", "#5348b0", "#a1db70", "#8f5ec9", "#5348b0", "#a1db70"]
-#brown coral mint lime creamsicle lightblue
-    # rose taro matcha purple twilight
     }
 
 def get_brightness(hexstr):

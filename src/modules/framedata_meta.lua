@@ -1006,7 +1006,7 @@ frame_data_meta["urien"]["eaf4"] = { hit_type = {2}}                            
 frame_data_meta["urien"]["ebc4"] = { hit_type = {2}}                             --d_MK
 frame_data_meta["urien"]["ec84"] = { hit_type = {2}}                             --d_HK
 frame_data_meta["urien"]["d994"] = { hit_type = {3}}                             --f_MP
-frame_data_meta["urien"]["dc1c"] = { hit_type = {3}}                             --f_HP
+frame_data_meta["urien"]["dc1c"] = { hit_type = {4}}                             --f_HP
 frame_data_meta["urien"]["df0c"] = { hit_type = {3}}                             --f_MK
 frame_data_meta["urien"]["ee14"] = { hit_type = {4}}                             --u_LP
 frame_data_meta["urien"]["eeb4"] = { hit_type = {4}}                             --u_MP

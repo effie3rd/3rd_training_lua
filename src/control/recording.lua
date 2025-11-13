@@ -3,7 +3,6 @@ local gamestate = require("src.gamestate")
 local game_data = require("src.modules.game_data")
 local training = require("src.training")
 local inputs = require("src.control.inputs")
-local memory_addresses = require("src.control.memory_addresses")
 
 local recording_slot_count = 16
 
@@ -28,11 +27,6 @@ local function get_current_recording_slot() return recording_slots[settings.trai
 
 local function make_recording_slot() return {inputs = {}, superfreeze = {}, delay = 0, random_deviation = 0, weight = 1} end
 
-local function initialize_slots()
-   for i = 1, recording_slot_count do table.insert(recording_slots, make_recording_slot()) end
-   for i = 1, #recording_slots do table.insert(recording_slots_names, "slot " .. i) end
-end
-
 local function clear_slot()
    recording_slots[settings.training.current_recording_slot] = make_recording_slot()
    settings.save_training_data()
@@ -50,6 +44,12 @@ local function clear_all_recordings()
       recording_slots = settings.recordings[char]
       clear_all_slots()
    end
+end
+
+local function initialize_slots()
+   if not next(settings.recordings) then clear_all_recordings() end
+   for i = 1, recording_slot_count do table.insert(recording_slots, make_recording_slot()) end
+   for i = 1, #recording_slots do table.insert(recording_slots_names, "slot " .. i) end
 end
 
 local function backup_recordings()
@@ -132,7 +132,6 @@ local function go_to_next_ordered_slot()
    local slot = -1
    for i = 1, recording_slot_count do
       local slot_index = ((last_ordered_recording_slot - 1 + i) % recording_slot_count) + 1
-      -- print(slot_index)
       if recording_slots[slot_index].inputs ~= nil and #recording_slots[slot_index].inputs > 0 then
          slot = slot_index
          last_ordered_recording_slot = slot

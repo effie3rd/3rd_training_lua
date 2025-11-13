@@ -259,18 +259,18 @@ end
 
 local function update_cheats()
    if settings.training.universal_cancel then
-      memory.writebyte(0x02068E8D, 0x6F) -- p1
-      memory.writebyte(0x02069325, 0x6F) -- p2
+      memory.writebyte(gamestate.P1.addresses.universal_cancel, 0x6F)
+      memory.writebyte(gamestate.P2.addresses.universal_cancel, 0x6F)
    end
    if settings.training.infinite_projectiles then
-      memory.writebyte(0x02068FB8, 0xFF) -- p1
-      memory.writebyte(0x02069450, 0xFF) -- p2
+      memory.writebyte(gamestate.P1.addresses.infinite_projectiles, 0xFF)
+      memory.writebyte(gamestate.P2.addresses.infinite_projectiles, 0xFF)
    end
    if settings.training.infinite_juggle then
-      memory.writebyte(0x2069031, 0x0) -- p1
-      memory.writebyte(0x206902E, 0x0)
-      memory.writebyte(0x20694C9, 0x0) -- p2
-      memory.writebyte(0x20694C6, 0x0)
+      memory.writebyte(gamestate.P1.addresses.juggle_count, 0x0)
+      memory.writebyte(gamestate.P1.addresses.infinite_juggle, 0x0)
+      memory.writebyte(gamestate.P2.addresses.juggle_count, 0x0)
+      memory.writebyte(gamestate.P2.addresses.infinite_juggle, 0x0)
    end
 
    if settings.training.auto_parrying == 2 or settings.training.auto_parrying == 4 then
@@ -293,6 +293,11 @@ end
 
 local function toggle_swap_characters()
    swap_characters = not swap_characters
+   update_swap()
+end
+
+local function reset_swap_characters()
+   swap_characters = false
    update_swap()
 end
 
@@ -338,6 +343,7 @@ local training = {
    update_training_state = update_training_state,
    reset_gauge_state = reset_gauge_state,
    toggle_swap_characters = toggle_swap_characters,
+   reset_swap_characters = reset_swap_characters,
    update_fast_forward = update_fast_forward,
    freeze_game = freeze_game,
    unfreeze_game = unfreeze_game

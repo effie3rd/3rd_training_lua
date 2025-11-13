@@ -36,7 +36,7 @@ end
 local function load_training_data()
    local training_settings = tools.read_object_from_json_file(saved_path .. training_settings_file)
    -- no file then create defaults
-   if not training_settings then
+   if not training_settings or not training_settings.version then
       training_settings = tools.read_object_from_json_file(saved_path .. training_settings_default_file)
       if not training_settings then training_settings = {} end
    end
@@ -52,8 +52,6 @@ local function load_training_data()
    local recordings_settings = tools.read_object_from_json_file(saved_path .. recordings_file)
    if recordings_settings then
       recordings = recordings_settings
-   else
-      require("src.control.recording").clear_all_recordings()
    end
 end
 

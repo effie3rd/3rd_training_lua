@@ -1,5 +1,4 @@
 local loading = require("src.loading")
-local text = require("src.ui.text")
 local fd = require("src.modules.framedata")
 local move_data = require("src.modules.move_data")
 local game_data = require("src.modules.game_data")
@@ -10,15 +9,9 @@ local settings = require("src.settings")
 local tools = require("src.tools")
 local write_memory = require("src.control.write_memory")
 local debug_settings = require("src.debug_settings")
-local json = require("src.libs.dkjson")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
-local find_frame_data_by_name = fd.find_frame_data_by_name
 local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_slow_jumper
-local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text,
-                                                                                             text.render_text_multiple,
-                                                                                             text.get_text_dimensions,
-                                                                                             text.get_text_dimensions_multiple
 local move_list, get_move_inputs_by_name = move_data.move_list, move_data.get_move_inputs_by_name
 local frame_data_keys = copytable(game_data.characters)
 table.insert(frame_data_keys, "projectiles")
@@ -502,12 +495,12 @@ local data_path = "data/" .. game_data.rom_name .. "/"
 local framedata_path = data_path .. "framedata/"
 local frame_data_file_ext = "_framedata.json"
 local final_props = {
-   "name", "frames", "hit_frames", "idle_frames", "loops", "pushback", "uses_velocity", "air",
-   "infinite_loop", "max_hits", "cooldown", "self_chain", "exceptions", "landing_height"
+   "name", "frames", "hit_frames", "idle_frames", "loops", "pushback", "uses_velocity", "air", "infinite_loop",
+   "max_hits", "cooldown", "self_chain", "exceptions", "landing_height"
 } --  "advantage"
 local final_frame_props = {
    "hash", "boxes", "movement", "velocity", "acceleration", "loop", "next_anim", "optional_anim", "wakeup",
-   "bypass_freeze", "projectile"
+   "bypass_freeze", "projectile", "ignore_motion"
 }
 local function save_frame_data()
    for _, char in ipairs(frame_data_keys) do
@@ -537,6 +530,7 @@ local function save_frame_data()
             if not fdata.wakeups then fdata.wakeups = {} end
          end
 
+         local to_remove = {}
          for id, data in pairs(fdata) do
             if type(data) == "table" and id ~= "wakeups" then
                for k, v in pairs(data) do
@@ -586,25 +580,28 @@ local function save_frame_data()
                      end
                   else
                      if k == "hit_frames" then
-                        if tools.deep_equal(v, {}) then fdata[id][k] = nil end
+                        if tools.deep_equal(v, {}) then table.insert(to_remove, k) end
                      end
                   end
-                  if not tools.table_contains_deep(final_props, k) then data[k] = nil end
+                  if not tools.table_contains_deep(final_props, k) then table.insert(to_remove, k) end
                end
+               for _, key in ipairs(to_remove) do data[key] = nil end
 
                local frames = {}
                if data.frames then
                   for i, frame in ipairs(data.frames) do
+                     to_remove = {}
                      for k, v in pairs(data.frames[i]) do
                         if not tools.table_contains_deep(final_frame_props, k) then
-                           data.frames[i][k] = nil
+                           table.insert(to_remove, k)
                         end
                         if k == "movement" or k == "velocity" or k == "acceleration" then
-                           if tools.deep_equal(v, {0, 0}) then data.frames[i][k] = nil end
+                           if tools.deep_equal(v, {0, 0}) then table.insert(to_remove, k) end
                         elseif k == "boxes" then
-                           if tools.deep_equal(v, {}) then data.frames[i][k] = nil end
+                           if tools.deep_equal(v, {}) then table.insert(to_remove, k) end
                         end
                      end
+                     for _, key in ipairs(to_remove) do data.frames[i][key] = nil end
                      table.insert(frames, data.frames[i])
                   end
                   data.frames = frames
@@ -985,17 +982,17 @@ end
 local function process_motion_data(anim_list)
    local all_frames = {}
    local uses_velocity = {}
-   local ignore_motion = {}
+   local discard_motion_data = {}
    for i = 1, #anim_list do
       if anim_list[i].landing_frame then anim_list[i].frames[1].raw_movement = {0, 0} end
       for j = 1, #anim_list[i].frames do
          table.insert(all_frames, anim_list[i].frames[j])
          table.insert(uses_velocity, anim_list[i].uses_velocity or false)
-         table.insert(ignore_motion, anim_list[i].frames[j].ignore_motion or false)
+         table.insert(discard_motion_data, anim_list[i].frames[j].discard_motion_data or false)
       end
    end
    for i = 1, #all_frames do
-      if all_frames[i].acceleration_offset and not all_frames[i].ignore_motion then
+      if all_frames[i].acceleration_offset and not all_frames[i].discard_motion_data then
          all_frames[i].raw_acceleration[2] = all_frames[i].raw_acceleration[2] - all_frames[i].acceleration_offset
          all_frames[i].raw_velocity[2] = all_frames[i].raw_velocity[2] - all_frames[i].acceleration_offset
          for j = i + 1, #all_frames do
@@ -1024,21 +1021,30 @@ local function process_motion_data(anim_list)
 
             -- print(i, all_frames[i].raw_movement, all_frames[i].raw_velocity, all_frames[i].raw_acceleration)
 
-            if uses_velocity[i] and not ignore_motion[i] then
-               all_frames[i].movement[1] = all_frames[i].movement[1] - all_frames[i - 1].raw_velocity[1]
-               all_frames[i].movement[2] = all_frames[i].movement[2] - all_frames[i - 1].raw_velocity[2]
-               all_frames[i].velocity[1] = all_frames[i].velocity[1] - all_frames[i - 1].raw_velocity[1]
-               all_frames[i].velocity[2] = all_frames[i].velocity[2] - all_frames[i - 1].raw_velocity[2]
+            if uses_velocity[i] and not discard_motion_data[i] then
+               if all_frames[i].raw_movement[1] == 0 and all_frames[i].raw_movement[2] == 0 and
+                   all_frames[i - 1].raw_velocity[1] ~= 0 and all_frames[i - 1].raw_velocity[2] ~= 0 then
+                  all_frames[i].ignore_motion = true
+                  all_frames[i].velocity[1] = 0
+                  all_frames[i].velocity[2] = 0
+                  all_frames[i].acceleration[1] = 0
+                  all_frames[i].acceleration[2] = 0
+               else
+                  all_frames[i].movement[1] = all_frames[i].movement[1] - all_frames[i - 1].raw_velocity[1]
+                  all_frames[i].movement[2] = all_frames[i].movement[2] - all_frames[i - 1].raw_velocity[2]
+                  all_frames[i].velocity[1] = all_frames[i].velocity[1] - all_frames[i - 1].raw_velocity[1]
+                  all_frames[i].velocity[2] = all_frames[i].velocity[2] - all_frames[i - 1].raw_velocity[2]
 
-               if all_frames[i].raw_velocity[1] - all_frames[i - 1].raw_velocity[1] ~= 0 then
+                  -- if all_frames[i].raw_velocity[1] - all_frames[i - 1].raw_velocity[1] ~= 0 then
                   all_frames[i].velocity[1] = all_frames[i].velocity[1] - all_frames[i - 1].raw_acceleration[1]
-               end
-               if all_frames[i].raw_velocity[2] - all_frames[i - 1].raw_velocity[2] ~= 0 then
+                  -- end
+                  -- if all_frames[i].raw_velocity[2] - all_frames[i - 1].raw_velocity[2] ~= 0 then
                   all_frames[i].velocity[2] = all_frames[i].velocity[2] - all_frames[i - 1].raw_acceleration[2]
-               end
+                  -- end
 
-               all_frames[i].acceleration[1] = all_frames[i].acceleration[1] - all_frames[i - 1].raw_acceleration[1]
-               all_frames[i].acceleration[2] = all_frames[i].acceleration[2] - all_frames[i - 1].raw_acceleration[2]
+                  all_frames[i].acceleration[1] = all_frames[i].acceleration[1] - all_frames[i - 1].raw_acceleration[1]
+                  all_frames[i].acceleration[2] = all_frames[i].acceleration[2] - all_frames[i - 1].raw_acceleration[2]
+               end
             end
 
             all_frames[i].raw_movement = nil
@@ -1428,7 +1434,6 @@ local function end_recording(player, projectiles, name)
 end
 
 local previous_hash = ""
-
 local function record_framedata(player, projectiles, name)
    local dummy = player.other
    local frame = player.animation_frame
@@ -1516,6 +1521,11 @@ local function record_framedata(player, projectiles, name)
       if player.remaining_freeze_frames == 0 or bypassing_freeze then
 
          -- print(string.format("recording frame %d (%d - %d - %d)", frame, gamestate.frame_number, player.animation_freeze_frames, player.animation_start_frame))
+         local additional_props = {}
+         local force_landing_frame = false
+
+         -- abaretosanami hits after landing
+         if current_recording_animation.id == "0290" and frame == 0 then force_landing_frame = true end
 
          if player.standing_state == 1 then rec.current_recording_acceleration_offset = 0 end
 
@@ -1524,14 +1534,12 @@ local function record_framedata(player, projectiles, name)
                 rec.current_recording_acceleration_offset
          end
 
-         local additional_props = {}
-
          if player.velocity_x ~= 0 or player.velocity_y ~= 0 or player.acceleration_x ~= 0 or player.acceleration_y ~= 0 then
             additional_props.uses_velocity = true
          end
 
          if (frame == 0 and not player.is_attacking and player.posture == 0 and player.pos_y == 0 and
-             player.previous_pos_y ~= 0) then
+             player.previous_pos_y ~= 0) or force_landing_frame then
             -- recovery animation (landing, after dash, etc)
             write_memory.clear_motion_data(player)
             additional_props.uses_velocity = false
@@ -1578,11 +1586,11 @@ local function record_framedata(player, projectiles, name)
             idle = player.is_idle
          }
 
-         if rec.recording_options.ignore_motion then
+         if rec.recording_options.discard_motion_data then
             new_frame.raw_movement = {0, 0}
             new_frame.raw_velocity = {0, 0}
             new_frame.raw_acceleration = {0, 0}
-            new_frame.ignore_motion = true
+            new_frame.discard_motion_data = true
          end
 
          for k, v in pairs(additional_props) do current_recording_animation[k] = v end
@@ -1790,6 +1798,17 @@ local function record_framedata(player, projectiles, name)
                local p_index = 1
                local anim = frame_data["projectiles"][id]
                local frames = fdata.frames
+               local hit_frames = calculate_ranges(frames, is_hit_frame)
+               if #hit_frames > 0 then
+                  -- make 0 index
+                  for _, f in pairs(hit_frames) do
+                     f[1] = f[1] - 1
+                     f[2] = f[2] - 1
+                  end
+                  anim.hit_frames = hit_frames
+               end
+
+               anim.hit_frames = divide_hit_frames(anim)
 
                for i = 1, #frames do
                   if frames[i].pushback then
@@ -2209,7 +2228,7 @@ local function record_movement(player)
                -- rec.recording_options.infinite_loop = true
                Queue_Command(gamestate.frame_number + clear_jump_after, write_memory.clear_motion_data, {player})
                Queue_Command(gamestate.frame_number + clear_jump_after,
-                             function() rec.recording_options.ignore_motion = true end)
+                             function() rec.recording_options.discard_motion_data = true end)
                Queue_Command(gamestate.frame_number + clear_jump_after + 100, land_player, {player})
             end
 
@@ -5579,11 +5598,9 @@ local function record_attacks(player, projectiles)
       end
 
       if rec.recording_options.hit_type == "miss" and
-          require("src.modules.prediction").test_collision(dummy.pos_x, dummy.pos_y, dummy.flip_x, dummy.boxes, -- defender
-                                                           player.pos_x, player.pos_y, player.flip_x, player.boxes, -- attacker
-                                                           {{{"push"}, {"push"}}}) then
-         print(">>overlapping push boxes<<")
-      end
+          tools.test_collision(dummy.pos_x, dummy.pos_y, dummy.flip_x, dummy.boxes, -- defender
+          player.pos_x, player.pos_y, player.flip_x, player.boxes, -- attacker
+          {{{"push"}, {"push"}}}) then print(">>overlapping push boxes<<") end
 
       record_framedata(player, projectiles, name)
    end
@@ -5608,6 +5625,7 @@ local function record_all_characters(player, projectiles)
       debug_settings.show_debug_frames_display = true
       emu.speedmode("turbo")
       settings.training.blocking_mode = 1
+      settings.training.infinite_sa_time = false
       local dummy = player.other
       if record_char_state == "start" then
          frame_data["projectiles"] = {}

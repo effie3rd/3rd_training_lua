@@ -101,7 +101,6 @@ local function get_text_dimensions(str, lang, size)
    end
    -- str is not jp, get size of block of text
    if image_map[str] then return image_map[str][lang].width, image_map[str][lang].height end
-
    if size then lang = lang .. "_" .. size end
    for _, v in utf8.codes(str) do
       local code = utf8.codepoint(v)

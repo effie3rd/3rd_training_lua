@@ -1,6 +1,6 @@
 {
   "87":{
-    "loops":[[0,10]],
+    "hit_frames":[[0,17]],
     "name":"light_of_virtue_EXKext",
     "uses_velocity":true,
     "frames":[{
@@ -91,9 +91,11 @@
         "hash":"73c6fa0c00"
       },{
         "hash":"73c6fa0c00"
-      }]
+      }],
+    "loops":[[0,10]]
   },
   "43":{
+    "hit_frames":[[0,28]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -230,7 +232,7 @@
       }]
   },
   "73":{
-    "loops":[[3,18]],
+    "hit_frames":[[0,23]],
     "name":"light_of_justice",
     "uses_velocity":true,
     "frames":[{
@@ -339,9 +341,11 @@
         "hash":"73c6fa0c00"
       },{
         "hash":"73c6fa0c00"
-      }]
+      }],
+    "loops":[[3,18]]
   },
   "47":{
+    "hit_frames":[[0,20]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -454,6 +458,7 @@
       }]
   },
   "37":{
+    "hit_frames":[[0,102]],
     "name":"pyrokinesis_LP",
     "uses_velocity":true,
     "frames":[{
@@ -891,7 +896,7 @@
       }]
   },
   "0A":{
-    "loops":[[3,50]],
+    "hit_frames":[[0,50]],
     "name":"denjin_hadouken_3",
     "uses_velocity":true,
     "frames":[{
@@ -1091,7 +1096,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.75,0]
-      }]
+      }],
+    "loops":[[3,50]]
   },
   "5D":{
     "loops":[[0,23]],
@@ -1196,10 +1202,12 @@
         "hash":"575dfa0c00"
       },{
         "hash":"575dfa0c00",
-        "movement":[-1,0.875]
-      }]
+        "ignore_motion":true
+      }],
+    "hit_frames":[[0,23]]
   },
   "4E":{
+    "hit_frames":[[0,25]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -1327,7 +1335,7 @@
       }]
   },
   "3D":{
-    "loops":[[1,16]],
+    "hit_frames":[[0,17]],
     "name":"kunai_EXP",
     "uses_velocity":true,
     "frames":[{
@@ -1385,11 +1393,13 @@
         "loop":1
       },{
         "hash":"9c06011000",
-        "movement":[-7.5,5.625],
+        "ignore_motion":true,
         "boxes":[[5,-9,18,-9,18]]
-      }]
+      }],
+    "loops":[[1,16]]
   },
   "4D":{
+    "hit_frames":[[0,30]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -1531,7 +1541,7 @@
       }]
   },
   "1D":{
-    "loops":[[1,32]],
+    "hit_frames":[[0,32]],
     "name":"kunai_MP",
     "uses_velocity":true,
     "frames":[{
@@ -1685,10 +1695,11 @@
         "hash":"2d11fa1600"
       },{
         "hash":"2d11fa1600"
-      }]
+      }],
+    "loops":[[1,32]]
   },
   "2D":{
-    "loops":[[1,12]],
+    "hit_frames":[[1,14]],
     "name":"kasumisuzaku_MP",
     "uses_velocity":true,
     "frames":[{
@@ -1787,10 +1798,11 @@
         "hash":"2d11fa1600"
       },{
         "hash":"2d11fa1600"
-      }]
+      }],
+    "loops":[[1,12]]
   },
   "5E":{
-    "loops":[[0,23]],
+    "hit_frames":[[0,23]],
     "name":"gohadouken_air_MP",
     "uses_velocity":true,
     "frames":[{
@@ -1892,11 +1904,12 @@
         "hash":"575dfa0c00"
       },{
         "hash":"575dfa0c00",
-        "movement":[-1.125,1]
-      }]
+        "ignore_motion":true
+      }],
+    "loops":[[0,23]]
   },
   "0D":{
-    "loops":[[2,33]],
+    "hit_frames":[[0,39]],
     "name":"nichirin_MP",
     "uses_velocity":true,
     "frames":[{
@@ -2082,11 +2095,12 @@
         "hash":"9a7bfa1c00"
       },{
         "hash":"9a7bfa1c00",
-        "movement":[-1.375,-0.6875]
-      }]
+        "ignore_motion":true
+      }],
+    "loops":[[2,33]]
   },
   "07":{
-    "loops":[[2,41]],
+    "hit_frames":[[0,41]],
     "name":"shinkuu_hadouken",
     "uses_velocity":true,
     "frames":[{
@@ -2259,7 +2273,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-2.25,0]
-      }]
+      }],
+    "loops":[[2,41]]
   },
   "09":{
     "loops":[[3,66]],
@@ -2510,7 +2525,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.375,0]
-      }]
+      }],
+    "hit_frames":[[0,66]]
   },
   "27":{
     "loops":[[1,12]],
@@ -2618,10 +2634,11 @@
         "hash":"2d1cfa1600"
       },{
         "hash":"2d1cfa1600"
-      }]
+      }],
+    "hit_frames":[[1,16]]
   },
   "00_hadouken":{
-    "loops":[[3,82]],
+    "hit_frames":[[0,82]],
     "name":"hadouken_LP",
     "uses_velocity":true,
     "frames":[{
@@ -2917,7 +2934,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.125,0]
-      }]
+      }],
+    "loops":[[3,82]]
   },
   "1E":{
     "loops":[[1,16]],
@@ -2978,9 +2996,10 @@
         "loop":1
       },{
         "hash":"9c0d010c00",
-        "movement":[-6.8125,4.1875],
+        "ignore_motion":true,
         "boxes":[[5,-7,14,-8,16]]
-      }]
+      }],
+    "hit_frames":[[0,17]]
   },
   "03":{
     "loops":[[2,41]],
@@ -3222,7 +3241,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.875,0]
-      }]
+      }],
+    "hit_frames":[[0,63]]
   },
   "33":{
     "loops":[[1,8]],
@@ -3258,9 +3278,10 @@
         "loop":1
       },{
         "hash":"9bd1011000",
-        "movement":[-14.5,10.375],
+        "ignore_motion":true,
         "boxes":[[5,-9,18,-9,18]]
-      }]
+      }],
+    "hit_frames":[[1,9]]
   },
   "7D":{
     "loops":[[3,66]],
@@ -3511,7 +3532,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.5,0]
-      }]
+      }],
+    "hit_frames":[[0,66]]
   },
   "76":{
     "loops":[[3,50]],
@@ -3714,10 +3736,12 @@
         "hash":"9766fa0c00"
       },{
         "hash":"9766fa0c00",
-        "movement":[-1.5,-2.984375]
-      }]
+        "ignore_motion":true
+      }],
+    "hit_frames":[[0,50]]
   },
   "52":{
+    "hit_frames":[[0,30]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -3860,6 +3884,7 @@
       }]
   },
   "8A":{
+    "hit_frames":[[0,6]],
     "name":"kikouken_HP",
     "uses_velocity":true,
     "frames":[{
@@ -3917,6 +3942,7 @@
       }]
   },
   "72":{
+    "hit_frames":[[0,108]],
     "name":"yagyoudama_EXP",
     "uses_velocity":true,
     "frames":[{
@@ -4097,6 +4123,7 @@
         "boxes":[[5,0,53,-91,182],[5,0,98,-38,76]]
       },{
         "hash":"9acc014c00",
+        "velocity":[0.0625,0],
         "boxes":[[5,0,65,-78,156],[5,0,84,-60,120]],
         "acceleration":[0.0625,0]
       },{
@@ -4275,7 +4302,7 @@
       }]
   },
   "36":{
-    "loops":[[1,8]],
+    "hit_frames":[[1,9]],
     "name":"kasumisuzaku_HP",
     "uses_velocity":true,
     "frames":[{
@@ -4308,11 +4335,13 @@
         "loop":1
       },{
         "hash":"9bd0010c00",
-        "movement":[-17.75,10.375],
+        "ignore_motion":true,
         "boxes":[[5,-9,18,-9,18]]
-      }]
+      }],
+    "loops":[[1,8]]
   },
   "46":{
+    "hit_frames":[[0,23]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -4434,6 +4463,7 @@
       }]
   },
   "51":{
+    "hit_frames":[[0,17]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -4601,6 +4631,7 @@
       }]
   },
   "00_ndl_mp":{
+    "hit_frames":[[2,14]],
     "name":"ndl_MP",
     "uses_velocity":true,
     "frames":[{
@@ -4797,9 +4828,11 @@
         "hash":"73c6fa0c00"
       },{
         "hash":"73c6fa0c00"
-      }]
+      }],
+    "hit_frames":[[0,23]]
   },
   "4C":{
+    "hit_frames":[[0,18]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -4906,6 +4939,7 @@
       }]
   },
   "53":{
+    "hit_frames":[[0,88]],
     "name":"temporal_thunder",
     "uses_velocity":true,
     "frames":[{
@@ -5323,10 +5357,11 @@
         "hash":"2d1cfa1600"
       },{
         "hash":"2d1cfa1600"
-      }]
+      }],
+    "hit_frames":[[1,16]]
   },
   "19":{
-    "loops":[[2,61]],
+    "hit_frames":[[0,61]],
     "name":"hadouken_MP",
     "uses_velocity":true,
     "frames":[{
@@ -5559,7 +5594,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.34375,0]
-      }]
+      }],
+    "loops":[[2,61]]
   },
   "0B":{
     "loops":[[3,42]],
@@ -5738,9 +5774,11 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-2.125,0]
-      }]
+      }],
+    "hit_frames":[[0,42]]
   },
   "4F":{
+    "hit_frames":[[0,20]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -5853,7 +5891,7 @@
       }]
   },
   "6E":{
-    "loops":[[4,63]],
+    "hit_frames":[[0,144]],
     "name":"metallic_sphere_EXP",
     "uses_velocity":true,
     "frames":[{
@@ -6319,7 +6357,8 @@
       },{
         "hash":"539cfa0a00",
         "movement":[-1,0]
-      }]
+      }],
+    "loops":[[4,63]]
   },
   "2A":{
     "loops":[[1,12]],
@@ -6424,10 +6463,11 @@
         "hash":"2d1cfa1600"
       },{
         "hash":"2d1cfa1600"
-      }]
+      }],
+    "hit_frames":[[1,15]]
   },
   "1A":{
-    "loops":[[2,61]],
+    "hit_frames":[[0,61]],
     "name":"hadouken_HP",
     "uses_velocity":true,
     "frames":[{
@@ -6660,7 +6700,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.5,0]
-      }]
+      }],
+    "loops":[[2,61]]
   },
   "3E":{
     "loops":[[4,63]],
@@ -6886,7 +6927,8 @@
       },{
         "hash":"539cfa0a00",
         "movement":[-1.5,0]
-      }]
+      }],
+    "hit_frames":[[0,63]]
   },
   "2E":{
     "loops":[[1,12]],
@@ -6985,10 +7027,11 @@
         "hash":"2d11fa1600"
       },{
         "hash":"2d11fa1600"
-      }]
+      }],
+    "hit_frames":[[1,13]]
   },
   "6A":{
-    "loops":[[4,63]],
+    "hit_frames":[[0,63]],
     "name":"gohadouken_LP",
     "uses_velocity":true,
     "frames":[{
@@ -7227,7 +7270,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.375,0]
-      }]
+      }],
+    "loops":[[4,63]]
   },
   "5A":{
     "loops":[[2,61]],
@@ -7463,9 +7507,11 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.46875,0]
-      }]
+      }],
+    "hit_frames":[[0,61]]
   },
   "4A":{
+    "hit_frames":[[0,25]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -7593,7 +7639,7 @@
       }]
   },
   "5F":{
-    "loops":[[0,15],[16,31],[59,74]],
+    "hit_frames":[[0,46],[59,89]],
     "name":"gohadouken_air_HP",
     "uses_velocity":true,
     "frames":[{
@@ -7765,7 +7811,7 @@
         "hash":"575dfa0c00"
       },{
         "hash":"575dfa0c00",
-        "movement":[-1.25,1.125]
+        "ignore_motion":true
       },{
         "hash":"5750010000",
         "velocity":[5,-4.5],
@@ -7886,11 +7932,12 @@
         "hash":"575dfa0c00"
       },{
         "hash":"575dfa0c00",
-        "movement":[-1.25,1.125]
-      }]
+        "ignore_motion":true
+      }],
+    "loops":[[0,15],[16,31],[59,74]]
   },
   "5B":{
-    "loops":[[2,61]],
+    "hit_frames":[[0,61]],
     "name":"shakunetsu_HP",
     "uses_velocity":true,
     "frames":[{
@@ -8123,7 +8170,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.25,0]
-      }]
+      }],
+    "loops":[[2,61]]
   },
   "16":{
     "loops":[[4,51]],
@@ -8434,10 +8482,11 @@
         "hash":"9aa8fa0a00"
       },{
         "hash":"9aa8fa0a00"
-      }]
+      }],
+    "hit_frames":[[0,88]]
   },
   "26":{
-    "loops":[[1,12]],
+    "hit_frames":[[1,15]],
     "name":"kasumisuzaku_LP",
     "uses_velocity":true,
     "frames":[{
@@ -8539,9 +8588,11 @@
         "hash":"2d1cfa1600"
       },{
         "hash":"2d1cfa1600"
-      }]
+      }],
+    "loops":[[1,12]]
   },
   "00_ndl_hp":{
+    "hit_frames":[[2,14]],
     "name":"ndl_HP",
     "uses_velocity":true,
     "frames":[{
@@ -8629,6 +8680,7 @@
       }]
   },
   "0E":{
+    "hit_frames":[[0,41]],
     "name":"nichirin_HP",
     "uses_velocity":true,
     "frames":[{
@@ -8819,11 +8871,11 @@
         "hash":"9a7bfa1c00"
       },{
         "hash":"9a7bfa1c00",
-        "movement":[-1.125,-1.125]
+        "ignore_motion":true
       }]
   },
   "25":{
-    "loops":[[1,12]],
+    "hit_frames":[[1,16]],
     "name":"kasumisuzaku_LP",
     "uses_velocity":true,
     "frames":[{
@@ -8928,10 +8980,11 @@
         "hash":"2d1cfa1600"
       },{
         "hash":"2d1cfa1600"
-      }]
+      }],
+    "loops":[[1,12]]
   },
   "32":{
-    "loops":[[1,8]],
+    "hit_frames":[[1,9]],
     "name":"kasumisuzaku_HP",
     "uses_velocity":true,
     "frames":[{
@@ -8964,9 +9017,10 @@
         "loop":1
       },{
         "hash":"9bd0010c00",
-        "movement":[-14.5,10.375],
+        "ignore_motion":true,
         "boxes":[[5,-9,18,-9,18]]
-      }]
+      }],
+    "loops":[[1,8]]
   },
   "83":{
     "loops":[[3,66]],
@@ -9217,9 +9271,11 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.5,0]
-      }]
+      }],
+    "hit_frames":[[0,66]]
   },
   "61":{
+    "hit_frames":[[0,0]],
     "name":"messatsu_gouhadou_air",
     "uses_velocity":true,
     "frames":[{
@@ -9251,11 +9307,11 @@
         "hash":"5780fa0c00"
       },{
         "hash":"5780fa0c00",
-        "movement":[-1.421875,1.0390625]
+        "ignore_motion":true
       }]
   },
   "85":{
-    "loops":[[3,50]],
+    "hit_frames":[[0,50]],
     "name":"light_of_virtue_EXK",
     "uses_velocity":true,
     "frames":[{
@@ -9455,7 +9511,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.84375,0]
-      }]
+      }],
+    "loops":[[3,50]]
   },
   "75":{
     "loops":[[3,42]],
@@ -9634,8 +9691,9 @@
         "hash":"9766fa0c00"
       },{
         "hash":"9766fa0c00",
-        "movement":[-1.875,-6.8125]
-      }]
+        "ignore_motion":true
+      }],
+    "hit_frames":[[0,42]]
   },
   "65":{
     "name":"aegis_reflector_LP",
@@ -9678,7 +9736,7 @@
       }]
   },
   "55":{
-    "loops":[[2,49]],
+    "hit_frames":[[0,49]],
     "name":"messatsu_gouhadou",
     "uses_velocity":true,
     "frames":[{
@@ -9875,9 +9933,11 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.75,0]
-      }]
+      }],
+    "loops":[[2,49]]
   },
   "45":{
+    "hit_frames":[[0,31]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -10022,7 +10082,7 @@
       }]
   },
   "35":{
-    "loops":[[1,8]],
+    "hit_frames":[[1,9]],
     "name":"kasumisuzaku_HP",
     "uses_velocity":true,
     "frames":[{
@@ -10055,9 +10115,10 @@
         "loop":1
       },{
         "hash":"9bcf010800",
-        "movement":[-16,10.375],
+        "ignore_motion":true,
         "boxes":[[5,-9,18,-9,18]]
-      }]
+      }],
+    "loops":[[1,8]]
   },
   "59":{
     "loops":[[2,41]],
@@ -10341,9 +10402,11 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.6875,0]
-      }]
+      }],
+    "hit_frames":[[0,77]]
   },
   "49":{
+    "hit_frames":[[0,19]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -10453,6 +10516,7 @@
       }]
   },
   "39":{
+    "hit_frames":[[0,37]],
     "name":"pyrokinesis_HP",
     "uses_velocity":true,
     "frames":[{
@@ -10611,10 +10675,11 @@
         "hash":"02edfa0c00"
       },{
         "hash":"02edfa0c00",
-        "movement":[-1.5,-1.25]
+        "ignore_motion":true
       }]
   },
   "00_xndl":{
+    "hit_frames":[[0,3],[13,16],[26,29],[39,42],[52,55]],
     "name":"xndl",
     "uses_velocity":true,
     "frames":[{
@@ -10747,49 +10812,6 @@
         "hash":"0000fa0200",
         "movement":[-4.5,0]
       },{
-        "hash":"6fd4020000",
-        "boxes":[[5,0,56,-13,26]],
-        "velocity":[4.5,0]
-      },{
-        "hash":"6fd4010000",
-        "movement":[-4.5,0],
-        "boxes":[[5,0,56,-13,26]]
-      },{
-        "hash":"6fd5020400",
-        "movement":[-4.5,0],
-        "boxes":[[5,0,56,-13,26]]
-      },{
-        "hash":"6fd5010400",
-        "movement":[-4.5,0],
-        "boxes":[[5,0,56,-13,26]]
-      },{
-        "hash":"6fd6020800",
-        "movement":[-4.5,0]
-      },{
-        "hash":"6fd6010800",
-        "movement":[-4.5,0]
-      },{
-        "hash":"6fd7010c00",
-        "movement":[-4.5,0]
-      },{
-        "hash":"6fd8011000",
-        "movement":[-4.5,0]
-      },{
-        "hash":"6fd9011400",
-        "movement":[-4.5,0]
-      },{
-        "hash":"6fda011800",
-        "movement":[-4.5,0]
-      },{
-        "hash":"0000010000",
-        "movement":[-4.5,0]
-      },{
-        "hash":"0000fa0200",
-        "movement":[-4.5,0]
-      },{
-        "hash":"0000fa0200",
-        "movement":[-4.5,0]
-      },{
         "hash":"6fdc020000",
         "boxes":[[5,0,56,-13,26]],
         "velocity":[4.5,0]
@@ -10822,6 +10844,49 @@
         "movement":[-4.5,0]
       },{
         "hash":"6fe2011800",
+        "movement":[-4.5,0]
+      },{
+        "hash":"0000010000",
+        "movement":[-4.5,0]
+      },{
+        "hash":"0000fa0200",
+        "movement":[-4.5,0]
+      },{
+        "hash":"0000fa0200",
+        "movement":[-4.5,0]
+      },{
+        "hash":"6fd4020000",
+        "boxes":[[5,0,56,-13,26]],
+        "velocity":[4.5,0]
+      },{
+        "hash":"6fd4010000",
+        "movement":[-4.5,0],
+        "boxes":[[5,0,56,-13,26]]
+      },{
+        "hash":"6fd5020400",
+        "movement":[-4.5,0],
+        "boxes":[[5,0,56,-13,26]]
+      },{
+        "hash":"6fd5010400",
+        "movement":[-4.5,0],
+        "boxes":[[5,0,56,-13,26]]
+      },{
+        "hash":"6fd6020800",
+        "movement":[-4.5,0]
+      },{
+        "hash":"6fd6010800",
+        "movement":[-4.5,0]
+      },{
+        "hash":"6fd7010c00",
+        "movement":[-4.5,0]
+      },{
+        "hash":"6fd8011000",
+        "movement":[-4.5,0]
+      },{
+        "hash":"6fd9011400",
+        "movement":[-4.5,0]
+      },{
+        "hash":"6fda011800",
         "movement":[-4.5,0]
       },{
         "hash":"0000010000",
@@ -11131,9 +11196,11 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.1875,0]
-      }]
+      }],
+    "hit_frames":[[0,82]]
   },
   "89":{
+    "hit_frames":[[0,16]],
     "name":"kikouken_MP",
     "uses_velocity":true,
     "frames":[{
@@ -11373,11 +11440,12 @@
         "hash":"9766fa0c00"
       },{
         "hash":"9766fa0c00",
-        "movement":[-1.375,-4.375]
-      }]
+        "ignore_motion":true
+      }],
+    "hit_frames":[[0,34]]
   },
   "7F":{
-    "loops":[[3,50]],
+    "hit_frames":[[0,50]],
     "name":"light_of_virtue_EXP",
     "uses_velocity":true,
     "frames":[{
@@ -11577,9 +11645,11 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.84375,0]
-      }]
+      }],
+    "loops":[[3,50]]
   },
   "3F":{
+    "hit_frames":[[0,98]],
     "name":"metallic_sphere_MP",
     "uses_velocity":true,
     "frames":[{
@@ -11905,11 +11975,11 @@
         "hash":"539cfa0a00"
       },{
         "hash":"539cfa0a00",
-        "movement":[-1.375,-0.5]
+        "ignore_motion":true
       }]
   },
   "1B":{
-    "loops":[[2,41]],
+    "hit_frames":[[0,78]],
     "name":"hadouken_EXP",
     "uses_velocity":true,
     "frames":[{
@@ -12193,7 +12263,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.65625,0]
-      }]
+      }],
+    "loops":[[2,41]]
   },
   "2B":{
     "loops":[[1,12]],
@@ -12295,10 +12366,11 @@
         "hash":"2d11fa1600"
       },{
         "hash":"2d11fa1600"
-      }]
+      }],
+    "hit_frames":[[1,14]]
   },
   "3B":{
-    "loops":[[1,24],[49,66]],
+    "hit_frames":[[0,48]],
     "name":"electric_snake",
     "uses_velocity":true,
     "frames":[{
@@ -12559,9 +12631,11 @@
       },{
         "hash":"219afa0c00",
         "movement":[-9.5,0]
-      }]
+      }],
+    "loops":[[1,24],[49,66]]
   },
   "4B":{
+    "hit_frames":[[0,26]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -12692,7 +12766,7 @@
       }]
   },
   "0F":{
-    "loops":[[2,33]],
+    "hit_frames":[[0,88]],
     "name":"nichirin_EXP",
     "uses_velocity":true,
     "frames":[{
@@ -13202,10 +13276,12 @@
         "movement":[0.00390625,0]
       },{
         "hash":"9a7bfa1c00",
-        "movement":[-0.46484375,0.0390625]
-      }]
+        "ignore_motion":true
+      }],
+    "loops":[[2,33]]
   },
   "00_pa_sean":{
+    "hit_frames":[[30,72]],
     "name":"pa",
     "uses_velocity":true,
     "frames":[{
@@ -13267,31 +13343,31 @@
         "movement":[0.00390625,0.00390625]
       },{
         "hash":"4adf051000",
-        "movement":[-7.8984375,3.1015625]
+        "ignore_motion":true
       },{
         "hash":"4adf051000",
-        "movement":[-7.8984375,3.1015625]
+        "ignore_motion":true
       },{
         "hash":"4adf051000",
-        "movement":[-7.8984375,3.1015625]
+        "ignore_motion":true
       },{
         "hash":"4adf051000",
-        "movement":[-7.8984375,3.1015625]
+        "ignore_motion":true
       },{
         "hash":"4adf051000",
-        "movement":[-7.8984375,3.1015625]
+        "ignore_motion":true
       },{
         "hash":"4adf051000",
-        "movement":[-7.8984375,3.1015625]
+        "ignore_motion":true
       },{
         "hash":"4adf051000",
-        "movement":[-7.8984375,3.1015625]
+        "ignore_motion":true
       },{
         "hash":"4adf051000",
-        "movement":[-7.8984375,3.1015625]
+        "ignore_motion":true
       },{
         "hash":"4adf051000",
-        "movement":[-7.8984375,3.1015625]
+        "ignore_motion":true
       },{
         "hash":"4ae2060000",
         "movement":[8.32421875,14.7578125],
@@ -13481,8 +13557,7 @@
         "boxes":[[5,-8,16,-11,21]]
       },{
         "hash":"4adb030000",
-        "movement":[-6.22265625,10.86328125],
-        "velocity":[-1.24609375,16.80078125]
+        "ignore_motion":true
       },{
         "hash":"4adb020000",
         "movement":[0.00390625,0.00390625],
@@ -13660,9 +13735,10 @@
         "loop":1
       },{
         "hash":"9bcf010800",
-        "movement":[-10.125,9.375],
+        "ignore_motion":true,
         "boxes":[[5,-9,18,-9,18]]
-      }]
+      }],
+    "hit_frames":[[1,13]]
   },
   "8B":{
     "loops":[[0,125]],
@@ -14078,7 +14154,8 @@
       },{
         "hash":"9a02fa1200",
         "movement":[-0.78125,0]
-      }]
+      }],
+    "hit_frames":[[0,125]]
   },
   "15":{
     "loops":[[4,51]],
@@ -14398,10 +14475,11 @@
         "hash":"9aa8fa0a00"
       },{
         "hash":"9aa8fa0a00"
-      }]
+      }],
+    "hit_frames":[[0,91]]
   },
   "81":{
-    "loops":[[1,24]],
+    "hit_frames":[[0,36]],
     "name":"light_of_virtue_EXPext",
     "uses_velocity":true,
     "frames":[{
@@ -14567,11 +14645,12 @@
         "movement":[0,0.00390625]
       },{
         "hash":"9766fa0c00",
-        "movement":[-1.375,-8.05078125]
-      }]
+        "ignore_motion":true
+      }],
+    "loops":[[1,24]]
   },
   "7E":{
-    "loops":[[3,58]],
+    "hit_frames":[[0,58]],
     "name":"light_of_virtue_HP",
     "uses_velocity":true,
     "frames":[{
@@ -14795,7 +14874,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.75,0]
-      }]
+      }],
+    "loops":[[3,58]]
   },
   "31":{
     "loops":[[1,8]],
@@ -14829,7 +14909,8 @@
         "hash":"9bd1011000",
         "boxes":[[5,-9,18,-9,18]],
         "loop":1
-      }]
+      }],
+    "hit_frames":[[1,8]]
   },
   "34":{
     "loops":[[1,8]],
@@ -14863,7 +14944,8 @@
         "hash":"9bd1011000",
         "boxes":[[5,-9,18,-9,18]],
         "loop":1
-      }]
+      }],
+    "hit_frames":[[1,8]]
   },
   "6B":{
     "loops":[[4,63]],
@@ -15105,7 +15187,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.5625,0]
-      }]
+      }],
+    "hit_frames":[[0,63]]
   },
   "01":{
     "loops":[[3,62]],
@@ -15344,9 +15427,11 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.40625,0]
-      }]
+      }],
+    "hit_frames":[[0,62]]
   },
   "50":{
+    "hit_frames":[[0,27]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -15480,7 +15565,7 @@
       }]
   },
   "70":{
-    "loops":[[2,101]],
+    "hit_frames":[[0,101]],
     "name":"aegis_reflector_LPext",
     "uses_velocity":true,
     "frames":[{
@@ -15834,9 +15919,11 @@
         "hash":"5254fa0c00"
       },{
         "hash":"5254fa0c00"
-      }]
+      }],
+    "loops":[[2,101]]
   },
   "40":{
+    "hit_frames":[[0,43]],
     "name":"metallic_sphere_HP",
     "uses_velocity":true,
     "frames":[{
@@ -15997,11 +16084,11 @@
         "hash":"539cfa0a00"
       },{
         "hash":"539cfa0a00",
-        "movement":[-1.3125,-1.078125]
+        "ignore_motion":true
       }]
   },
   "84":{
-    "loops":[[3,50]],
+    "hit_frames":[[0,50]],
     "name":"light_of_virtue_HK",
     "uses_velocity":true,
     "frames":[{
@@ -16201,9 +16288,11 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.75,0]
-      }]
+      }],
+    "loops":[[3,50]]
   },
   "00_pa_dudley":{
+    "hit_frames":[[18,44]],
     "name":"pa",
     "uses_velocity":true,
     "frames":[{
@@ -16388,7 +16477,7 @@
       },{
         "hash":"1af6022000",
         "movement":[0,6],
-        "velocity":[0,9.94140625],
+        "velocity":[0.21875,9.94140625],
         "acceleration":[0.21875,0.3046875]
       },{
         "hash":"1af6012000"
@@ -16559,7 +16648,7 @@
       }]
   },
   "74":{
-    "loops":[[3,18]],
+    "hit_frames":[[0,31]],
     "name":"light_of_justice",
     "uses_velocity":true,
     "frames":[{
@@ -16691,9 +16780,11 @@
         "hash":"73c6fa0c00"
       },{
         "hash":"73c6fa0c00"
-      }]
+      }],
+    "loops":[[3,18]]
   },
   "80":{
+    "hit_frames":[[0,18]],
     "name":"light_of_virtue_EXP",
     "uses_velocity":true,
     "frames":[{
@@ -16759,6 +16850,7 @@
       }]
   },
   "44":{
+    "hit_frames":[[0,24]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -16883,6 +16975,7 @@
       }]
   },
   "48":{
+    "hit_frames":[[0,28]],
     "name":"meteor_strike",
     "uses_velocity":true,
     "frames":[{
@@ -17015,10 +17108,11 @@
         "hash":"02edfa0c00"
       },{
         "hash":"02edfa0c00",
-        "movement":[-1.75,2]
+        "ignore_motion":true
       }]
   },
   "01_ndl_exp":{
+    "hit_frames":[[2,14]],
     "name":"ndl_EXP",
     "uses_velocity":true,
     "frames":[{
@@ -17208,9 +17302,11 @@
         "hash":"2d1cfa1600"
       },{
         "hash":"2d1cfa1600"
-      }]
+      }],
+    "hit_frames":[[1,15]]
   },
   "38":{
+    "hit_frames":[[0,78]],
     "name":"pyrokinesis_MP",
     "uses_velocity":true,
     "frames":[{
@@ -17492,11 +17588,11 @@
         "hash":"02edfa0c00"
       },{
         "hash":"02edfa0c00",
-        "movement":[-1.75,-0.625]
+        "ignore_motion":true
       }]
   },
   "88":{
-    "loops":[[0,17]],
+    "hit_frames":[[0,17]],
     "name":"kikouken_LP",
     "uses_velocity":true,
     "frames":[{
@@ -17585,7 +17681,8 @@
       },{
         "hash":"9a02fa1200",
         "movement":[-1.25,0]
-      }]
+      }],
+    "loops":[[0,17]]
   },
   "1F":{
     "loops":[[1,16]],
@@ -17646,9 +17743,10 @@
         "loop":1
       },{
         "hash":"9c0e011000",
-        "movement":[-10,5.25],
+        "ignore_motion":true,
         "boxes":[[5,-7,14,-8,16]]
-      }]
+      }],
+    "hit_frames":[[0,17]]
   },
   "68":{
     "loops":[[4,103]],
@@ -17731,7 +17829,7 @@
         "boxes":[[5,48,44,-6,12],[5,26,90,-4,8]]
       },{
         "hash":"5246011000",
-        "velocity":[0.1015625,0],
+        "velocity":[0.1015625,0.1875],
         "boxes":[[5,48,44,-6,12],[5,26,90,-4,8]],
         "acceleration":[0.1640625,0.1875]
       },{
@@ -18011,10 +18109,11 @@
         "hash":"5254fa0c00"
       },{
         "hash":"5254fa0c00"
-      }]
+      }],
+    "hit_frames":[[2,103]]
   },
   "78":{
-    "loops":[[3,34]],
+    "hit_frames":[[0,34]],
     "name":"light_of_justice",
     "uses_velocity":true,
     "frames":[{
@@ -18166,11 +18265,12 @@
         "hash":"9766fa0c00"
       },{
         "hash":"9766fa0c00",
-        "movement":[-1.6875,-3.3671875]
-      }]
+        "ignore_motion":true
+      }],
+    "loops":[[3,34]]
   },
   "1C":{
-    "loops":[[1,24]],
+    "hit_frames":[[0,28]],
     "name":"kunai_LP",
     "uses_velocity":true,
     "frames":[{
@@ -18312,10 +18412,11 @@
         "hash":"2d1cfa1600"
       },{
         "hash":"2d1cfa1600"
-      }]
+      }],
+    "loops":[[1,24]]
   },
   "0C":{
-    "loops":[[2,33]],
+    "hit_frames":[[0,88]],
     "name":"nichirin_LP",
     "uses_velocity":true,
     "frames":[{
@@ -18649,9 +18750,11 @@
       },{
         "hash":"9a7bfa1c00",
         "movement":[-1.375,0]
-      }]
+      }],
+    "loops":[[2,33]]
   },
   "86":{
+    "hit_frames":[[0,18]],
     "name":"light_of_virtue_EXK",
     "uses_velocity":true,
     "frames":[{
@@ -18813,10 +18916,11 @@
         "hash":"2d11fa1600"
       },{
         "hash":"2d11fa1600"
-      }]
+      }],
+    "hit_frames":[[1,13]]
   },
   "08":{
-    "loops":[[3,98]],
+    "hit_frames":[[0,98]],
     "name":"denjin_hadouken",
     "uses_velocity":true,
     "frames":[{
@@ -19160,7 +19264,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1,0]
-      }]
+      }],
+    "loops":[[3,98]]
   },
   "18":{
     "loops":[[2,81]],
@@ -19456,7 +19561,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.1875,0]
-      }]
+      }],
+    "hit_frames":[[0,81]]
   },
   "7C":{
     "loops":[[3,82]],
@@ -19755,7 +19861,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.1875,0]
-      }]
+      }],
+    "hit_frames":[[0,82]]
   },
   "6C":{
     "loops":[[4,43]],
@@ -20024,7 +20131,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.75,0]
-      }]
+      }],
+    "hit_frames":[[0,72]]
   },
   "14":{
     "loops":[[4,51]],
@@ -20222,11 +20330,12 @@
         "hash":"9aa8fa0a00"
       },{
         "hash":"9aa8fa0a00",
-        "movement":[-0.5,0.48046875]
-      }]
+        "ignore_motion":true
+      }],
+    "hit_frames":[[0,51]]
   },
   "24":{
-    "loops":[[1,12]],
+    "hit_frames":[[0,25]],
     "name":"hadou_burst",
     "uses_velocity":true,
     "frames":[{
@@ -20351,10 +20460,13 @@
         "hash":"9766fa0c00"
       },{
         "hash":"9766fa0c00",
-        "movement":[-22.375,0]
-      }]
+        "movement":[-22.375,0],
+        "velocity":[-0.75,0]
+      }],
+    "loops":[[1,12]]
   },
   "00_kkz":{
+    "hit_frames":[[0,17]],
     "name":"kkz",
     "uses_velocity":true,
     "frames":[{
@@ -20800,7 +20912,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-1.6875,0]
-      }]
+      }],
+    "hit_frames":[[0,75]]
   },
   "20":{
     "loops":[[3,34]],
@@ -20955,7 +21068,8 @@
       },{
         "hash":"9766fa0c00",
         "movement":[-2.5,0]
-      }]
+      }],
+    "hit_frames":[[0,34]]
   },
   "30":{
     "loops":[[1,12]],
@@ -21003,11 +21117,13 @@
         "loop":1
       },{
         "hash":"9bd0010c00",
-        "movement":[-11.75,9.375],
+        "ignore_motion":true,
         "boxes":[[5,-9,18,-9,18]]
-      }]
+      }],
+    "hit_frames":[[1,13]]
   },
   "00":{
+    "hit_frames":[[0,68],[73,73],[108,108],[143,143]],
     "name":"seraphic_wing",
     "uses_velocity":true,
     "frames":[{
@@ -21613,6 +21729,7 @@
       }]
   },
   "00_ndl_lp":{
+    "hit_frames":[[2,12]],
     "name":"ndl_LP",
     "uses_velocity":true,
     "frames":[{

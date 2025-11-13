@@ -5,7 +5,6 @@ local gamestate = require("src.gamestate")
 local debug = require("src.debug")
 local tools = require("src.tools")
 local debug_settings = require("src.debug_settings")
-local utils = require("src.modules.utils")
 
 local frame_data, character_specific, get_hurtboxes = fd.frame_data, fd.character_specific, fd.get_hurtboxes
 local stages = sd.stages
@@ -253,9 +252,7 @@ local function print_pline(line)
 end
 
 local function update_player_animation(previous_input, player)
-   if player.has_animation_just_changed then
-      next_animation[player] = animations.NONE
-   end
+   if player.has_animation_just_changed then next_animation[player] = animations.NONE end
    -- animation changes next frame
    if player.has_just_blocked then
       if not player.received_connection_is_projectile and player.other.pos_y >=
@@ -281,7 +278,7 @@ local function update_player_animation(previous_input, player)
          next_animation[player] = animations.STANDING_BEGIN
       end
    elseif player.animation == player_framedata.parry_high and tools.is_pressing_down(player, previous_input) then
-            if player.animation_frame == #player.animation_frame_data.frames - 1 then
+      if player.animation_frame == #player.animation_frame_data.frames - 1 then
          next_animation[player] = animations.CROUCHING_BEGIN
       end
    end
@@ -293,7 +290,9 @@ local function predict_next_animation(player, input)
    if player.is_idle then
       if player.is_standing then
          if tools.is_pressing_down(player, input) then
-            if player.action ~= 30 and player.action ~= 25 then next_animation[player] = animations.CROUCHING_BEGIN end
+            if player.action ~= 30 and player.action ~= 25 then
+               next_animation[player] = animations.CROUCHING_BEGIN
+            end
          elseif tools.is_pressing_forward(player, input) then
             if player.action == 23 or player.action == 30 then
                next_animation[player] = animations.WALK_FORWARD
@@ -370,7 +369,7 @@ local function insert_projectile(player, motion_data, predicted_hit)
       local proj_fd = frame_data["projectiles"][fd.frames[predicted_hit.frame + 1].projectile.type]
       local obj = {base = 0, projectile = 99}
       obj.id = fd.frames[predicted_hit.frame + 1].projectile.type ..
-                   tostring(gamestate.frame_number + predicted_hit.delta)
+                   tostring(gamestate.frame_number + player.remaining_freeze_frames + predicted_hit.delta)
       obj.emitter_id = player.id
       obj.alive = true
       obj.projectile_type = fd.frames[predicted_hit.frame + 1].projectile.type
@@ -408,93 +407,6 @@ local function insert_projectile(player, motion_data, predicted_hit)
    end
 end
 
-local function test_collision(defender_x, defender_y, defender_flip_x, defender_boxes, attacker_x, attacker_y,
-                              attacker_flip_x, attacker_boxes, box_type_matches, defender_hurtbox_dilation_x,
-                              defender_hurtbox_dilation_y, attacker_hitbox_dilation_x, attacker_hitbox_dilation_y)
-   local debug = false
-   if (defender_hurtbox_dilation_x == nil) then defender_hurtbox_dilation_x = 0 end
-   if (defender_hurtbox_dilation_y == nil) then defender_hurtbox_dilation_y = 0 end
-   if (attacker_hitbox_dilation_x == nil) then attacker_hitbox_dilation_x = 0 end
-   if (attacker_hitbox_dilation_y == nil) then attacker_hitbox_dilation_y = 0 end
-   if (box_type_matches == nil) then box_type_matches = {{{"vulnerability", "ext. vulnerability"}, {"attack"}}} end
-
-   if (#box_type_matches == 0) then return false end
-   if (#defender_boxes == 0) then return false end
-   if (#attacker_boxes == 0) then return false end
-   if debug then print(string.format("   %d defender boxes, %d attacker boxes", #defender_boxes, #attacker_boxes)) end
-   for k = 1, #box_type_matches do
-      local box_type_match = box_type_matches[k]
-      for i = 1, #defender_boxes do
-         local d_box = tools.format_box(defender_boxes[i])
-
-         local defender_box_match = false
-         for _, value in ipairs(box_type_match[1]) do
-            if value == d_box.type then
-               defender_box_match = true
-               break
-            end
-         end
-         if defender_box_match then
-            -- compute defender box bounds
-            local d_l
-            if defender_flip_x == 0 then
-               d_l = defender_x + d_box.left
-            else
-               d_l = defender_x - d_box.left - d_box.width
-            end
-            local d_r = d_l + d_box.width
-            local d_b = defender_y + d_box.bottom
-            local d_t = d_b + d_box.height
-
-            d_l = d_l - defender_hurtbox_dilation_x
-            d_r = d_r + defender_hurtbox_dilation_x
-            d_b = d_b - defender_hurtbox_dilation_y
-            d_t = d_t + defender_hurtbox_dilation_y
-
-            for j = 1, #attacker_boxes do
-               local a_box = tools.format_box(attacker_boxes[j])
-
-               local attacker_box_match = false
-               for _, value in ipairs(box_type_match[2]) do
-                  if value == a_box.type then
-                     attacker_box_match = true
-                     break
-                  end
-               end
-
-               if attacker_box_match then
-                  -- compute attacker box bounds
-                  local a_l
-                  if attacker_flip_x == 0 then
-                     a_l = attacker_x + a_box.left
-                  else
-                     a_l = attacker_x - a_box.left - a_box.width
-                  end
-                  local a_r = a_l + a_box.width
-                  local a_b = attacker_y + a_box.bottom
-                  local a_t = a_b + a_box.height
-
-                  a_l = a_l - attacker_hitbox_dilation_x
-                  a_r = a_r + attacker_hitbox_dilation_x
-                  a_b = a_b - attacker_hitbox_dilation_y
-                  a_t = a_t + attacker_hitbox_dilation_y
-
-                  if debug then
-                     print(string.format("   testing (%d,%d,%d,%d)(%s) against (%d,%d,%d,%d)(%s)", d_t, d_r, d_b, d_l,
-                                         d_box.type, a_t, a_r, a_b, a_l, a_box.type))
-                  end
-
-                  -- check collision
-                  if (a_l < d_r) and (a_r > d_l) and (a_b < d_t) and (a_t > d_b) then return true end
-               end
-            end
-         end
-      end
-   end
-
-   return false
-end
-
 local function get_horizontal_box_overlap(a_box, ax, ay, a_flip, b_box, bx, by, b_flip)
    local a_l, b_l
 
@@ -516,7 +428,9 @@ local function get_horizontal_box_overlap(a_box, ax, ay, a_flip, b_box, bx, by, 
    local b_b = by + b_box.bottom
    local b_t = b_b + b_box.height
 
-   if a_r > b_l and a_l < b_r and a_t > b_b and a_b < b_t then return math.min(a_r, b_r) - math.max(a_l, b_l) end
+   if (a_r >= b_l) and (a_l <= b_r) and (a_t >= b_b) and (a_b <= b_t) then
+      return math.min(a_r, b_r) - math.max(a_l, b_l)
+   end
    return 0
 end
 
@@ -549,32 +463,34 @@ local function predict_pushbox_pushback(p1, p1_motion_data, p1_line, p2, p2_moti
       if fdata and fdata.frames and fdata.frames[lines[player][index].frame + 1] and
           fdata.frames[lines[player][index].frame + 1].boxes then
          local boxes = tools.get_boxes(fdata.frames[lines[player][index].frame + 1].boxes, {"push"})
-         if #boxes > 0 then pushboxes[player.id] = boxes[1] end
+         if #boxes > 0 then pushboxes[player] = boxes[1] end
       end
-      if not pushboxes[player.id] then pushboxes[player.id] = tools.get_pushboxes(player) end
+      if not pushboxes[player] then pushboxes[player] = tools.get_pushboxes(player) end
    end
 
-   if pushboxes[1] and pushboxes[2] then
-      pushboxes[1] = tools.format_box(pushboxes[1])
-      pushboxes[2] = tools.format_box(pushboxes[2])
+   if pushboxes[p1] and pushboxes[p2] then
+      pushboxes[p1] = tools.format_box(pushboxes[p1])
+      pushboxes[p2] = tools.format_box(pushboxes[p2])
 
       local p1_mdata = motion_data[p1][index]
       local p2_mdata = motion_data[p2][index]
 
-      local overlap = get_horizontal_box_overlap(pushboxes[p1.id], p1_mdata.pos_x, p1_mdata.pos_y, p1_mdata.flip_x,
-                                                 pushboxes[p2.id], p2_mdata.pos_x, p2_mdata.pos_y, p2_mdata.flip_x)
+      local overlap = get_horizontal_box_overlap(pushboxes[p1], math.floor(p1_mdata.pos_x), math.floor(p1_mdata.pos_y),
+                                                 p1_mdata.flip_x, pushboxes[p2], math.floor(p2_mdata.pos_x),
+                                                 math.floor(p2_mdata.pos_y), p2_mdata.flip_x)
 
       if overlap > 1 then
          local push_value_max = math.ceil((character_specific[p1.char_str].push_value +
                                               character_specific[p2.char_str].push_value) / 2)
          local dist_from_pb_center = math.abs(p1_mdata.pos_x - p2_mdata.pos_x)
-         local pushbox_overlap_range = (pushboxes[1].width + pushboxes[2].width) / 2
+         local pushbox_overlap_range = (pushboxes[p1].width + pushboxes[p2].width) / 2
          local push_value = get_push_value(dist_from_pb_center, pushbox_overlap_range, push_value_max)
 
          local sign = (math.floor(p2_mdata.pos_x) - math.floor(p1_mdata.pos_x) >= 0 and -1) or
                           (math.floor(p2_mdata.pos_x) - math.floor(p1_mdata.pos_x) < 0 and 1)
          p1_mdata.pos_x = p1_mdata.pos_x + push_value * sign
          p2_mdata.pos_x = p2_mdata.pos_x - push_value * sign
+
          for player, mdata in pairs(motion_data) do
             local corner_left = stage.left + character_specific[player.char_str].corner_offset_left
             local corner_right = stage.right - character_specific[player.char_str].corner_offset_right
@@ -659,7 +575,7 @@ local function predict_next_player_movement(p1, p1_motion_data, p1_line, p2, p2_
       for i = #mdata, 0, -1 do
          if mdata[i].pushback_start_index then
             is_in_pushback = true
-            pb_frame = mdata[i].pushback_start_index + index
+            pb_frame = index - mdata[i].pushback_start_index + 1
             break
          end
       end
@@ -667,12 +583,12 @@ local function predict_next_player_movement(p1, p1_motion_data, p1_line, p2, p2_
       if is_in_pushback then
          local anim = player.last_received_connection_animation
          local hit_id = player.last_received_connection_hit_id
-
          if anim and hit_id and frame_data[player.other.char_str][anim] and
              frame_data[player.other.char_str][anim].pushback and
              frame_data[player.other.char_str][anim].pushback[hit_id] and pb_frame <=
              #frame_data[player.other.char_str][anim].pushback[hit_id] then
             local pb_value = frame_data[player.other.char_str][anim].pushback[hit_id][pb_frame]
+
             if pb_value then
                local new_pos = mdata[index].pos_x - sign * pb_value
                local over_push = 0
@@ -686,6 +602,7 @@ local function predict_next_player_movement(p1, p1_motion_data, p1_line, p2, p2_
                   motion_data[player.other][index].pos_x = motion_data[player.other][index].pos_x + over_push * sign
                end
                mdata[index].pos_x = mdata[index].pos_x - (pb_value - over_push) * sign
+
             end
          end
       end
@@ -816,7 +733,7 @@ local function predict_next_projectile_movement(projectile, mdata, line, index, 
                mdata[index].acceleration_y = mdata[index].acceleration_y + current_frame.acceleration[2]
             end
          else
-            print("next frame not found", line[index].animation, line[index].frame) -- debug
+            -- print("next frame not found", line[index].animation, line[index].frame) -- debug
          end
       end
    end
@@ -963,11 +880,10 @@ local function predict_jump_arc(player, player_anim, player_frame, player_motion
                      table.insert(box_type_matches, {{"throwable"}, {"throw"}})
                   end
 
-                  if test_collision(dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y, dummy_motion_data[i].flip_x,
-                                    dummy_boxes, player_motion_data[i].pos_x, player_motion_data[i].pos_y,
-                                    player_motion_data[i].flip_x, frames[frame_to_check].boxes, box_type_matches) then
-                     break
-                  end
+                  if tools.test_collision(dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y,
+                                          dummy_motion_data[i].flip_x, dummy_boxes, player_motion_data[i].pos_x,
+                                          player_motion_data[i].pos_y, player_motion_data[i].flip_x,
+                                          frames[frame_to_check].boxes, box_type_matches) then break end
                end
             end
          end
@@ -1058,6 +974,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
    if not dummy_line or #dummy_line == 0 then dummy_line = create_line(dummy, frames_prediction) end
    dummy_line[0] = {animation = dummy.animation, frame = dummy.animation_frame, delta = 0}
 
+   local has_tengu_stones = false
    local predicted_state = {}
    for _, player_line in pairs(player_lines) do
       local player_motion_data = init_motion_data(player)
@@ -1080,14 +997,13 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
             dummy_line = dummy_line
          }
 
-         if debug_settings.debug_hitboxes and i <= debug_settings.hitbox_display_frames and false then
+         if debug_settings.debug_hitboxes and i <= debug_settings.hitbox_display_frames then
             local vuln = {}
             local tfd = frame_data[player.char_str][player_line[i].animation]
             local color = 0x44097000 + 255
             if tfd and tfd.frames and tfd.frames[player_line[i].frame + 1] and
                 tfd.frames[player_line[i].frame + 1].boxes then
-               vuln = tools.get_boxes(tfd.frames[player_line[i].frame + 1].boxes,
-                                      {"vulnerability", "ext. vulnerability"})
+               vuln = tools.get_boxes(tfd.frames[player_line[i].frame + 1].boxes, {"push"}) -- {"vulnerability", "ext. vulnerability"}
                color = 0x44097000 + 255 - math.floor(100 * (frames_prediction - i) / frames_prediction)
             end
             if #vuln == 0 then vuln = player.boxes end
@@ -1095,21 +1011,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                player_motion_data[i].pos_x, player_motion_data[i].pos_y, player_motion_data[i].flip_x, vuln, nil, nil,
                color
             }, "player")
-            tfd = frame_data[dummy.char_str][dummy_line[i].animation]
-            color = 0x44097000 + 255
-            if tfd and tfd.frames and tfd.frames[dummy_line[i].frame + 1] and tfd.frames[dummy_line[i].frame + 1].boxes then
-               vuln =
-                   tools.get_boxes(tfd.frames[dummy_line[i].frame + 1].boxes, {"vulnerability", "ext. vulnerability"})
-               color = 0x44097000 + 255 - math.floor(100 * (frames_prediction - i) / frames_prediction)
-            end
-            if #vuln == 0 then vuln = player.boxes end
-            debug.queue_hitbox_draw(gamestate.frame_number + i, {
-               dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y, dummy_motion_data[i].flip_x, vuln, nil, nil,
-               color
-            }, "dummy")
          end
-
-         -- print(i, dummy_line[i].animation, dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y, #vuln)
 
          if fdata then
             local frames = fdata.frames
@@ -1174,16 +1076,16 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                         table.insert(box_type_matches, {{"throwable"}, {"throw"}})
                      end
 
-                     if test_collision(dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y,
-                                       dummy_motion_data[i].flip_x, dummy_boxes, player_motion_data[i].pos_x,
-                                       player_motion_data[i].pos_y, player_motion_data[i].flip_x,
-                                       frames[frame_to_check].boxes, box_type_matches) then
+                     if tools.test_collision(dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y,
+                                             dummy_motion_data[i].flip_x, dummy_boxes, player_motion_data[i].pos_x,
+                                             player_motion_data[i].pos_y, player_motion_data[i].flip_x,
+                                             frames[frame_to_check].boxes, box_type_matches) then
                         local delta = predicted_frame.delta + remaining_cooldown
                         if not (fdata.frames[predicted_frame.frame + 1].bypass_freeze and delta == 1) then
                            delta = delta + player.remaining_freeze_frames
                         end
-                        local side = utils.get_side(player_motion_data[i].pos_x, dummy_motion_data[i].pos_x,
-                                                    player_motion_data[i - 1].pos_x, dummy_motion_data[i - 1].pos_x)
+                        local side = gamestate.get_side(player_motion_data[i].pos_x, dummy_motion_data[i].pos_x,
+                                                        player_motion_data[i - 1].pos_x, dummy_motion_data[i - 1].pos_x)
                         local expected_hit = {
                            id = player.id,
                            blocking_type = "player",
@@ -1193,7 +1095,10 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                            flip_x = predicted_frame.flip_x,
                            side = side
                         }
-                        table.insert(expected_hits, expected_hit)
+                        if not expected_hits[expected_hit.delta] then
+                           expected_hits[expected_hit.delta] = {}
+                        end
+                        table.insert(expected_hits[expected_hit.delta], expected_hit)
                      end
                   end
                end
@@ -1204,15 +1109,19 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
 
    local valid_projectiles = {}
    for _, projectile in pairs(gamestate.projectiles) do
-      if ((projectile.is_forced_one_hit and projectile.remaining_hits ~= 0xFF) or projectile.remaining_hits > 0) and
-          projectile.alive and projectile.projectile_type ~= "00_seieienbu" then
-         if (projectile.emitter_id ~= dummy.id or (projectile.emitter_id == dummy.id and projectile.is_converted)) then
-            local frame_delta = projectile.remaining_freeze_frames - frames_prediction
-            if projectile.placeholder then
-               frame_delta = projectile.animation_start_frame - gamestate.frame_number - frames_prediction
-            end
-            if frame_delta <= frames_prediction and projectile.cooldown - frames_prediction <= 0 then
-               table.insert(valid_projectiles, projectile)
+      if projectile.projectile_type == "72" then --EX yagyou
+         table.insert(valid_projectiles, projectile)
+      else
+         if ((projectile.is_forced_one_hit and projectile.remaining_hits ~= 0xFF) or projectile.remaining_hits > 0) and
+             projectile.alive and projectile.projectile_type ~= "00_seieienbu" then --00_seieienbu are the real clones, ignore them
+            if (projectile.emitter_id ~= dummy.id or (projectile.emitter_id == dummy.id and projectile.is_converted)) then
+               local frame_delta = projectile.remaining_freeze_frames - frames_prediction
+               if projectile.placeholder then
+                  frame_delta = projectile.animation_start_frame - gamestate.frame_number - frames_prediction
+               end
+               if (frame_delta <= frames_prediction and projectile.cooldown - frames_prediction <= 0) then
+                  table.insert(valid_projectiles, projectile)
+               end
             end
          end
       end
@@ -1254,11 +1163,13 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                if not proj_line[i] then break end
                local remaining_freeze = projectile.remaining_freeze_frames - i
                local remaining_cooldown = projectile.cooldown
+
+               if projectile.projectile_type == "72" then remaining_freeze = -i end
                if player.superfreeze_decount > 0 then
                   remaining_freeze = remaining_freeze + player.remaining_freeze_frames
                end
                if projectile.placeholder then
-                  remaining_cooldown = (projectile.animation_start_frame - gamestate.frame_number - proj_line[i].delta)
+                  remaining_cooldown = (projectile.animation_start_frame - gamestate.frame_number - proj_line[i].delta + 1)
                end
                if remaining_freeze <= 0 then
                   remaining_cooldown = math.max(remaining_cooldown + remaining_freeze, 0)
@@ -1272,6 +1183,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                if projectile.projectile_type == "00_tenguishi" then
                   proj_boxes = projectile.boxes
                   ignore_flip = true
+                  has_tengu_stones = true
                elseif projectile.projectile_type == "seieienbu" then
                   if projectile.animation_start_frame - gamestate.frame_number - i == 0 then
                      proj_boxes = projectile.boxes
@@ -1286,11 +1198,10 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                         proj_boxes = frames[frame_to_check].boxes
                      end
                      if proj_line[i].frame == fd.get_first_hit_frame("projectiles", proj_line[i].animation) and
-                         not proj_line[i].animation == "70" then is_first_hit_frame = true end
+                         not (proj_line[i].animation == "70") then is_first_hit_frame = true end
                   end
                   if #proj_boxes == 0 then proj_boxes = projectile.boxes end
                end
-
                predict_next_projectile_movement(projectile, proj_motion_data, proj_line, i, ignore_flip)
 
                local dummy_boxes = get_hurtboxes(dummy.char_str, dummy_line[i].animation, dummy_line[i].frame)
@@ -1300,6 +1211,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                if not fdata or
                    not (fdata.frames[proj_line[i].frame + 1] and fdata.frames[proj_line[i].frame + 1].bypass_freeze and
                        delta == 1) then delta = delta + remaining_freeze end
+
                if #proj_boxes > 0 and delta <= frames_prediction and remaining_cooldown <= 0 and not is_first_hit_frame then
                   if debug_settings.debug_hitboxes and i <= 1 then
                      local color = 0xa9691c00 + 255 - 70 * delta
@@ -1308,10 +1220,10 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                         nil, nil, color
                      }, "projectile" .. projectile.id)
                   end
-
-                  if test_collision(dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y, dummy_motion_data[i].flip_x,
-                                    dummy_boxes, proj_motion_data[i].pos_x, proj_motion_data[i].pos_y,
-                                    proj_motion_data[i].flip_x, proj_boxes, box_type_matches) then
+                  if tools.test_collision(dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y,
+                                          dummy_motion_data[i].flip_x, dummy_boxes, proj_motion_data[i].pos_x,
+                                          proj_motion_data[i].pos_y, proj_motion_data[i].flip_x, proj_boxes,
+                                          box_type_matches) then
                      local expected_hit = {
                         id = projectile.id,
                         blocking_type = "projectile",
@@ -1320,15 +1232,49 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                         animation = proj_line[i].animation,
                         flip_x = proj_motion_data[i].flip_x
                      }
-                     if projectile.seiei_animation then
+                     if projectile.projectile_type == "00_tenguishi" then
+                        expected_hit.tengu_order = projectile.tengu_order
+                     elseif projectile.seiei_animation then
                         expected_hit.hit_id = projectile.seiei_hit_id
                         expected_hit.is_seieienbu = true
                      end
-                     table.insert(expected_hits, expected_hit)
+                     if not expected_hits[expected_hit.delta] then
+                        expected_hits[expected_hit.delta] = {}
+                     end
+                     table.insert(expected_hits[expected_hit.delta], expected_hit)
                   end
                end
             end
          end
+      end
+   end
+   -- only 1 tengu stone can hit per frame, this includes oro's attacks
+   if has_tengu_stones then
+      local connected_attacks = {}
+      for i, attack_list in pairs(expected_hits) do
+         local current_attack
+         for _, attack in ipairs(attack_list) do
+            if not connected_attacks[attack.id] then
+               if attack.blocking_type == "player" then
+                  current_attack = attack
+                  break
+               elseif attack.tengu_order then
+                  if not current_attack or attack.tengu_order < current_attack.tengu_order then
+                     current_attack = attack
+                  end
+               end
+            end
+         end
+         local j = 1
+         while j <= #attack_list do
+            if connected_attacks[attack_list[j].id] or
+                (attack_list[j].animation == "00_tenguishi" and attack_list[j] ~= current_attack) then
+               table.remove(attack_list, j)
+            else
+               j = j + 1
+            end
+         end
+         if current_attack then connected_attacks[current_attack.id] = true end
       end
    end
    return expected_hits
@@ -1361,7 +1307,6 @@ local function update_after(input, player, dummy)
 end
 
 return {
-   test_collision = test_collision,
    predict_hits = predict_hits,
    update_before = update_before,
    update_after = update_after,

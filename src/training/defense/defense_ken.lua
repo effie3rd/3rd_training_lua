@@ -8,6 +8,7 @@ local training_classes = require("src.training.training_classes")
 local prediction = require("src.modules.prediction")
 local tools = require("src.tools")
 local utils = require("src.modules.utils")
+local gamestate = require("src.gamestate")
 
 local Delay = advanced_control.Delay
 local Setup, Followup, Action_Type, Setup_Type = training_classes.Setup, training_classes.Followup,
@@ -72,6 +73,7 @@ local throw_walk_frames = 6
 local throw_min_block_frames = 10
 local block_punish_threshold = 4
 local reaction_time = 12
+local react_duration = 50
 local connection_end_delay = Delay:new(1)
 local knockdown = move_data.get_move_inputs_by_name("ken", "shoryuken", "LP")
 
@@ -125,11 +127,9 @@ end
 
 local function handle_interruptions(player, stage, actions, i_actions)
    if (player.has_just_been_hit and not player.is_being_thrown) or player.other.has_just_parried then
-      print("dummy hit/parried") -- debug
       return true, {score = 2, should_end = true}
    end
    if (player.is_being_thrown and player.throw_tech_countdown <= 0) then
-      print("dummy thrown/missed") -- debug
       local score = 1
       local hit_with_command_throw = memory.readbyte(player.other.addresses.hit_with_command_throw) > 0
       local hit_with_super_throw = memory.readbyte(player.other.addresses.hit_with_super_throw) > 0
@@ -517,9 +517,7 @@ function followup_punish:setup(player, stage, actions, i_actions)
       if punish.action:is_valid(player, stage, predicted_state) then table.insert(valid_punishes, punish) end
    end
    local selected_punish = tools.select_weighted(valid_punishes)
-   if selected_punish then
-      return selected_punish.action:setup(player, stage, actions, i_actions)
-   end
+   if selected_punish then return selected_punish.action:setup(player, stage, actions, i_actions) end
    self.is_valid_punish = false
    return {{condition = nil, action = nil}}
 end
@@ -701,6 +699,7 @@ function followup_block:setup(player, stage, actions, i_actions)
    self.blocked_frames = 0
    self.block_time = 8
    self.block_input = block_low_input
+   self.switch_blocking = nil
    self.has_blocked = false
    self.has_parried = false
    self.should_reselect = false
@@ -751,13 +750,26 @@ function followup_block:run(player, stage, actions, i_actions)
          local fdata_meta = fdm.frame_data_meta[player.other.char_str][player.other.animation]
          if fdata_meta and fdata_meta.hit_type then
             hit_type = fdata_meta.hit_type[player.other.current_hit_id + 1]
-            if hit_type == 4 then
-               if framedata.get_next_hit_frame(player.other.char_str, player.other.animation,
-                                                player.other.current_hit_id + 1) >= reaction_time then
-                  self.block_input = block_high_input
+            if hit_type == 2 or hit_type == 4 then
+               local startup = framedata.get_next_hit_frame(player.other.char_str, player.other.animation,
+                                                            player.other.current_hit_id)
+               if startup >= reaction_time then
+                  if hit_type == 4 then
+                     self.switch_blocking = {
+                        start_frame = gamestate.frame_number + startup - 1,
+                        input = block_high_input
+                     }
+                  else
+                     self.block_input = {start_frame = gamestate.frame_number + startup - 1, input = block_low_input}
+                  end
                end
             end
          end
+      end
+
+      if self.switch_blocking and gamestate.frame_number >= self.switch_blocking.start_frame then
+         self.block_input = self.switch_blocking.input
+         self.switch_blocking = nil
       end
 
       self.next_action = actions[i_actions + 1]
@@ -818,7 +830,7 @@ end
 
 function followup_block:extend(player)
    self.blocked_frames = self.blocked_frames + 1
-   inputs.queue_input_sequence(player, self.block_input)
+   inputs.queue_input_sequence(player, self.block_input, 0, true)
 end
 
 function followup_block:label() return {self.name, " ", self.blocked_frames, "hud_f"} end
@@ -844,6 +856,8 @@ function followup_mp_hp:setup(player, stage, actions, i_actions)
          condition = function()
             if player.other.is_waking_up then
                return is_wakeup_timing(player.other, #cl_mp_input + cl_mp_hit_frame + 1, true)
+            elseif self.previous_action and self.previous_action.type == Action_Type.FORWARD_DASH then
+               return is_idle_timing(player, #cl_mp_input, true)
             elseif self.previous_action and self.previous_action.type ~= Action_Type.WALK_FORWARD then
                return is_idle_timing(player.other, cl_mp_hit_frame + #cl_mp_input - recovery_gap, true)
             elseif player.other.throw_invulnerability_cooldown > 0 then
@@ -929,6 +943,8 @@ function followup_d_lk_d_lk:setup(player, stage, actions, i_actions)
          condition = function()
             if player.other.is_waking_up then
                return is_wakeup_timing(player.other, #d_lk_input + d_lk_hit_frame + 1, true)
+            elseif self.previous_action and self.previous_action.type == Action_Type.FORWARD_DASH then
+               return is_idle_timing(player, #d_lk_input, true)
             elseif self.previous_action and self.previous_action.type ~= Action_Type.WALK_FORWARD then
                return is_idle_timing(player.other, d_lk_hit_frame + #d_lk_input - recovery_gap, true)
             elseif player.other.throw_invulnerability_cooldown > 0 then
@@ -1080,23 +1096,35 @@ local followup_throw = Followup:new("followup_throw", Action_Type.THROW)
 
 function followup_throw:setup(player, stage, actions, i_actions)
    self.should_walk_in = false
+   self.predicted_dist = nil
    self.max_walk_frames = throw_walk_frames
    self.opponent_has_been_thrown = false
    self.end_delay = 12
    local previous_action = actions[i_actions - 1]
    if previous_action then
-      if not (previous_action.type == Action_Type.WALK_FORWARD) then
-         local dist = self.predicted_dist or math.abs(player.other.pos_x - player.pos_x)
-         if throw_range - throw_threshold < dist - character_specific[player.other.char_str].pushbox_width / 2 then
-            self.should_walk_in = true
-         end
-      end
       if previous_action.type == Action_Type.BLOCK then previous_action.block_time = throw_min_block_frames end
+
+      if previous_action.type ~= Action_Type.WALK_FORWARD then
+         local dist = math.abs(player.other.pos_x - player.pos_x)
+         if player.other.remaining_freeze_frames > 0 or player.other.freeze_just_ended or player.other.is_in_pushback then
+            local predicted_state = prediction.predict_player_movement(player, nil, nil, nil, player.other, nil, nil,
+                                                                       nil, player.other.remaining_freeze_frames +
+                                                                           player.other.recovery_time + 10)
+            dist = math.abs(predicted_state.dummy_motion_data[#predicted_state.dummy_motion_data].pos_x -
+                                predicted_state.player_motion_data[#predicted_state.player_motion_data].pos_x)
+            self.predicted_dist = dist
+         end
+         self.should_walk_in = throw_range - throw_threshold < dist -
+                                   character_specific[player.other.char_str].pushbox_width / 2
+      end
    end
+
+   if self.should_walk_in then return {{condition = nil, action = nil}} end
+
    return {
       {
          condition = function()
-            if is_idle_timing(player, #throw_input, true) and player.other.standing_state > 0 and
+            if is_idle_timing(player, 1, true) and player.other.standing_state > 0 and
                 is_throw_vulnerable_timing(player.other, #throw_input + throw_hit_frame + 1, true) then
                return true
             end
@@ -1140,7 +1168,8 @@ function followup_throw:should_execute(player, stage, actions, i_actions)
    local dist = math.abs(player.other.pos_x - player.pos_x)
    if player.other.remaining_freeze_frames > 0 or player.other.freeze_just_ended or player.other.is_in_pushback then
       local predicted_state = prediction.predict_player_movement(player, nil, nil, nil, player.other, nil, nil, nil,
-                                                                 player.other.remaining_freeze_frames + 10)
+                                                                 player.other.remaining_freeze_frames +
+                                                                     player.other.recovery_time + 10)
       dist = math.abs(predicted_state.dummy_motion_data[#predicted_state.dummy_motion_data].pos_x -
                           predicted_state.player_motion_data[#predicted_state.player_motion_data].pos_x)
       self.predicted_dist = dist
@@ -1161,14 +1190,24 @@ function followup_kara_throw:setup(player, stage, actions, i_actions)
    self.end_delay = 12
    local previous_action = actions[i_actions - 1]
    if previous_action then
-      if not (previous_action.type == Action_Type.WALK_FORWARD) then
-         local dist = self.predicted_dist or math.abs(player.other.pos_x - player.pos_x)
-         if b_mk_kara_throw_range - throw_threshold < dist - character_specific[player.other.char_str].pushbox_width / 2 then
-            self.should_walk_in = true
-         end
-      end
       if previous_action.type == Action_Type.BLOCK then previous_action.block_time = throw_min_block_frames end
+
+      if previous_action.type ~= Action_Type.WALK_FORWARD then
+         local dist = math.abs(player.other.pos_x - player.pos_x)
+         if player.other.remaining_freeze_frames > 0 or player.other.freeze_just_ended or player.other.is_in_pushback then
+            local predicted_state = prediction.predict_player_movement(player, nil, nil, nil, player.other, nil, nil,
+                                                                       nil, player.other.remaining_freeze_frames +
+                                                                           player.other.recovery_time + 10)
+            dist = math.abs(predicted_state.dummy_motion_data[#predicted_state.dummy_motion_data].pos_x -
+                                predicted_state.player_motion_data[#predicted_state.player_motion_data].pos_x)
+            self.predicted_dist = dist
+         end
+         self.should_walk_in = b_mk_kara_throw_range - throw_threshold < dist -
+                                   character_specific[player.other.char_str].pushbox_width / 2
+      end
    end
+
+   if self.should_walk_in then return {{condition = nil, action = nil}} end
    return {
       {
          condition = function()
@@ -1224,8 +1263,9 @@ function followup_kara_throw:should_execute(player, stage, actions, i_actions)
    local crouching_delay = 0
    if player.is_crouching then crouching_delay = 1 end
    local walk_dist = utils.get_forward_walk_distance(player, throw_walk_frames - crouching_delay)
-   return throw_range - throw_threshold >= dist - character_specific[player.other.char_str].pushbox_width / 2 -
-              walk_dist
+   return
+       b_mk_kara_throw_range - throw_threshold >= dist - character_specific[player.other.char_str].pushbox_width / 2 -
+           walk_dist
 end
 
 local followup_forward_down = Followup:new("followup_forward_down", Action_Type.PARRY)
@@ -1271,7 +1311,7 @@ function followup_forward_down:run(player, stage, actions, i_actions)
    if player.has_just_parried then self.has_parried = true end
    if self.has_parried then
       local next_hit_delta = framedata.get_next_hit_frame(player.other.char_str, player.other.animation,
-                                                           player.other.current_hit_id) - player.other.animation_frame
+                                                          player.other.current_hit_id) - player.other.animation_frame
       if next_hit_delta <= 0 then next_hit_delta = 99 end
       if player.other.animation_frame_data then
          local type = player.other.animation_frame_data.type
@@ -1343,7 +1383,7 @@ function followup_down_forward:run(player, stage, actions, i_actions)
    if player.has_just_parried then self.has_parried = true end
    if self.has_parried then
       local next_hit_delta = framedata.get_next_hit_frame(player.other.char_str, player.other.animation,
-                                                           player.other.current_hit_id) - player.other.animation_frame
+                                                          player.other.current_hit_id) - player.other.animation_frame
       if next_hit_delta <= 0 then next_hit_delta = 99 end
       if player.other.animation_frame_data then
          local type = player.other.animation_frame_data.type
@@ -1370,18 +1410,17 @@ end
 local followup_react = Followup:new("followup_react", Action_Type.REACT)
 
 function followup_react:setup(player, stage, actions, i_actions)
-   self.react_duration = 50
-   self.react_timer = Delay:new(self.react_duration)
+   self.react_timer = Delay:new(react_duration)
    self.previous_action = actions[i_actions - 1]
    if self.previous_action and self.previous_action.type == Action_Type.BLOCK then
-      self.previous_action.block_time = self.react_duration + player.other.remaining_wakeup_time + 1
+      self.previous_action.block_time = react_duration + player.other.remaining_wakeup_time + 1
    end
    return {{condition = nil, action = nil}}
 end
 
 function followup_react:run(player, stage, actions, i_actions)
    if self.previous_action and self.previous_action.type == Action_Type.BLOCK then
-      if self.previous_action.blocked_frames >= self.react_duration then return true, {score = 1} end
+      if self.previous_action.blocked_frames >= react_duration then return true, {score = 1} end
    elseif self.react_timer:is_complete() then
       return true, {score = 1}
    end
@@ -1400,22 +1439,22 @@ end
 
 function followup_react:block_condition(player, block_followup)
    if block_followup.has_blocked then return false end
-   if block_followup.blocked_frames >= self.react_duration then return true end
+   if block_followup.blocked_frames >= react_duration then return true end
    if player.other.animation_miss_count > 0 and reaction_time <= player.other.animation_frame then return true end
    return false
 end
 
 function followup_react:should_execute(player, stage, actions, i_actions)
    local previous_action = actions[i_actions - 1]
-   if previous_action and previous_action.type == Action_Type.BLOCK and previous_action.blocked_frames > 0 then
-      return true
-   end
+   if previous_action and previous_action.type == Action_Type.BLOCK and previous_action.blocked_frames and
+       previous_action.blocked_frames > 0 then return true end
    local predicted_state = prediction.predict_player_movement(player, nil, nil, nil, player.other, nil, nil, nil,
                                                               player.other.remaining_freeze_frames + 10)
    local dist = math.abs(predicted_state.dummy_motion_data[#predicted_state.dummy_motion_data].pos_x -
                              predicted_state.player_motion_data[#predicted_state.player_motion_data].pos_x)
    local opponent_throw_range = framedata.get_hitbox_max_range_by_name(player.other.char_str, "throw_neutral")
    local throwable_box_extension = 4
+
    if opponent_throw_range < dist - character_specific[player.char_str].pushbox_width / 2 - 2 - throwable_box_extension then
       return true
    end
@@ -1553,7 +1592,7 @@ function followup_walk_out:label() return {self.name, " ", self.walked_frames, "
 
 function followup_walk_out:followups(player) return walk_out_followups end
 
-local followup_back_dash = Followup:new("followup_back_dash")
+local followup_back_dash = Followup:new("followup_back_dash", Action_Type.BACK_DASH)
 
 function followup_back_dash:setup(player, stage, actions, i_actions)
    local dash_duration = Delay:new(back_dash_duration + 1 - 3)
@@ -1586,7 +1625,7 @@ end
 
 function followup_back_dash:followups(player) return back_dash_followups end
 
-local followup_forward_dash = Followup:new("followup_forward_dash")
+local followup_forward_dash = Followup:new("followup_forward_dash", Action_Type.FORWARD_DASH)
 
 function followup_forward_dash:setup(player, stage, actions, i_actions)
    local dash_duration = Delay:new(forward_dash_duration + 1 - 3)

@@ -1,9 +1,9 @@
 -- in-match displays
 local settings = require("src.settings")
 local fd = require("src.modules.framedata")
-local fdm = require("src.modules.framedata_meta")
 local gamestate = require("src.gamestate")
 local attack_data = require("src.modules.attack_data")
+local frame_advantage = require("src.modules.frame_advantage")
 local text = require("src.ui.text")
 local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
@@ -12,11 +12,93 @@ local recording = require("src.control.recording")
 local tools = require("src.tools")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
-local frame_data_meta = fdm.frame_data_meta
 local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text,
                                                                                              text.render_text_multiple,
                                                                                              text.get_text_dimensions,
                                                                                              text.get_text_dimensions_multiple
+
+local info_text_display_time = 90
+local info_text_fade_time = 30
+local info_text_state = {{data = {}, display_start_frame = 0}, {data = {}, display_start_frame = 0}}
+local function add_info_text(list, id)
+   info_text_state[id].data = list
+   info_text_state[id].display_start_frame = gamestate.frame_number
+end
+
+local function clear_info_text()
+   info_text_state = {{data = {}, display_start_frame = 0}, {data = {}, display_start_frame = 0}}
+end
+
+local function info_text_display()
+   for id = 1, 2 do
+      local elapsed = gamestate.frame_number - info_text_state[id].display_start_frame
+      if elapsed <= info_text_display_time + info_text_fade_time then
+         local opacity = 1
+         if elapsed > info_text_display_time then
+            opacity = 1 - ((elapsed - info_text_display_time) / info_text_fade_time)
+         end
+         local padding_x = 4
+         local input_history_offset = 34
+         local text_max_width = 50
+         local text_max_height = 0
+         local y = 50
+         local spacing_y = 1
+
+         for _, data in ipairs(info_text_state[id].data) do
+            local width, height = 0, 0
+            if type(data) == "table" then
+               width, height = get_text_dimensions_multiple(data)
+            else
+               width, height = get_text_dimensions(data)
+            end
+            if width > text_max_width then text_max_width = width end
+            if height > text_max_height then text_max_height = height end
+         end
+
+         local x = padding_x
+
+         if id == 2 then
+            x = draw.SCREEN_WIDTH - padding_x
+            if settings.training.display_input_history == 3 or settings.training.display_input_history == 4 then
+               x = x - input_history_offset
+            end
+         else
+            if settings.training.display_input_history == 2 or settings.training.display_input_history == 4 then
+               x = x + input_history_offset
+            end
+         end
+
+         if id == 2 then x = x - text_max_width end
+
+         for _, data in ipairs(info_text_state[id].data) do
+            if type(data) == "table" then
+               render_text_multiple(x, y, data, nil, nil, nil, opacity)
+            else
+               render_text(x, y, data, nil, nil, nil, opacity)
+            end
+            y = y + text_max_height + spacing_y
+         end
+      end
+   end
+end
+
+local score_text
+local function add_score_text(str) score_text = str end
+
+local function clear_score_text() score_text = nil end
+local function score_text_display()
+   if score_text then
+      local padding_x = 10
+      local x, y = padding_x, 50
+
+      local input_history_offset = 34
+
+      if settings.training.display_input_history == 2 or settings.training.display_input_history == 4 then
+         x = x + input_history_offset
+      end
+      render_text(x, y, score_text, "score", nil, colors.score.plus)
+   end
+end
 
 local kaiten_images = {
    active = {images.img_dir_small[6], images.img_dir_small[2], images.img_dir_small[4], images.img_dir_small[8]},
@@ -331,7 +413,7 @@ end
 
 local air_combo_expired_color = 0x2013
 local air_time_bar_max_width = 121
-local air_time_bar_max_height = 5
+local air_time_bar_max_height = 3
 local function air_time_display(player, dummy)
    local offset_x = 226
    local offset_y = 50
@@ -348,9 +430,8 @@ local function air_time_display(player, dummy)
          render_text(offset_x - x / 2 + air_time_bar_width, offset_y + 6, air_time, "en", nil)
       end
    end
-   draw.draw_gauge(offset_x, offset_y, air_time_bar_max_width, air_time_bar_max_height,
-                        air_time / 121, colors.gauges.cooldown_fill,
-                        colors.gauges.background, colors.gauges.outline, false)
+   draw.draw_gauge(offset_x, offset_y, air_time_bar_max_width, air_time_bar_max_height, air_time / 121,
+                   colors.gauges.cooldown_fill, colors.gauges.background, colors.gauges.outline, false)
    if dummy.pos_y > 0 and air_time == 128 then
       color_player(dummy, air_combo_expired_color)
    else
@@ -415,9 +496,9 @@ local function denjin_display(player)
    -- gui.drawbox(x, y, x + denjin_display_bar_width, y + denjin_display_bar_max_height, barColor)
    -- gui.drawbox(x, y, x + denjin_display_bar_max_width, y + denjin_display_bar_max_height, colors.gauges.background,
    --             colors.gauges.outline)
-      draw.draw_gauge(x, y, denjin_display_bar_max_width, denjin_display_bar_max_height,
-                        denjin_display_bar_width / denjin_display_bar_max_width, barColor,
-                        colors.gauges.background, colors.gauges.outline, false)
+   draw.draw_gauge(x, y, denjin_display_bar_max_width, denjin_display_bar_max_height,
+                   denjin_display_bar_width / denjin_display_bar_max_width, barColor, colors.gauges.background,
+                   colors.gauges.outline, false)
 
 end
 
@@ -575,64 +656,62 @@ local function attack_range_display()
                table.insert(attack_range_display_attacks[id], player.animation)
             end
          end
-      end
-      while #attack_range_display_attacks[id] > settings.training.attack_range_display_max_attacks do
-         table.remove(attack_range_display_attacks[id], 1)
-      end
-
-      local sign = tools.flip_to_sign(player.flip_x)
-      local attack_color_index = 1
-      local throw_color_index = 1
-      for i = 1, #attack_range_display_attacks[id] do
-         local attack_anim = attack_range_display_attacks[id][i]
-         if player.animation == attack_anim then
-            local last_hit_frame = 0
-            local offset_x = 0
-            local offset_y = 0
-            local velocity_x = 0
-            local velocity_y = 0
-            local acceleration_x = 0
-            local acceleration_y = 0
-
-            fdata = frame_data[player.char_str][attack_anim]
-            if fdata and fdata.hit_frames then
-               last_hit_frame = fdata.hit_frames[#fdata.hit_frames][2] + 1
-               attack_range_display_data[attack_anim] = {}
-               for j = 1, last_hit_frame do
-                  velocity_x = velocity_x + acceleration_x
-                  velocity_y = velocity_y + acceleration_y
+         while #attack_range_display_attacks[id] > settings.training.attack_range_display_max_attacks do
+            table.remove(attack_range_display_attacks[id], 1)
+         end
+         local attack_anim = player.animation
+         local last_hit_frame = 0
+         local offset_x = 0
+         local offset_y = 0
+         local velocity_x = 0
+         local velocity_y = 0
+         local acceleration_x = 0
+         local acceleration_y = 0
+         fdata = frame_data[player.char_str][attack_anim]
+         if fdata and fdata.hit_frames then
+            last_hit_frame = fdata.hit_frames[#fdata.hit_frames][2] + 1
+            attack_range_display_data[attack_anim] = {}
+            for j = 1, last_hit_frame do
+               if not fdata.frames[j].ignore_motion then
                   offset_x = offset_x + velocity_x
                   offset_y = offset_y + velocity_y
-                  if fdata.frames[j].movement then
-                     offset_x = offset_x + fdata.frames[j].movement[1]
-                     offset_y = offset_y + fdata.frames[j].movement[2]
-                  end
-                  if fdata.frames[j].velocity then
-                     velocity_x = velocity_x + fdata.frames[j].velocity[1]
-                     velocity_y = velocity_y + fdata.frames[j].velocity[2]
-                  end
-                  if fdata.frames[j].acceleration then
-                     acceleration_x = acceleration_x + fdata.frames[j].acceleration[1]
-                     acceleration_y = acceleration_y + fdata.frames[j].acceleration[2]
-                  end
-
-                  if fdata.frames[j].boxes then
-                     for _, box in pairs(fdata.frames[j].boxes) do
-                        local b = tools.format_box(box)
-                        if b.type == "attack" or b.type == "throw" then
-                           local data = {}
-                           data.distance = tools.round(offset_x - b.left)
-                           data.box = box
-                           data.box_type = b.type
-                           data.offset_x = offset_x
-                           data.offset_y = offset_y
-                           table.insert(attack_range_display_data[attack_anim], data)
-                        end
+                  velocity_x = velocity_x + acceleration_x
+                  velocity_y = velocity_y + acceleration_y
+               end
+               if fdata.frames[j].movement then
+                  offset_x = offset_x + fdata.frames[j].movement[1]
+                  offset_y = offset_y + fdata.frames[j].movement[2]
+               end
+               if fdata.frames[j].velocity then
+                  velocity_x = velocity_x + fdata.frames[j].velocity[1]
+                  velocity_y = velocity_y + fdata.frames[j].velocity[2]
+               end
+               if fdata.frames[j].acceleration then
+                  acceleration_x = acceleration_x + fdata.frames[j].acceleration[1]
+                  acceleration_y = acceleration_y + fdata.frames[j].acceleration[2]
+               end
+               if fdata.frames[j].boxes then
+                  for _, box in pairs(fdata.frames[j].boxes) do
+                     local b = tools.format_box(box)
+                     if b.type == "attack" or b.type == "throw" then
+                        local data = {}
+                        data.distance = tools.round(offset_x - b.left)
+                        data.box = box
+                        data.box_type = b.type
+                        data.offset_x = offset_x
+                        data.offset_y = offset_y
+                        table.insert(attack_range_display_data[attack_anim], data)
                      end
                   end
                end
             end
          end
+      end
+      local sign = tools.flip_to_sign(player.flip_x)
+      local attack_color_index = 1
+      local throw_color_index = 1
+      for i = 1, #attack_range_display_attacks[id] do
+         local attack_anim = attack_range_display_attacks[id][i]
          local drawn_box_type = ""
          local attack_range_display_attack_box_color = attack_range_display_attack_box_colors[attack_color_index]
          local attack_range_display_throw_box_color = attack_range_display_throw_box_colors[throw_color_index]
@@ -894,7 +973,7 @@ local function player_label_display()
          gui.image(x - 4, y, images.img_dir_small[2], opacity)
          local w, h = get_text_dimensions(state.label)
          if settings.language == "en" then
-            h = h - 1
+            h = h + 2
          elseif settings.language == "jp" then
             h = h + 1
          end
@@ -959,23 +1038,30 @@ local function blocking_direction_display(player, dummy)
    end
 end
 
+
+local p1_filter = nil -- {["push"] = true, ["vulnerability"] = true}
+local p2_filter = nil -- {["push"] = true}
 local function hitboxes_display()
    -- players
-   local p1_filter = {["attack"] = true, ["throw"] = true} -- debug
-   local p2_filter = nil
-   -- draw.draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, fff, nil, nil, 0x90)
-
-   draw.draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, nil, nil, nil,
-                      settings.training.display_hitboxes_opacity)
-   draw.draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, p1_filter, nil,
-                      nil)
-   draw.draw_hitboxes(gamestate.P2.pos_x, gamestate.P2.pos_y, gamestate.P2.flip_x, gamestate.P2.boxes, p2_filter, nil,
-                      nil, settings.training.display_hitboxes_opacity)
-
+   if settings.training.display_hitboxes == 2 or settings.training.display_hitboxes == 4 then
+      draw.draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, p1_filter,
+                         nil, nil, settings.training.display_hitboxes_opacity)
+   end
+   if settings.training.display_hitboxes == 3 or settings.training.display_hitboxes == 4 then
+      draw.draw_hitboxes(gamestate.P2.pos_x, gamestate.P2.pos_y, gamestate.P2.flip_x, gamestate.P2.boxes, p2_filter,
+                         nil, nil, settings.training.display_hitboxes_opacity)
+   end
    -- projectiles
-   for _, obj in pairs(gamestate.projectiles) do
-      draw.draw_hitboxes(obj.pos_x, obj.pos_y, obj.flip_x, obj.boxes, nil, nil, nil,
-                         settings.training.display_hitboxes_opacity)
+   if settings.training.display_hitboxes > 1 then
+      for _, obj in pairs(gamestate.projectiles) do
+         if (obj.emitter_id == 1 and
+             (settings.training.display_hitboxes == 2 or settings.training.display_hitboxes == 4)) or
+             (obj.emitter_id == 2 and
+                 (settings.training.display_hitboxes == 3 or settings.training.display_hitboxes == 4)) then
+            draw.draw_hitboxes(obj.pos_x, obj.pos_y, obj.flip_x, obj.boxes, nil, nil, nil,
+                               settings.training.display_hitboxes_opacity)
+         end
+      end
    end
 end
 
@@ -1124,6 +1210,84 @@ local function stun_text_display(player_object)
    end
 
    gui.text(x, y, t, 0xe60000FF, 0x001433FF)
+end
+
+local advantage_display_time = 60
+local advantage_fade_time = 20
+local advantage_min_y = 60
+local function display_frame_advantage_numbers(player, num)
+   if not (settings.training.display_frame_advantage == 2 or settings.training.display_frame_advantage == 4) then
+      return
+   end
+   local advantage_text = num
+   local advantage_color = colors.hud_text.default
+   local x, y
+   if num > 0 then
+      advantage_text = string.format("+%d", num)
+      advantage_color = colors.hud_text.success
+   elseif num < 0 then
+      advantage_text = string.format("%d", num)
+      advantage_color = colors.hud_text.failure
+   end
+   x, y = draw.get_above_character_position(player)
+   y = math.max(y, advantage_min_y)
+   add_fading_text(x, y - 4, advantage_text, "en", advantage_color, advantage_display_time, advantage_fade_time, true)
+end
+
+local function frame_advantage_display(player, advantage)
+   if not (settings.training.display_frame_advantage == 3 or settings.training.display_frame_advantage == 4) then
+      return
+   end
+   local y = 49
+   local function display_line(str, value, color)
+      color = color or colors.hud_text.default
+      local lang = require("src.settings").language
+      local w, h, size
+      local y_offset = 0
+      if lang == "jp" then
+         size = 8
+         y_offset = 1
+      end
+      w, h = get_text_dimensions_multiple({str, ": "}, lang, size)
+      local x = 0
+      if player.id == 1 then
+         x = 51
+      elseif player.id == 2 then
+         x = draw.SCREEN_WIDTH - 65 - w
+      end
+
+      render_text_multiple(x, y, {str, ": "}, lang, size, colors.hud_text.default)
+      render_text(x + w, y + y_offset, value, "en", nil, color)
+      y = y + h
+   end
+
+   if not advantage[player.id] or not advantage[player.id].startup then return end
+   display_line("hud_startup", string.format("%d", advantage[player.id].startup))
+
+   if advantage[player.id].connect_frame then
+      local hit_frame = advantage[player.id].hit_frame
+      display_line("hud_hit_frame", string.format("%d", hit_frame))
+      if advantage[player.id].state == frame_advantage.advantage_states.FINISHED then
+         local frame_adv = advantage[player.id].advantage
+
+         local sign = ""
+         if frame_adv > 0 then sign = "+" end
+
+         local color = colors.hud_text.default
+         if frame_adv < 0 then
+            color = colors.hud_text.failure
+         elseif frame_adv > 0 then
+            color = colors.hud_text.success
+         end
+
+         display_line("hud_advantage", string.format("%s%d", sign, frame_adv), color)
+      end
+   else
+      if advantage[player.id].hitbox_start_frame and advantage[player.id].hitbox_end_frame then
+         display_line("hud_active", string.format("%d", advantage[player.id].active_time))
+      end
+      display_line("hud_duration", string.format("%d", advantage[player.id].duration))
+   end
 end
 
 local function display_draw_distances(p1_object, p2_object, mid_distance_height, p1_reference_point, p2_reference_point)
@@ -1312,91 +1476,7 @@ local function please_wait_display()
    render_text(textx, texty, "please_wait")
 end
 
-local info_text_display_time = 90
-local info_text_fade_time = 30
-local info_text_state = {{data = {}, display_start_frame = 0}, {data = {}, display_start_frame = 0}}
-
-local function add_info_text(list, id)
-   info_text_state[id].data = list
-   info_text_state[id].display_start_frame = gamestate.frame_number
-end
-
-local function clear_info_text()
-   info_text_state = {{data = {}, display_start_frame = 0}, {data = {}, display_start_frame = 0}}
-end
-
-local function info_text_display()
-   for id = 1, 2 do
-      local elapsed = gamestate.frame_number - info_text_state[id].display_start_frame
-      if elapsed <= info_text_display_time + info_text_fade_time then
-         local opacity = 1
-         if elapsed > info_text_display_time then
-            opacity = 1 - ((elapsed - info_text_display_time) / info_text_fade_time)
-         end
-         local padding_x = 4
-         local input_history_offset = 34
-         local text_max_width = 50
-         local text_max_height = 0
-         local y = 50
-         local spacing_y = 1
-
-         for _, data in ipairs(info_text_state[id].data) do
-            local width, height = 0, 0
-            if type(data) == "table" then
-               width, height = get_text_dimensions_multiple(data)
-            else
-               width, height = get_text_dimensions(data)
-            end
-            if width > text_max_width then text_max_width = width end
-            if height > text_max_height then text_max_height = height end
-         end
-
-         local x = padding_x
-
-         if id == 2 then
-            x = draw.SCREEN_WIDTH - padding_x
-            if settings.training.display_input_history == 3 or settings.training.display_input_history == 4 then
-               x = x - input_history_offset
-            end
-         else
-            if settings.training.display_input_history == 2 or settings.training.display_input_history == 4 then
-               x = x + input_history_offset
-            end
-         end
-
-         if id == 2 then x = x - text_max_width end
-
-         for _, data in ipairs(info_text_state[id].data) do
-            if type(data) == "table" then
-               render_text_multiple(x, y, data, nil, nil, nil, opacity)
-            else
-               render_text(x, y, data, nil, nil, nil, opacity)
-            end
-            y = y + text_max_height + spacing_y
-         end
-      end
-   end
-end
-
-local score_text
-local function add_score_text(str) score_text = str end
-
-local function clear_score_text() score_text = nil end
-local function score_text_display()
-   if score_text then
-      local padding_x = 10
-      local x, y = padding_x, 50
-
-      local input_history_offset = 34
-
-      if settings.training.display_input_history == 2 or settings.training.display_input_history == 4 then
-         x = x + input_history_offset
-      end
-      render_text(x, y, score_text, "score", nil, colors.score.plus)
-   end
-end
-
-local show_player_position = true
+local show_player_position = false
 local function player_position_display()
    local x, y = draw.game_to_screen_space(gamestate.P1.pos_x, gamestate.P1.pos_y)
    gui.image(x - 4, y, images.img_dir_small[8])
@@ -1426,7 +1506,6 @@ end
 
 local function draw_hud(player, dummy)
    if settings.training.display_attack_range ~= 1 then attack_range_display() end
-
    if settings.training.display_hitboxes then hitboxes_display() end
 
    last_hit_bars_display()
@@ -1437,9 +1516,7 @@ local function draw_hud(player, dummy)
       stun_timer_display(player)
       stun_timer_display(dummy)
    end
-   if settings.training.display_parry then
-      parry_gauge_display(player.other) -- debug
-   end
+   if settings.training.display_parry then parry_gauge_display(player) end
    if settings.training.display_charge then
       charge_display(player)
       denjin_display(player)
@@ -1461,6 +1538,9 @@ local function draw_hud(player, dummy)
       bonuses_display(player)
       bonuses_display(dummy)
    end
+
+   frame_advantage_display(player, frame_advantage.advantage)
+
    if settings.training.display_distances then
       display_draw_distances(gamestate.P1, gamestate.P2, settings.training.mid_distance_height,
                              settings.training.p1_distances_reference_point,
@@ -1488,6 +1568,7 @@ return {
    add_player_label = add_player_label,
    update_blocking_direction = update_blocking_direction,
    show_please_wait_display = show_please_wait_display,
+   display_frame_advantage_numbers = display_frame_advantage_numbers,
    add_info_text = add_info_text,
    clear_info_text = clear_info_text,
    add_fading_text = add_fading_text,

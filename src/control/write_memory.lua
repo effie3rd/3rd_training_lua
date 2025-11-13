@@ -52,6 +52,31 @@ local function write_velocity(obj, x, y)
    write_velocity_y(obj, y)
 end
 
+local function write_acceleration_x(obj, x)
+   local x_char = math.floor(x)
+   local x_mantissa = tools.float_to_byte(x)
+   memory.writeword(obj.base + 0x64 + 32, x_char)
+   memory.writebyte(obj.base + 0x64 + 34, x_mantissa)
+   obj.acceleration_x = x
+   obj.acceleration_x_char = x_char
+   obj.acceleration_x_mantissa = x_mantissa
+end
+
+local function write_acceleration_y(obj, y)
+   local y_char = math.floor(y)
+   local y_mantissa = tools.float_to_byte(y)
+   memory.writeword(obj.base + 0x64 + 36, y_char)
+   memory.writebyte(obj.base + 0x64 + 38, y_mantissa)
+   obj.acceleration_y = y
+   obj.acceleration_y_char = y_char
+   obj.acceleration_y_mantissa = y_mantissa
+end
+
+local function write_acceleration(obj, x, y)
+   write_acceleration_x(obj, x)
+   write_acceleration_y(obj, y)
+end
+
 local function write_flip_x(obj, v)
    memory.writebyte(obj.base + 0x0A, v)
 end
@@ -180,6 +205,10 @@ local function reset_parry_cooldowns(player)
    memory.writebyte(player.addresses.parry_down_cooldown_time, 0)
    memory.writebyte(player.addresses.parry_air_cooldown_time, 0)
    memory.writebyte(player.addresses.parry_antiair_cooldown_time, 0)
+   player.parry_forward.cooldown_time = 0
+   player.parry_down.cooldown_time = 0
+   player.parry_air.cooldown_time = 0
+   player.parry_antiair.cooldown_time = 0
 end
 
 local function set_freeze_game(yes)
@@ -201,6 +230,9 @@ return {
    write_velocity_x = write_velocity_x,
    write_velocity_y = write_velocity_y,
    write_velocity = write_velocity,
+   write_acceleration_x = write_acceleration_x,
+   write_acceleration_y = write_acceleration_y,
+   write_acceleration = write_acceleration,
    write_flip_x = write_flip_x,
    write_life = write_life,
    write_meter = write_meter,

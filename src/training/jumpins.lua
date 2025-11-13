@@ -163,7 +163,7 @@ end
 
 local function change_attack_delay_edit_mode()
    attack_delay_edit_mode = attack_delay_edit_mode % 2 + 1
-   if attack_delay_edit_index == 1 then attack_delay_edit_index = 1 end
+   if attack_delay_edit_mode == 1 then attack_delay_edit_index = 1 end
    current_jump_settings.attack_delay_mode = attack_delay_edit_mode
    return attack_delay_edit_mode
 end
@@ -270,9 +270,9 @@ local function simulate_jump(player, start_x, first_jump_name, second_jump_name,
       add_jump_arc(jump_arc, player, input_state.player_line, input_state.player_motion_data)
 
       local first_jump_sim_time = max_sim_time
-      if second_jump_name then
+      if second_jump_name and second_jump_name ~= "none" then
          first_jump_sim_time = second_jump_delay - 1
-      elseif attack_name then
+      elseif attack_name and attack_name ~= "none" then
          first_jump_sim_time = attack_delay - #attack_input - #startup_fdata.frames
       end
       local jump_startup_length = #startup_fdata.frames
@@ -636,7 +636,6 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
       end
       second_jump_timer = Delay:new(second_jump_delay - second_jump_input_length)
    end
-
    local command = {
       {
          condition = nil,
@@ -671,7 +670,7 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
       table.insert(command, second_jump)
    end
    if is_target_combo then
-      local input_delay = Delay:new(2)
+      local input_delay = Delay:new(3)
       local target_combo = {
          {
             condition = function() return attack_timer:is_complete() end,
@@ -731,7 +730,7 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
       local is_throw = false
       local is_option_select = false
       local throw_hit_frame = 3
-      
+
       if followup.type == 2 then
          if followup_data.button == "LP+LK" or followup.motion == 15 then
             is_throw = true
@@ -778,20 +777,19 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
                                                                    true)) and
                        (not is_option_select or advanced_control.is_idle_timing(player.other, 1 - followup_delay, true))
          end,
-         action = function() queue_input_sequence_and_wait(player, followup_input)
+         action = function()
+            queue_input_sequence_and_wait(player, followup_input)
             if should_display_info then
                local elapsed = gamestate.frame_number - delay_timer
                local label_text = {followup_name, " ", elapsed, "hud_f", " ", "hud_after"}
                if followup.type == 2 and followup_data.button ~= "none" then
                   table.insert(label_text, 2, followup_data.button)
-                  if require("src.settings").language == "en" then
-                     table.insert(label_text, 2, " ")
-                  end
+                  if require("src.settings").language == "en" then table.insert(label_text, 2, " ") end
                end
                table.insert(info_labels, label_text)
                delay_timer = gamestate.frame_number
             end
-          end
+         end
       }
       table.insert(command, followup_command)
    end
@@ -861,9 +859,10 @@ end
 local function begin_edit(settings, jump_settings)
    if not is_active then
       init()
-      training.toggle_swap_characters()
    end
    is_active = true
+   if training.dummy ~= jumpins_player then training.toggle_swap_characters() end
+   require("src.control.recording").set_recording_state(inputs.input, 1)
    load_settings(settings)
    load_jump(jump_settings)
    inputs.block_input(1, "all")
@@ -879,7 +878,7 @@ end
 
 local function end_edit()
    is_active = false
-   training.toggle_swap_characters()
+   training.reset_swap_characters()
    inputs.unblock_input(1)
    inputs.unblock_input(2)
    dummy_control.disable_update("pose", false)
@@ -893,6 +892,7 @@ local function start(settings)
    is_active = true
    inputs.unblock_input(1)
    inputs.unblock_input(2)
+   require("src.control.recording").set_recording_state(inputs.input, 1)
    load_settings(settings)
    load_all_jumps(settings, jumpins_dummy)
    mode = modes.RUN
@@ -917,6 +917,10 @@ local function stop()
       advanced_control.clear_all()
       hud.unregister_draw(jumpins_display)
       hud.clear_info_text()
+      if mode == modes.EDIT then
+         end_edit()
+         require("src.ui.menu").close_menu()
+      end
    end
 end
 

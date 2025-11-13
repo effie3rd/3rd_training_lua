@@ -17,6 +17,7 @@ local function queue_input_sequence(player, sequence, offset, overwrite, allow_b
    if player.pending_input_sequence ~= nil and not overwrite then return end
 
    local seq = {}
+   seq.id = sequence
    seq.sequence = copytable(sequence)
    seq.current_frame = math.min(1 - offset, #seq.sequence)
    seq.allow_blocking = false or allow_blocking

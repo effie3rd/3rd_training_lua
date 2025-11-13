@@ -1,5 +1,5 @@
 -- debug options
-local developer_mode = true
+local developer_mode = false
 local recording_framedata = false
 local debug_hitboxes = false and developer_mode
 local assert_enabled = developer_mode
@@ -22,7 +22,7 @@ local player_debug_variables = {
 
 local show_dump_state_display = false
 local show_debug_frames_display = false
-local show_debug_variables_display = true
+local show_debug_variables_display = false
 local show_memory_view_display = false
 local show_memory_results_display = true
 

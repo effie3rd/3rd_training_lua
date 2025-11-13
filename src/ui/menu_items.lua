@@ -711,6 +711,7 @@ function Slider_Menu_Item:left()
    local val = self.points[self.point_index]
    table.sort(self.points)
    self.point_index = tools.table_indexof(self.points, val) or 1
+   if self.on_change then self.on_change() end
 end
 
 function Slider_Menu_Item:right()
@@ -735,6 +736,7 @@ function Slider_Menu_Item:right()
    local val = self.points[self.point_index]
    table.sort(self.points)
    self.point_index = tools.table_indexof(self.points, val) or 1
+   if self.on_change then self.on_change() end
 end
 
 function Slider_Menu_Item:validate(input)
@@ -1601,7 +1603,9 @@ end
 function Label_Menu_Item:draw(x, y)
    local color = text.inactive_color
    local size
-   self.text_list[self.index] = self.object[self.property]
+   if self.index > 0 then
+      self.text_list[self.index] = self.object[self.property]
+   end
    if self.small and settings.language == "jp" then size = 8 end
    render_text_multiple(x, y, self.text_list, nil, size, color)
 end

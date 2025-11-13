@@ -32,14 +32,17 @@ local function get_followup_data(char_str) return defense_data[char_str].followu
 
 local function get_followup_followup_names(char_str, i) return defense_data[char_str].followup_followup_names[i] end
 
+local function reset_followups(settings, char_str)
+   local setups_object = settings.special_training.defense.characters[char_str].setups
+   for i, setup in ipairs(setups_object) do setups_object[i] = true end
+   local followups_object = settings.special_training.defense.characters[char_str].followups
+   for i, followups in ipairs(followups_object) do for j, followup in ipairs(followups) do followups[j] = true end end
+end
+
 local function reset_weights(char_str)
-   for _, setup in ipairs(defense_data[char_str].setups) do
-      setup.weight = setup.default_weight
-   end
+   for _, setup in ipairs(defense_data[char_str].setups) do setup.weight = setup.default_weight end
    for _, followup_list in ipairs(defense_data[char_str].followups) do
-      for _, followup in ipairs(followup_list.list) do
-         followup.weight = followup.default_weight
-      end
+      for _, followup in ipairs(followup_list.list) do followup.weight = followup.default_weight end
    end
 end
 
@@ -56,6 +59,7 @@ return {
    get_followup_names = get_followup_names,
    get_followup_data = get_followup_data,
    get_followup_followup_names = get_followup_followup_names,
+   reset_followups = reset_followups,
    reset_weights = reset_weights,
    get_defense_data = get_defense_data
 }

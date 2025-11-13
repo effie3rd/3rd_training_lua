@@ -86,6 +86,7 @@ local function load_text_images_async()
       for k in pairs(image_map_json_data) do keys[#keys + 1] = k end
       for i = 1, #keys do
          local code = keys[i]
+
          load_text_image(image_map_json_data[code], code)
          n_im_loaded_this_frame = n_im_loaded_this_frame + 1
          if n_im_loaded_this_frame >= n_im_chunks_per_frame then
@@ -106,6 +107,7 @@ local function load_frame_data_async()
    load_timer:reset()
    repeat
       local size = reader:get_length()
+      if not size then break end
       if load_rate * (frame_time - load_timer:elapsed()) < size then
          coroutine.yield(n_loaded_this_frame)
          load_timer:reset()
@@ -179,7 +181,7 @@ local function convert_strings_to_numbers(tbl)
 end
 
 -- load character select items first so they can be displayed at run
-load_text_images("images/menu/load_first.json")
+load_text_images("data/load_first.json")
 
 colors.themes = tools.read_object_from_json_file(settings.themes_path)
 convert_strings_to_numbers(colors.themes)

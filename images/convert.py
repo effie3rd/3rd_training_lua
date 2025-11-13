@@ -12,8 +12,8 @@ base_path = "images/menu/"
 colors = {
     "white": "white"
     }
-with open("../data/image_map.json") as f:
-    data = json.load(f)
+
+data = {}
 with open("../data/utf.json") as f:
     utf = json.load(f)
 

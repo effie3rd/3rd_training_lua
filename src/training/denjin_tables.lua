@@ -81,3 +81,20 @@ local mash_directions_serious = {
 local mash_directions_fastest = {{"down", "forward"}, {"down", "back"}}
 local mash_directions = mash_directions_fastest
 local mash_buttons = {"MP", "HP", "LK", "MK", "HK"}
+
+local p_buttons = {"MP", "HP"}
+local mash_directions_normal = {
+   {"down", "forward"}, {"down"}, {"down", "back"}, {"back"}, {"up", "back"}, {"up"}, {"up", "forward"}, {"forward"}
+}
+
+local function queue_denjin(player, n)
+   local sequence = move_data.get_move_inputs_by_name("ryu", "denjin_hadouken")
+   for i = 1, 50 do table.insert(sequence, {}) end
+   for i = 1, n do
+      local move_inputs = copytable(mash_directions_normal[(i - 1) % #mash_directions_normal + 1])
+      table.insert(move_inputs, "LP")
+      table.insert(move_inputs, p_buttons[i % 2 + 1])
+      table.insert(sequence, move_inputs)
+   end
+   inputs.queue_input_sequence(player, sequence)
+end

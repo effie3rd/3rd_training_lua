@@ -344,6 +344,7 @@ local draw = {
    SCREEN_HEIGHT = SCREEN_HEIGHT,
    GROUND_OFFSET = GROUND_OFFSET,
    controller_styles = controller_styles,
+   controller_style_menu_names = image_tables.controller_style_menu_names,
    game_to_screen_space_x = game_to_screen_space_x,
    game_to_screen_space_y = game_to_screen_space_y,
    game_to_screen_space = game_to_screen_space,

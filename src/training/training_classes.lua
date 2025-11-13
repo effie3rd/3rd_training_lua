@@ -1,4 +1,4 @@
-local Action_Type = {ACTION = 1, WALK_FORWARD = 2, WALK_BACKWARD = 3, PARRY = 4, BLOCK = 5, ATTACK = 6, THROW = 7, REACT = 8, PUNISH = 9}
+local Action_Type = {ACTION = 1, WALK_FORWARD = 2, WALK_BACKWARD = 3, PARRY = 4, BLOCK = 5, ATTACK = 6, THROW = 7, REACT = 8, PUNISH = 9, FORWARD_DASH = 10, BACK_DASH = 11}
 local Setup_Type = {HARD = 1, SOFT = 2}
 
 local Setup = {}

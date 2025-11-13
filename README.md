@@ -1,12 +1,15 @@
 # effie's 3rd training lua
 
+[日本語](https://github.com/effie3rd/3rd_training_lua/blob/main/README.jp.md)
+[Installation](#Installation)
+
 ### Main Features
-  - Prediction system completely rewritten
+  - Blocking system completely rewritten
   - Framedata model improved and re-recorded from scratch
   - Special training modes
   - Several new options and displays
   - UI redesign
-  
+   
 ### Prediction
   - Now uses subpixel positions and velocity based movement for everything.
   - Able to parry unblockables, tengu stones, and other nonsense
@@ -43,42 +46,36 @@
     - Tweaked follow player code
     - Compact display for parry display
     - 360/720 and Denjin displays added
+  - Animated frame advantage numbers
   
 ### Special Training Modes
   - Defense
   - Jump Ins
   - Footsies
   - Unblockables
-  - Denjin
   - Geneijin
   
 ### Miscellaneous
   - Load time improvements: Frame data now loads asynchronously once the game starts; the game window now pops up half a second faster.
   - Random Character Select
   - Force Stage Select
+  - Tweaked life/meter/stun refill
   - Fixed an issue regarding recording replay consistency. (Screen darkening sometimes occurs 1 frame later, desynchronizing the playback)
   - Stun value displayed in attack data now reflects the amount of stun the opponent recovered during the attack.
-  
-### Challenge
-  - Work in progress
+  - Frame advantage calculation now accounts for player movement. (Accurate frame advantage after setups)
   
 ### Technical Stuff
   - Refactored
   - Added memory addresses
-    - Velocity
-    - Acceleration
-    - Stun state, fractional stun value
-    - Graphics mode
-    - 360 charge (P1+P2)
-    - Air timer (P1+P2)
-    - Denjin charge (P1+P2)
+    - velocity, acceleration, stun state, fractional stun value, graphics mode, 360 charge, air timer, timed sa state, denjin state, tengu state, hit with move type, received hit type/strength, parry state, etc.
   - Framedata now uses the following fields:
-    - animation level: name, frames, hit_frames, idle_frames, loops, pushback, advantage, uses_velocity, air, infinite_loop, max_hits, cooldown, self_chain, exceptions
-    - frame level: hash, boxes, movement, velocity, acceleration, loop, next_anim, optional_anim, wakeup, bypass_freeze
+    - animation level: name, frames, hit_frames, idle_frames, loops, pushback, advantage, uses_velocity, air, infinite_loop, max_hits, cooldown, self_chain, exceptions, landing_height
+    - frame level: hash, boxes, movement, velocity, acceleration, loop, next_anim, optional_anim, wakeup, bypass_freeze, projectile, ignore_motion
   - Character Select - Made selection of bosses consistent. Added option to disable selecting bosses and ability to force character selection
   - Updated debug menu
 
 ### Bug Fixes
+  - Fixed detection of connected hits/projectiles
   - Blocking of multi-hit attacks and supers
   - The same move performed in frame perfect succession was not blocked
   - Jumping attacks that hit behind a cornered opponent were not blocked
@@ -86,3 +83,7 @@
 
 ### Notes
   - Dummy blocking is imperfect, so if you absolutely need something parried then enable the auto parrying option. Be aware that it might parry things that are normally impossible to parry.
+  
+### Installation
+  - Fightcade
+<table><tr><td> Paste files into 'fbneo-training-mode' directory, overwriting all files. Click "Training" from fightcade menu to run. </td></tr></table>

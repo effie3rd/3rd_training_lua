@@ -171,6 +171,12 @@ local function table_contains_property(tbl, prop, value)
    return false
 end
 
+local function count_keys(tbl)
+   local n = 0
+   for _, obj in pairs(tbl) do n = n + 1 end
+   return n
+end
+
 local function deep_equal(a, b, visited)
    if a == b then return true end
    if type(a) ~= "table" or type(b) ~= "table" then return false end
@@ -212,7 +218,11 @@ local function deepcopy(orig, copies)
    return copy
 end
 
-local function clear_table(tbl) for k in pairs(tbl) do tbl[k] = nil end end
+local function clear_table(tbl)
+   local to_remove = {}
+   for k in pairs(tbl) do table.insert(to_remove, k) end
+   for _, key in ipairs(to_remove) do tbl[key] = nil end
+end
 
 local function combine_arrays(a, b)
    local combined = {}
@@ -281,6 +291,94 @@ local function get_boxes_highest_position(boxes, types)
    end
    return 0
 end
+
+local function test_collision(defender_x, defender_y, defender_flip_x, defender_boxes, attacker_x, attacker_y,
+                              attacker_flip_x, attacker_boxes, box_type_matches, defender_hurtbox_dilation_x,
+                              defender_hurtbox_dilation_y, attacker_hitbox_dilation_x, attacker_hitbox_dilation_y)
+   if (defender_hurtbox_dilation_x == nil) then defender_hurtbox_dilation_x = 0 end
+   if (defender_hurtbox_dilation_y == nil) then defender_hurtbox_dilation_y = 0 end
+   if (attacker_hitbox_dilation_x == nil) then attacker_hitbox_dilation_x = 0 end
+   if (attacker_hitbox_dilation_y == nil) then attacker_hitbox_dilation_y = 0 end
+   if (box_type_matches == nil) then box_type_matches = {{{"vulnerability", "ext. vulnerability"}, {"attack"}}} end
+
+   if (#box_type_matches == 0) then return false end
+   if (#defender_boxes == 0) then return false end
+   if (#attacker_boxes == 0) then return false end
+
+   defender_x = defender_x
+   defender_y = defender_y
+   attacker_x = attacker_x
+   attacker_y = attacker_y
+
+   for k = 1, #box_type_matches do
+      local box_type_match = box_type_matches[k]
+      for i = 1, #defender_boxes do
+         local d_box = format_box(defender_boxes[i])
+
+         local defender_box_match = false
+         for _, value in ipairs(box_type_match[1]) do
+            if value == d_box.type then
+               defender_box_match = true
+               break
+            end
+         end
+         if defender_box_match then
+            -- compute defender box bounds
+            local d_l
+            if defender_flip_x == 0 then
+               d_l = defender_x + d_box.left
+            else
+               d_l = defender_x - d_box.left - d_box.width
+            end
+            local d_r = d_l + d_box.width
+            local d_b = defender_y + d_box.bottom
+            local d_t = d_b + d_box.height
+
+            d_l = d_l - defender_hurtbox_dilation_x
+            d_r = d_r + defender_hurtbox_dilation_x
+            d_b = d_b - defender_hurtbox_dilation_y
+            d_t = d_t + defender_hurtbox_dilation_y
+
+            for j = 1, #attacker_boxes do
+               local a_box = format_box(attacker_boxes[j])
+
+               local attacker_box_match = false
+               for _, value in ipairs(box_type_match[2]) do
+                  if value == a_box.type then
+                     attacker_box_match = true
+                     break
+                  end
+               end
+
+               if attacker_box_match then
+                  -- compute attacker box bounds
+                  local a_l
+                  if attacker_flip_x == 0 then
+                     a_l = attacker_x + a_box.left
+                  else
+                     a_l = attacker_x - a_box.left - a_box.width
+                  end
+                  local a_r = a_l + a_box.width
+                  local a_b = attacker_y + a_box.bottom
+                  local a_t = a_b + a_box.height
+
+                  a_l = a_l - attacker_hitbox_dilation_x
+                  a_r = a_r + attacker_hitbox_dilation_x
+                  a_b = a_b - attacker_hitbox_dilation_y
+                  a_t = a_t + attacker_hitbox_dilation_y
+
+                  -- check collision
+                  if (a_l < d_r) and (a_r > d_l) and (a_b < d_t) and (a_t > d_b) then
+                     return true end
+               end
+            end
+         end
+      end
+   end
+
+   return false
+end
+
 
 local function is_pressing_forward(player, input)
    if player.flip_x == 0 then
@@ -440,6 +538,22 @@ local function random_normal_range(min, max, mean, stddev)
    return clamp(val, min, max)
 end
 
+local function random_quadratic(min, max, center, strength)
+   center = center or 0.5 -- default to middle
+   strength = strength or 1 -- default moderate bias
+
+   local r = math.random()
+   local distance = r - center
+
+   local n_sign = distance >= 0 and 1 or -1
+   local transformed = center + n_sign * (math.abs(distance) ^ (1 + strength))
+
+   if transformed < 0 then transformed = 0 end
+   if transformed > 1 then transformed = 1 end
+
+   return min + transformed * (max - min)
+end
+
 local function wrap_index(i, num)
    if i > num then
       return 1
@@ -484,12 +598,14 @@ return {
    table_contains = table_contains,
    table_indexof = table_indexof,
    table_contains_property = table_contains_property,
+   count_keys = count_keys,
    deep_equal = deep_equal,
    table_contains_deep = table_contains_deep,
    deepcopy = deepcopy,
    clear_table = clear_table,
    combine_arrays = combine_arrays,
    float_to_byte = float_to_byte,
+   test_collision = test_collision,
    convert_box_types = convert_box_types,
    format_box = format_box,
    create_box = create_box,
@@ -507,6 +623,7 @@ return {
    enum = enum,
    select_weighted = select_weighted,
    random_normal_range = random_normal_range,
+   random_quadratic = random_quadratic,
    wrap_index = wrap_index,
    bound_index = bound_index,
    get_calling_module_name = get_calling_module_name

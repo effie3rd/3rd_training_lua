@@ -528,6 +528,13 @@ local function get_last_hit_frame(char_str, anim)
    return hf
 end
 
+local function get_last_hit_frame_by_name(char_str, name, button)
+   local hf = 0
+   local anim, fdata = find_frame_data_by_name(char_str, name, button)
+   if fdata and fdata.hit_frames then hf = fdata.hit_frames[#fdata.hit_frames][2] end
+   return hf
+end
+
 local function get_pushback_by_name(char_str, name, button, hit_id)
    local pb = 0
    hit_id = hit_id or 1
@@ -555,9 +562,7 @@ end
 
 local function get_hitboxes_by_name(char_str, name, button, frame)
    local anim, fdata = find_frame_data_by_name(char_str, name, button)
-   if anim then
-      return get_hitboxes(char_str, anim, frame)
-   end
+   if anim then return get_hitboxes(char_str, anim, frame) end
    return {}
 end
 
@@ -573,30 +578,37 @@ end
 local function get_hitbox_max_range(char_str, anim, hit_id)
    hit_id = hit_id or 1
    local fdata = frame_data[char_str][anim]
-   if fdata and fdata.hit_frames and fdata.hit_frames[hit_id] then
-      local total_movement = 0
-      local velocity = 0
-      local acceleration = 0
-      for i = 1, fdata.hit_frames[hit_id][2] + 1 do
-         velocity = velocity + acceleration
-         total_movement = total_movement + velocity
-         if fdata.frames[i].movement then total_movement = total_movement + fdata.frames[i].movement[1]  end
-         if fdata.frames[i].velocity then velocity = velocity + fdata.frames[i].velocity[1] end
-         if fdata.frames[i].acceleration then acceleration = acceleration + fdata.frames[i].acceleration[1] end
-      end
-      local farthest_box = 0
-      for i = fdata.hit_frames[hit_id][1] + 1, fdata.hit_frames[hit_id][2] + 1 do
-         if fdata.frames[i].boxes then
-            for _, box in pairs(fdata.frames[i].boxes) do
-               local b = tools.format_box(box)
-               if b.type == "attack" or b.type == "throw" then
-                  local dist = b.left * -1
-                  if dist > farthest_box then farthest_box = dist end
+   if fdata and fdata.hit_frames then
+      if hit_id == -1 then hit_id = #fdata.hit_frames end
+      if fdata.hit_frames[hit_id] then
+         local total_movement = 0
+         local velocity = 0
+         local acceleration = 0
+         for i = 1, fdata.hit_frames[hit_id][2] + 1 do
+            if not fdata.frames[i].ignore_motion then
+               total_movement = total_movement + velocity
+               velocity = velocity + acceleration
+            end
+            if fdata.frames[i].movement then total_movement = total_movement + fdata.frames[i].movement[1] end
+            if fdata.frames[i].velocity then velocity = velocity + fdata.frames[i].velocity[1] end
+            if fdata.frames[i].acceleration then
+               acceleration = acceleration + fdata.frames[i].acceleration[1]
+            end
+         end
+         local farthest_box = 0
+         for i = fdata.hit_frames[hit_id][1] + 1, fdata.hit_frames[hit_id][2] + 1 do
+            if fdata.frames[i].boxes then
+               for _, box in pairs(fdata.frames[i].boxes) do
+                  local b = tools.format_box(box)
+                  if b.type == "attack" or b.type == "throw" then
+                     local dist = b.left * -1
+                     if dist > farthest_box then farthest_box = dist end
+                  end
                end
             end
          end
+         return total_movement + farthest_box
       end
-      return total_movement + farthest_box
    end
    return 0
 end
@@ -629,6 +641,7 @@ return {
    get_first_hit_frame = get_first_hit_frame,
    get_next_hit_frame = get_next_hit_frame,
    get_last_hit_frame = get_last_hit_frame,
+   get_last_hit_frame_by_name = get_last_hit_frame_by_name,
    find_move_frame_data = find_move_frame_data,
    is_infinite_loop = is_infinite_loop,
    get_hitboxes_by_name = get_hitboxes_by_name,

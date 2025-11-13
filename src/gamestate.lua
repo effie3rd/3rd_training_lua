@@ -150,20 +150,11 @@ local function reset_player_objects()
    end
 end
 
+-- projectile connections handled in read_projectiles
 local function update_received_hits(player, other)
    if (player.just_received_connection or player.is_being_thrown) and not player.received_connection_is_projectile then
       player.last_received_connection_animation = other.animation
       player.last_received_connection_hit_id = math.max(other.current_hit_id, 1)
-   elseif frame_number - player.last_received_connection_frame == 1 then
-      for _, proj in pairs(projectiles) do
-         -- this will not detect tengu stones because their remaining_hits does not change
-         if proj.emitter_id == other.id and
-             (proj.previous_remaining_hits - proj.remaining_hits == 1 or proj.previous_remaining_hits -
-                 proj.remaining_hits == -255) then
-            player.last_received_connection_animation = proj.projectile_type
-            player.last_received_connection_hit_id = proj.remaining_hits -- could use max_hits - remaining if needed
-         end
-      end
    end
 end
 
@@ -210,12 +201,18 @@ local function get_additional_recovery_delay(char_str, crouching)
    return 0
 end
 
+local function get_side(player_x, other_x, player_previous_x, other_previous_x)
+   local diff = math.floor(player_x) - math.floor(other_x)
+   if diff == 0 then diff = math.floor(player_previous_x) - math.floor(other_previous_x) end
+   return diff > 0 and 2 or 1
+end
+
 local function get_parry_type(player)
    local player_airborne = player.posture >= 20 and player.posture <= 30
    local opponent_airborne = player.other.posture >= 20 and player.other.posture <= 30
    local parry_type = "ground"
 
-   if not player.received_connection_is_projectile then -- if other player connected, then attack is not a projectile
+   if not player.received_connection_is_projectile then
       if player_airborne then
          parry_type = "air"
       elseif opponent_airborne then
@@ -289,7 +286,7 @@ local function read_box(obj, ptr, type)
 
    local left = memory.readwordsigned(ptr + 0x0)
    local width = memory.readwordsigned(ptr + 0x2)
-   local bottom = memory.readwordsigned(ptr + 0x4) -- debug
+   local bottom = memory.readwordsigned(ptr + 0x4)
    local height = memory.readwordsigned(ptr + 0x6)
 
    local box = {tools.convert_box_types[type], bottom, height, left, width}
@@ -598,10 +595,6 @@ local function read_player_vars(player)
       player.throw_countdown = math.max(player.throw_countdown - 1, 0)
    end
 
-   if player.debug_freeze_frames and player.remaining_freeze_frames > 0 then
-      print(string.format("%d - %d remaining freeze frames", frame_number, player.remaining_freeze_frames))
-   end
-
    local previous_animation = player.animation or ""
    player.animation = bit.tohex(memory.readword(player.base + 0x202), 4)
 
@@ -640,7 +633,7 @@ local function read_player_vars(player)
       if player.previous_remaining_freeze_frames == 0 then
          player.freeze_just_began = true
       else
-         if not (player.animation_frame_data and not debug_settings.recording_framedata -- debug
+         if not (player.animation_frame_data and not debug_settings.recording_framedata
          and player.animation_frame_data.frames and player.animation_frame_data.frames[player.animation_frame + 1] and
              player.animation_frame_data.frames[player.animation_frame + 1].bypass_freeze) then
             player.animation_freeze_frames = player.animation_freeze_frames + 1
@@ -683,7 +676,7 @@ local function read_player_vars(player)
    if player.has_animation_just_changed then reset_animation() end
 
    -- self chain. cr. lk chains, etc
-   if not debug_settings.recording_framedata then ---debug
+   if not debug_settings.recording_framedata then
       if player.animation_frame_data and not player.has_animation_just_changed and
           player.animation_frame_data.self_chain and player.animation_frame > 2 and
           (player.has_just_attacked or (player.previous_input_capacity > 0 and player.input_capacity == 0)) then
@@ -754,9 +747,8 @@ local function read_player_vars(player)
       end
    end
 
-   local previous_received_connection_marker = player.received_connection_marker or 0
    player.received_connection_marker = memory.readword(player.addresses.received_connection_marker)
-   player.just_received_connection = previous_received_connection_marker == 0 and player.received_connection_marker ~= 0
+   player.just_received_connection = player.received_connection_marker ~= 0
    player.received_connection_type = memory.readbyte(player.addresses.received_connection_type)
    player.received_connection_is_projectile = player.received_connection_type == 2 or player.received_connection_type ==
                                                   4
@@ -774,7 +766,7 @@ local function read_player_vars(player)
        (player.just_received_connection and player.other.animation == "baac" and player.received_connection_marker ==
            0xFFF1 and total_received_hit_count_diff == 0 and (player.action == 30 or player.action == 31)) then -- chun st.HP bug
       player.has_just_blocked = true
-      log(player.prefix, "fight", "block")
+      
       if debug_state_variables then print(string.format("%d - %s blocked", frame_number, player.prefix)) end
    end
    local previous_is_blocking = player.is_blocking
@@ -792,7 +784,7 @@ local function read_player_vars(player)
 
    if total_received_hit_count_diff > 0 then
       player.has_just_been_hit = true
-      log(player.prefix, "fight", "hit")
+      
    end
 
    player.has_just_parried = false
@@ -801,7 +793,7 @@ local function read_player_vars(player)
        0 then
       player.has_just_parried = true
       if player.other.animation == "baac" and player.action ~= 23 then player.has_just_parried = false end -- chun st.HP bug
-      log(player.prefix, "fight", "parry")
+      
       if debug_state_variables then print(string.format("%d - %s parried", frame_number, player.prefix)) end
    end
 
@@ -816,7 +808,7 @@ local function read_player_vars(player)
    player.hit_count = memory.readbyte(player.addresses.hit_count)
    player.has_just_hit = player.hit_count > previous_hit_count
    if player.has_just_hit then
-      log(player.prefix, "fight", "has hit")
+      
       if debug_state_variables then
          print(string.format("%d - %s hit (%d > %d)", frame_number, player.prefix, previous_hit_count, player.hit_count))
       end
@@ -906,11 +898,9 @@ local function read_player_vars(player)
    player.has_just_entered_air_recovery = not previous_is_in_air_recovery and player.is_in_air_recovery
 
    if not previous_is_in_air_recovery and player.is_in_air_recovery then
-      log(player.prefix, "fight", string.format("air recovery 1"))
       if debug_air_recovery then print(string.format("%s entered air recovery", player.prefix)) end
    end
    if previous_is_in_air_recovery and not player.is_in_air_recovery then
-      log(player.prefix, "fight", string.format("air recovery 0"))
       if debug_air_recovery then print(string.format("%s exited air recovery", player.prefix)) end
    end
 
@@ -932,12 +922,7 @@ local function read_player_vars(player)
       player.idle_time = 0
    end
 
-   if previous_is_idle ~= player.is_idle then
-      log(player.prefix, "fight", string.format("idle %d", tools.to_bit(player.is_idle)))
-   end
-
    if is_in_match then
-
       -- WAKE UP
       player.previous_can_fast_wakeup = player.can_fast_wakeup or 0
       player.can_fast_wakeup = memory.readbyte(player.addresses.can_fast_wakeup)
@@ -969,10 +954,6 @@ local function read_player_vars(player)
       player.has_just_started_wake_up = not player.previous_is_wakingup and player.is_waking_up
       player.has_just_started_fast_wake_up = not player.previous_is_fast_wakingup and player.is_fast_wakingup
       player.has_just_woke_up = player.previous_is_wakingup and not player.is_waking_up
-
-      if player.has_just_started_wake_up then log(player.prefix, "fight", string.format("wakeup 1")) end
-      if player.has_just_started_fast_wake_up then log(player.prefix, "fight", string.format("fwakeup 1")) end
-      if player.has_just_woke_up then log(player.prefix, "fight", string.format("wakeup 0")) end
    end
 
    if not previous_is_in_jump_startup and player.is_in_jump_startup then
@@ -1008,7 +989,6 @@ local function read_player_vars(player)
          parry_object.delta = nil
          parry_object.success = nil
          parry_object.armed = true
-         log(player.prefix, "parry_training_" .. parry_object.name, "armed")
       end
 
       -- check success/miss
@@ -1023,7 +1003,7 @@ local function read_player_vars(player)
                parry_object.success = true
                parry_object.armed = false
                parry_object.last_hit_or_block_frame = 0
-               log(player.prefix, "parry_training_" .. parry_object.name, "success")
+               -- log(player.prefix, "parry_training_" .. parry_object.name, "success")
             elseif parry_object.last_validity_start_frame == frame_number - 1 and
                 (frame_number - parry_object.last_hit_or_block_frame) < 20 then
                local delta = parry_object.last_hit_or_block_frame - frame_number + 1
@@ -1031,21 +1011,21 @@ local function read_player_vars(player)
                   parry_object.delta = delta
                   parry_object.success = false
                end
-               log(player.prefix, "parry_training_" .. parry_object.name, "late")
+               -- log(player.prefix, "parry_training_" .. parry_object.name, "late")
             elseif player.has_just_blocked or player.has_just_been_hit then
                local delta = frame_number - parry_object.last_validity_start_frame
                if parry_object.delta == nil or math.abs(parry_object.delta) > math.abs(delta) then
                   parry_object.delta = delta
                   parry_object.success = false
                end
-               log(player.prefix, "parry_training_" .. parry_object.name, "early")
+               -- log(player.prefix, "parry_training_" .. parry_object.name, "early")
             end
          end
       end
       if frame_number - parry_object.last_validity_start_frame > 30 and parry_object.armed then
          parry_object.armed = false
          parry_object.last_hit_or_block_frame = 0
-         log(player.prefix, "parry_training_" .. parry_object.name, "reset")
+         -- log(player.prefix, "parry_training_" .. parry_object.name, "reset")
       end
    end
 
@@ -1389,13 +1369,43 @@ end
 
 -- oro's throw's and nichirin
 local tengu_stone_invalid_anim = {["72c8"] = true, ["7438"] = true}
+local tengu_hit_order = {[1] = 1, [2] = 3, [3] = 2}
+
+local function are_all_tengu_stones_idle(tengu_stones)
+   for _, stone in pairs(tengu_stones) do if stone.tengu_state ~= 2 then return false end end
+   return true
+end
+
+local function update_tengu_stone_order(tengu_stones)
+   local list = {}
+   for _, stone in pairs(tengu_stones) do table.insert(list, stone) end
+   table.sort(list, function(a, b) return a.pos_x < b.pos_x end)
+   for i = 1, #list do
+      if #list == 3 then
+         list[i].tengu_order = tengu_hit_order[i]
+      else
+         list[i].tengu_order = i
+      end
+   end
+end
 
 local function update_tengu_stones()
-   if not (P1 and P1.char_str == "oro" and P1.selected_sa == 3) and
-       not (P2 and P2.char_str == "oro" and P2.selected_sa == 3) then return end
+   if not (P1 and P1.char_str == "oro" and P1.selected_sa == 3 and P1.is_in_timed_sa) and
+       not (P2 and P2.char_str == "oro" and P2.selected_sa == 3 and P2.is_in_timed_sa) then return end
 
+   for _, player in ipairs(player_objects) do
+      if player.char_str == "oro" and player.selected_sa == 3 and player.superfreeze_just_ended then
+         player.tengu_stones = {}
+      end
+   end
+
+   local connected_stone
    for _, proj in pairs(projectiles) do
       if proj.projectile_type == "00_tenguishi" then
+         if not player_objects[proj.emitter_id].tengu_stones then
+            player_objects[proj.emitter_id].tengu_stones = {}
+         end
+         player_objects[proj.emitter_id].tengu_stones[proj.id] = proj
          proj.tengu_state = memory.readbyte(proj.base + 41)
          if proj.tengu_attack_queued then
             if proj.tengu_state == 3 then proj.tengu_attack_queued = false end
@@ -1406,11 +1416,24 @@ local function update_tengu_stones()
                proj.cooldown = 0
             end
          end
+         if proj.has_just_connected and proj.tengu_order then
+            if not connected_stone or proj.tengu_order < connected_stone.tengu_order then
+               if connected_stone then connected_stone.has_just_connected = false end
+               connected_stone = proj
+            end
+         end
       end
+   end
+   if connected_stone then
+      connected_stone.cooldown = 99
    end
 
    for _, player in ipairs(player_objects) do
-      if player.char_str == "oro" then
+      if player.char_str == "oro" and player.selected_sa == 3 and player.is_in_timed_sa and player.tengu_stones then
+         if player.superfreeze_just_ended or are_all_tengu_stones_idle(player.tengu_stones) then
+            update_tengu_stone_order(player.tengu_stones)
+         end
+
          if player.has_just_attacked and not tengu_stone_invalid_anim[player.animation] then
             local fdata = player.animation_frame_data
             if fdata then
@@ -1422,9 +1445,8 @@ local function update_tengu_stones()
          end
          if player.tengu_connect_frame and player.tengu_connect_frame > frame_number then
             local delta = player.tengu_connect_frame - frame_number
-            for _, proj in pairs(projectiles) do
-               if proj.emitter_id == player.id and proj.projectile_type == "00_tenguishi" and
-                   (proj.tengu_state == 1 or proj.tengu_state == 2) and not proj.tengu_attack_queued then
+            for _, proj in pairs(player.tengu_stones) do
+               if (proj.tengu_state == 1 or proj.tengu_state == 2) and not proj.tengu_attack_queued then
                   proj.cooldown = delta
                   proj.tengu_attack_queued = true
                end
@@ -1435,8 +1457,8 @@ local function update_tengu_stones()
 end
 
 local function update_seieienbu()
-   if not (P1 and P1.char_str == "yang" and P1.selected_sa == 3) and
-       not (P2 and P2.char_str == "yang" and P2.selected_sa == 3) then return end
+   if not (P1 and P1.char_str == "yang" and P1.selected_sa == 3 and P1.is_in_timed_sa) and
+       not (P2 and P2.char_str == "yang" and P2.selected_sa == 3 and P2.is_in_timed_sa) then return end
 
    for _, player in ipairs(player_objects) do
       if player.char_str == "yang" and player.is_in_timed_sa then
@@ -1496,8 +1518,33 @@ local function update_seieienbu()
          end
       end
    end
+   local to_remove = {}
+   for id, proj in pairs(projectiles) do
+      if proj.projectile_type == "seieienbu" and proj.has_just_connected then
+         for other_id, other_proj in pairs(projectiles) do
+            if proj.id == other_proj.id and proj.seiei_animation == other_proj.seiei_animation then
+               table.insert(to_remove, other_id)
+            end
+         end
+      end
+   end
+   for _, key in ipairs(to_remove) do projectiles[key] = nil end
 end
 
+local ex_yagyou_cooldowns = {
+   ["9ab7015800"] = 1,
+   ["9ab8015c00"] = 1,
+   ["9ab6015400"] = 2,
+   ["9ab5015000"] = 3,
+   ["9ab7012800"] = 3,
+   ["9ab1011000"] = 3,
+   ["9ab0010c00"] = 4,
+   ["9ab5012000"] = 5,
+   ["9ab3014800"] = 5,
+   ["9aae010400"] = 6,
+   ["9ae901c000"] = 6,
+   ["9af101e000"] = 6
+}
 local function update_projectile_cooldown(obj)
    local fdmeta = frame_data_meta["projectiles"][obj.projectile_type]
    if fdmeta then
@@ -1510,6 +1557,14 @@ local function update_projectile_cooldown(obj)
    end
    -- EX Aegis sometimes hits slow
    if obj.projectile_type == "68" and obj.animation_frame_hash == "5250024000" then obj.cooldown = 17 end
+   -- EX Yagyou is weird
+   if obj.projectile_type == "72" then
+      if ex_yagyou_cooldowns[obj.animation_frame_hash] then
+         obj.cooldown = ex_yagyou_cooldowns[obj.animation_frame_hash]
+      else
+         obj.cooldown = 7
+      end
+   end
 end
 
 local max_objects = 30
@@ -1585,7 +1640,9 @@ local function read_projectiles()
          if obj.remaining_freeze_frames > 0 then
             if obj.previous_remaining_freeze_frames == 0 then obj.freeze_just_began = true end
             obj.animation_freeze_frames = obj.animation_freeze_frames + 1
-         elseif obj.cooldown > 0 then
+         end
+         if obj.cooldown > 0 and
+             ((obj.remaining_freeze_frames == 0 or obj.freeze_just_began) or obj.projectile_type == "72") then
             obj.cooldown = obj.cooldown - 1
          end
 
@@ -1633,6 +1690,17 @@ local function read_projectiles()
          if obj.next_hit_at_lifetime then obj.cooldown = obj.remaining_lifetime - obj.next_hit_at_lifetime end
 
          obj.animation_frame = frame_number - obj.animation_start_frame - obj.animation_freeze_frames
+         obj.has_just_connected = false
+         if emitter.other.just_received_connection and emitter.other.received_connection_is_projectile and
+             (obj.cooldown <= 0 or obj.projectile_type == "72") then
+            if obj.freeze_just_began or obj.projectile_type == "72" then -- exception for EX yagyou
+               obj.has_just_connected = true
+               update_projectile_cooldown(obj)
+               obj.cooldown = obj.cooldown > 0 and (obj.cooldown + 1) or 0
+               emitter.other.last_received_connection_animation = obj.projectile_type
+               emitter.other.last_received_connection_hit_id = 1
+            end
+         end
 
          projectiles[obj.id] = obj
 
@@ -1674,12 +1742,13 @@ end
 
 local function remove_expired_projectiles()
    -- if a projectile is still expired, we remove it
+   local to_remove = {}
    for id, obj in pairs(projectiles) do
       if obj.expired then
-         log(player_objects[obj.emitter_id].prefix, "projectiles", string.format("projectile %s 0", id))
-         projectiles[id] = nil
+         table.insert(to_remove, id)
       end
    end
+   for _, key in ipairs(to_remove) do projectiles[key] = nil end
 end
 
 local function update_flip_input(player, other_player)
@@ -1720,6 +1789,7 @@ local gamestate = {
    is_standing_state = is_standing_state,
    is_crouching_state = is_crouching_state,
    is_ground_state = is_ground_state,
+   get_side = get_side,
    update_projectile_cooldown = update_projectile_cooldown
 }
 

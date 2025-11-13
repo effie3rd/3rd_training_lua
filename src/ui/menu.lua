@@ -20,11 +20,13 @@ local geneijin = require("src.training.geneijin")
 local geneijin_tables = require("src.training.geneijin_tables")
 local footsies = require("src.training.footsies")
 local footsies_tables = require("src.training.footsies_tables")
+local special_modes = require("src.special_modes")
 
 local is_initialized = false
 local is_open = false
 local disable_opening = false
 local open_after_match_start = false
+local allow_update_while_open = false
 
 local save_recording_settings = {save_file_name = "", load_file_list = {}, load_file_index = 1}
 
@@ -37,14 +39,15 @@ local save_recording_slot_popup, load_recording_slot_popup, controller_style_men
       parry_every_n_item, prefer_down_parry_item, hits_before_counter_attack, character_select_item,
       p1_distances_reference_point_item, p2_distances_reference_point_item, mid_distance_height_item,
       air_time_player_coloring_item, attack_range_display_max_item, attack_range_display_numbers_item,
-      attack_bars_show_decimal_item, display_hitboxes_opacity_item, language_item, play_challenge_item,
-      select_char_challenge_item, start_unblockables_item, unblockables_type_item, unblockables_followup_item
+      attack_bars_show_decimal_item, display_hitboxes_opacity_item, language_item, unblockables_start_item,
+      unblockables_type_item, unblockables_followup_item
 
 local main_menu, training_sub_menus, training_mode_item
 local defense_opponent_item, start_defense_item, defense_score_item, defense_setup_item, defense_character_select_item,
-      defense_learning_item
+      defense_learning_item, defense_reset_item
 local jumpins_edit, jumpins_training_tab, jumpins_edit_menu, jumpins_edit_settings, current_jump_settings
 local footsies_training_tab, geneijin_training_tab
+local challenge_tab
 local jumpins_edit_jump_index = 1
 
 local counter_attack_settings
@@ -71,7 +74,6 @@ local counter_attack_move_selection_data = {
 local jumpins_edit_move_selection_items = tools.deepcopy(counter_attack_move_selection_items)
 local jumpins_edit_move_selection_data = tools.deepcopy(counter_attack_move_selection_data)
 
-local special_training_modes = {defense, jumpins, footsies, unblockables, geneijin}
 local close_menu
 
 local function update_recording_items()
@@ -157,13 +159,14 @@ end
 local function update_counter_attack_items()
    if is_initialized and gamestate.is_in_match then
       counter_attack_settings = settings.training.counter_attack[training.dummy.char_str]
-      update_move_selection_items(counter_attack_move_selection_items, counter_attack_move_selection_data,
-                                  counter_attack_settings, training.dummy)
-      update_move_selection_data(counter_attack_move_selection_items, counter_attack_move_selection_data,
-                                 counter_attack_settings, training.dummy)
-      training.counter_attack_data = counter_attack_move_selection_data.move_input_data
-
-      main_menu:update_dimensions()
+      if counter_attack_settings then
+         update_move_selection_items(counter_attack_move_selection_items, counter_attack_move_selection_data,
+                                     counter_attack_settings, training.dummy)
+         update_move_selection_data(counter_attack_move_selection_items, counter_attack_move_selection_data,
+                                    counter_attack_settings, training.dummy)
+         training.counter_attack_data = counter_attack_move_selection_data.move_input_data
+         main_menu:update_dimensions()
+      end
    end
 end
 
@@ -245,14 +248,6 @@ local function change_jump_index(n)
    update_jumpins_edit_items()
 end
 
-local function defense_at_least_one_selected()
-   local opponent = defense_tables.opponents[settings.special_training.defense.opponent]
-   for _, setup in ipairs(settings.special_training.defense.characters[opponent].setups) do
-      if setup then return true end
-   end
-   return false
-end
-
 local defense_followup_check_box_grids = {}
 
 local function update_defense_items()
@@ -312,25 +307,30 @@ local function update_defense_items()
       i = i + 1
    end
    defense_sub_menu_entries[6 + i] = defense_learning_item
+   defense_sub_menu_entries[7 + i] = defense_reset_item
 end
 
 local function update_footsies_items()
-   footsies_tables.init(footsies.footsies_dummy.char_str)
-   local saved_player = settings.special_training.footsies.match_savestate_player
-   if saved_player ~= "" then footsies_training_tab.start_item.name = {"menu_start", "  (", "menu_" .. saved_player, ")"} end
-   local saved_dummy = settings.special_training.footsies.match_savestate_dummy
-   if saved_dummy == "" then saved_dummy = training.dummy.char_str end
-   footsies_training_tab.score_item.object = settings.special_training.footsies.characters[saved_dummy]
-   footsies_training_tab.walk_out_item.object = settings.special_training.footsies.characters[saved_dummy]
-   footsies_training_tab.moves_item.object = settings.special_training.footsies.characters[saved_dummy].moves
-   footsies_training_tab.moves_item.list = footsies_tables.get_menu_move_names()
+   if not jumpins.is_active then
+      footsies_tables.init(gamestate.P2.char_str)
+      footsies_training_tab.score_item.object = settings.special_training.footsies.characters[gamestate.P2.char_str]
+      footsies_training_tab.walk_out_item.object = settings.special_training.footsies.characters[gamestate.P2.char_str]
+      footsies_training_tab.moves_item.object = settings.special_training.footsies.characters[gamestate.P2.char_str]
+                                                    .moves
+      footsies_training_tab.moves_item.list = footsies_tables.get_menu_move_names()
+      footsies_training_tab.accuracy_item.points = settings.special_training.footsies.characters[gamestate.P2.char_str]
+                                                       .accuracy
+      footsies_training_tab.distance_judgement_item.points =
+          settings.special_training.footsies.characters[gamestate.P2.char_str].dist_judgement
+   end
 end
 
 local function update_geneijin_items()
-   if not settings.special_training.geneijin then settings.special_training.geneijin = geneijin_tables.create_settings() end
    geneijin_training_tab.moves_item.object = settings.special_training.geneijin.moves
    local saved_player = settings.special_training.geneijin.match_savestate_player
-   if saved_player ~= "" then geneijin_training_tab.start_item.name = {"menu_start", "  (", "menu_" .. saved_player, ")"} end
+   if saved_player ~= "" then
+      geneijin_training_tab.start_item.name = {"menu_start", "  (", "menu_" .. saved_player, ")"}
+   end
 end
 
 local function reset_unblockables_followup()
@@ -344,7 +344,7 @@ end
 local function update_unblockables_items()
    local should_reset_followup = false
    if settings.special_training.unblockables.character ~= "default" then
-      start_unblockables_item.name = {
+      unblockables_start_item.name = {
          "menu_start", "  (", "menu_" .. settings.special_training.unblockables.character, ")"
       }
    end
@@ -510,9 +510,11 @@ local function create_jumpins_edit_menu()
    end
    jumpins_edit.dummy_reset_offset_item.validate_function = function()
       jumpins_edit.dummy_reset_offset_item.mode = jumpins.change_dummy_offset_edit_mode()
+      update_jumpins_edit_items()
    end
    jumpins_edit.dummy_reset_offset_item.reset_function = function()
       jumpins_edit.dummy_reset_offset_item.point_index = jumpins.change_dummy_offset_edit_index()
+      update_jumpins_edit_items()
    end
    jumpins_edit.dummy_reset_offset_item.is_enabled = is_jump_selected
    jumpins_edit.dummy_reset_offset_item.is_unselectable = no_jump_selected
@@ -542,14 +544,18 @@ local function create_jumpins_edit_menu()
                                                                  jumpins_tables.get_menu_attack_names(), 1)
    jumpins_edit.attack_type_item.is_enabled = is_jump_selected
    jumpins_edit.attack_type_item.is_unselectable = no_jump_selected
+   jumpins_edit.attack_type_item.on_change = update_jumpins_edit_items
 
    jumpins_edit.attack_delay_item = menu_items.Slider_Menu_Item:new("menu_attack_delay", 40, {5, 5}, {5, 100})
    jumpins_edit.attack_delay_item.validate_function = function()
       jumpins_edit.attack_delay_item.mode = jumpins.change_attack_delay_edit_mode()
+      update_jumpins_edit_items()
    end
    jumpins_edit.attack_delay_item.reset_function = function()
       jumpins_edit.attack_delay_item.point_index = jumpins.change_attack_delay_edit_index()
+      update_jumpins_edit_items()
    end
+   jumpins_edit.attack_delay_item.on_change = update_jumpins_edit_items
    jumpins_edit.attack_delay_item.is_enabled = is_jump_selected
    jumpins_edit.attack_delay_item.is_unselectable = no_jump_selected
 
@@ -668,7 +674,8 @@ local function create_dummy_tab()
    parry_every_n_item.indent = true
    parry_every_n_item.is_visible = function() return settings.training.blocking_style == 3 end
 
-   prefer_down_parry_item = menu_items.On_Off_Menu_Item:new("prefer_down_parry", settings.training, "prefer_down_parry")
+   prefer_down_parry_item = menu_items.On_Off_Menu_Item:new("prefer_down_parry", settings.training, "prefer_down_parry",
+                                                            false)
    prefer_down_parry_item.indent = true
    prefer_down_parry_item.is_visible = function()
       return settings.training.blocking_style == 2 or settings.training.blocking_style == 3
@@ -783,8 +790,8 @@ local function create_recording_tab()
    return {
       header = menu_items.Header_Menu_Item:new("menu_title_recording"),
       entries = {
-         menu_items.On_Off_Menu_Item:new("auto_crop_first_frames", settings.training, "auto_crop_recording_start"),
-         menu_items.On_Off_Menu_Item:new("auto_crop_last_frames", settings.training, "auto_crop_recording_end"),
+         menu_items.On_Off_Menu_Item:new("auto_crop_first_frames", settings.training, "auto_crop_recording_start", false),
+         menu_items.On_Off_Menu_Item:new("auto_crop_last_frames", settings.training, "auto_crop_recording_end", false),
          menu_items.List_Menu_Item:new("replay_mode", settings.training, "replay_mode", menu_tables.slot_replay_mode),
          menu_items.Integer_Menu_Item:new("menu_slot", settings.training, "current_recording_slot", 1,
                                           recording.recording_slot_count, true, 1, 1, 10,
@@ -806,20 +813,21 @@ end
 
 local function create_display_tab()
    controller_style_menu_item = menu_items.Controller_Style_Item:new("controller_style", settings.training,
-                                                                     "controller_style", draw.controller_styles)
+                                                                     "controller_style",
+                                                                     draw.controller_style_menu_names)
    controller_style_menu_item.is_visible = function()
       return settings.training.display_input or settings.training.display_input_history ~= 1
    end
 
    attack_bars_show_decimal_item = menu_items.On_Off_Menu_Item:new("show_decimal", settings.training,
-                                                                   "attack_bars_show_decimal")
+                                                                   "attack_bars_show_decimal", false)
    attack_bars_show_decimal_item.indent = true
    attack_bars_show_decimal_item.is_visible = function() return settings.training.display_attack_bars > 1 end
 
    display_hitboxes_opacity_item = menu_items.Integer_Menu_Item:new("display_hitboxes_opacity", settings.training,
                                                                     "display_hitboxes_opacity", 5, 100, false, 100, 5)
    display_hitboxes_opacity_item.indent = true
-   display_hitboxes_opacity_item.is_visible = function() return settings.training.display_hitboxes end
+   display_hitboxes_opacity_item.is_visible = function() return settings.training.display_hitboxes > 1 end
 
    mid_distance_height_item = menu_items.Integer_Menu_Item:new("mid_distance_height", settings.training,
                                                                "mid_distance_height", 0, 200, false, 10)
@@ -839,27 +847,28 @@ local function create_display_tab()
    p2_distances_reference_point_item.is_visible = function() return settings.training.display_distances end
 
    air_time_player_coloring_item = menu_items.On_Off_Menu_Item:new("display_air_time_player_coloring",
-                                                                   settings.training, "display_air_time_player_coloring")
+                                                                   settings.training,
+                                                                   "display_air_time_player_coloring", false)
    air_time_player_coloring_item.indent = true
    air_time_player_coloring_item.is_visible = function() return settings.training.display_air_time end
 
    charge_overcharge_on_item = menu_items.On_Off_Menu_Item:new("display_overcharge", settings.training,
-                                                               "charge_overcharge_on")
+                                                               "charge_overcharge_on", false)
    charge_overcharge_on_item.indent = true
    charge_overcharge_on_item.is_visible = function() return settings.training.display_charge end
 
    charge_follow_player_item = menu_items.On_Off_Menu_Item:new("menu_follow_player", settings.training,
-                                                               "charge_follow_player")
+                                                               "charge_follow_player", false)
    charge_follow_player_item.indent = true
    charge_follow_player_item.is_visible = function() return settings.training.display_charge end
 
    parry_follow_player_item = menu_items.On_Off_Menu_Item:new("menu_follow_player", settings.training,
-                                                              "parry_follow_player")
+                                                              "parry_follow_player", false)
    parry_follow_player_item.indent = true
    parry_follow_player_item.is_visible = function() return settings.training.display_parry end
 
    display_parry_compact_item = menu_items.On_Off_Menu_Item:new("display_parry_compact", settings.training,
-                                                                "display_parry_compact")
+                                                                "display_parry_compact", false)
    display_parry_compact_item.indent = true
    display_parry_compact_item.is_visible = function() return settings.training.display_parry end
 
@@ -871,7 +880,7 @@ local function create_display_tab()
 
    attack_range_display_numbers_item = menu_items.On_Off_Menu_Item:new("attack_range_display_show_numbers",
                                                                        settings.training,
-                                                                       "attack_range_display_show_numbers")
+                                                                       "attack_range_display_show_numbers", false)
    attack_range_display_numbers_item.indent = true
    attack_range_display_numbers_item.is_visible = function() return settings.training.display_attack_range ~= 1 end
 
@@ -884,7 +893,7 @@ local function create_display_tab()
    return {
       header = menu_items.Header_Menu_Item:new("menu_title_display"),
       entries = {
-         menu_items.On_Off_Menu_Item:new("display_controllers", settings.training, "display_input"),
+         menu_items.On_Off_Menu_Item:new("display_controllers", settings.training, "display_input", true),
          controller_style_menu_item,
          menu_items.List_Menu_Item:new("display_input_history", settings.training, "display_input_history",
                                        menu_tables.display_input_history_mode, 1),
@@ -892,20 +901,22 @@ local function create_display_tab()
          menu_items.On_Off_Menu_Item:new("display_bonuses", settings.training, "display_bonuses", true),
          menu_items.List_Menu_Item:new("display_attack_bars", settings.training, "display_attack_bars",
                                        menu_tables.display_attack_bars_mode, 3), attack_bars_show_decimal_item,
-         menu_items.On_Off_Menu_Item:new("display_frame_advantage", settings.training, "display_frame_advantage"),
-         menu_items.On_Off_Menu_Item:new("display_hitboxes", settings.training, "display_hitboxes"),
-         display_hitboxes_opacity_item,
-         menu_items.On_Off_Menu_Item:new("display_distances", settings.training, "display_distances"),
+         menu_items.List_Menu_Item:new("display_frame_advantage", settings.training, "display_frame_advantage",
+                                       menu_tables.display_frame_advantage_mode, 1),
+         menu_items.List_Menu_Item:new("display_hitboxes", settings.training, "display_hitboxes",
+                                       menu_tables.player_options, 1), display_hitboxes_opacity_item,
+         menu_items.On_Off_Menu_Item:new("display_distances", settings.training, "display_distances", false),
          mid_distance_height_item, p1_distances_reference_point_item, p2_distances_reference_point_item,
-         menu_items.On_Off_Menu_Item:new("display_stun_timer", settings.training, "display_stun_timer", 2),
-         menu_items.On_Off_Menu_Item:new("display_air_time", settings.training, "display_air_time"),
+         menu_items.On_Off_Menu_Item:new("display_stun_timer", settings.training, "display_stun_timer", true),
+         menu_items.On_Off_Menu_Item:new("display_air_time", settings.training, "display_air_time", false),
          air_time_player_coloring_item,
-         menu_items.On_Off_Menu_Item:new("display_charge", settings.training, "display_charge"),
+         menu_items.On_Off_Menu_Item:new("display_charge", settings.training, "display_charge", false),
          charge_follow_player_item, charge_overcharge_on_item,
-         menu_items.On_Off_Menu_Item:new("display_parry", settings.training, "display_parry"), parry_follow_player_item,
-         display_parry_compact_item,
-         menu_items.On_Off_Menu_Item:new("display_blocking_direction", settings.training, "display_blocking_direction"),
-         menu_items.On_Off_Menu_Item:new("display_red_parry_miss", settings.training, "display_red_parry_miss"),
+         menu_items.On_Off_Menu_Item:new("display_parry", settings.training, "display_parry", false),
+         parry_follow_player_item, display_parry_compact_item,
+         menu_items.On_Off_Menu_Item:new("display_blocking_direction", settings.training, "display_blocking_direction",
+                                         false),
+         menu_items.On_Off_Menu_Item:new("display_red_parry_miss", settings.training, "display_red_parry_miss", false),
          menu_items.List_Menu_Item:new("attack_range_display", settings.training, "display_attack_range",
                                        menu_tables.player_options), attack_range_display_max_item,
          attack_range_display_numbers_item,
@@ -977,7 +988,7 @@ local function create_rules_tab()
       entries = {
          character_select_item,
          menu_items.List_Menu_Item:new("force_stage", settings.training, "force_stage", menu_tables.stage_list, 1),
-         menu_items.On_Off_Menu_Item:new("infinite_time", settings.training, "infinite_time"),
+         menu_items.On_Off_Menu_Item:new("infinite_time", settings.training, "infinite_time", true),
          menu_items.List_Menu_Item:new("life_refill_mode", settings.training, "life_mode", menu_tables.life_mode, 4,
                                        update_gauge_items()), p1_life_reset_value_gauge_item,
          p2_life_reset_value_gauge_item, -- life_reset_delay_item,
@@ -987,12 +998,12 @@ local function create_rules_tab()
          menu_items.List_Menu_Item:new("meter_refill_mode", settings.training, "meter_mode", menu_tables.meter_mode, 5,
                                        update_gauge_items()), p1_meter_reset_value_gauge_item,
          p2_meter_reset_value_gauge_item, -- meter_reset_delay_item,
-         menu_items.On_Off_Menu_Item:new("infinite_super_art_time", settings.training, "infinite_sa_time"),
+         menu_items.On_Off_Menu_Item:new("infinite_super_art_time", settings.training, "infinite_sa_time", false),
          menu_items.List_Menu_Item:new("auto_parrying", settings.training, "auto_parrying", menu_tables.player_options),
-         menu_items.On_Off_Menu_Item:new("universal_cancel", settings.training, "universal_cancel"),
-         menu_items.On_Off_Menu_Item:new("infinite_projectiles", settings.training, "infinite_projectiles"),
-         menu_items.On_Off_Menu_Item:new("infinite_juggle", settings.training, "infinite_juggle"),
-         menu_items.On_Off_Menu_Item:new("speed_up_game_intro", settings.training, "fast_forward_intro"),
+         menu_items.On_Off_Menu_Item:new("universal_cancel", settings.training, "universal_cancel", false),
+         menu_items.On_Off_Menu_Item:new("infinite_projectiles", settings.training, "infinite_projectiles", false),
+         menu_items.On_Off_Menu_Item:new("infinite_juggle", settings.training, "infinite_juggle", false),
+         menu_items.On_Off_Menu_Item:new("speed_up_game_intro", settings.training, "fast_forward_intro", true),
          menu_items.Integer_Menu_Item:new("music_volume", settings.training, "music_volume", 0, 10, false, 0)
       }
    }
@@ -1011,11 +1022,14 @@ local function create_training_tab()
 
    start_defense_item = menu_items.Button_Menu_Item:new("menu_start", function()
       local start_opponent = defense_tables.opponents[settings.special_training.defense.opponent]
+      special_modes.stop_other_modes(defense)
       close_menu(true)
       defense.start(gamestate.P1.char_str, start_opponent)
    end)
-   start_defense_item.is_enabled = is_frame_data_loaded
-   start_defense_item.is_unselectable = function() return not defense_at_least_one_selected end
+   start_defense_item.is_enabled = function()
+      return is_frame_data_loaded() and defense_setup_item:at_least_one_selected()
+   end
+   start_defense_item.is_unselectable = function() return not start_defense_item.is_enabled end
 
    defense_score_item = menu_items.Label_Menu_Item:new("menu_score", {"menu_score", ": ", "value"},
                                                        settings.special_training.defense.characters[opponent], "score",
@@ -1032,7 +1046,11 @@ local function create_training_tab()
 
    defense_learning_item = menu_items.On_Off_Menu_Item:new("dummy_learning",
                                                            settings.special_training.defense.characters[opponent],
-                                                           "learning")
+                                                           "learning", true)
+   defense_reset_item = menu_items.Button_Menu_Item:new("menu_reset", function()
+      local opp = defense_tables.opponents[settings.special_training.defense.opponent]
+      defense_tables.reset_followups(settings, opp)
+   end)
 
    unblockables_type_item = menu_items.List_Menu_Item:new("menu_setup", settings.special_training.unblockables, "type",
                                                           menu_tables.unblockables_types.alex, 1,
@@ -1048,21 +1066,23 @@ local function create_training_tab()
    end
    unblockables_followup_item.is_enabled = function() return not unblockables_followup_item.is_unselectable() end
 
-   start_unblockables_item = menu_items.Button_Menu_Item:new("menu_start", function()
+   unblockables_start_item = menu_items.Button_Menu_Item:new("menu_start", function()
+      special_modes.stop_other_modes(unblockables)
       close_menu(true)
       unblockables.start()
    end)
-   start_unblockables_item.legend_text = "legend_lp_select_coin_start"
-   start_unblockables_item.is_unselectable = function()
+   unblockables_start_item.legend_text = "legend_lp_select_coin_start"
+   unblockables_start_item.is_unselectable = function()
       local sel_unblockable = unblockables_type_item.list[settings.special_training.unblockables.type]
       return settings.special_training.unblockables.character == "default" or
                  not unblockables_followup_item:at_least_one_selected() or
                  unblockables_tables.get_unblockables_character(sel_unblockable) ~=
                  settings.special_training.unblockables.match_savestate_dummy or not is_frame_data_loaded()
    end
-   start_unblockables_item.is_enabled = function() return not start_unblockables_item.is_unselectable() end
+   unblockables_start_item.is_enabled = function() return not unblockables_start_item.is_unselectable() end
 
    local function unblockables_character_select()
+      special_modes.stop_other_modes(unblockables)
       unblockables.start_character_select()
       unblockables_followup_item.selected_col = 1
       unblockables_followup_item.selected_row = 1
@@ -1086,6 +1106,7 @@ local function create_training_tab()
 
    jumpins_training_tab = {}
    jumpins_training_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
+      special_modes.stop_other_modes(jumpins)
       close_menu(true)
       jumpins.start(settings.special_training.jumpins)
    end)
@@ -1096,6 +1117,7 @@ local function create_training_tab()
    end
 
    jumpins_training_tab.start_edit_item = menu_items.Button_Menu_Item:new("menu_settings", function()
+      special_modes.stop_other_modes(jumpins)
       jumpins_edit_jump_index = 1
       jumpins.init()
       update_jumpins_settings()
@@ -1104,8 +1126,10 @@ local function create_training_tab()
       update_counter_attack_items()
       main_menu:menu_open_popup(jumpins_edit_menu, true)
       training.unfreeze_game()
+      allow_update_while_open = true
       main_menu.on_close = function()
          jumpins.end_edit()
+         allow_update_while_open = false
          main_menu.on_close = nil
       end
    end)
@@ -1130,76 +1154,74 @@ local function create_training_tab()
                                                                                "attack_delay_mode",
                                                                                menu_tables.jumpins_offset_mode)
    jumpins_training_tab.show_jump_arc_item = menu_items.On_Off_Menu_Item:new("menu_show_jump_arc",
-                                                                             jumpins_edit_settings, "show_jump_arc", 1)
+                                                                             jumpins_edit_settings, "show_jump_arc",
+                                                                             false)
    jumpins_training_tab.show_jump_info_item = menu_items.On_Off_Menu_Item:new("menu_show_jump_info",
-                                                                              jumpins_edit_settings, "show_jump_info", 1)
+                                                                              jumpins_edit_settings, "show_jump_info",
+                                                                              false)
    jumpins_training_tab.automatic_replay_item = menu_items.On_Off_Menu_Item:new("menu_automatic_replay",
                                                                                 jumpins_edit_settings,
-                                                                                "automatic_replay", 1)
+                                                                                "automatic_replay", true)
 
    footsies_training_tab = {}
    footsies_training_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
+      special_modes.stop_other_modes(footsies)
       close_menu(true)
       footsies.start()
    end)
    footsies_training_tab.start_item.legend_text = "legend_lp_select"
    footsies_training_tab.start_item.is_enabled = function()
-      return is_frame_data_loaded() and settings.special_training.footsies.savestate_player ~= ""
+      return is_frame_data_loaded() and footsies_training_tab.moves_item:at_least_one_selected()
    end
    footsies_training_tab.start_item.is_unselectable = function()
       return not footsies_training_tab.start_item.is_enabled()
    end
-   footsies_training_tab.score_item = menu_items.Label_Menu_Item:new("menu_score", {"menu_score", ": ", "value"},
-                                                       {}, "score",
-                                                       false, true)
+   footsies_training_tab.score_item = menu_items.Label_Menu_Item:new("menu_score", {"menu_score", ": ", "value"}, {},
+                                                                     "score", false, true)
    footsies_training_tab.character_select_item = menu_items.Button_Menu_Item:new("character_select", function()
-      close_menu(true)
+      close_menu()
       footsies.start_character_select()
    end)
    footsies_training_tab.character_select_item.legend_text = "legend_lp_select"
-   footsies_training_tab.character_select_item.is_enabled = function()
-      return is_frame_data_loaded() and settings.special_training.footsies.savestate_player ~= ""
-   end
+   footsies_training_tab.character_select_item.is_enabled = function() return is_frame_data_loaded() end
    footsies_training_tab.character_select_item.is_unselectable = function()
       return not footsies_training_tab.character_select_item.is_enabled()
    end
-   footsies_training_tab.moves_item = menu_items.Check_Box_Grid_Item:new("menu_moves",
-                                                                         {1},
-                                                                         {"1"}, 4)
+   footsies_training_tab.moves_item = menu_items.Check_Box_Grid_Item:new("menu_moves", {1}, {"1"}, 4)
 
-   footsies_training_tab.walk_out_item = menu_items.On_Off_Menu_Item:new("menu_walk_out", {walk_out = true}, "walk_out")
-   footsies_training_tab.accuracy_item = menu_items.Slider_Menu_Item:new("menu_accuracy", 100, {80, 80},
-                                                                             {0, 100})
+   footsies_training_tab.walk_out_item = menu_items.On_Off_Menu_Item:new("menu_walk_out", {walk_out = true}, "walk_out",
+                                                                         true)
+   footsies_training_tab.accuracy_item = menu_items.Slider_Menu_Item:new("menu_accuracy", 100, {80, 80}, {0, 100})
    footsies_training_tab.accuracy_item.disable_mode_switch = true
    footsies_training_tab.accuracy_item.legend_text = ""
-   footsies_training_tab.distance_judgement_item = menu_items.Slider_Menu_Item:new("menu_distance_judgement", 100, {80, 80},
-                                                                             {0, 100})
+
+   footsies_training_tab.distance_judgement_item = menu_items.Slider_Menu_Item:new("menu_distance_judgement", 100,
+                                                                                   {80, 80}, {0, 100})
    footsies_training_tab.distance_judgement_item.disable_mode_switch = true
    footsies_training_tab.distance_judgement_item.legend_text = ""
 
    geneijin_training_tab = {}
    geneijin_training_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
+      special_modes.stop_other_modes(geneijin)
       close_menu(true)
       geneijin.start()
    end)
    geneijin_training_tab.start_item.legend_text = "legend_lp_select"
    geneijin_training_tab.start_item.is_enabled = function()
-      return is_frame_data_loaded() and settings.special_training.geneijin.savestate_player ~= ""
+      return is_frame_data_loaded() and geneijin_training_tab.moves_item:at_least_one_selected()
    end
    geneijin_training_tab.start_item.is_unselectable = function()
       return not geneijin_training_tab.start_item.is_enabled()
    end
    geneijin_training_tab.score_item = menu_items.Label_Menu_Item:new("menu_score", {"menu_score", ": ", "value"},
-                                                       settings.special_training.geneijin, "score",
-                                                       false, true)
+                                                                     settings.special_training.geneijin, "score", false,
+                                                                     true)
    geneijin_training_tab.character_select_item = menu_items.Button_Menu_Item:new("character_select", function()
-      close_menu(true)
+      close_menu()
       geneijin.start_character_select()
    end)
    geneijin_training_tab.character_select_item.legend_text = "legend_lp_select"
-   geneijin_training_tab.character_select_item.is_enabled = function()
-      return is_frame_data_loaded() and settings.special_training.geneijin.savestate_player ~= ""
-   end
+   geneijin_training_tab.character_select_item.is_enabled = function() return is_frame_data_loaded() end
    geneijin_training_tab.character_select_item.is_unselectable = function()
       return not geneijin_training_tab.character_select_item.is_enabled()
    end
@@ -1207,7 +1229,6 @@ local function create_training_tab()
    geneijin_training_tab.moves_item = menu_items.Check_Box_Grid_Item:new("menu_moves",
                                                                          settings.special_training.geneijin.moves,
                                                                          geneijin_tables.get_menu_move_names(), 4)
-
 
    training_sub_menus = {
       {name = "training_defense", entries = {training_mode_item}}, {
@@ -1219,32 +1240,33 @@ local function create_training_tab()
             jumpins_training_tab.attack_delay_mode_item, jumpins_training_tab.show_jump_arc_item,
             jumpins_training_tab.show_jump_info_item, jumpins_training_tab.automatic_replay_item
          }
-      },{
+      }, {
          name = "training_footsies",
          entries = {
             training_mode_item, footsies_training_tab.start_item, footsies_training_tab.score_item,
-            footsies_training_tab.character_select_item, footsies_training_tab.moves_item, footsies_training_tab.walk_out_item,
+            character_select_and_open_menu_item, footsies_training_tab.moves_item, footsies_training_tab.walk_out_item,
             footsies_training_tab.accuracy_item, footsies_training_tab.distance_judgement_item
          }
       }, {
          name = "training_unblockables",
          entries = {
-            training_mode_item, start_unblockables_item, unblockables_type_item, unblockables_followup_item,
+            training_mode_item, unblockables_start_item, unblockables_type_item, unblockables_followup_item,
             menu_items.Button_Menu_Item:new("character_select", unblockables_character_select)
          }
       }, {
          name = "training_geneijin",
          entries = {
-            training_mode_item, geneijin_training_tab.start_item, geneijin_training_tab.score_item, geneijin_training_tab.character_select_item,
-            geneijin_training_tab.moves_item
-         }
-      }, {
-         name = "training_denjin",
-         entries = {
-            training_mode_item,
-            menu_items.Button_Menu_Item:new("character_select", require("src.modules.record_framedata").save_frame_data)
+            training_mode_item, geneijin_training_tab.start_item, geneijin_training_tab.score_item,
+            geneijin_training_tab.character_select_item, geneijin_training_tab.moves_item
          }
       }
+      -- , {
+      --    name = "training_denjin",
+      --    entries = {
+      --       training_mode_item,
+      --       character_select_item
+      --    }
+      -- }
    }
 
    training_mode_item.on_change = update_training_tab_page
@@ -1253,15 +1275,28 @@ local function create_training_tab()
 end
 
 local function create_challenge_tab()
-   play_challenge_item = menu_items.Button_Menu_Item:new("play", play_challenge)
-   select_char_challenge_item = menu_items.Button_Menu_Item:new("Select Character (Current: Gill)",
-                                                                select_character_hadou_matsuri)
+   challenge_tab = {}
+   challenge_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", play_challenge)
+   challenge_tab.start_item.is_enabled = function() return false end
+   challenge_tab.start_item.is_unselectable = function() return not challenge_tab.start_item.is_enabled() end
+   challenge_tab.start_item.legend_text = "legend_lp_select"
+
+   challenge_tab.character_select_item = menu_items.Button_Menu_Item:new("character_select", function()
+      character_select.start_character_select_sequence()
+   end)
+   challenge_tab.character_select_item.is_enabled = function() return false end
+   challenge_tab.character_select_item.is_unselectable = function() return not challenge_tab.start_item.is_enabled() end
+
+   challenge_tab.character_select_item.legend_text = "legend_lp_select"
+
+   challenge_tab.label_item = menu_items.Label_Menu_Item:new("wip", {"menu_work_in_progress"}, {}, "", false, false)
 
    return {
       header = menu_items.Header_Menu_Item:new("menu_title_challenge"),
       entries = {
-         menu_items.List_Menu_Item:new("challenge", settings.training, "challenge_current_mode",
-                                       menu_tables.challenge_mode), play_challenge_item, select_char_challenge_item
+         menu_items.List_Menu_Item:new("menu_challenge", settings.training, "challenge_current_mode",
+                                       menu_tables.challenge_mode), challenge_tab.start_item,
+         challenge_tab.character_select_item, challenge_tab.label_item
       }
    }
 end
@@ -1270,11 +1305,12 @@ local function create_debug_tab()
    return {
       header = menu_items.Header_Menu_Item:new("menu_title_debug"),
       entries = {
-         menu_items.On_Off_Menu_Item:new("dump_state_display", debug_settings, "show_dump_state_display"),
-         menu_items.On_Off_Menu_Item:new("debug_variables_display", debug_settings, "show_debug_variables_display"),
-         menu_items.On_Off_Menu_Item:new("debug_frames_display", debug_settings, "show_debug_frames_display"),
-         menu_items.On_Off_Menu_Item:new("memory_view_display", debug_settings, "show_memory_view_display"),
-         menu_items.On_Off_Menu_Item:new("show_predicted_hitboxes", debug_settings, "show_predicted_hitbox"),
+         menu_items.On_Off_Menu_Item:new("dump_state_display", debug_settings, "show_dump_state_display", false),
+         menu_items.On_Off_Menu_Item:new("debug_variables_display", debug_settings, "show_debug_variables_display",
+                                         false),
+         menu_items.On_Off_Menu_Item:new("debug_frames_display", debug_settings, "show_debug_frames_display", false),
+         menu_items.On_Off_Menu_Item:new("memory_view_display", debug_settings, "show_memory_view_display", false),
+         menu_items.On_Off_Menu_Item:new("show_predicted_hitboxes", debug_settings, "show_predicted_hitbox", false),
          menu_items.Button_Menu_Item:new("record_frame_data", function()
             debug_settings.recording_framedata = true
          end),
@@ -1295,22 +1331,21 @@ local function create_menu()
       recording.backup_recordings()
       settings.save_training_data()
    end)
-
    is_initialized = true
 end
 
-local function deactivate_training_modes() for _, mode in ipairs(special_training_modes) do mode.stop() end end
-
 local function update_menu_items()
-   update_counter_attack_items()
-   update_jumpins_edit_items()
-   update_gauge_items()
-   update_recording_items()
-   update_training_tab_page()
-   update_defense_items()
-   update_footsies_items()
-   update_unblockables_items()
-   update_geneijin_items()
+   if not debug_settings.recording_framedata then
+      update_counter_attack_items()
+      update_jumpins_edit_items()
+      update_gauge_items()
+      update_recording_items()
+      update_training_tab_page()
+      update_defense_items()
+      update_footsies_items()
+      update_unblockables_items()
+      update_geneijin_items()
+   end
 end
 
 local function open_menu()
@@ -1327,7 +1362,7 @@ close_menu = function(training_stays_active)
    is_open = false
    main_menu:menu_stack_clear()
    settings.save_training_data()
-   if not training_stays_active then deactivate_training_modes() end
+   if not training_stays_active then special_modes.stop_all() end
    training.unfreeze_game()
 end
 
@@ -1428,6 +1463,8 @@ setmetatable(menu_module, {
          return disable_opening
       elseif key == "open_after_match_start" then
          return open_after_match_start
+      elseif key == "allow_update_while_open" then
+         return allow_update_while_open
       end
    end,
 
@@ -1440,6 +1477,8 @@ setmetatable(menu_module, {
          disable_opening = value
       elseif key == "open_after_match_start" then
          open_after_match_start = value
+      elseif key == "allow_update_while_open" then
+         allow_update_while_open = value
       else
          rawset(menu_module, key, value)
       end

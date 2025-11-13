@@ -189,7 +189,8 @@ local function check_setup_timeout()
    if gamestate.frame_number - setup_start_frame >= setup_timeout then
       state = states.SETUP
       setup_state = setup_states.INIT
-      print("SETUP FAILED", player_reset_x, player.pos_x, dummy_reset_x, dummy.pos_x) -- debug
+      should_hard_setup = true
+      -- print("SETUP FAILED", player_reset_x, player.pos_x, dummy_reset_x, dummy.pos_x) -- debug
    end
 end
 
@@ -377,8 +378,7 @@ local function display_delta_score(d_score)
 end
 
 local function start(sel_player, sel_dummy)
-   if settings.special_training.defense.match_savestate_player == sel_player and
-       settings.special_training.defense.match_savestate_dummy == sel_dummy then
+   if settings.special_training.defense.match_savestate_player ~= "default" then
       inputs.block_input(1, "all")
       inputs.block_input(2, "all")
       ensure_training_settings()
@@ -406,7 +406,7 @@ local function start_character_select()
       is_active = true
       player = gamestate.P1
       dummy = gamestate.P2
-      training.swap_characters = false
+      training.reset_swap_characters()
       ensure_training_settings()
       apply_settings()
       defense_tables.reset_weights(opponent)
@@ -515,8 +515,6 @@ local function update()
                   followups = nil
                end
             end
-
-            for _, act in ipairs(actions) do print("=", act.name) end
             state = states.SETUP
          end
 
@@ -551,12 +549,9 @@ local function update()
             i_actions = i_actions + 1
             local followup = action_queue[i_actions]
             if followup then
-               print(followup.action.name) -- debug
                if not followup.action:should_execute(dummy, gamestate.stage, actions, i_actions) then
                   i_actions = i_actions - 1
                   reselect_followups(i_actions)
-
-                  print(">")
                   update()
                   return
                end
@@ -593,7 +588,6 @@ local function update()
                      i_actions = i_actions - 1
                   else
                      delta_score = result.score
-                     print("followup score", delta_score) -- debug
                   end
                   if result.should_end then
                      end_frame = gamestate.frame_number + end_delay
@@ -609,7 +603,6 @@ local function update()
                if gamestate.frame_number - followup_start_frame >= followup_timeout then
                   end_frame = gamestate.frame_number + end_delay
                   delta_score = 1
-                  print("timeout") -- debug
                   state = states.BEFORE_END
                end
             end
@@ -690,7 +683,6 @@ local function update()
                    not (dummy.superfreeze_decount > 0)) or
                    (player.character_state_byte == 0 and dummy.character_state_byte == 0) then
                   end_frame = 0
-                  print("end now") --debug
                end
             end
 
@@ -717,7 +709,6 @@ local function update()
                      should_hard_setup = true
                   end
                end
-               print(should_hard_setup) --debug
                state = states.SELECT_SETUP
             end
          end
