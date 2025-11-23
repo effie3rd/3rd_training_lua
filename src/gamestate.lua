@@ -747,6 +747,7 @@ local function read_player_vars(player)
       end
    end
 
+   player.received_connection_id = memory.readdword(player.addresses.received_connection_id)
    player.received_connection_marker = memory.readword(player.addresses.received_connection_marker)
    player.just_received_connection = player.received_connection_marker ~= 0
    player.received_connection_type = memory.readbyte(player.addresses.received_connection_type)
@@ -1546,16 +1547,17 @@ local function update_projectile_cooldown(obj)
          obj.next_hit_at_lifetime = obj.remaining_lifetime -
                                         (fdmeta.hit_period - (obj.start_lifetime - 1 - obj.remaining_lifetime) %
                                             fdmeta.hit_period)
+         obj.cooldown = obj.remaining_lifetime - obj.next_hit_at_lifetime + 1
       end
    end
    -- EX Aegis sometimes hits slow
-   if obj.projectile_type == "68" and obj.animation_frame_hash == "5250024000" then obj.cooldown = 17 end
+   if obj.projectile_type == "68" and obj.animation_frame_hash == "5250024000" then obj.cooldown = 19 end
    -- EX Yagyou is weird
    if obj.projectile_type == "72" then
       if ex_yagyou_cooldowns[obj.animation_frame_hash] then
-         obj.cooldown = ex_yagyou_cooldowns[obj.animation_frame_hash]
+         obj.cooldown = ex_yagyou_cooldowns[obj.animation_frame_hash] + 1
       else
-         obj.cooldown = 7
+         obj.cooldown = 8
       end
    end
 end
@@ -1678,18 +1680,15 @@ local function read_projectiles()
             obj.start_lifetime = obj.remaining_lifetime
          end
 
-         if obj.remaining_hits < obj.previous_remaining_hits then update_projectile_cooldown(obj) end
-
          if obj.next_hit_at_lifetime then obj.cooldown = obj.remaining_lifetime - obj.next_hit_at_lifetime end
 
          obj.animation_frame = frame_number - obj.animation_start_frame - obj.animation_freeze_frames
          obj.has_just_connected = false
          if emitter.other.just_received_connection and emitter.other.received_connection_is_projectile and
              (obj.cooldown <= 0 or obj.projectile_type == "72") then
-            if obj.freeze_just_began or obj.projectile_type == "72" then -- exception for EX yagyou
+            if emitter.other.received_connection_id == obj.base then
                obj.has_just_connected = true
                update_projectile_cooldown(obj)
-               obj.cooldown = obj.cooldown > 0 and (obj.cooldown + 1) or 0
                emitter.other.last_received_connection_animation = obj.projectile_type
                emitter.other.last_received_connection_hit_id = 1
             end

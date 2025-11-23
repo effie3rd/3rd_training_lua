@@ -1240,15 +1240,15 @@ frame_data_meta["projectiles"]["8B"] = { hit_type = {3}}                        
 frame_data_meta["projectiles"]["0C"] = { hit_type = {3}}                         --nichirin_LP
 frame_data_meta["projectiles"]["0D"] = { hit_type = {3}}                         --nichirin_MP
 frame_data_meta["projectiles"]["0E"] = { hit_type = {3}}                         --nichirin_HP
-frame_data_meta["projectiles"]["0F"] = { hit_type = {3}, cooldown = 1}           --nichirin_EXP
+frame_data_meta["projectiles"]["0F"] = { hit_type = {3}, cooldown = 3}           --nichirin_EXP
 frame_data_meta["projectiles"]["00"] = { hit_type = {3}, unparryable = true}     --seraphic_wing
 frame_data_meta["projectiles"]["53"] = { hit_type = {3}, cooldown = 3}           --temporal_thunder
 frame_data_meta["projectiles"]["6A"] = { hit_type = {3}}                         --gohadouken_LP
 frame_data_meta["projectiles"]["6B"] = { hit_type = {3}}                         --gohadouken_MP
 frame_data_meta["projectiles"]["6C"] = { hit_type = {3}}                         --gohadouken_HP
 frame_data_meta["projectiles"]["59"] = { hit_type = {3}}                         --shakunetsu_LP
-frame_data_meta["projectiles"]["5A"] = { hit_type = {3}, cooldown = 1}           --shakunetsu_MP
-frame_data_meta["projectiles"]["5B"] = { hit_type = {3}, cooldown = 1}           --shakunetsu_HP
+frame_data_meta["projectiles"]["5A"] = { hit_type = {3}, cooldown = 2}           --shakunetsu_MP
+frame_data_meta["projectiles"]["5B"] = { hit_type = {3}, cooldown = 2}           --shakunetsu_HP
 frame_data_meta["projectiles"]["14"] = { hit_type = {1}, cooldown = 3}           --yagyoudama_LP
 frame_data_meta["projectiles"]["15"] = { hit_type = {1}, cooldown = 3}           --yagyoudama_MP
 frame_data_meta["projectiles"]["16"] = { hit_type = {1}, cooldown = 3}           --yagyoudama_HP

@@ -65,7 +65,7 @@ local function debuggui(name, var)
 end
 local function debug_update_framedata()
    if gamestate.is_in_match then
-      local player = gamestate.P2
+      local player = gamestate.P1
       local other = player.other
 
       debug_framedata_data = {}
@@ -81,13 +81,13 @@ local function debug_update_framedata()
       -- -- debuggui("action #", player.animation_action_count)
       -- debuggui("conn action #", player.connected_action_count)
       -- debuggui("just conn", tostring(other.has_just_connected))
-      -- debuggui("hit id", player.current_hit_id)
+      debuggui("hit id", player.current_hit_id)
       -- debuggui("max hit id", player.max_hit_id)
       -- debuggui("is recovery", other.is_in_recovery)
       -- debuggui("proj", player.total_received_projectiles_count)
       -- debuggui("throw invul", player.throw_invulnerability_cooldown)
       -- debuggui("throw r f", player.throw_recovery_frame)
-      -- debuggui("miss", player.animation_miss_count)
+      debuggui("miss", player.animation_miss_count)
       -- -- debuggui("attacking", tostring(player.is_attacking))
       -- debuggui("wakeup", player.remaining_wakeup_time)
       -- debuggui("wakeup2", other.remaining_wakeup_time)
@@ -123,7 +123,7 @@ local function debug_update_framedata()
             --         end
             -- debuggui("vx", obj.velocity_x)
             -- debuggui("vy", obj.velocity_y)
-            -- debuggui("hits", obj.remaining_hits)
+            debuggui("hits", obj.remaining_hits)
             -- debuggui("ts", obj.tengu_state)
             -- debuggui("order", obj.tengu_order)
             debuggui("cd", obj.cooldown)
@@ -395,7 +395,7 @@ local function show_memory_results_display()
    end
 end
 
-local memory_view_start = 0x0206961D
+local memory_view_start = 0x2069118
 local function show_memory_view_display()
    for i = 1, 20 do
       local addr = memory_view_start + 4 * (i - 1)
@@ -414,7 +414,7 @@ end
 local function init_scan_memory()
    mem_scan = {}
    for i = 0, 80000000 do
-      local v = memory.readbyte(i)
+      local v = memory.readdword(i)
       if v > 0 then mem_scan[i] = v end
    end
 end
@@ -422,8 +422,9 @@ end
 local function init_scan_value(n)
    mem_scan = {}
    for i = 0, 80000000 do
-      local v = memory.readbyte(i)
-      if v == n then mem_scan[i] = v end
+      local v = memory.readdword(i)
+      if v == n then 
+         mem_scan[i] = v end
    end
 end
 
@@ -517,31 +518,13 @@ local function draw_debug()
 end
 
 local function debug_things()
-   local mash_directions_serious = {
-      {"down", "back"}, {"down"}, {"up", "forward"}, {"up"}, {"down", "back"}, {"up", "forward"}
-   }
-   local punch = {"MP", "HP"}
-   local inputs = {}
-   local kasumi = require("src.modules.move_data").get_move_inputs_by_name("ryu", "denjin_hadouken", "LP")
-   for _, inp in ipairs(kasumi) do inputs[#inputs + 1] = inp end
-   for i = 1, 80 do
-      inputs[#inputs + 1] = {"LP"}
-      table.insert(inputs[#inputs], punch[i % #punch + 1])
-      table.insert(inputs[#inputs], mash_directions_serious[i % #mash_directions_serious + 1])
-   end
-   for i = 1, 51 do inputs[#inputs + 1] = {} end
-   inputs[#inputs + 1] = {"up", "forward"}
-   inputs[#inputs + 1] = {"up", "forward"}
-   inputs[#inputs + 1] = {"up", "forward"}
 
-   for i = 1, 24 do inputs[#inputs + 1] = {} end
-   inputs[#inputs + 1] = {"HP"}
-   -- write_memory.make_invulnerable(gamestate.P2, true)
-   require("src.control.inputs").queue_input_sequence(gamestate.P1, inputs)
 end
 
 local debug = {
    init_scan_memory = init_scan_memory,
+   init_scan_value = init_scan_value,
+   filter_memory_equals = filter_memory_equals,
    filter_memory_increased = filter_memory_increased,
    filter_memory_decreased = filter_memory_decreased,
    run_debug = run_debug,

@@ -1,9 +1,10 @@
 local settings = require("src.settings")
 local gamestate = require("src.gamestate")
 local fd = require("src.modules.framedata")
-local frame_data, is_slow_jumper, is_really_slow_jumper = fd.frame_data, fd.is_slow_jumper, fd.is_really_slow_jumper
 local memory_addresses = require("src.control.memory_addresses")
 local tools = require("src.tools")
+
+local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_slow_jumper
 
 local input_object
 local previous_input = nil

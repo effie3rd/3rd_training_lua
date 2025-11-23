@@ -54,7 +54,7 @@ local function update_pose(input, player, dummy, pose)
    end
 end
 local Block_Style = {BLOCK = 1, PARRY = 2, RED_PARRY = 3}
-local Block_Type = {BLOCK = 1, PARRY = 2}
+local Block_Type = {BLOCK = 1, PARRY = 2, NONE = 3}
 local force_block_timeout = 20
 
 local function update_blocking(input, player, dummy, mode, style, red_parry_hit_count, parry_every_n_count)
@@ -171,6 +171,8 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
    dummy.blocking.is_blocking = dummy.blocking.is_blocking or false
    dummy.blocking.is_blocking_this_frame = false
    dummy.blocking.blocked_hit_count = dummy.blocking.blocked_hit_count or 0
+   dummy.blocking.last_parry_index = dummy.blocking.last_parry_index or 0
+   dummy.blocking.last_block_type = dummy.blocking.last_block_type or Block_Type.NONE
    dummy.blocking.received_hit_count = dummy.blocking.received_hit_count or 0
    dummy.blocking.parried_last_frame = dummy.blocking.parried_last_frame or false
    dummy.blocking.is_pre_parrying = false
@@ -183,12 +185,20 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
       dummy.blocking.received_hit_count = dummy.blocking.received_hit_count + 1
       dummy.blocking.last_block.has_connected = true
    end
-   if dummy.has_just_blocked or dummy.has_just_parried then
+
+   if dummy.has_just_blocked then
       dummy.blocking.blocked_hit_count = dummy.blocking.blocked_hit_count + 1
+      dummy.blocking.last_block_type = Block_Type.BLOCK
+   elseif dummy.has_just_parried then
+      dummy.blocking.blocked_hit_count = dummy.blocking.blocked_hit_count + 1
+      dummy.blocking.last_block_type = Block_Type.PARRY
+      dummy.blocking.last_parry_index = dummy.blocking.blocked_hit_count
    end
 
    if dummy.is_idle and player.is_idle then
       dummy.blocking.blocked_hit_count = 0
+      dummy.blocking.last_parry_index = 0
+      dummy.blocking.last_block_type = Block_Type.NONE
       if dummy.idle_time >= 10 then dummy.blocking.received_hit_count = 0 end
       dummy.blocking.is_blocking = false
       if mode == 5 then
@@ -202,17 +212,6 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
 
    if not gamestate.is_in_match or mode == 1 or dummy.counter.is_counterattacking or recording.current_recording_state ==
        4 then return end
-
-   if dummy.blocking.expected_hit_projectiles then
-      for _, id in ipairs(dummy.blocking.expected_hit_projectiles) do
-         if gamestate.projectiles[id] then
-            gamestate.projectiles[id].remaining_hits = gamestate.projectiles[id].remaining_hits - 1
-            gamestate.update_projectile_cooldown(gamestate.projectiles[id])
-         end
-      end
-   end
-
-   dummy.blocking.expected_hit_projectiles = {}
 
    local frames_prediction = 3
 
@@ -245,8 +244,10 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
       if style == Block_Style.RED_PARRY then -- red parry
          block_type = Block_Type.BLOCK
          if not (dummy.blocking.blocked_hit_count == 0) then blocking_delta_threshold = 1 end
-         if dummy.blocking.blocked_hit_count >= red_parry_hit_count then
-            if (dummy.blocking.blocked_hit_count - red_parry_hit_count) % (parry_every_n_count + 1) == 0 then
+         if dummy.blocking.blocked_hit_count == red_parry_hit_count then
+            block_type = Block_Type.PARRY
+         elseif dummy.blocking.blocked_hit_count > red_parry_hit_count then
+            if (dummy.blocking.blocked_hit_count - dummy.blocking.last_parry_index + 1) > parry_every_n_count then
                block_type = Block_Type.PARRY
             end
          end
@@ -489,10 +490,6 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
                   if delta == 1 then -- assume we blocked successfully
                      if not dummy.blocking.tracked_attacks[attack.id].force_block then
                         dummy.blocking.tracked_attacks[attack.id].should_ignore = true
-                     end
-                     if dummy.blocking.tracked_attacks[attack.id].blocking_type == "projectile" then
-                        dummy.blocking.expected_hit_projectiles[#dummy.blocking.expected_hit_projectiles + 1] =
-                            attack.id
                      end
                   end
                   -- keep blocking until we can confirm it for improved consistency

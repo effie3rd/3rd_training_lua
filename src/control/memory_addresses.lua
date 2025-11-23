@@ -164,6 +164,7 @@ local addresses = {
          hit_with_super = 0x0202886D,
          hit_with_super_throw = 0x0202886F,
 
+         received_connection_id = P1_base + 0x14, -- base address of player or projectile
          received_connection_marker = P1_base + 0x32E,
          received_connection_type = P1_base + 0x339, -- 2 or 4 is projectile
          received_connection_strength = P1_base + 0x34F, -- 0 LP, 2 MP, 4 HP, 1 LK, 3 MK, 5 HK, 0x8 LP Special, 0x10 Throw, 0x18 LP Command Throw, etc.
@@ -287,6 +288,7 @@ local addresses = {
          hit_with_super = 0x02028859,
          hit_with_super_throw = 0x0202885B,
 
+         received_connection_id = P2_base + 0x14,
          received_connection_marker = P2_base + 0x32E,
          received_connection_type = P2_base + 0x339,
          received_connection_strength = P2_base + 0x34F,
