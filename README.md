@@ -3,7 +3,8 @@
 [日本語](https://github.com/effie3rd/3rd_training_lua/blob/main/README.jp.md)
 [Installation](#Installation)\
 \
-[![Trailer](https://img.shields.io/badge/YouTube-%23FF0000.svg?logo=YouTube&logoColor=white)](https://youtu.be/k8VYlQ2uFLI)\
+![Static Badge](https://img.shields.io/badge/https%3A%2F%2Fyoutu.be%2Fk8VYlQ2uFLI?logo=YouTube&label=Trailer)
+
 ### Main Features
   - Blocking system completely rewritten
   - Framedata model improved and re-recorded from scratch
