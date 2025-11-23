@@ -3,7 +3,7 @@
 [English](https://github.com/effie3rd/3rd_training_lua/blob/main/README.md)
 [インストール](#インストール)\
 \
-[![PV](https://img.shields.io/badge/YouTube-%23FF0000.svg?logo=YouTube&logoColor=white)](https://youtu.be/k8VYlQ2uFLI)\
+[![Static Badge](https://img.shields.io/badge/PV-grey?logo=YouTube&labelColor=ff0033)](https://youtu.be/k8VYlQ2uFLI)
 
 ### 主な機能
   - ガードシステム書き直し
