@@ -3,7 +3,7 @@ local tools = require("src.tools")
 
 local frame_data = {}
 local frame_data_keys = copytable(game_data.characters)
-table.insert(frame_data_keys, "projectiles")
+frame_data_keys[#frame_data_keys + 1] = "projectiles"
 
 local slow_jumpers = {"alex", "necro", "urien", "remy", "twelve", "oro"}
 
@@ -205,15 +205,22 @@ character_specific.yun.backward_walk_speed = -2.75
 
 -- ## game_data.characters standing states
 -- todo: find all ground and air states
-character_specific.makoto.standing_states = {3, 7, 11, 13} -- 7 happens during Oroshi
+character_specific.makoto.standing_states = {3, 7, 11, 13, 14} -- 7 happens during Oroshi
+character_specific.yang.standing_states = {6} -- 6 zenpou
+character_specific.yun.standing_states = {6} -- 6 zenpou
 
+character_specific.ken.crouching_states = {4} -- 4 LP LK
 character_specific.oro.crouching_states = {3} -- 3 is crouching
 character_specific.dudley.crouching_states = {6} -- 6 is crouching
-character_specific.necro.crouching_states = {13} -- 13 happens during CrLK
+character_specific.makoto.crouching_states = {16} -- LP LK
+character_specific.necro.crouching_states = {13} -- 13 happens during crLK
+character_specific.yang.crouching_states = {18} -- 18 crLP crLK
+character_specific.yun.crouching_states = {18} -- 18 crLK
 
 character_specific.oro.air_states = {4, 10}
 character_specific.dudley.air_states = {8}
 character_specific.makoto.air_states = {4}
+character_specific.yang.crouching_states = {5} -- 5 tenshin
 
 -- ## game_data.characters timed SA
 character_specific.oro.timed_sa[1] = true
@@ -236,8 +243,10 @@ local function patch_frame_data()
       frame_data["dudley"]["5314"].landing_height = -12 -- u_MK
       frame_data["dudley"]["5884"].landing_height = -20 -- uf_LK
       frame_data["dudley"]["59c4"].landing_height = -20 -- uf_MK
-      frame_data["dudley"]["5b04"].landing_height = -30 -- u_HK
-      frame_data["dudley"]["5764"].landing_height = -30 -- u_HP
+      frame_data["dudley"]["50b4"].landing_height = -30 -- u_HP
+      frame_data["dudley"]["5454"].landing_height = -30 -- u_HK
+      frame_data["dudley"]["5764"].landing_height = -30 -- uf_HP
+      frame_data["dudley"]["5b04"].landing_height = -30 -- uf_HK
       frame_data["dudley"]["6064"].exceptions = {["1953011000"] = 0, ["1953010c00"] = 0} -- d_LK MK tc
    end
    if frame_data["gouki"] then
@@ -314,6 +323,7 @@ local function patch_frame_data()
       frame_data["necro"]["7674"].landing_height = -20 -- MP Flying Viper
       frame_data["necro"]["7774"].landing_height = -24 -- HP Flying Viper
       frame_data["necro"]["7874"].landing_height = -24 -- EX Flying Viper
+      frame_data["necro"]["7874"].frames[33].next_anim = nil
       frame_data["necro"]["8574"].max_hits = 999 -- PA
    end
    if frame_data["projectiles"] then
@@ -361,9 +371,16 @@ local function patch_frame_data()
       frame_data["urien"]["6494"].frames[10].boxes[1] = {1, 48, 63, -44, 144}
       frame_data["urien"]["6494"].frames[11].boxes[1] = {1, 48, 63, -44, 144}
       frame_data["urien"]["6494"].frames[12].boxes[1] = {1, 48, 63, -44, 144}
+
+      frame_data["urien"]["4cbc"].landing_height = -23 -- LK Knee
+      frame_data["urien"]["4e4c"].landing_height = -18 -- MK Knee
+      frame_data["urien"]["4fdc"].landing_height = -20 -- HK Knee
+      frame_data["urien"]["516c"].landing_height = -21 -- EX Knee
    end
    if frame_data["yang"] then
-      frame_data["yang"]["c79c"].hit_frames = {{5, 9}} -- cl. MK
+      frame_data["yang"]["c79c"].hit_frames = {{7, 9}} -- cl. MK
+      frame_data["yang"]["c79c"].frames[6].boxes = nil
+      frame_data["yang"]["c79c"].frames[7].boxes = nil
       frame_data["yang"]["e39c"].frames[2].set_velocity = {1, -2.25} -- LK Raigeki
       frame_data["yang"]["e39c"].frames[2].velocity = nil
       frame_data["yang"]["e39c"].frames[2].set_acceleration = {0, -0.375}

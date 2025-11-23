@@ -116,7 +116,7 @@ local function init()
    walk_forward_input = {{"forward"}}
    walk_back_input = {{"back"}}
    block_low_long_input = {}
-   for i = 1, 16 do table.insert(block_low_long_input, {"down", "back"}) end
+   for i = 1, 16 do block_low_long_input[#block_low_long_input + 1] = {"down", "back"} end
    forward_dash_input = {{"forward"}, {}, {"forward"}}
    forward_dash_duration = framedata.get_first_idle_frame_by_name("yun", "dash_forward")
 
@@ -294,7 +294,7 @@ function followup_punish:setup(player, stage, actions, i_actions)
 
    local valid_punishes = {}
    for _, punish in pairs(punishes) do
-      if punish.action:is_valid(player, stage, predicted_state) then table.insert(valid_punishes, punish) end
+      if punish.action:is_valid(player, stage, predicted_state) then valid_punishes[#valid_punishes + 1] = punish end
    end
    self.punish = tools.select_weighted(valid_punishes)
    if self.punish then return self.punish.action:setup(player, stage, actions, i_actions) end
@@ -395,7 +395,7 @@ end
 function followup_mp_d_lk:should_execute(player, stage, actions, i_actions)
    local dist = math.abs(player.other.pos_x - player.pos_x)
    return dist - utils.get_box_connection_distance(player, far_mp_hitboxes, player.other, player.other.boxes) <=
-              far_mp_range - 32 - attack_range_tolerance
+              cl_mp_range - 32 - attack_range_tolerance
 end
 
 local followup_crab_walk = Followup:new("followup_crab_walk", Action_Type.WALK_FORWARD)
@@ -416,11 +416,11 @@ function followup_crab_walk:run(player, stage, actions, i_actions)
          if player.animation_frame_data and player.animation_frame_data.name then
             if player.animation_frame_data.name == "LK_geneijin" then
                if player.animation_frame >= geneijin_cancel_frame["LK_geneijin"] then
-                  table.insert(seq[1], "MP")
+                  seq[1][#seq[1] + 1] = "MP"
                end
             elseif player.animation_frame_data.name == "MP_geneijin" then
                if player.animation_frame >= geneijin_cancel_frame["MP_geneijin"] then
-                  table.insert(seq[1], "LK")
+                  seq[1][#seq[1] + 1] = "LK"
                end
             end
          end
@@ -567,16 +567,14 @@ function followup_block:run(player, stage, actions, i_actions)
          if fdata_meta and fdata_meta.hit_type then
             hit_type = fdata_meta.hit_type[player.other.current_hit_id + 1]
             if hit_type == 2 or hit_type == 4 then
-               local startup = framedata.get_next_hit_frame(player.other.char_str, player.other.animation,
-                                                            player.other.current_hit_id)
-               if startup >= reaction_time then
+               if player.other.animation_frame + 1 >= reaction_time then
                   if hit_type == 4 then
                      self.switch_blocking = {
-                        start_frame = gamestate.frame_number + startup - 1,
+                        start_frame = gamestate.frame_number,
                         input = block_high_input
                      }
                   else
-                     self.block_input = {start_frame = gamestate.frame_number + startup - 1, input = block_low_input}
+                     self.block_input = {start_frame = gamestate.frame_number, input = block_low_input}
                   end
                end
             end
@@ -727,11 +725,11 @@ local moves = {
 }
 
 local move_names = {}
-for i, move in ipairs(moves) do table.insert(move_names, move.action.name) end
+for i, move in ipairs(moves) do move_names[#move_names + 1] = move.action.name end
 
 local function create_settings()
    local data = {match_savestate_player = "", match_savestate_dummy = "yun", score = 0, moves = {}}
-   for i, move in ipairs(moves) do table.insert(data.moves, true) end
+   for i, move in ipairs(moves) do data.moves[#data.moves + 1] = true end
    return data
 end
 

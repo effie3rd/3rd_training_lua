@@ -12,11 +12,7 @@ local colors = {
       disabled = 0x909090FF,
       button_activated = 0x10FF10FF
    },
-   hud_text = {
-      default = 0xFFFFFFFF,
-      success = 0x10FF10FF,
-      failure = 0xFF1010FF
-   },
+   hud_text = {default = 0xFFFFFFFF, success = 0x10FF10FF, failure = 0xFF1010FF},
    gui_text = {default = 0xFFFFFFFF, default_border = 0x000000FF},
    menu = {
       background = 0x1F1F1FF0,
@@ -48,14 +44,13 @@ local colors = {
       push = 0xFF00FFFF,
       extvulnerability = 0x00FFFFFF
    },
-   score = {
-      plus = 0x00b5FFFF,
-      minus = 0x6400FFFF
-   }
+   score = {plus = 0x00b5FFFF, minus = 0x6400FFFF}
 }
 
 local gd_color = gd.createTrueColor(1, 1)
 local gd_white = gd_color:colorAllocate(255, 255, 255)
+
+local white = 0xFFFFFFFF
 
 local function hex_to_gd_color(hexcolor)
    local r = bit.rshift(bit.band(hexcolor, 0xFF000000), 3 * 8)
@@ -65,26 +60,47 @@ local function hex_to_gd_color(hexcolor)
    return gd_color:colorAllocate(r, g, b)
 end
 
-local function substitute_color(image, color_in, color_out)
-   local gdStr = image:gdStr()
-   local result = gd.createFromGdStr(gdStr)
-   for i = 0, image:sizeX() - 1 do
-      for j = 0, image:sizeY() - 1 do
-         if result:getPixel(i, j) == color_in then result:setPixel(i, j, color_out) end
-      end
+local header_size = 11
+local chunk_size = 4
+local function substitute_color_gdstr(gdStr, color_old, color_new)
+   if (#gdStr - header_size) % chunk_size ~= 0 then
+      print("unexpected image format")
+      return gdStr
    end
-   return result:gdStr()
+   local compare_color = bit.bor(bit.lshift(127 - bit.rshift(bit.band(color_old, 0xFF), 1), 24),
+                                 bit.rshift(color_old, 8))
+   local replace_color = bit.bor(bit.lshift(127 - bit.rshift(bit.band(color_new, 0xFF), 1), 24),
+                                 bit.rshift(color_new, 8))
+   local replace_color_str = string.char(bit.band(bit.rshift(replace_color, 24), 0xFF),
+                                         bit.band(bit.rshift(replace_color, 16), 0xFF),
+                                         bit.band(bit.rshift(replace_color, 8), 0xFF), bit.band(replace_color, 0xFF))
+
+   local result = {string.sub(gdStr, 1, header_size)}
+   local i, j = header_size + 1, 2
+   while i + chunk_size - 1 <= #gdStr do
+      local b1, b2, b3, b4 = string.byte(gdStr, i, i + chunk_size - 1)
+      local pixel = bit.bor(bit.bor(bit.lshift(b1, 24), bit.lshift(b2, 16)), bit.bor(bit.lshift(b3, 8), b4))
+      if pixel == compare_color then
+         result[j] = replace_color_str
+      else
+         result[j] = string.char(b1, b2, b3, b4)
+      end
+      j = j + 1
+      i = i + chunk_size
+   end
+
+   return table.concat(result)
 end
 
-local function substitute_color_gdstr(gdStr, color_in, color_out)
-   local result = gd.createFromGdStr(gdStr)
-   for i = 0, result:sizeX() - 1 do
-      for j = 0, result:sizeY() - 1 do
-         if result:getPixel(i, j) == color_in then result:setPixel(i, j, color_out) end
-      end
-   end
-   return result:gdStr()
-end
+-- local function substitute_color_gdstr(gdStr, color_in, color_out)
+--    local result = gd.createFromGdStr(gdStr)
+--    for i = 0, result:sizeX() - 1 do
+--       for j = 0, result:sizeY() - 1 do
+--          if result:getPixel(i, j) == color_in then result:setPixel(i, j, color_out) end
+--       end
+--    end
+--    return result:gdStr()
+-- end
 
 local function colorscale(hex, scalefactor)
    if scalefactor < 0 then return hex end
@@ -101,16 +117,14 @@ local function colorscale(hex, scalefactor)
    return tonumber(string.format("0x%02x%02x%02x%02x", r, g, b, a))
 end
 
-local function set_theme(index)
-   colors = themes[index].colors
-end
+local function set_theme(index) colors = themes[index].colors end
 
 local colors_module = {
    hex_to_gd_color = hex_to_gd_color,
-   substitute_color = substitute_color,
    substitute_color_gdstr = substitute_color_gdstr,
    colorscale = colorscale,
    gd_white = gd_white,
+   white = white,
    set_theme = set_theme
 }
 

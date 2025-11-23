@@ -3,10 +3,13 @@ local game_data = require("src.modules.game_data")
 local tools = require("src.tools")
 
 local saved_path = "saved/"
-local data_path = "data/" .. game_data.rom_name .. "/"
-local framedata_path = data_path .. "framedata/"
+local data_path = "data/"
+local framedata_path = data_path .. game_data.rom_name .. "/framedata/"
 local framedata_file_ext = "_framedata.json"
 local framedata_bin_file = "framedata.msgpack"
+local load_first_bin_file = "load_first.msgpack"
+local text_bin_file = "text.msgpack"
+local images_bin_file = "images.msgpack"
 local recordings_path = "saved/recordings/"
 local training_settings_file = "training_settings.json"
 local special_training_settings_file = "special_training_settings.json"
@@ -50,9 +53,7 @@ local function load_training_data()
    special_training = special_training_settings
 
    local recordings_settings = tools.read_object_from_json_file(saved_path .. recordings_file)
-   if recordings_settings then
-      recordings = recordings_settings
-   end
+   if recordings_settings then recordings = recordings_settings end
 end
 
 load_training_data()
@@ -63,6 +64,9 @@ local settings_module = {
    framedata_path = framedata_path,
    framedata_file_ext = framedata_file_ext,
    framedata_bin_file = framedata_bin_file,
+   load_first_bin_file = load_first_bin_file,
+   text_bin_file = text_bin_file,
+   images_bin_file = images_bin_file,
    recordings_path = recordings_path,
    themes_path = themes_path,
    load_training_data = load_training_data,

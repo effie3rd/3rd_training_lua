@@ -12,6 +12,8 @@ print("- In recording mode, press \"Coin\" again to start/stop recording")
 print("- In normal mode, press \"Coin\" to start/stop replay")
 print("- Lua Hotkey 1 (alt+1) to return to character select screen")
 
+-- Thanks to *Grouflon* for making an amazing training mode
+
 -- Kudos to indirect contributors:
 -- *esn3s* for his work on 3s frame data : http://baston.esn3s.com/
 -- *dammit* for his work on 3s hitbox display script : https://dammit.typepad.com/blog/2011/10/improved-3rd-strike-hitboxes.html
@@ -91,12 +93,12 @@ if game_data.rom_name == "sfiii3nr1" then
 end
 
 function Register_After_Load_State(command, args, delay)
-   table.insert(after_load_state_callback, {command = command, args = args, delay = delay})
+   after_load_state_callback[#after_load_state_callback + 1] = {command = command, args = args, delay = delay}
 end
 
 function Queue_Command(frame, command, args)
    if not command_queue[frame] then command_queue[frame] = {} end
-   table.insert(command_queue[frame], {command = command, args = args})
+   command_queue[frame][#command_queue[frame] + 1] = {command = command, args = args}
 end
 
 local function run_commands()
@@ -109,10 +111,10 @@ local function run_commands()
             else
                com.command()
             end
-            table.insert(used_keys, key)
+            used_keys[#used_keys + 1] = key
          end
       elseif key < gamestate.frame_number then
-         table.insert(used_keys, key)
+         used_keys[#used_keys + 1] = key
       end
    end
    for _, key in ipairs(used_keys) do command_queue[key] = nil end
@@ -138,7 +140,10 @@ local function on_load_state()
    training.update_training_state()
    training.reset_gauge_state()
 
-   if menu.is_initialized then menu.update_menu_items() end
+   if menu.is_initialized then
+      menu.update_menu_items()
+      menu.reset_background_cache()
+   end
 
    hud.reset_hud()
 
@@ -168,7 +173,7 @@ local function on_load_state()
    for key, com in ipairs(after_load_state_callback) do
       local delay = com.delay or 0
       Queue_Command(gamestate.frame_number + 1 + delay, com.command, com.args)
-      table.insert(used_keys, key)
+      used_keys[#used_keys + 1] = key
    end
    for _, key in ipairs(used_keys) do after_load_state_callback[key] = nil end
 
@@ -269,7 +274,7 @@ local function before_frame()
 
    inputs.previous_input = inputs.input
 
-   if not (gamestate.is_in_match and is_in_challenge) then joypad.set(inputs.input) end
+   joypad.set(inputs.input)
 
    if loading.frame_data_loaded and gamestate.is_in_match and not debug_settings.recording_framedata then
       prediction.update_after(inputs.input, training.player, training.dummy)
@@ -289,20 +294,21 @@ local function before_frame()
 end
 
 local function on_gui()
+   draw.clear_canvas(draw.menu_canvas)
    -- loading done here to decouple it from game execution
-   if not loading.text_images_loaded or not loading.frame_data_loaded then
+   if not loading.images_loaded or not loading.frame_data_loaded then
       local number_loaded = loading.load_all()
       loading_bar_loaded = loading_bar_loaded + number_loaded
    end
-   if loading.text_images_loaded and not menu.is_initialized then menu.create_menu() end
+   if loading.images_loaded and not menu.is_initialized then menu.create_menu() end
 
    if gamestate.is_in_character_select then draw.draw_character_select() end
 
-   if not loading.text_images_loaded or not loading.frame_data_loaded then
+   if not loading.images_loaded or not loading.frame_data_loaded then
       draw.loading_bar_display(loading_bar_loaded, loading_bar_total)
    end
 
-   if loading.text_images_loaded then
+   if loading.images_loaded then
       if gamestate.is_in_match and not disable_display then
          -- input history
          input_history.input_history_display(settings.training.display_input_history,
@@ -324,8 +330,9 @@ local function on_gui()
 
       menu.update()
 
-      gui.box(0, 0, 0, 0, 0, 0) -- if we don't draw something, what we drawed from last frame won't be cleared
+      draw.draw_canvas(draw.menu_canvas)
    end
+   gui.box(0, 0, 0, 0, 0, 0) -- if we don't draw something, what we drew last frame will not clear
 end
 
 emu.registerstart(on_start)

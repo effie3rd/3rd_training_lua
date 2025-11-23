@@ -71,7 +71,7 @@ local function update_character(char_str)
    end
    moves = copytable(moves_default)
    if additional_moves[char_str] then
-      for _, name in ipairs(additional_moves[char_str]) do table.insert(moves, name) end
+      for _, name in ipairs(additional_moves[char_str]) do moves[#moves + 1] = name end
    end
 end
 
@@ -217,9 +217,9 @@ local function create_settings(dummy)
       followup = {special_button = 1, option_select = 1, normal_button = 1, special = 1, type = 1, motion = 1},
       followup_delay = 0
    }
-   table.insert(data.jumps, tools.deepcopy(jump))
+   data.jumps[#data.jumps + 1] = tools.deepcopy(jump)
    jump.jump_name = 1
-   for i = 2, max_jumps do table.insert(data.jumps, tools.deepcopy(jump)) end
+   for i = 2, max_jumps do data.jumps[#data.jumps + 1] = tools.deepcopy(jump) end
    return data
 end
 

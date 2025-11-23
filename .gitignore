@@ -1,3 +1,6 @@
 /src/training/denjin.lua
 /src/training/denjin_tables.lua
 /src/challenge/hadou_matsuri.lua
+rsync.sh
+.rsyncignore
+.vscode/

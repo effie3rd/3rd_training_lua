@@ -3,8 +3,6 @@ local fd = require("src.modules.framedata")
 local move_data = require("src.modules.move_data")
 local inputs = require("src.control.inputs")
 local advanced_control = require("src.control.advanced_control")
-local menu_tables = require("src.ui.menu_tables")
-local write_memory = require("src.control.write_memory")
 local tools = require("src.tools")
 
 local Delay = advanced_control.Delay
@@ -28,7 +26,7 @@ local function urien_midscreen_setup_tackle_dash(player)
       {"down"}, {"down"}, {"down"}
    }
    local charge_tackle = {}
-   for i = 1, 80 do table.insert(charge_tackle, {"down", "back"}) end
+   for i = 1, 80 do charge_tackle[#charge_tackle + 1] = {"down", "back"} end
    local charge_delay = 43
    local charge = Delay:new(charge_delay)
 
@@ -173,7 +171,7 @@ local function urien_corner_setup_tackle_mk_mk_mk_hk_q_remy(player)
    local hk_tackle = {{"forward", "HK"}}
 
    local charge_tackle = {}
-   for i = 1, 60 do table.insert(charge_tackle, {"down", "back"}) end
+   for i = 1, 60 do charge_tackle[#charge_tackle + 1] = {"down", "back"} end
 
    local commands = {
       {
@@ -237,7 +235,7 @@ local function urien_corner_setup_tackle_mk_mk_mk_hk(player)
    local hk_tackle = {{"forward", "HK"}}
 
    local charge_tackle = {}
-   for i = 1, 60 do table.insert(charge_tackle, {"down", "back"}) end
+   for i = 1, 60 do charge_tackle[#charge_tackle + 1] = {"down", "back"} end
 
    local commands = {
       {
@@ -321,7 +319,7 @@ local function urien_corner_setup_tackle_mk_mk_mk_mk(player)
    local hk_tackle = {{"forward", "HK"}}
 
    local charge_tackle = {}
-   for i = 1, 60 do table.insert(charge_tackle, {"down", "back"}) end
+   for i = 1, 60 do charge_tackle[#charge_tackle + 1] = {"down", "back"} end
    local knee = HK_knee
 
    if player.other.char_str == "yang" or player.other.char_str == "yun" then knee = MK_knee end
@@ -374,6 +372,7 @@ local function urien_corner_setup_tackle_mk_mk_mk_mk(player)
    return commands
 end
 
+
 local function urien_corner_setup_alex(player)
    local d_HP = {{"down", "HP"}}
    local LP_aegis = move_data.get_move_inputs_by_name("urien", "aegis_reflector", "LP")
@@ -404,7 +403,7 @@ local function urien_corner_setup_alex(player)
    local mk_tackle = {{"forward", "MK"}}
 
    local charge_tackle = {}
-   for i = 1, 60 do table.insert(charge_tackle, {"down", "back"}) end
+   for i = 1, 60 do charge_tackle[#charge_tackle + 1] = {"down", "back"} end
    local knee = HK_knee
 
    local commands = {
@@ -914,7 +913,7 @@ end
 
 local function urien_mid_screen_anago_followup_d_lk(player)
    local walk_back = {}
-   for i = 1, 20 do table.insert(walk_back, {"back"}) end
+   for i = 1, 20 do walk_back[#walk_back + 1] = {"back"} end
    local d_lk = {{"down", "LK"}}
    local d_mk = {{"down", "MK"}}
    local d_lp = {{"down", "LP"}}
@@ -968,7 +967,7 @@ end
 
 local function urien_mid_screen_anago_followup_d_lk_dash(player)
    local walk_back = {}
-   for i = 1, 20 do table.insert(walk_back, {"back"}) end
+   for i = 1, 20 do walk_back[#walk_back + 1] = {"back"} end
    local d_lk = {{"down", "LK"}}
    local d_mk = {{"down", "MK"}}
    local forward_dash = {{"forward"}, {}, {"forward"}}
@@ -1006,7 +1005,7 @@ end
 
 local function urien_mid_screen_anago_followup_f_mk(player)
    local walk_back = {}
-   for i = 1, 20 do table.insert(walk_back, {"back"}) end
+   for i = 1, 20 do walk_back[#walk_back + 1] = {"back"} end
    local d_lk = {{"down", "LK"}}
    local d_mk = {{"down", "MK"}}
    local f_mk = {{"forward", "MK"}}
@@ -1043,7 +1042,7 @@ end
 
 local function urien_corner_tackle_mk_mk_mk_hk_followup_knee(player)
    local crouch = {}
-   for i = 1, 30 do table.insert(crouch, {"down"}) end
+   for i = 1, 30 do crouch[#crouch + 1] = {"down"} end
    local HK_knee = move_data.get_move_inputs_by_name("urien", "violence_kneedrop", "HK")
    local d_HP = {{"down", "HP"}}
 
@@ -1085,16 +1084,16 @@ local function urien_corner_tackle_mk_mk_mk_hk_q_remy_followup_knee(player)
    }
 
    local crouch = {}
-   for i = 1, 30 do table.insert(crouch, {"down"}) end
+   for i = 1, 30 do crouch[#crouch + 1] = {"down"} end
    local HK_knee = move_data.get_move_inputs_by_name("urien", "violence_kneedrop", "HK")
    local d_HP = {{"down", "HP"}}
 
    local knee_delay = Delay:new(8)
    if player.other.char_str == "remy" then
-      for i = 1, 5 do table.insert(walk_forward, {"forward"}) end
+      for i = 1, 5 do walk_forward[#walk_forward + 1] = {"forward"} end
       knee_delay:reset(10)
    elseif player.other.char_str == "elena" then
-      table.insert(walk_forward, {"forward"})
+      walk_forward[#walk_forward + 1] = {"forward"}
    elseif player.other.char_str == "q" then
       knee_delay:reset(10)
    end
@@ -1125,7 +1124,7 @@ end
 
 local function urien_corner_tackle_mk_mk_mk_mk_followup_knee(player)
    local crouch = {}
-   for i = 1, 30 do table.insert(crouch, {"down"}) end
+   for i = 1, 30 do crouch[#crouch + 1] = {"down"} end
    local HK_knee = move_data.get_move_inputs_by_name("urien", "violence_kneedrop", "HK")
    local d_HP = {{"down", "HP"}}
 
@@ -1152,10 +1151,10 @@ local function urien_corner_tackle_mk_mk_mk_mk_followup_knee(player)
          knee_delay:reset(21)
       elseif player.other.char_str == "yang" then
          knee_delay:reset(0)
-         for i = 1, 12 do table.insert(walk_forward, {"forward"}) end
+         for i = 1, 12 do walk_forward[#walk_forward + 1] = {"forward"} end
       elseif player.other.char_str == "yun" then
          knee_delay:reset(1)
-         for i = 1, 14 do table.insert(walk_forward, {"forward"}) end
+         for i = 1, 14 do walk_forward[#walk_forward + 1] = {"forward"} end
       end
       local walk_command = {
          {
@@ -1236,11 +1235,11 @@ local function oro_midscreen_setup_lp_yagyou_dash_dash(player)
          condition = function() return dash_delay:delay_after_idle_timing(player, #forward_dash, true) end,
          action = function() queue_input_sequence_and_wait(player, forward_dash) end
       }
-      table.insert(commands, dash)
+      commands[#commands + 1] = dash
    elseif player.other.char_str == "urien" then
       local walk_delay = Delay:new(10)
       local walk_forward = {}
-      for i = 1, 30 do table.insert(walk_forward, {"forward"}) end
+      for i = 1, 30 do walk_forward[#walk_forward + 1] = {"forward"} end
       local walk = {
          {
             condition = function() return is_idle_timing(player, 1, true) end,
@@ -1251,8 +1250,8 @@ local function oro_midscreen_setup_lp_yagyou_dash_dash(player)
          }
       }
 
-      table.insert(commands, walk[1])
-      table.insert(commands, walk[2])
+      commands[#commands + 1] = walk[1]
+      commands[#commands + 1] = walk[2]
    end
 
    return commands
@@ -1303,7 +1302,7 @@ local function oro_midscreen_setup_mp_yagyou_dash_walk(player)
    local mp_yagyou = move_data.get_move_inputs_by_name("oro", "yagyoudama", "MP")
    local forward_dash = {{"forward"}, {}, {"forward"}}
    local walk_forward = {}
-   for i = 1, 30 do table.insert(walk_forward, {"forward"}) end
+   for i = 1, 30 do walk_forward[#walk_forward + 1] = {"forward"} end
 
    local mp_delay = Delay:new(3)
    local yagyou_delay = Delay:new(0)
@@ -1432,7 +1431,7 @@ local function oro_midscreen_setup_mp_mp_lp_yagyou(player)
    if player.other.char_str == "hugo" then
       local walk_delay = Delay:new(4)
       local walk_forward = {}
-      for i = 1, 30 do table.insert(walk_forward, {"forward"}) end
+      for i = 1, 30 do walk_forward[#walk_forward + 1] = {"forward"} end
       local walk = {
          {
             condition = function() return is_idle_timing(player, 1, true) end,
@@ -1443,8 +1442,8 @@ local function oro_midscreen_setup_mp_mp_lp_yagyou(player)
          }
       }
 
-      table.insert(commands, walk[1])
-      table.insert(commands, walk[2])
+      commands[#commands + 1] = walk[1]
+      commands[#commands + 1] = walk[2]
    end
 
    return commands
@@ -1591,7 +1590,7 @@ local function oro_midscreen_followup_back_dash_jump_mk(player)
       elseif player.other.char_str == "yang" then
          n = 20
       end
-      for i = 1, n do table.insert(walk_back, {"back"}) end
+      for i = 1, n do walk_back[#walk_back + 1] = {"back"} end
 
       local walk = {
          condition = function() return is_idle_timing(player, 1, true) end,
@@ -1668,7 +1667,7 @@ local available_unblockables = {
       "oro_midscreen_mp_yagyou"
    },
    ibuki = {
-      "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard_short",
+      "urien_midscreen_ex_head_sphere", "urien_midscreen_anago",
       "oro_midscreen_mp_yagyou"
    },
    necro = {
@@ -1741,7 +1740,7 @@ local unblockables_data = {
       followups = {
          {name = "menu_f_MK", commands = urien_midscreen_tackle_dash_followup_f_mk},
          {name = "menu_d_LK", commands = urien_midscreen_tackle_dash_followup_d_lk},
-         {name = "throw", commands = urien_midscreen_tackle_dash_followup_throw}
+         {name = "menu_throw", commands = urien_midscreen_tackle_dash_followup_throw}
       }
    },
    urien_midscreen_ex_head_sphere = {
@@ -1749,10 +1748,10 @@ local unblockables_data = {
       reset_offset_x = 600,
       setup = urien_midscreen_setup_ex_head_sphere,
       followups = {
-         {name = "jump_HK", commands = urien_mid_screen_ex_head_sphere_followup_jump_hk},
+         {name = "menu_jump_HK", commands = urien_mid_screen_ex_head_sphere_followup_jump_hk},
          {name = "menu_f_MK", commands = urien_mid_screen_ex_head_sphere_followup_f_mk},
          {name = "menu_d_LK", commands = urien_mid_screen_ex_head_sphere_followup_d_lk},
-         {name = "throw", commands = urien_mid_screen_ex_head_sphere_followup_throw}
+         {name = "menu_throw", commands = urien_mid_screen_ex_head_sphere_followup_throw}
       }
    },
    urien_midscreen_ex_head_standard = {
@@ -1760,10 +1759,10 @@ local unblockables_data = {
       reset_offset_x = 600,
       setup = urien_midscreen_setup_ex_head_standard,
       followups = {
-         {name = "uoh", commands = urien_mid_screen_ex_head_standard_followup_leap},
+         {name = "menu_uoh", commands = urien_mid_screen_ex_head_standard_followup_leap},
          {name = "menu_f_MK", commands = urien_mid_screen_ex_head_standard_followup_f_mk},
          {name = "menu_d_LK", commands = urien_mid_screen_ex_head_standard_followup_d_lk},
-         {name = "throw", commands = urien_mid_screen_ex_head_standard_followup_throw}
+         {name = "menu_throw", commands = urien_mid_screen_ex_head_standard_followup_throw}
       }
    },
    urien_midscreen_anago = {
@@ -1780,32 +1779,32 @@ local unblockables_data = {
       character = "urien",
       reset_offset_x = 220,
       setup = urien_corner_setup_tackle_mk_mk_mk_hk,
-      followups = {{name = "HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_hk_followup_knee}}
+      followups = {{name = "menu_HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_hk_followup_knee}}
    },
    urien_corner_standard_short = {
       character = "urien",
       reset_offset_x = 220,
       setup = urien_corner_setup_tackle_mk_mk_mk_mk,
-      followups = {{name = "HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_mk_followup_knee}}
+      followups = {{name = "menu_HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_mk_followup_knee}}
    },
    urien_corner_standard_q_remy = {
       character = "urien",
       reset_offset_x = 220,
       setup = urien_corner_setup_tackle_mk_mk_mk_hk_q_remy,
-      followups = {{name = "HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_hk_q_remy_followup_knee}}
+      followups = {{name = "menu_HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_hk_q_remy_followup_knee}}
    },
    urien_corner_standard_alex = {
       character = "urien",
       reset_offset_x = 120,
       setup = urien_corner_setup_alex,
-      followups = {{name = "HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_hk_followup_knee}}
+      followups = {{name = "menu_HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_hk_followup_knee}}
    },
    oro_midscreen_hp_yagyou = {
       character = "oro",
       reset_offset_x = 800,
       setup = oro_midscreen_setup_hp_yagyou_dash_dash,
       followups = {
-         {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
+         {name = "menu_jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
          {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
          {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
       }
@@ -1815,7 +1814,7 @@ local unblockables_data = {
       reset_offset_x = 800,
       setup = oro_midscreen_setup_mp_yagyou_dash_dash,
       followups = {
-         {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
+         {name = "menu_jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
          {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
          {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
       }
@@ -1825,7 +1824,7 @@ local unblockables_data = {
       reset_offset_x = 800,
       setup = oro_midscreen_setup_lp_yagyou_dash_dash,
       followups = {
-         {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
+         {name = "menu_jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
          {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
          {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
       }
@@ -1835,7 +1834,7 @@ local unblockables_data = {
       reset_offset_x = 800,
       setup = oro_midscreen_setup_mp_mp_lp_yagyou,
       followups = {
-         {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
+         {name = "menu_jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
          {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
          {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
       }
@@ -1845,7 +1844,7 @@ local unblockables_data = {
       reset_offset_x = 800,
       setup = oro_midscreen_setup_mp_yagyou_dash_walk,
       followups = {
-         {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
+         {name = "menu_jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
          {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
          {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
       }
@@ -1855,11 +1854,8 @@ local unblockables_data = {
 local followup_names = {}
 for key, data in pairs(unblockables_data) do
    followup_names[key] = {}
-   for i = 1, #data.followups do table.insert(followup_names[key], data.followups[i].name) end
+   for i = 1, #data.followups do followup_names[key][#followup_names[key] + 1] = data.followups[i].name end
 end
-
-menu_tables.unblockables_types = available_unblockables
-menu_tables.unblockables_followup_names = followup_names
 
 local function get_unblockables_data(char, type)
    local key = available_unblockables[char][type]
@@ -1867,6 +1863,13 @@ local function get_unblockables_data(char, type)
 end
 
 local function get_unblockables_character(key) return unblockables_data[key].character end
+
+local function get_unblockables_type_menu_names(char)
+   local result = {}
+   for i, name in ipairs(available_unblockables[char]) do result[#result + 1] = "menu_" .. name end
+   return result
+end
+
 
 local function get_selected_unblockable_type(player_char, dummy_char)
    for i, unblockable in ipairs(available_unblockables[player_char]) do
@@ -1878,6 +1881,7 @@ end
 return {
    get_unblockables_data = get_unblockables_data,
    get_unblockables_character = get_unblockables_character,
+   get_unblockables_type_menu_names = get_unblockables_type_menu_names,
    get_selected_unblockable_type = get_selected_unblockable_type,
    available_unblockables = available_unblockables,
    followup_names = followup_names

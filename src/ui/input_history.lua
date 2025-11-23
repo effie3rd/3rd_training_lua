@@ -64,11 +64,11 @@ local function input_history_update(player, input)
    local entry = make_input_history_entry(prefix, input)
 
    if #history == 0 then
-      table.insert(history, entry)
+      history[#history + 1] = entry
    else
       local last_entry = history[#history]
       if last_entry.frame ~= gamestate.frame_number and not is_input_history_entry_equal(entry, last_entry) then
-         table.insert(history, entry)
+         history[#history + 1] = entry
       end
    end
 

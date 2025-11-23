@@ -1,7 +1,5 @@
 local gamestate = require "src.gamestate"
-local game_data = require("src.modules.game_data")
 local inputs = require("src.control.inputs")
-local character_select = require("src.control.character_select")
 local hud = require("src.ui.hud")
 local settings = require("src.settings")
 local tools = require("src.tools")
@@ -43,7 +41,8 @@ local followup_timeout = 6 * 60
 local followup_start_frame = 0
 local has_attacked = false
 local is_player_wakeup = false
-local end_delay = 0
+local end_delay_min = 0
+local end_delay_max = 30
 local end_frame = 0
 local score = 0
 local delta_score = 0
@@ -164,11 +163,11 @@ local function update()
             has_attacked = false
 
             if footsies_dummy.is_waking_up or (footsies_player.character_state_byte == 1 and footsies_player.posture == 24) then
-               table.insert(action_queue, footsies_tables.block)
-               table.insert(actions, footsies_tables.block.action)
+               action_queue[#action_queue + 1] = footsies_tables.block
+               actions[#actions + 1] = footsies_tables.block.action
             elseif footsies_player.is_waking_up then
-               table.insert(action_queue, footsies_tables.reset_distance)
-               table.insert(actions, footsies_tables.reset_distance.action)
+               action_queue[#action_queue + 1] = footsies_tables.reset_distance
+               actions[#actions + 1] = footsies_tables.reset_distance.action
             else
                footsies_tables.select_attack(footsies_dummy)
                local n_walk_out = 0
@@ -181,7 +180,7 @@ local function update()
                         if p_followup == footsies_tables.walk_out then
                            p_followup.weight = math.min(footsies_tables.walk_out.default_weight - n_walk_out ^ 0.6, 1)
                         end
-                        table.insert(valid_moves, p_followup)
+                        valid_moves[#valid_moves + 1] = p_followup
                      end
                   end
                   local selected_followup = tools.select_weighted(valid_moves)
@@ -189,16 +188,16 @@ local function update()
                      if selected_followup == footsies_tables.walk_out then
                         n_walk_out = n_walk_out + 1
                      end
-                     table.insert(action_queue, selected_followup)
-                     table.insert(actions, selected_followup.action)
+                     action_queue[#action_queue + 1] = selected_followup
+                     actions[#actions + 1] = selected_followup.action
                      followups = selected_followup.action:followups()
                   else
                      followups = nil
                   end
                end
                if #action_queue == 0 then
-                  table.insert(action_queue, footsies_tables.reset_distance)
-                  table.insert(actions, footsies_tables.reset_distance.action)
+                  action_queue[#action_queue + 1] = footsies_tables.reset_distance
+                  actions[#actions + 1] = footsies_tables.reset_distance.action
                end
             end
 
@@ -241,7 +240,11 @@ local function update()
                      delta_score = result.score
                   end
                   if result.should_end then
-                     end_frame = gamestate.frame_number + end_delay
+                     if followup.action.type == training_classes.Action_Type.ATTACK then
+                        end_frame = gamestate.frame_number + math.random(end_delay_min, end_delay_max)
+                     else
+                        end_frame = gamestate.frame_number + end_delay_min
+                     end
                      state = states.BEFORE_END
                      update()
                      return
@@ -250,7 +253,7 @@ local function update()
                   return
                end
                if gamestate.frame_number - followup_start_frame >= followup_timeout then
-                  end_frame = gamestate.frame_number + end_delay
+                  end_frame = gamestate.frame_number + end_delay_min
                   delta_score = 0
                   state = states.BEFORE_END
                end
@@ -268,7 +271,7 @@ local function update()
                if score > settings.special_training.footsies.characters[footsies_dummy.char_str].score then
                   settings.special_training.footsies.characters[footsies_dummy.char_str].score = score
                end
-               display_delta_score(delta_score)
+               -- display_delta_score(delta_score)
             end
             state = states.END
          end
@@ -281,7 +284,7 @@ local function update()
             end
          end
 
-         hud.add_score_text(score)
+         -- hud.add_score_text(score)
       end
    end
 end

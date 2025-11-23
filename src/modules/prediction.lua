@@ -54,7 +54,7 @@ local function predict_frames_branching(obj, anim, frame, frames_prediction, spe
    if specify_frame then
       delta = delta + 1
       frames_prediction = frames_prediction - 1
-      table.insert(result, {animation = anim, frame = math.min(frame, max_frames - 1), delta = delta})
+      result[#result + 1] = {animation = anim, frame = math.min(frame, max_frames - 1), delta = delta}
    end
 
    local used_loop = false
@@ -85,11 +85,15 @@ local function predict_frames_branching(obj, anim, frame, frames_prediction, spe
                            next_anim_frame = 0
                         end
                      end
-                     table.insert(current_res, {animation = next_anim_anim, frame = next_anim_frame, delta = delta})
+                     current_res[#current_res + 1] = {
+                        animation = next_anim_anim,
+                        frame = next_anim_frame,
+                        delta = delta
+                     }
                      local subres = predict_frames_branching(obj, next_anim_anim, next_anim_frame,
                                                              frames_prediction - i, false, current_res)
 
-                     for ___, sr in pairs(subres) do table.insert(results, sr) end
+                     for ___, sr in pairs(subres) do results[#results + 1] = sr end
                   end
                end
             end
@@ -101,12 +105,12 @@ local function predict_frames_branching(obj, anim, frame, frames_prediction, spe
                frame_to_check = frame_to_check + 1
                if frame_to_check > #fdata.frames then break end
             end
-            table.insert(result, {animation = anim, frame = frame_to_check - 1, delta = delta})
+            result[#result + 1] = {animation = anim, frame = frame_to_check - 1, delta = delta}
          end
       end
    end
 
-   if not used_next_anim then table.insert(results, result) end
+   if not used_next_anim then results[#results + 1] = result end
 
    return results
 end
@@ -167,7 +171,7 @@ local function get_frames_until_idle(obj, anim, frame, frames_prediction, result
                         if next_anim_anim == "idle" then return delta, true end
                         local subres, found = get_frames_until_idle(obj, next_anim_anim, next_anim_frame,
                                                                     frames_prediction - i, delta, depth + 1)
-                        if found then table.insert(results, subres) end
+                        if found then results[#results + 1] = subres end
 
                      end
                   end
@@ -236,7 +240,7 @@ end
 local function create_line(obj, n)
    local line = {}
    for i = 1, n do
-      table.insert(line, {animation = obj.animation or obj.projectile_type, frame = obj.animation_frame + i, delta = i})
+      line[#line + 1] = {animation = obj.animation or obj.projectile_type, frame = obj.animation_frame + i, delta = i}
    end
    return line
 end
@@ -696,7 +700,7 @@ local function predict_next_player_movement(p1, p1_motion_data, p1_line, p2, p2_
 
    -- don't allow side switches if grounded
    for player, mdata in pairs(motion_data) do
-      if mdata.pos_y == 0 and motion_data[player.other][index].pos_y == 0 then
+      if mdata[index].pos_y == 0 and motion_data[player.other][index].pos_y == 0 then
          if tools.sign(mdata[index - 1].pos_x - motion_data[player.other][index - 1].pos_x) ~=
              tools.sign(mdata[index].pos_x - motion_data[player.other][index].pos_x) then
             local sign = tools.sign(mdata[index - 1].pos_x - motion_data[player.other][index].pos_x)
@@ -770,7 +774,7 @@ local function filter_lines(player, lines)
             end
          end
       end
-      if pass then table.insert(filtered, line) end
+      if pass then filtered[#filtered + 1] = line end
    end
    return filtered
 end
@@ -877,7 +881,7 @@ local function predict_jump_arc(player, player_anim, player_frame, player_motion
                   local box_type_matches = {{{"vulnerability", "ext. vulnerability"}, {"attack"}}}
                   if frame_data_meta[player.char_str][predicted_frame.animation] and
                       frame_data_meta[player.char_str][predicted_frame.animation].hit_throw then
-                     table.insert(box_type_matches, {{"throwable"}, {"throw"}})
+                     box_type_matches[#box_type_matches + 1] = {{"throwable"}, {"throw"}}
                   end
 
                   if tools.test_collision(dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y,
@@ -892,6 +896,30 @@ local function predict_jump_arc(player, player_anim, player_frame, player_motion
 
    return predicted_state
 end
+-- EX Aegis and Ibuki SA1
+local first_hit_frame_expections = {
+   ["70"] = true,
+   ["25"] = true,
+   ["26"] = true,
+   ["27"] = true,
+   ["28"] = true,
+   ["29"] = true,
+   ["2A"] = true,
+   ["2B"] = true,
+   ["2C"] = true,
+   ["2D"] = true,
+   ["2E"] = true,
+   ["2F"] = true,
+   ["30"] = true,
+   ["31"] = true,
+   ["32"] = true,
+   ["33"] = true,
+   ["34"] = true,
+   ["35"] = true,
+   ["36"] = true
+}
+
+local hitbox_dilation_x = .3125
 
 local function predict_player_movement(player, player_anim, player_frame, player_motion_data, dummy, dummy_anim,
                                        dummy_frame, dummy_motion_data, frames_prediction)
@@ -1073,7 +1101,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                      local box_type_matches = {{{"vulnerability", "ext. vulnerability"}, {"attack"}}}
                      if frame_data_meta[player.char_str][predicted_frame.animation] and
                          frame_data_meta[player.char_str][predicted_frame.animation].hit_throw then
-                        table.insert(box_type_matches, {{"throwable"}, {"throw"}})
+                        box_type_matches[#box_type_matches + 1] = {{"throwable"}, {"throw"}}
                      end
 
                      if tools.test_collision(dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y,
@@ -1098,7 +1126,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                         if not expected_hits[expected_hit.delta] then
                            expected_hits[expected_hit.delta] = {}
                         end
-                        table.insert(expected_hits[expected_hit.delta], expected_hit)
+                        expected_hits[expected_hit.delta][#expected_hits[expected_hit.delta] + 1] = expected_hit
                      end
                   end
                end
@@ -1109,18 +1137,23 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
 
    local valid_projectiles = {}
    for _, projectile in pairs(gamestate.projectiles) do
-      if projectile.projectile_type == "72" then --EX yagyou
-         table.insert(valid_projectiles, projectile)
+      if projectile.projectile_type == "72" then -- EX yagyou
+         valid_projectiles[#valid_projectiles + 1] = projectile
+      elseif projectile.projectile_type == "00_tenguishi" then
+         local frame_delta = projectile.remaining_freeze_frames - frames_prediction
+         if (frame_delta <= frames_prediction and projectile.cooldown - frames_prediction <= 0) then
+            valid_projectiles[#valid_projectiles + 1] = projectile
+         end
       else
          if ((projectile.is_forced_one_hit and projectile.remaining_hits ~= 0xFF) or projectile.remaining_hits > 0) and
-             projectile.alive and projectile.projectile_type ~= "00_seieienbu" then --00_seieienbu are the real clones, ignore them
+             projectile.alive and projectile.projectile_type ~= "00_seieienbu" then -- 00_seieienbu are the real clones, ignore them
             if (projectile.emitter_id ~= dummy.id or (projectile.emitter_id == dummy.id and projectile.is_converted)) then
                local frame_delta = projectile.remaining_freeze_frames - frames_prediction
                if projectile.placeholder then
                   frame_delta = projectile.animation_start_frame - gamestate.frame_number - frames_prediction
                end
                if (frame_delta <= frames_prediction and projectile.cooldown - frames_prediction <= 0) then
-                  table.insert(valid_projectiles, projectile)
+                  valid_projectiles[#valid_projectiles + 1] = projectile
                end
             end
          end
@@ -1147,7 +1180,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                   proj_frame = proj_frame + j
                   j = j + 1
                end
-               table.insert(proj_line, {animation = projectile.projectile_type, frame = proj_frame, delta = i})
+               proj_line[#proj_line + 1] = {animation = projectile.projectile_type, frame = proj_frame, delta = i}
             end
          else
             proj_line = predict_frames_branching(projectile, projectile.projectile_type, projectile.animation_frame,
@@ -1169,7 +1202,8 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                   remaining_freeze = remaining_freeze + player.remaining_freeze_frames
                end
                if projectile.placeholder then
-                  remaining_cooldown = (projectile.animation_start_frame - gamestate.frame_number - proj_line[i].delta + 1)
+                  remaining_cooldown = (projectile.animation_start_frame - gamestate.frame_number - proj_line[i].delta +
+                                           1)
                end
                if remaining_freeze <= 0 then
                   remaining_cooldown = math.max(remaining_cooldown + remaining_freeze, 0)
@@ -1184,6 +1218,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                   proj_boxes = projectile.boxes
                   ignore_flip = true
                   has_tengu_stones = true
+                  box_type_matches = {{{"vulnerability", "ext. vulnerability", "push"}, {"attack"}}}
                elseif projectile.projectile_type == "seieienbu" then
                   if projectile.animation_start_frame - gamestate.frame_number - i == 0 then
                      proj_boxes = projectile.boxes
@@ -1198,10 +1233,13 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                         proj_boxes = frames[frame_to_check].boxes
                      end
                      if proj_line[i].frame == fd.get_first_hit_frame("projectiles", proj_line[i].animation) and
-                         not (proj_line[i].animation == "70") then is_first_hit_frame = true end
+                         not first_hit_frame_expections[proj_line[i].animation] then
+                        is_first_hit_frame = true
+                     end
                   end
                   if #proj_boxes == 0 then proj_boxes = projectile.boxes end
                end
+
                predict_next_projectile_movement(projectile, proj_motion_data, proj_line, i, ignore_flip)
 
                local dummy_boxes = get_hurtboxes(dummy.char_str, dummy_line[i].animation, dummy_line[i].frame)
@@ -1220,6 +1258,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                         nil, nil, color
                      }, "projectile" .. projectile.id)
                   end
+
                   if tools.test_collision(dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y,
                                           dummy_motion_data[i].flip_x, dummy_boxes, proj_motion_data[i].pos_x,
                                           proj_motion_data[i].pos_y, proj_motion_data[i].flip_x, proj_boxes,
@@ -1241,7 +1280,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                      if not expected_hits[expected_hit.delta] then
                         expected_hits[expected_hit.delta] = {}
                      end
-                     table.insert(expected_hits[expected_hit.delta], expected_hit)
+                     expected_hits[expected_hit.delta][#expected_hits[expected_hit.delta] + 1] = expected_hit
                   end
                end
             end

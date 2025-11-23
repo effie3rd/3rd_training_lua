@@ -1,21 +1,23 @@
 # エフィーの3rdトレーニングlua
 
 [English](https://github.com/effie3rd/3rd_training_lua/blob/main/README.md)
-[インストール](#インストール)
+[インストール](#インストール)\
+\
+[![PV](https://img.shields.io/badge/YouTube-%23FF0000.svg?logo=YouTube&logoColor=white)](https://youtu.be/k8VYlQ2uFLI)\
 
 ### 主な機能
   - ガードシステム書き直し
   - フレームデータモデル作り直し
   - 特殊なトレーニングモード
   - 新しい設定や表示
-  - UIデザイン刷新
+  - UI再設計
 
 ### 予測
   - 移動予測はサブピクセル位置と速度を使用
   - ガード不能、天狗石、星影円舞などブロれる
   - 起き上がり予測 ― セーブステートでロードからダミーがリバーサルをできる
 
-### メニュー刷新
+### メニュー再設計
   - 透明背景と読める文字！
   - ダミーメニュー再編成
     - 技名とボタンで反撃を選択
@@ -82,4 +84,5 @@
   - ため技や360技のリバーサル反撃一貫させた
 
 ### インストール
-<table><tr><td>ファイルを`fbneo-training-mode`ディレクトリに貼り付け、すべて上書きしてください<br>ファイケーのメニューから「Training」をクリックして起動します。</td></tr></table>
+<table><tr><td>ファイルを`fbneo-training-mode`ディレクトリに貼り付け、すべて上書きしてください<br>ファイケーのメニューから「Training」をクリックして起動する。</td></tr></table>
+注意：`Auto Frameskip`を有効にすると問題が発生する。

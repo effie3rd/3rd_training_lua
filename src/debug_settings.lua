@@ -1,4 +1,3 @@
--- debug options
 local developer_mode = false
 local recording_framedata = false
 local debug_hitboxes = false and developer_mode

@@ -7,9 +7,8 @@ local frame_data = require("src.modules.framedata")
 local game_data = require("src.modules.game_data")
 local stage_data = require("src.modules.stage_data")
 local tools = require("src.tools")
-local mem = require("src.control.write_memory")
-local advanced_control = require("src.control.advanced_control")
 local write_memory = require("src.control.write_memory")
+local advanced_control = require("src.control.advanced_control")
 local memory_addresses = require("src.control.memory_addresses")
 local defense_tables = require("src.training.defense_tables")
 local training_classes = require("src.training.training_classes")
@@ -75,7 +74,7 @@ local followup_timeout = 3 * 60
 local followup_start_frame = 0
 
 local end_delay = 40
-local end_super_delay = 20
+local end_super_delay = 18
 local end_wait_delay = 10
 local end_frame = 0
 local end_frame_extension = 0
@@ -144,13 +143,13 @@ local function reselect_followups(index)
       for i, p_followup in ipairs(followups) do
          if p_followup.active and p_followup.action:is_valid(dummy, gamestate.stage, actions, index) and
              p_followup.action:should_execute(dummy, gamestate.stage, actions, index) then
-            table.insert(selected_followups, p_followup)
+            selected_followups[#selected_followups + 1] = p_followup
          end
       end
       local selected_followup = tools.select_weighted(selected_followups)
       if selected_followup then
-         table.insert(action_queue, selected_followup)
-         table.insert(actions, selected_followup.action)
+         action_queue[#action_queue + 1] = selected_followup
+         actions[#actions + 1] = selected_followup.action
          followups = selected_followup.action:followups()
       else
          followups = nil
@@ -231,6 +230,8 @@ local allowed_actions = {
    [11] = true
 }
 
+local load_screen
+
 local function hard_setup()
    if setup_state == setup_states.INIT then
       local should_load = inputs.problematic_inputs_released(joypad.get(), player.id)
@@ -250,6 +251,8 @@ local function hard_setup()
          end)
          setup_state = setup_states.SET_POSITIONS
 
+         load_screen = gui.gdscreenshot()
+         gui.image(0, 0, load_screen)
          if action_queue[1] == defense_data.wakeup then
             savestate.load(wakeup_state)
          else
@@ -259,15 +262,16 @@ local function hard_setup()
    elseif setup_state == setup_states.SET_POSITIONS then
       local setup = action_queue[1].action
       local is_wakeup = action_queue[1] == defense_data.wakeup
-      mem.write_pos(player, player_reset_x, 0)
-      mem.write_pos(dummy, dummy_reset_x, 0)
-      mem.write_flip_x(player, bit.bxor(dummy.flip_x, 1))
+      write_memory.write_pos(player, player_reset_x, 0)
+      write_memory.write_pos(dummy, dummy_reset_x, 0)
+      write_memory.write_flip_x(player, bit.bxor(dummy.flip_x, 1))
       if not is_wakeup and not allowed_actions[player.action] then
          state = states.SETUP
          setup_state = setup_states.INIT
       end
+      if load_screen then gui.image(0, 0, load_screen) end
       local current_screen_x = memory.readword(memory_addresses.global.screen_pos_x)
-      local desired_screen_x, desired_screen_y = mem.get_fix_screen_pos(player, dummy, gamestate.stage), 0
+      local desired_screen_x, desired_screen_y = write_memory.get_fix_screen_pos(player, dummy, gamestate.stage), 0
       if current_screen_x ~= desired_screen_x then
          write_memory.set_screen_pos(desired_screen_x, desired_screen_y)
       elseif gamestate.frame_number - setup_start_frame >= hard_setup_delay and player.is_standing and player.action ==
@@ -340,8 +344,8 @@ local function soft_setup()
       end
       if (player.is_standing or player.is_crouching) and
           (player.pos_x ~= player_reset_x or dummy.pos_x ~= dummy_reset_x) then
-         mem.write_pos_x(player, player_reset_x)
-         mem.write_pos_x(dummy, dummy_reset_x)
+         write_memory.write_pos_x(player, player_reset_x)
+         write_memory.write_pos_x(dummy, dummy_reset_x)
          setup_start_frame = gamestate.frame_number + soft_setup_delay
       end
       if dummy.pos_x < dummy_reset_x then
@@ -349,7 +353,7 @@ local function soft_setup()
       elseif dummy.pos_x > dummy_reset_x then
          inputs.press_left(nil, dummy.id)
       end
-      if math.abs(dummy.pos_x - dummy_reset_x) <= 4 then mem.write_pos_x(dummy, dummy_reset_x) end
+      if math.abs(dummy.pos_x - dummy_reset_x) <= 4 then write_memory.write_pos_x(dummy, dummy_reset_x) end
       if (player.is_waking_up or player.is_idle) and dummy.is_idle then
          if player.pos_x == player_reset_x and dummy.pos_x == dummy_reset_x and gamestate.frame_number >=
              setup_start_frame then
@@ -447,7 +451,7 @@ local function update()
             savestate.save(match_start_state)
             settings.special_training.defense.match_savestate_player = gamestate.P1.char_str
             settings.special_training.defense.match_savestate_dummy = gamestate.P2.char_str
-            mem.write_pos_x(player, dummy.pos_x - frame_data.get_contact_distance(player))
+            write_memory.write_pos_x(player, dummy.pos_x - frame_data.get_contact_distance(player))
             Queue_Command(gamestate.frame_number + 2, inputs.queue_input_sequence, {dummy, defense_data.knockdown})
             state = states.SETUP_WAKEUP_BEGIN
          elseif state == states.SETUP_WAKEUP_BEGIN then
@@ -482,7 +486,7 @@ local function update()
             else
                for i, p_setup in ipairs(defense_data.setups) do
                   if p_setup.active and p_setup.action:is_valid(dummy, gamestate.stage) then
-                     table.insert(selected_setups, p_setup)
+                     selected_setups[#selected_setups + 1] = p_setup
                   end
                end
 
@@ -494,8 +498,8 @@ local function update()
 
             if selected_setup ~= defense_data.wakeup then should_block_input = true end
 
-            table.insert(action_queue, selected_setup)
-            table.insert(actions, selected_setup.action)
+            action_queue[#action_queue + 1] = selected_setup
+            actions[#actions + 1] = selected_setup.action
 
             local followups = selected_setup.action:followups()
 
@@ -503,13 +507,13 @@ local function update()
                local selected_followups = {}
                for i, p_followup in ipairs(followups) do
                   if p_followup.active and p_followup.action:is_valid(dummy, gamestate.stage, actions, i_actions) then
-                     table.insert(selected_followups, p_followup)
+                     selected_followups[#selected_followups + 1] = p_followup
                   end
                end
                local selected_followup = tools.select_weighted(selected_followups)
                if selected_followup then
-                  table.insert(action_queue, selected_followup)
-                  table.insert(actions, selected_followup.action)
+                  action_queue[#action_queue + 1] = selected_followup
+                  actions[#actions + 1] = selected_followup.action
                   followups = selected_followup.action:followups()
                else
                   followups = nil
@@ -561,7 +565,7 @@ local function update()
                state = states.RUNNING
             else
                end_frame = gamestate.frame_number + end_delay
-               if dummy.superfreeze_decount > 0 then end_frame = gamestate.frame_number + end_super_delay end
+               if dummy.superfreeze_decount > 0 then end_frame = gamestate.frame_number + dummy.remaining_freeze_frames - end_super_delay end
                state = states.BEFORE_END
             end
          end

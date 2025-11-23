@@ -220,7 +220,7 @@ end
 
 local function clear_table(tbl)
    local to_remove = {}
-   for k in pairs(tbl) do table.insert(to_remove, k) end
+   for k in pairs(tbl) do to_remove[#to_remove + 1] = k end
    for _, key in ipairs(to_remove) do tbl[key] = nil end
 end
 
@@ -256,7 +256,7 @@ end
 local function get_boxes(boxes, types)
    local res = {}
    for _, box in pairs(boxes) do
-      for _, type in pairs(types) do if convert_box_types[box[1]] == type then table.insert(res, box) end end
+      for _, type in pairs(types) do if convert_box_types[box[1]] == type then res[#res + 1] = box end end
    end
    return res
 end
@@ -379,7 +379,6 @@ local function test_collision(defender_x, defender_y, defender_flip_x, defender_
    return false
 end
 
-
 local function is_pressing_forward(player, input)
    if player.flip_x == 0 then
       return input[player.prefix .. " Left"]
@@ -404,16 +403,16 @@ local function input_to_text(t)
       local text = ""
       for j = 1, #t[i] do
          if t[i][j] == "down" then
-            text = text .. "D"
+            text = text .. "d"
          elseif t[i][j] == "up" then
-            text = text .. "U"
+            text = text .. "u"
          elseif t[i][j] == "forward" then
-            text = text .. "F"
+            text = text .. "f"
          elseif t[i][j] == "back" then
-            text = text .. "B"
+            text = text .. "b"
          end
       end
-      if text ~= "" then text = text .. "+" end
+      if text ~= "" then text = text .. "_" end
       for j = 1, #t[i] do
          if t[i][j] == "LP" or t[i][j] == "MP" or t[i][j] == "HP" or t[i][j] == "LK" or t[i][j] == "MK" or t[i][j] ==
              "HK" then
@@ -421,7 +420,7 @@ local function input_to_text(t)
             if j + 1 <= #t[i] then text = text .. "+" end
          end
       end
-      table.insert(result, text)
+      result[#result + 1] = text
    end
    return result
 end
@@ -462,13 +461,13 @@ local function name_to_sequence(name)
          for i = 1, #directions do
             local dir = string.sub(directions, i, i)
             if dir == "d" then
-               table.insert(seq, "down")
+               seq[#seq + 1] = "down"
             elseif dir == "u" then
-               table.insert(seq, "up")
+               seq[#seq + 1] = "up"
             elseif dir == "f" then
-               table.insert(seq, "forward")
+               seq[#seq + 1] = "forward"
             elseif dir == "b" then
-               table.insert(seq, "back")
+               seq[#seq + 1] = "back"
             end
          end
       else
@@ -487,23 +486,31 @@ local function name_to_sequence(name)
       end
       for i = 1, #to_check do
          if to_check[i] == "LP" then
-            table.insert(seq, "LP")
+            seq[#seq + 1] = "LP"
          elseif to_check[i] == "MP" then
-            table.insert(seq, "MP")
+            seq[#seq + 1] = "MP"
          elseif to_check[i] == "HP" then
-            table.insert(seq, "HP")
+            seq[#seq + 1] = "HP"
          elseif to_check[i] == "LK" then
-            table.insert(seq, "LK")
+            seq[#seq + 1] = "LK"
          elseif to_check[i] == "MK" then
-            table.insert(seq, "MK")
+            seq[#seq + 1] = "MK"
          elseif to_check[i] == "HK" then
-            table.insert(seq, "HK")
+            seq[#seq + 1] = "HK"
          else
             return nil
          end
       end
    end
    return {seq}
+end
+
+local function get_menu_names(tbl)
+   local result = {}
+   for k, v in ipairs(tbl) do
+      result[#result + 1] = "menu_" .. v
+   end
+   return result
 end
 
 local function enum(names, opts)
@@ -515,6 +522,16 @@ local function enum(names, opts)
       if opts.reverse then e[i] = key end
    end
    return e
+end
+
+local function convert_strings_to_numbers(tbl)
+   for k, v in pairs(tbl) do
+      if type(v) == "string" and k ~= "name" then
+         tbl[k] = tonumber(v, 16)
+      elseif type(v) == "table" then
+         convert_strings_to_numbers(v)
+      end
+   end
 end
 
 local function select_weighted(list)
@@ -620,7 +637,9 @@ return {
    input_to_text = input_to_text,
    sequence_to_name = sequence_to_name,
    name_to_sequence = name_to_sequence,
+   get_menu_names = get_menu_names,
    enum = enum,
+   convert_strings_to_numbers = convert_strings_to_numbers,
    select_weighted = select_weighted,
    random_normal_range = random_normal_range,
    random_quadratic = random_quadratic,

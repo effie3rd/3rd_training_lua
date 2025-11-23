@@ -31,7 +31,7 @@ local menu_stages = {"menu_off", "menu_random"}
 for i = 0, 20 do
    local name = "menu_" .. stages[i].name
    if not tools.table_contains_deep(menu_stages, name) then
-      table.insert(menu_stages, name)
+      menu_stages[#menu_stages + 1] = name
       menu_to_stage_map[#menu_stages] = i
       n_stages = n_stages + 1
    end

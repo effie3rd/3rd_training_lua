@@ -64,10 +64,12 @@ local function continue_from_savestate()
       is_active = true
       player = gamestate.P1
       dummy = gamestate.P2
+      unblockable_data = unblockables_tables.get_unblockables_data(settings.special_training.unblockables.character,
+                                                                   settings.special_training.unblockables.type)
       local active_followups = {}
       for i = 1, #unblockable_data.followups do
          if settings.special_training.unblockables.followups[i] then
-            table.insert(active_followups, unblockable_data.followups[i])
+            active_followups[#active_followups + 1] = unblockable_data.followups[i]
          end
       end
       local followup = active_followups[math.random(1, #active_followups)]
@@ -123,6 +125,7 @@ local function stop()
       inputs.unblock_input(1)
       inputs.unblock_input(2)
       advanced_control.clear_all()
+      hud.show_please_wait_display(false)
    end
 end
 

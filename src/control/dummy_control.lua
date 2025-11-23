@@ -138,13 +138,13 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
          local hit_type = 1
          local fdata_meta
          if attack.blocking_type == "projectile" then
-            if attack.is_seieienbu then
-               fdata_meta = frame_data_meta["yang"][attack.animation]
-            else
-               fdata_meta = frame_data_meta["projectiles"][attack.animation]
-            end
+            fdata_meta = frame_data_meta["projectiles"][attack.animation]
          else
             fdata_meta = frame_data_meta[player.char_str][attack.animation]
+         end
+         if attack.is_seieienbu then
+            hit_type = 1
+            fdata_meta = nil
          end
          if fdata_meta then
             if fdata_meta.hit_type and fdata_meta.hit_type[attack.hit_id] then
@@ -179,38 +179,6 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
    dummy.blocking.tracked_attacks = dummy.blocking.tracked_attacks or {}
    dummy.blocking.force_block_start_frame = dummy.blocking.force_block_start_frame or 0
 
-   if not gamestate.is_in_match or mode == 1 or dummy.counter.is_counterattacking or recording.current_recording_state ==
-       4 then return end
-
-   if dummy.blocking.expected_hit_projectiles then
-      for _, id in ipairs(dummy.blocking.expected_hit_projectiles) do
-         if gamestate.projectiles[id] then
-            gamestate.projectiles[id].remaining_hits = gamestate.projectiles[id].remaining_hits - 1
-            gamestate.update_projectile_cooldown(gamestate.projectiles[id])
-         end
-      end
-   end
-
-   dummy.blocking.expected_hit_projectiles = {}
-
-   local frames_prediction = 3
-
-   local expected_attacks = prediction.predict_hits(player, nil, nil, dummy, nil, nil, frames_prediction)
-   -- EX Aegis must be blocked within 5f of screen darkening
-   if player.superfreeze_decount > 0 and player.animation == "774c" then
-      local side = gamestate.get_side(player.pos_x, dummy.pos_x, player.previous_pos_x, dummy.previous_pos_x)
-      local attack = {
-         id = player.id,
-         blocking_type = "player",
-         hit_id = 1,
-         delta = 1,
-         animation = "774c",
-         flip_x = player.flip_x,
-         side = side
-      }
-      table.insert(expected_attacks, attack)
-   end
-
    if dummy.just_received_connection then
       dummy.blocking.received_hit_count = dummy.blocking.received_hit_count + 1
       dummy.blocking.last_block.has_connected = true
@@ -232,6 +200,39 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
       end
    end
 
+   if not gamestate.is_in_match or mode == 1 or dummy.counter.is_counterattacking or recording.current_recording_state ==
+       4 then return end
+
+   if dummy.blocking.expected_hit_projectiles then
+      for _, id in ipairs(dummy.blocking.expected_hit_projectiles) do
+         if gamestate.projectiles[id] then
+            gamestate.projectiles[id].remaining_hits = gamestate.projectiles[id].remaining_hits - 1
+            gamestate.update_projectile_cooldown(gamestate.projectiles[id])
+         end
+      end
+   end
+
+   dummy.blocking.expected_hit_projectiles = {}
+
+   local frames_prediction = 3
+
+   local expected_attacks = prediction.predict_hits(player, nil, nil, dummy, nil, nil, frames_prediction)
+   -- EX Aegis must be blocked within 5f of screen darkening
+   if player.superfreeze_decount > 0 and player.char_str == "urien" and player.animation == "774c" then
+      local side = gamestate.get_side(player.pos_x, dummy.pos_x, player.previous_pos_x, dummy.previous_pos_x)
+      local attack = {
+         id = player.id,
+         blocking_type = "player",
+         hit_id = 1,
+         delta = 1,
+         animation = "774c",
+         flip_x = player.flip_x,
+         side = side
+      }
+      if not expected_attacks[1] then expected_attacks[1] = {} end
+      expected_attacks[1][#expected_attacks[1] + 1] = attack
+   end
+
    if not (mode == 5 and dummy.blocking.randomized_out) and not (mode == 4 and dummy.blocking.received_hit_count == 0) and
        not (mode == 3 and dummy.blocking.blocked_hit_count > 0) then
       local block_type = style -- 1 is block, 2 is parry
@@ -249,16 +250,17 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
                block_type = Block_Type.PARRY
             end
          end
+         if dummy.is_airborne then block_type = Block_Type.PARRY end
       end
 
       local to_remove = {}
       for _, attack in pairs(dummy.blocking.tracked_attacks) do
          if attack.blocking_type == "projectile" then
             if not tools.table_contains_property(gamestate.projectiles, "id", attack.id) then
-               table.insert(to_remove, attack.id)
+               to_remove[#to_remove + 1] = attack.id
             end
          elseif attack.blocking_type == "player" then
-            if player.is_idle then table.insert(to_remove, attack.id) end
+            if player.is_idle then to_remove[#to_remove + 1] = attack.id end
          end
       end
       for _, key in ipairs(to_remove) do dummy.blocking.tracked_attacks[key] = nil end
@@ -278,7 +280,7 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
       to_remove = {}
       for id, attack in pairs(dummy.blocking.tracked_attacks) do
          if not tools.table_contains_property(expected_attacks, "id", attack.id) and not attack.force_block then
-            table.insert(to_remove, id)
+            to_remove[#to_remove + 1] = id
          end
          if player.superfreeze_just_began then
             attack.connect_frame = attack.connect_frame + player.remaining_freeze_frames
@@ -324,9 +326,7 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
       local delta = 99
 
       for k, attack_list in pairs(expected_attacks) do
-         for _, attack in ipairs(attack_list) do
-            attack.connect_frame = gamestate.frame_number + attack.delta
-         end
+         for _, attack in ipairs(attack_list) do attack.connect_frame = gamestate.frame_number + attack.delta end
          if k < delta then delta = k end
          if not hit_data[k] then hit_data[k] = {} end
          hit_data[k].hit_type, hit_data[k].unparryable, hit_data[k].unblockable =
@@ -354,10 +354,11 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
                   if gamestate.projectiles[attack.id].tengu_state ~= 3 then
                      dummy.blocking.tracked_attacks[attack.id].should_ignore = false
                   end
-               elseif attack.animation == "72" then --EX Yagyou
+               elseif attack.animation == "72" then -- EX Yagyou
                   dummy.blocking.tracked_attacks[attack.id].should_ignore = false
-               elseif gamestate.projectiles[attack.id].remaining_hits <
-                   dummy.blocking.tracked_attacks[attack.id].remaining_hits and
+               elseif (gamestate.projectiles[attack.id].remaining_hits <
+                   dummy.blocking.tracked_attacks[attack.id].remaining_hits or
+                   gamestate.projectiles[attack.id].has_just_connected) and
                    gamestate.projectiles[attack.id].remaining_hits > 0 then
                   dummy.blocking.tracked_attacks[attack.id].should_ignore = false
                end
@@ -366,7 +367,7 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
             for key, value in pairs(attack) do dummy.blocking.tracked_attacks[attack.id][key] = value end
 
             if not dummy.blocking.tracked_attacks[attack.id].should_ignore then
-               table.insert(next_attacks, dummy.blocking.tracked_attacks[attack.id])
+               next_attacks[#next_attacks + 1] = dummy.blocking.tracked_attacks[attack.id]
             end
          end
          hit_data[delta].hit_type, hit_data[delta].unparryable, hit_data[delta].unblockable = get_hit_type(next_attacks,
@@ -381,24 +382,27 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
          local dummy_side = player_side == 1 and 2 or 1
          local allow_cheat_parry = false
          local allow_reset_parry = false
+         local blocking_target = ""
          local parry_type = "parry_forward"
 
          if hit_data[delta] then
             hit_type = hit_data[delta].hit_type
             local is_projectile = false
             for _, attack in pairs(next_attacks) do
-               -- projectile blocking direction is always the side it is created on
-               if attack.blocking_type == "projectile" then
-                  if block_type == Block_Type.BLOCK then dummy_side = attack.flip_x == 0 and 1 or 2 end
-                  is_projectile = true
-               end
-               if style == 1 then
-                  if attack.blocking_type == "player" then
-                     if player_side ~= attack.side then
-                        dummy_side = attack.side == 1 and 2 or 1
-                        write_memory.disable_parry_attempts(dummy)
-                     end
+               -- projectile blocking direction is always the same as the side it was created on
+               if attack.blocking_type == "projectile" and blocking_target ~= "player" then
+                  if block_type == Block_Type.BLOCK and attack.animation ~= "00_tenguishi" then
+                     dummy_side = attack.flip_x == 0 and 1 or 2
                   end
+                  is_projectile = true
+                  blocking_target = "projectile"
+               end
+               if attack.blocking_type == "player" then
+                  if style == Block_Style.BLOCK and player_side ~= attack.side then
+                     write_memory.disable_parry_attempts(dummy)
+                  end
+                  dummy_side = attack.side == 1 and 2 or 1
+                  blocking_target = "player"
                end
                if dummy.blocking.reset_parry and dummy.blocking.reset_parry.active then
                   if attack.animation == dummy.blocking.reset_parry.animation then
@@ -487,7 +491,8 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
                         dummy.blocking.tracked_attacks[attack.id].should_ignore = true
                      end
                      if dummy.blocking.tracked_attacks[attack.id].blocking_type == "projectile" then
-                        table.insert(dummy.blocking.expected_hit_projectiles, attack.id)
+                        dummy.blocking.expected_hit_projectiles[#dummy.blocking.expected_hit_projectiles + 1] =
+                            attack.id
                      end
                   end
                   -- keep blocking until we can confirm it for improved consistency
@@ -570,9 +575,9 @@ local function update_mash_inputs(input, player, dummy, mode)
       if dummy.stun_timer >= 8 or dummy.is_being_thrown then
          -- normal
          if mode == 2 then
-            table.insert(sequence, tools.deepcopy(mash_directions[i_mash_directions]))
-            table.insert(sequence[1], p_buttons[i_mash_buttons])
-            table.insert(sequence[1], k_buttons[#k_buttons - i_mash_buttons + 1])
+            sequence[#sequence + 1] = tools.deepcopy(mash_directions[i_mash_directions])
+            sequence[1][#sequence[1] + 1] = p_buttons[i_mash_buttons]
+            sequence[1][#sequence[1] + 1] = k_buttons[#k_buttons - i_mash_buttons + 1]
             if elapsed % 4 == 0 then
                i_mash_directions = tools.wrap_index(i_mash_directions + 1, #mash_directions)
             end
@@ -580,17 +585,17 @@ local function update_mash_inputs(input, player, dummy, mode)
             -- serious
          elseif mode == 3 then
             if dummy.is_being_thrown then -- try to make mashing realistic
-               table.insert(sequence, tools.deepcopy(mash_directions[i_mash_directions]))
-               table.insert(sequence[1], serious_buttons[i_mash_buttons])
+               sequence[#sequence + 1] = tools.deepcopy(mash_directions[i_mash_directions])
+               sequence[1][#sequence[1] + 1] = serious_buttons[i_mash_buttons]
                if elapsed % 4 == 0 then
                   i_mash_buttons = tools.wrap_index(i_mash_buttons + 1, #serious_buttons)
                end
             else
-               table.insert(sequence, tools.deepcopy(mash_directions[i_mash_directions]))
-               table.insert(sequence[1], p_buttons[i_mash_buttons])
-               table.insert(sequence[1], p_buttons[tools.wrap_index(i_mash_buttons + 1, #p_buttons)])
-               table.insert(sequence[1], k_buttons[#k_buttons - i_mash_buttons + 1])
-               table.insert(sequence[1], k_buttons[tools.wrap_index(#k_buttons - i_mash_buttons, #k_buttons)])
+               sequence[#sequence + 1] = tools.deepcopy(mash_directions[i_mash_directions])
+               sequence[1][#sequence[1] + 1] = p_buttons[i_mash_buttons]
+               sequence[1][#sequence[1] + 1] = p_buttons[tools.wrap_index(i_mash_buttons + 1, #p_buttons)]
+               sequence[1][#sequence[1] + 1] = k_buttons[#k_buttons - i_mash_buttons + 1]
+               sequence[1][#sequence[1] + 1] = k_buttons[tools.wrap_index(#k_buttons - i_mash_buttons, #k_buttons)]
                i_mash_buttons = tools.wrap_index(i_mash_buttons + 1, #p_buttons)
             end
 
@@ -599,9 +604,9 @@ local function update_mash_inputs(input, player, dummy, mode)
             end
             -- fastest
          elseif mode == 4 then
-            table.insert(sequence, tools.deepcopy(mash_directions[i_mash_directions]))
+            sequence[#sequence + 1] = tools.deepcopy(mash_directions[i_mash_directions])
             if elapsed % 2 == 0 then
-               for _, button in pairs(all_buttons) do table.insert(sequence[1], button) end
+               for _, button in pairs(all_buttons) do sequence[1][#sequence[1] + 1] = button end
             end
             i_mash_directions = tools.wrap_index(i_mash_directions + 1, #mash_directions)
          end

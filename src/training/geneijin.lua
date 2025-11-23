@@ -241,11 +241,11 @@ local function update()
                         if move == geneijin_tables.pause then
                         elseif move.action.type == training_classes.Action_Type.THROW then
                            if not (action_queue[i_actions] == geneijin_tables.pause) then
-                              table.insert(valid_moves, move)
+                              valid_moves[#valid_moves + 1] = move
                               n_throws = n_throws + 1
                            end
                         else
-                           table.insert(valid_moves, move)
+                           valid_moves[#valid_moves + 1] = move
                         end
                      end
                   end
@@ -267,13 +267,13 @@ local function update()
                local valid_moves = {}
                for i, move in ipairs({geneijin_tables.walk_in, geneijin_tables.pause}) do
                   if move.active and move.action:should_execute(dummy, gamestate.stage, actions, i_actions) then
-                     table.insert(valid_moves, move)
+                     valid_moves[#valid_moves + 1] = move
                   end
                end
                next_move = tools.select_weighted(valid_moves) or geneijin_tables.walk_in
             end
-            table.insert(action_queue, next_move)
-            table.insert(actions, next_move.action)
+            action_queue[#action_queue + 1] = next_move
+            actions[#actions + 1] = next_move.action
             state = states.FOLLOWUP
          end
          if state == states.FOLLOWUP then
@@ -336,7 +336,7 @@ local function update()
                if score > settings.special_training.geneijin.score then
                   settings.special_training.geneijin.score = score
                end
-               display_delta_score(delta_score)
+               -- display_delta_score(delta_score)
             end
             state = states.END
          end
@@ -347,8 +347,7 @@ local function update()
                end
             end
          end
-
-         hud.add_score_text(score)
+         -- hud.add_score_text(score)
       end
    end
 end

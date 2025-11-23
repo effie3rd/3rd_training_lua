@@ -66,25 +66,25 @@ local function char(...)
       local b1, b2, b3, b4 = nil, nil, nil, nil
 
       if v < 0x80 then -- Single-byte sequence
-         table.insert(buf, string.char(v))
+         buf[#buf + 1] = string.char(v)
       elseif v < 0x800 then -- Two-byte sequence
          b1 = bit.bor(0xC0, bit.band(bit.rshift(v, 6), 0x1F))
          b2 = bit.bor(0x80, bit.band(v, 0x3F))
 
-         table.insert(buf, string.char(b1, b2))
+         buf[#buf + 1] = string.char(b1, b2)
       elseif v < 0x10000 then -- Three-byte sequence
          b1 = bit.bor(0xE0, bit.band(bit.rshift(v, 12), 0x0F))
          b2 = bit.bor(0x80, bit.band(bit.rshift(v, 6), 0x3F))
          b3 = bit.bor(0x80, bit.band(v, 0x3F))
 
-         table.insert(buf, string.char(b1, b2, b3))
+         buf[#buf + 1] = string.char(b1, b2, b3)
       else -- Four-byte sequence
          b1 = bit.bor(0xF0, bit.band(bit.rshift(v, 18), 0x07))
          b2 = bit.bor(0x80, bit.band(bit.rshift(v, 12), 0x3F))
          b3 = bit.bor(0x80, bit.band(bit.rshift(v, 6), 0x3F))
          b4 = bit.bor(0x80, bit.band(v, 0x3F))
 
-         table.insert(buf, string.char(b1, b2, b3, b4))
+         buf[#buf + 1] = string.char(b1, b2, b3, b4)
       end
    end
 
@@ -133,7 +133,7 @@ local function codepoint(str, startPos, endPos)
       local len = seqEndPos - seqStartPos + 1
 
       if len == 1 then -- Single-byte codepoint
-         table.insert(ret, str:byte(seqStartPos))
+         ret[#ret + 1] = str:byte(seqStartPos)
       else -- Multi-byte codepoint
          local b1 = str:byte(seqStartPos)
          local cp = 0
@@ -147,7 +147,7 @@ local function codepoint(str, startPos, endPos)
 
          cp = bit.bor(cp, bit.lshift(bit.band(b1, 0x7F), (len - 1) * 5))
 
-         table.insert(ret, cp)
+         ret[#ret + 1] = cp
       end
    until seqEndPos >= endPos
 
@@ -239,10 +239,10 @@ local function force(str)
       local seqStartPos, seqEndPos = decode(str, curPos)
 
       if not seqStartPos then
-         table.insert(buf, char(0xFFFD))
+         buf[#buf + 1] = char(0xFFFD)
          curPos = curPos + 1
       else
-         table.insert(buf, str:sub(seqStartPos, seqEndPos))
+         buf[#buf + 1] = str:sub(seqStartPos, seqEndPos)
          curPos = seqEndPos + 1
       end
    until curPos > endPos

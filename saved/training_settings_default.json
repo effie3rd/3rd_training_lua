@@ -207,7 +207,7 @@
   "blocking_style": 1,
   "blocking_mode": 2,
   "special_training_mode": 1,
-  "display_frame_advantage": 2,
+  "display_frame_advantage": 1,
   "meter_mode": 5,
   "attack_range_display_max_attacks": 1,
   "display_stun_timer": true,

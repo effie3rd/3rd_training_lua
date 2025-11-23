@@ -3,7 +3,7 @@ local game_data = require("src.modules.game_data")
 local frame_data_meta = {}
 
 local frame_data_keys = copytable(game_data.characters)
-table.insert(frame_data_keys, "projectiles")
+frame_data_keys[#frame_data_keys + 1] = "projectiles"
 
 for _, char in pairs(frame_data_keys) do
   frame_data_meta[char] = {}
@@ -343,7 +343,7 @@ frame_data_meta["gouki"]["9818"] = { hit_type = {3, 3, 3, 3, 3, 3, 3, 3}}       
 frame_data_meta["hugo"]["40b0"] = { hit_type = {3}}                              --MP
 frame_data_meta["hugo"]["4200"] = { hit_type = {4}}                              --HP
 -- frame_data_meta["hugo"]["4820"] = { hit_type = {3}}                              --LK
-frame_data_meta["hugo"]["48d0"] = { hit_type = {3, 3}}                           --MK
+frame_data_meta["hugo"]["48d0"] = { hit_type = {3, 4}}                           --MK
 frame_data_meta["hugo"]["4c10"] = { hit_type = {4}}                              --HK
 -- frame_data_meta["hugo"]["4e00"] = { hit_type = {2}}                              --d_LP
 -- frame_data_meta["hugo"]["4ec0"] = { hit_type = {2}}                              --d_MP
@@ -1066,7 +1066,7 @@ frame_data_meta["yang"]["f0fc"] = { hit_type = {3, 3}}                          
 frame_data_meta["yang"]["ef0c"] = { hit_type = {3}}                              --tc_1_ext
 frame_data_meta["yang"]["f50c"] = { hit_type = {3}}                              --tc_3
 frame_data_meta["yang"]["f334"] = { hit_type = {3}}                              --tc_3_ext
-frame_data_meta["yang"]["ed34"] = { hit_type = {3, 3}}                           --tc_4_ext
+frame_data_meta["yang"]["ed34"] = { hit_type = {4, 4}}                           --tc_4_ext
 frame_data_meta["yang"]["1b34"] = { throw = true}                               --throw_neutral
 frame_data_meta["yang"]["1c34"] = { throw = true}                               --throw_forward
 frame_data_meta["yang"]["ecd4"] = { throw = true}                               --throw_back

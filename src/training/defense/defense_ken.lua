@@ -88,7 +88,7 @@ local function init()
    walk_forward_input = {{"forward"}}
    walk_back_input = {{"back"}}
    block_low_long_input = {}
-   for i = 1, 16 do table.insert(block_low_long_input, {"down", "back"}) end
+   for i = 1, 16 do block_low_long_input[#block_low_long_input + 1] = {"down", "back"} end
    forward_dash_input = {{"forward"}, {}, {"forward"}}
    forward_dash_duration = framedata.get_first_idle_frame_by_name("ken", "dash_forward")
    back_dash_input = {{"back"}, {}, {"back"}}
@@ -514,7 +514,7 @@ function followup_punish:setup(player, stage, actions, i_actions)
 
    local valid_punishes = {}
    for _, punish in pairs(punishes) do
-      if punish.action:is_valid(player, stage, predicted_state) then table.insert(valid_punishes, punish) end
+      if punish.action:is_valid(player, stage, predicted_state) then valid_punishes[#valid_punishes + 1] = punish end
    end
    local selected_punish = tools.select_weighted(valid_punishes)
    if selected_punish then return selected_punish.action:setup(player, stage, actions, i_actions) end
@@ -745,22 +745,17 @@ function followup_block:run(player, stage, actions, i_actions)
          self.has_parried = true
          self.block_time = self.blocked_frames
       end
-      if player.other.has_just_attacked or player.has_just_blocked then
+      if player.other.is_attacking or player.has_just_blocked then
          local hit_type = 1
          local fdata_meta = fdm.frame_data_meta[player.other.char_str][player.other.animation]
          if fdata_meta and fdata_meta.hit_type then
             hit_type = fdata_meta.hit_type[player.other.current_hit_id + 1]
             if hit_type == 2 or hit_type == 4 then
-               local startup = framedata.get_next_hit_frame(player.other.char_str, player.other.animation,
-                                                            player.other.current_hit_id)
-               if startup >= reaction_time then
+               if player.other.animation_frame + 1 >= reaction_time then
                   if hit_type == 4 then
-                     self.switch_blocking = {
-                        start_frame = gamestate.frame_number + startup - 1,
-                        input = block_high_input
-                     }
+                     self.switch_blocking = {start_frame = gamestate.frame_number, input = block_high_input}
                   else
-                     self.block_input = {start_frame = gamestate.frame_number + startup - 1, input = block_low_input}
+                     self.block_input = {start_frame = gamestate.frame_number, input = block_low_input}
                   end
                end
             end
@@ -1413,12 +1408,16 @@ function followup_react:setup(player, stage, actions, i_actions)
    self.react_timer = Delay:new(react_duration)
    self.previous_action = actions[i_actions - 1]
    if self.previous_action and self.previous_action.type == Action_Type.BLOCK then
-      self.previous_action.block_time = react_duration + player.other.remaining_wakeup_time + 1
+      if player.other.is_waking_up then
+         self.previous_action.block_time = react_duration + player.other.remaining_wakeup_time + 1
+      end
    end
+
    return {{condition = nil, action = nil}}
 end
 
 function followup_react:run(player, stage, actions, i_actions)
+   if self.previous_action.block_time < react_duration then self.previous_action:extend(player) end
    if self.previous_action and self.previous_action.type == Action_Type.BLOCK then
       if self.previous_action.blocked_frames >= react_duration then return true, {score = 1} end
    elseif self.react_timer:is_complete() then
@@ -1518,7 +1517,8 @@ local walk_out_max_frames = 20
 local wakeup_walk_out_timing = 10
 
 function followup_walk_out:setup(player, stage, actions, i_actions)
-   self.min_walk_frames = 6
+   self.min_walk_in_frames = 6
+   self.min_walk_frames = 12  --debug
    self.walked_frames = 0
    local setup = {
       {
@@ -1565,7 +1565,7 @@ function followup_walk_out:extend(player)
 end
 
 function followup_walk_out:walk_in_condition(player, walk_followup)
-   if walk_followup.walked_frames < self.min_walk_frames then return false end
+   if walk_followup.walked_frames < self.min_walk_in_frames then return false end
    return true
 end
 
@@ -1995,7 +1995,7 @@ local setups = {
 }
 
 local setup_names = {}
-for i, setup in ipairs(setups) do table.insert(setup_names, setup.action.name) end
+for i, setup in ipairs(setups) do setup_names[#setup_names + 1] = setup.action.name end
 
 local followups = {
    {name = "far_d_lk_followups", list = far_d_lk_followups},
@@ -2008,15 +2008,16 @@ local followups = {
 }
 
 local followup_names = {}
-for i, followup in ipairs(followups) do table.insert(followup_names, followup.name) end
+for i, followup in ipairs(followups) do followup_names[#followup_names + 1] = followup.name end
 
 local followup_followup_names = {}
 for i, followup in ipairs(followups) do
    followup_followup_names[i] = {}
    for j, followup_followup in ipairs(followup.list) do
-      table.insert(followup_followup_names[i], followup_followup.action.name)
+      followup_followup_names[i][#followup_followup_names[i] + 1] = followup_followup.action.name
    end
 end
+
 
 return {
    setup_names = setup_names,

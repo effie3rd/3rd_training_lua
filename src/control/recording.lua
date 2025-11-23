@@ -48,8 +48,8 @@ end
 
 local function initialize_slots()
    if not next(settings.recordings) then clear_all_recordings() end
-   for i = 1, recording_slot_count do table.insert(recording_slots, make_recording_slot()) end
-   for i = 1, #recording_slots do table.insert(recording_slots_names, "slot " .. i) end
+   for i = 1, recording_slot_count do recording_slots[#recording_slots + 1] = make_recording_slot() end
+   for i = 1, #recording_slots do recording_slots_names[#recording_slots_names + 1] = "slot " .. i end
 end
 
 local function backup_recordings()
@@ -58,7 +58,7 @@ local function backup_recordings()
    for _, value in ipairs(game_data.characters) do
       if settings.recordings[value] == nil then
          settings.recordings[value] = {}
-         for i = 1, #recording_slots do table.insert(settings.recordings[value], make_recording_slot()) end
+         for i = 1, #recording_slots do settings.recordings[value][#settings.recordings[value] + 1] = make_recording_slot() end
       end
    end
 
@@ -85,7 +85,7 @@ local function restore_recordings(char_str)
       local recording_count = #recording_slots
       if settings.recordings then recording_slots = settings.recordings[char_str] or {} end
       local missing_slots = recording_count - #recording_slots
-      for i = 1, missing_slots do table.insert(recording_slots, make_recording_slot()) end
+      for i = 1, missing_slots do recording_slots[#recording_slots + 1] = make_recording_slot() end
    end
    update_current_recording_slot_frames()
 end
@@ -105,7 +105,7 @@ local function find_random_recording_slot()
    -- random slot selection
    local recorded_slots = {}
    for i, value in ipairs(recording_slots) do
-      if value.inputs and #value.inputs > 0 then table.insert(recorded_slots, i) end
+      if value.inputs and #value.inputs > 0 then recorded_slots[#recorded_slots + 1] = i end
    end
 
    if #recorded_slots > 0 then
@@ -168,7 +168,7 @@ local function set_recording_state(input, state)
       end
 
       local cropped_sequence = {}
-      for i = first_input, last_input do table.insert(cropped_sequence, current_recording_slot.inputs[i]) end
+      for i = first_input, last_input do cropped_sequence[#cropped_sequence + 1] = current_recording_slot.inputs[i] end
       current_recording_slot.inputs = cropped_sequence
 
       if current_recording_slot.superfreeze then
@@ -320,7 +320,7 @@ end
 local function add_new_keyframe()
    local keyframe = create_new_keyframe()
    keyframe.recording_frame = #continuous_recording_inputs - 1
-   table.insert(continuous_recording_keyframes, keyframe)
+   continuous_recording_keyframes[#continuous_recording_keyframes + 1] = keyframe
 end
 
 local function is_valid_keyframe()
@@ -336,7 +336,7 @@ local match_start_state = savestate.create("data/" .. game_data.rom_name .. "/sa
 
 local function update_continuous_recording(input, player, dummy)
    if gamestate.has_match_just_started then savestate.save(match_start_state) end
-   table.insert(continuous_recording_inputs, {})
+   continuous_recording_inputs[#continuous_recording_inputs + 1] = {}
    while #continuous_recording_inputs > continuous_recording_length do table.remove(continuous_recording_inputs, 1) end
    if is_valid_keyframe() then
       previous_is_valid_keyframe = true
@@ -361,14 +361,14 @@ local function update_recording(input, player, dummy)
                   if (input_name ~= "Coin" and input_name ~= "Start") then
                      if (value) then
                         local sequence_input_name = stick_input_to_sequence_input(player, input_name)
-                        table.insert(frame, sequence_input_name)
+                        frame[#frame + 1] = sequence_input_name
                      end
                   end
                end
             end
             local current_recording_slot = recording_slots[settings.training.current_recording_slot]
             local recording_inputs = current_recording_slot.inputs
-            table.insert(recording_inputs, frame)
+            recording_inputs[#recording_inputs + 1] = frame
 
             local recording_frame = #recording_inputs
 
@@ -377,7 +377,7 @@ local function update_recording(input, player, dummy)
                superfreeze_begin_frame = recording_frame
             end
             if player.superfreeze_decount > 0 and recording_frame - superfreeze_begin_frame < 3 then
-               table.insert(current_recording_slot.superfreeze, {recording_frame, player.remaining_freeze_frames})
+               current_recording_slot.superfreeze[#current_recording_slot.superfreeze + 1] = {recording_frame, player.remaining_freeze_frames}
             end
 
             if player.idle_time == 1 then current_recording_last_idle_frame = recording_frame - 1 end

@@ -1,15 +1,15 @@
 local gamestate = require("src.gamestate")
 local loading = require("src.loading")
-local text = require("src.ui.text")
 local draw = require("src.ui.draw")
 local debug_settings = require("src.debug_settings")
 local tools = require("src.tools")
 local colors = require("src.ui.colors")
+local write_memory = require("src.control.write_memory")
 
-local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text,
-                                                                                             text.render_text_multiple,
-                                                                                             text.get_text_dimensions,
-                                                                                             text.get_text_dimensions_multiple
+local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = draw.render_text,
+                                                                                             draw.render_text_multiple,
+                                                                                             draw.get_text_dimensions,
+                                                                                             draw.get_text_dimensions_multiple
 
 local dump_state = {}
 local function dump_variables()
@@ -60,10 +60,12 @@ local function show_dump_state_display()
 end
 
 local debug_framedata_data = {}
-local function debuggui(name, var) if name and var then table.insert(debug_framedata_data, {name, tostring(var)}) end end
+local function debuggui(name, var)
+   if name and var then debug_framedata_data[#debug_framedata_data + 1] = {name, tostring(var)} end
+end
 local function debug_update_framedata()
    if gamestate.is_in_match then
-      local player = gamestate.P1
+      local player = gamestate.P2
       local other = player.other
 
       debug_framedata_data = {}
@@ -73,22 +75,22 @@ local function debug_update_framedata()
       debuggui("anim f", player.animation_frame)
       -- debuggui("action", player.action)
       -- debuggui("cd", player.cooldown)
-      debuggui("hash", player.animation_frame_hash)
-      debuggui("freeze", player.remaining_freeze_frames)
+      -- debuggui("hash", player.animation_frame_hash)
+      -- debuggui("freeze", player.remaining_freeze_frames)
       -- -- debuggui("action #", player.action_count)
       -- -- debuggui("action #", player.animation_action_count)
-      debuggui("conn action #", player.connected_action_count)
+      -- debuggui("conn action #", player.connected_action_count)
       -- debuggui("just conn", tostring(other.has_just_connected))
       -- debuggui("hit id", player.current_hit_id)
       -- debuggui("max hit id", player.max_hit_id)
-      debuggui("is recovery", other.is_in_recovery)
+      -- debuggui("is recovery", other.is_in_recovery)
       -- debuggui("proj", player.total_received_projectiles_count)
-      debuggui("throw invul", player.throw_invulnerability_cooldown)
-      debuggui("throw r f", player.throw_recovery_frame)
+      -- debuggui("throw invul", player.throw_invulnerability_cooldown)
+      -- debuggui("throw r f", player.throw_recovery_frame)
       -- debuggui("miss", player.animation_miss_count)
       -- -- debuggui("attacking", tostring(player.is_attacking))
-      debuggui("wakeup", player.remaining_wakeup_time)
-      debuggui("wakeup2", other.remaining_wakeup_time)
+      -- debuggui("wakeup", player.remaining_wakeup_time)
+      -- debuggui("wakeup2", other.remaining_wakeup_time)
       -- debuggui("pos", string.format("%.04f,%.04f", player.pos_x, player.pos_y))
       -- debuggui("pos", string.format("%04f,%04f",other.pos_x, other.pos_y))
       -- debuggui("diff", string.format("%04f,%04f",player.pos_x - player.previous_pos_x, player.pos_y - player.previous_pos_y ))
@@ -107,11 +109,11 @@ local function debug_update_framedata()
             -- debuggui("type", obj.projectile_type)
             -- debuggui("emitter", obj.emitter_id)
 
-            debuggui("xy", tostring(obj.pos_x) .. ", " .. tostring(obj.pos_y))
+            -- debuggui("xy", tostring(obj.pos_x) .. ", " .. tostring(obj.pos_y))
             -- debuggui("friends", obj.friends)
             -- debuggui("anim", obj.animation_frame_hash)
             -- debuggui("frame", obj.animation_frame)
-            -- debuggui("freeze", obj.remaining_freeze_frames)
+            debuggui("freeze", obj.remaining_freeze_frames)
             -- debuggui("sl", obj.start_lifetime)
             -- debuggui("rl", obj.remaining_lifetime)
             --         if frame_data["projectiles"] and frame_data["projectiles"][obj.projectile_start_type] and frame_data["projectiles"][obj.projectile_start_type].frames[obj.animation_frame+1] then
@@ -124,7 +126,7 @@ local function debug_update_framedata()
             -- debuggui("hits", obj.remaining_hits)
             -- debuggui("ts", obj.tengu_state)
             -- debuggui("order", obj.tengu_order)
-            -- debuggui("cd", obj.cooldown)
+            debuggui("cd", obj.cooldown)
 
             --         debuggui("rem", string.format("%x", obj.remaining_lifetime))
          end
@@ -200,7 +202,9 @@ local function queue_hitbox_draw(frame_number, data, tag)
             replaced = true
          end
       end
-      if not replaced then table.insert(draw_hitbox_queue[frame_number], {data = data, tag = tag}) end
+      if not replaced then
+         draw_hitbox_queue[frame_number][#draw_hitbox_queue[frame_number] + 1] = {data = data, tag = tag}
+      end
    end
 end
 
@@ -230,11 +234,11 @@ local function log_update(player)
       local filtered_frame = {frame = frame.frame, events = {}}
       for j, event in ipairs(frame.events) do
          if log_categories_display[event.category] and log_categories_display[event.category].history then
-            table.insert(filtered_frame.events, event)
+            filtered_frame.events[#filtered_frame.events + 1] = event
          end
       end
 
-      if #filtered_frame.events > 0 then table.insert(log_filtered, filtered_frame) end
+      if #filtered_frame.events > 0 then log_filtered[#log_filtered + 1] = filtered_frame end
    end
 
    -- process input
@@ -289,7 +293,7 @@ local function log(section_name, category_name, event_name)
 
    -- Insert frame if it does not exists
    if #logs == 0 or logs[#logs].frame ~= gamestate.frame_number then
-      table.insert(logs, {frame = gamestate.frame_number, events = {}})
+      logs[#logs + 1] = {frame = gamestate.frame_number, events = {}}
    end
 
    -- Remove overflowing logs frame
@@ -330,7 +334,7 @@ local function log_draw()
       local events = {{}, {}, {}}
       for j, event in ipairs(frame.events) do
          if log_categories_display[event.category] and log_categories_display[event.category].history then
-            table.insert(events[log_sections[event.section]], event)
+            events[log_sections[event.section]][#events[log_sections[event.section]] + 1] = event
          end
       end
 
@@ -430,7 +434,7 @@ local function filter_memory_equals(n)
       if new_v == n then
          mem_scan[k] = new_v
       else
-         table.insert(to_remove, k)
+         to_remove[#to_remove + 1] = k
       end
    end
    for _, key in ipairs(to_remove) do mem_scan[key] = nil end
@@ -443,7 +447,7 @@ local function filter_memory_increased()
       if new_v > v then
          mem_scan[k] = new_v
       else
-         table.insert(to_remove, k)
+         to_remove[#to_remove + 1] = k
       end
    end
    for _, key in ipairs(to_remove) do mem_scan[key] = nil end
@@ -456,7 +460,7 @@ local function filter_memory_decreased()
       if new_v < v then
          mem_scan[k] = new_v
       else
-         table.insert(to_remove, k)
+         to_remove[#to_remove + 1] = k
       end
    end
    for _, key in ipairs(to_remove) do mem_scan[key] = nil end
@@ -467,12 +471,26 @@ local function run_debug()
    if debug_settings.show_debug_frames_display then debug_update_framedata() end
    if debug_settings.show_debug_variables_display then update_debug_variables() end
 
-   if gamestate.frame_number % 2000 == 0 then
-      collectgarbage()
-      print("GC memory:", collectgarbage("count"))
-   end
+   -- if gamestate.frame_number % 2000 == 0 then
+   --    collectgarbage()
+   --    print("GC memory:", collectgarbage("count"))
+   -- end
    local keys = input.get()
    if keys.F12 and loading.frame_data_loaded then debug_settings.recording_framedata = true end
+
+   -- local p = tools.Perf_Timer:new()
+   -- local fps_data = {}
+   -- local function average(t)
+   --    local sum = 0
+   --    for i = 1, #t do sum = sum + t[i] end
+   --    return sum / #t
+   -- end
+   -- local el = p:elapsed()
+   -- local fps = 1 / el
+   -- if el > 1 / 60 then print(string.format("[draw] frame: %d, fps: %.2f", gamestate.frame_number, 1 / el)) end
+   -- fps_data[#fps_data + 1] = fps
+   -- if #fps_data > 200 then table.remove(fps_data, 1) end
+   -- if loading.images_loaed then draw.render_text(3, 2, string.format("fps: %.2f / %.2f", fps, average(fps_data))) end
 end
 
 local function draw_debug()
@@ -492,13 +510,34 @@ local function draw_debug()
             for _, boxes in pairs(boxes_list) do draw.draw_hitboxes(unpack(boxes.data)) end
          end
       else
-         table.insert(to_remove, k)
+         to_remove[#to_remove + 1] = k
       end
    end
    for _, key in ipairs(to_remove) do draw_hitbox_queue[key] = nil end
 end
 
 local function debug_things()
+   local mash_directions_serious = {
+      {"down", "back"}, {"down"}, {"up", "forward"}, {"up"}, {"down", "back"}, {"up", "forward"}
+   }
+   local punch = {"MP", "HP"}
+   local inputs = {}
+   local kasumi = require("src.modules.move_data").get_move_inputs_by_name("ryu", "denjin_hadouken", "LP")
+   for _, inp in ipairs(kasumi) do inputs[#inputs + 1] = inp end
+   for i = 1, 80 do
+      inputs[#inputs + 1] = {"LP"}
+      table.insert(inputs[#inputs], punch[i % #punch + 1])
+      table.insert(inputs[#inputs], mash_directions_serious[i % #mash_directions_serious + 1])
+   end
+   for i = 1, 51 do inputs[#inputs + 1] = {} end
+   inputs[#inputs + 1] = {"up", "forward"}
+   inputs[#inputs + 1] = {"up", "forward"}
+   inputs[#inputs + 1] = {"up", "forward"}
+
+   for i = 1, 24 do inputs[#inputs + 1] = {} end
+   inputs[#inputs + 1] = {"HP"}
+   -- write_memory.make_invulnerable(gamestate.P2, true)
+   require("src.control.inputs").queue_input_sequence(gamestate.P1, inputs)
 end
 
 local debug = {

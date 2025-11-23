@@ -7,7 +7,7 @@ local advantage = {}
 local function idle_just_began(player)
    return player.just_became_idle or player.has_just_started_jump or
               ((advantage[player.id] and advantage[player.id].hitbox_start_frame) and
-                  (player.has_just_attacked or player.has_just_thrown))
+                  (player.has_just_thrown))
 end
 
 local function new_advantage()
@@ -73,8 +73,7 @@ local function update()
                end
                if advantage[player.id].hitbox_end_frame then
                   advantage[player.id].active_time = advantage[player.id].hitbox_end_frame -
-                                                         advantage[player.id].hitbox_start_frame -
-                                                         advantage[player.id].freeze_frames
+                                                         advantage[player.id].hitbox_start_frame
                end
             end
             if not advantage[player.id].connect_frame then

@@ -30,7 +30,7 @@ local move_names = {
    },
    chunli = {"MP", "d_MP", "d_MK", "HP", "b_HP", "HK", "d_HK", "hazanshuu_LK", "kara_throw"},
    dudley = {"MP", "d_MP", "f_MK", "HP", "f_HP", "HK", "d_HK"},
-   elena = {"d_MP", "f_MK", "d_MK", "HK", "d_HK", "kara_throw"}, --, "mallet_smash_LP", "mallet_smash_EXP"
+   elena = {"d_MP", "f_MK", "d_MK", "HK", "d_HK", "kara_throw"}, -- , "mallet_smash_LP", "mallet_smash_EXP"
    gill = {"MK", "d_MK", "d_HK", "HP"},
    gouki = {"d_MP", "MK", "d_MK", "d_HK", "gohadouken_HP"},
    hugo = {
@@ -122,11 +122,11 @@ local dash_input_window = 8
 local function update_walk_time(player)
    if player.previous_action == 2 and player.action ~= 2 then
       if #walk_forward_times >= walk_time_data_max then table.remove(walk_forward_times, 1) end
-      table.insert(walk_forward_times, current_walk_time)
+      walk_forward_times[#walk_forward_times + 1] = current_walk_time
    end
    if player.previous_action == 3 and player.action ~= 3 then
       if #walk_back_times >= walk_time_data_max then table.remove(walk_back_times, 1) end
-      table.insert(walk_back_times, current_walk_time)
+      walk_back_times[#walk_back_times + 1] = current_walk_time
    end
    if player.action == 2 then
       if player.previous_action ~= 2 then current_walk_time = 0 end
@@ -240,12 +240,11 @@ function followup_attack:setup(player, stage, actions, i_actions)
    self.opponent_has_been_thrown = false
    local input_delay = Delay:new(6)
    local should_delay = false
-   if current_attack.data.name == "hadouken_EXP" or current_attack.data.name == "gohadouken_HP" then
+   if current_attack.data.name == "hadouken_EXP" or current_attack.data.name == "gohadouken_HP" 
+   or current_attack.data.name == "zesshou_LP"
+   then
       local previous_action = actions[i_actions - 1]
-      if previous_action and
-         previous_action.type == Action_Type.WALK_FORWARD then
-         should_delay = true
-      end
+      if previous_action and previous_action.type == Action_Type.WALK_FORWARD then should_delay = true end
    end
    return {
       {
@@ -403,9 +402,7 @@ function followup_walk_out:run(player, stage, actions, i_actions)
             self:extend(player)
          else
             if self.next_action and self.next_action.walk_out_condition and
-                self.next_action:walk_out_condition(player, self) then
-               return true, {score = 0}
-            end
+                self.next_action:walk_out_condition(player, self) then return true, {score = 0} end
          end
       end
    end
@@ -455,6 +452,11 @@ function followup_reset_distance:setup(player, stage, actions, i_actions)
    if player.pos_x > self.reset_position and player.flip_input or player.pos_x < self.reset_position and
        not player.flip_input then self.input = walk_back_input end
    local setup = {{condition = nil, action = function() inputs.queue_input_sequence(player, self.input, 0, true) end}}
+   if self.input == walk_forward_input then
+      last_forward_input = gamestate.frame_number
+   else
+      last_back_input = gamestate.frame_number
+   end
    return setup
 end
 
@@ -481,7 +483,7 @@ local followup_block = Followup:new("followup_block", Action_Type.BLOCK)
 
 function followup_block:setup(player, stage, actions, i_actions)
    self.blocked_frames = 0
-   self.block_time = 12
+   self.block_time = 20
    self.block_input = block_low_input
    self.has_blocked = false
    self.has_parried = false
@@ -665,8 +667,8 @@ local function init(char_str)
          data.hitboxes = framedata.get_hitboxes(char_str, "01_ndl_exp", 0)
          data.range = 140
       end
-      table.insert(menu_move_names, "menu_" .. move_name)
-      table.insert(moves, {data = data, default_weight = 1, weight = 1})
+      menu_move_names[#menu_move_names + 1] = "menu_" .. move_name
+      moves[#moves + 1] = {data = data, default_weight = 1, weight = 1}
    end
 end
 
@@ -680,7 +682,7 @@ local function create_settings()
       data.characters[char].accuracy = {80, 80}
       data.characters[char].dist_judgement = {80, 80}
       data.characters[char].moves = {}
-      for j, move in ipairs(moves) do table.insert(data.characters[char].moves, false) end
+      for j, move in ipairs(moves) do data.characters[char].moves[#data.characters[char].moves + 1] = false end
    end
    return data
 end
@@ -700,7 +702,7 @@ local function get_moves() return moves end
 local function get_followups() return followups end
 local function select_attack(player)
    local valid_moves = {}
-   for i, move in ipairs(moves) do if move.active then table.insert(valid_moves, move) end end
+   for i, move in ipairs(moves) do if move.active then valid_moves[#valid_moves + 1] = move end end
    current_attack = tools.select_weighted(valid_moves)
    if not current_attack then current_attack = moves[1] end
    current_attack.data.should_hit = math.random() < accuracy / 100

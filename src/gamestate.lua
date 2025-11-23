@@ -293,7 +293,7 @@ local function read_box(obj, ptr, type)
 
    if left == 0 and width == 0 and bottom == 0 and height == 0 then return end
 
-   table.insert(obj.boxes, box)
+   obj.boxes[#obj.boxes + 1] = box
 end
 
 local function read_game_object(obj)
@@ -359,12 +359,12 @@ local function read_game_object(obj)
       -- throw, normal, special/sa
       if action_type == 3 or action_type == 4 or action_type == 5 then
          local action_count = memory.readbyte(obj.addresses.action_count)
-         table.insert(hash, string.format("%02x", action_count))
+         hash[#hash + 1] = string.format("%02x", action_count)
       else
-         table.insert(hash, "00")
+         hash[#hash + 1] = "00"
       end
    else
-      table.insert(hash, "00")
+      hash[#hash + 1] = "00"
    end
 
    obj.animation_frame_hash = table.concat(hash)
@@ -395,8 +395,8 @@ local function find_resync_target(obj, fdata, infinite_loop)
    local frameid = string.format("%04x", obj.animation_frame_id)
    for i = 1, #frames do
       if frameid == string.sub(frames[i].hash, 1, 4) then
-         table.insert(matches, i)
-         table.insert(scores, 0)
+         matches[#matches + 1] = i
+         scores[#scores + 1] = 0
       end
    end
 
@@ -601,7 +601,7 @@ local function read_player_vars(player)
    -- ATTACKING
    local previous_is_attacking = player.is_attacking or false
    local previous_attacking_state = player.character_state_byte == 4 or false
-   player.character_state_byte = memory.readbyte(player.addresses.character_state_byte) -- used to detect hugos clap, meat squasher, lariat, which do not set the is_attacking_byte
+   player.character_state_byte = memory.readbyte(player.addresses.character_state_byte) -- 0 idle, 1 blocking or being hit, 2 throwing, 3 being thrown, 4 attacking
    player.is_attacking_byte = memory.readbyte(player.addresses.is_attacking_byte)
    player.is_attacking = player.is_attacking_byte > 0 or
                              (attacking_byte_exception[player.char_str] and
@@ -633,8 +633,8 @@ local function read_player_vars(player)
       if player.previous_remaining_freeze_frames == 0 then
          player.freeze_just_began = true
       else
-         if not (player.animation_frame_data and not debug_settings.recording_framedata
-         and player.animation_frame_data.frames and player.animation_frame_data.frames[player.animation_frame + 1] and
+         if not (player.animation_frame_data and not debug_settings.recording_framedata and
+             player.animation_frame_data.frames and player.animation_frame_data.frames[player.animation_frame + 1] and
              player.animation_frame_data.frames[player.animation_frame + 1].bypass_freeze) then
             player.animation_freeze_frames = player.animation_freeze_frames + 1
          end
@@ -766,7 +766,7 @@ local function read_player_vars(player)
        (player.just_received_connection and player.other.animation == "baac" and player.received_connection_marker ==
            0xFFF1 and total_received_hit_count_diff == 0 and (player.action == 30 or player.action == 31)) then -- chun st.HP bug
       player.has_just_blocked = true
-      
+
       if debug_state_variables then print(string.format("%d - %s blocked", frame_number, player.prefix)) end
    end
    local previous_is_blocking = player.is_blocking
@@ -782,10 +782,7 @@ local function read_player_vars(player)
 
    player.has_just_been_hit = false
 
-   if total_received_hit_count_diff > 0 then
-      player.has_just_been_hit = true
-      
-   end
+   if total_received_hit_count_diff > 0 then player.has_just_been_hit = true end
 
    player.has_just_parried = false
 
@@ -793,7 +790,6 @@ local function read_player_vars(player)
        0 then
       player.has_just_parried = true
       if player.other.animation == "baac" and player.action ~= 23 then player.has_just_parried = false end -- chun st.HP bug
-      
       if debug_state_variables then print(string.format("%d - %s parried", frame_number, player.prefix)) end
    end
 
@@ -808,7 +804,6 @@ local function read_player_vars(player)
    player.hit_count = memory.readbyte(player.addresses.hit_count)
    player.has_just_hit = player.hit_count > previous_hit_count
    if player.has_just_hit then
-      
       if debug_state_variables then
          print(string.format("%d - %s hit (%d > %d)", frame_number, player.prefix, previous_hit_count, player.hit_count))
       end
@@ -1243,7 +1238,7 @@ local function read_player_vars(player)
 
       kaiten_object.completed_360 = memory.readbyte(kaiten_completed_addr) ~= 48
       local just_completed_360 = dir_data == 15
-      if kaiten_object.name == "kaiten_moonsault_press" and not just_completed_360 then
+      if kaiten_object.name == "moonsault_press" and not just_completed_360 then
          if kaiten_object.completed_360 ~= kaiten_object.previous_completed_360 then just_completed_360 = true end
       end
       if just_completed_360 then
@@ -1279,7 +1274,7 @@ local function read_player_vars(player)
             kaiten_address = player.addresses.kaiten_1,
             reset_address = player.addresses.kaiten_1_reset,
             kaiten_completed = player.addresses.kaiten_completed_360,
-            name = "kaiten_hyper_bomb",
+            name = "hyper_bomb",
             valid = true
          }
       },
@@ -1288,19 +1283,19 @@ local function read_player_vars(player)
             kaiten_address = player.addresses.kaiten_1,
             reset_address = player.addresses.kaiten_1_reset,
             kaiten_completed = player.addresses.kaiten_completed_360,
-            name = "kaiten_moonsault_press",
+            name = "moonsault_press",
             valid = true
          }, {
             kaiten_address = player.addresses.kaiten_2,
             reset_address = player.addresses.kaiten_2_reset,
             kaiten_completed = player.addresses.kaiten_completed_360,
-            name = "kaiten_meat_squasher",
+            name = "meat_squasher",
             valid = true
          }, {
             kaiten_address = player.addresses.kaiten_1,
             reset_address = player.addresses.kaiten_1_reset,
             kaiten_completed = player.addresses.kaiten_completed_360,
-            name = "kaiten_gigas_breaker",
+            name = "gigas_breaker",
             valid = true,
             is_720 = true
          }
@@ -1321,11 +1316,11 @@ local function read_player_vars(player)
    end
 
    -- STUN
-   player.stun_bar_max = memory.readbyte(player.addresses.stun_bar_max)
-   player.stun_activate = memory.readbyte(player.addresses.stun_activate)
-   player.stun_timer = memory.readbyte(player.addresses.stun_timer)
-   player.stun_bar_char = memory.readbyte(player.addresses.stun_bar_char)
-   player.stun_bar_mantissa = memory.readbyte(player.addresses.stun_bar_mantissa)
+   player.stun_bar_max = memory.readbyte(player.addresses.stun_bar_max) or 64
+   player.stun_activate = memory.readbyte(player.addresses.stun_activate) or 0
+   player.stun_timer = memory.readbyte(player.addresses.stun_timer) or 0
+   player.stun_bar_char = memory.readbyte(player.addresses.stun_bar_char) or 0
+   player.stun_bar_mantissa = memory.readbyte(player.addresses.stun_bar_mantissa) or 0
    player.stun_bar = player.stun_bar_char + player.stun_bar_mantissa / 256
    player.stun_just_began = false
    player.stun_just_ended = false
@@ -1378,7 +1373,7 @@ end
 
 local function update_tengu_stone_order(tengu_stones)
    local list = {}
-   for _, stone in pairs(tengu_stones) do table.insert(list, stone) end
+   for _, stone in pairs(tengu_stones) do list[#list + 1] = stone end
    table.sort(list, function(a, b) return a.pos_x < b.pos_x end)
    for i = 1, #list do
       if #list == 3 then
@@ -1424,9 +1419,7 @@ local function update_tengu_stones()
          end
       end
    end
-   if connected_stone then
-      connected_stone.cooldown = 99
-   end
+   if connected_stone then connected_stone.cooldown = 99 end
 
    for _, player in ipairs(player_objects) do
       if player.char_str == "oro" and player.selected_sa == 3 and player.is_in_timed_sa and player.tengu_stones then
@@ -1523,7 +1516,7 @@ local function update_seieienbu()
       if proj.projectile_type == "seieienbu" and proj.has_just_connected then
          for other_id, other_proj in pairs(projectiles) do
             if proj.id == other_proj.id and proj.seiei_animation == other_proj.seiei_animation then
-               table.insert(to_remove, other_id)
+               to_remove[#to_remove + 1] = other_id
             end
          end
       end
@@ -1743,11 +1736,7 @@ end
 local function remove_expired_projectiles()
    -- if a projectile is still expired, we remove it
    local to_remove = {}
-   for id, obj in pairs(projectiles) do
-      if obj.expired then
-         table.insert(to_remove, id)
-      end
-   end
+   for id, obj in pairs(projectiles) do if obj.expired then to_remove[#to_remove + 1] = id end end
    for _, key in ipairs(to_remove) do projectiles[key] = nil end
 end
 

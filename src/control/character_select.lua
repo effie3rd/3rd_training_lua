@@ -359,9 +359,8 @@ local function update_character_select(input)
       local status = cs:status()
       if status == "suspended" then
          local r, error = cs:resume(input)
-         if not r then print(error) end
       elseif status == "dead" then
-         table.insert(to_remove, k)
+         to_remove[#to_remove + 1] = k
          if cs.name == "force_p1" then
             p1_forced_select = false
          elseif cs.name == "force_p2" then

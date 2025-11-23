@@ -1,8 +1,9 @@
 # effie's 3rd training lua
 
 [日本語](https://github.com/effie3rd/3rd_training_lua/blob/main/README.jp.md)
-[Installation](#Installation)
-
+[Installation](#Installation)\
+\
+[![Trailer](https://img.shields.io/badge/YouTube-%23FF0000.svg?logo=YouTube&logoColor=white)](https://youtu.be/k8VYlQ2uFLI)\
 ### Main Features
   - Blocking system completely rewritten
   - Framedata model improved and re-recorded from scratch
@@ -83,3 +84,4 @@
 
 ### Installation
 <table><tr><td>Paste files into 'fbneo-training-mode' directory, overwriting all files.<br>Click "Training" from fightcade menu to run.</td></tr></table>
+Note: Having 'Auto Frameskip' enabled will break things.

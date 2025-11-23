@@ -44,7 +44,9 @@ local move_speed = 1
 local max_move_speed = 3
 local move_speed_increase_delay = 20
 local contact_dist = 0
-local test_jump_start_delay = 30
+local test_jump_start_delay = 20
+local test_jump_start_after_move_delay = 20
+local test_jump_end_frame = 0
 local new_jump_start_delay = 30
 local reset_position_margin = 5
 local screen_reset_pos_x = 0
@@ -125,21 +127,23 @@ local function draw_jump_arc(jump_arc)
    for i, point in pairs(jump_arc) do
       local color = get_color(i)
       if color == colors.text.selected and not (i == current_point) then
-         table.insert(selected_points, point)
+         selected_points[#selected_points + 1] = point
       else
          local x, y = draw.game_to_screen_space(point[1], point[2] + point[3])
-         if not (i == current_point) then gui.image(x - 1, y - 1, draw.get_image(image_tables.img_dot, color)) end
+         if not (i == current_point) then
+            gui.image(x - 1, y - 1, draw.get_image(image_tables.images.img_dot, color))
+         end
       end
    end
    for i, point in pairs(selected_points) do
       local x, y = draw.game_to_screen_space(point[1], point[2] + point[3])
-      gui.image(x - 1, y - 1, draw.get_image(image_tables.img_dot, colors.text.selected))
+      gui.image(x - 1, y - 1, draw.get_image(image_tables.images.img_dot, colors.text.selected))
    end
    local color = get_color(current_point)
    local point = jump_arc[current_point]
    if point then
       local x, y = draw.game_to_screen_space(point[1], point[2] + point[3])
-      gui.image(x - 1, y - 1, draw.get_image(image_tables.scroll_up_arrow, color))
+      gui.image(x - 1, y - 1, draw.get_image(image_tables.images.img_scroll_up, color))
    end
 end
 
@@ -211,7 +215,7 @@ local function add_jump_arc(jump_arc, player, player_line, player_motion_data)
             y_offset = 0
          end
       end
-      table.insert(jump_arc, {player_motion_data[i].pos_x, player_motion_data[i].pos_y, y_offset, y_offset})
+      jump_arc[#jump_arc + 1] = {player_motion_data[i].pos_x, player_motion_data[i].pos_y, y_offset, y_offset}
    end
 end
 
@@ -372,12 +376,12 @@ local function get_valid_offset_range(player, other_player_x, offset_min, offset
    local other_player_right = math.min(other_player_x + contact_dist, player_stage_right)
    local result = {}
    if other_player_right <= player_position_left or other_player_left >= player_position_right then
-      table.insert(result, {player_position_left, player_position_right})
+      result[#result + 1] = {player_position_left, player_position_right}
       return result
    end
-   if other_player_left >= player_position_left then table.insert(result, {player_position_left, other_player_left}) end
+   if other_player_left >= player_position_left then result[#result + 1] = {player_position_left, other_player_left} end
    if other_player_right <= player_position_right then
-      table.insert(result, {other_player_right, player_position_right})
+      result[#result + 1] = {other_player_right, player_position_right}
    end
    return result
 end
@@ -513,6 +517,11 @@ local function move_player_left()
    update_position_bounds()
    bound_settings()
    current_jump_arc = nil
+   if state ~= states.POSITION then
+      state = states.POSITION
+      advanced_control.clear_programmed_movement(jumpins_player)
+      write_memory.write_pos_y(jumpins_player, -10)
+   end
 end
 
 local function move_player_right()
@@ -536,6 +545,11 @@ local function move_player_right()
    update_position_bounds()
    bound_settings()
    current_jump_arc = nil
+   if state ~= states.POSITION then
+      state = states.POSITION
+      advanced_control.clear_programmed_movement(jumpins_player)
+      write_memory.write_pos_y(jumpins_player, -10)
+   end
 end
 
 local function move_dummy_left()
@@ -571,6 +585,11 @@ local function move_dummy_left()
    update_position_bounds()
    bound_settings()
    current_jump_arc = nil
+   if state ~= states.POSITION then
+      state = states.POSITION
+      advanced_control.clear_programmed_movement(jumpins_dummy)
+      write_memory.write_pos_y(jumpins_dummy, -10)
+   end
 end
 
 local function move_dummy_right()
@@ -606,6 +625,11 @@ local function move_dummy_right()
    update_position_bounds()
    bound_settings()
    current_jump_arc = nil
+   if state ~= states.POSITION then
+      state = states.POSITION
+      advanced_control.clear_programmed_movement(jumpins_dummy)
+      write_memory.write_pos_y(jumpins_dummy, -10)
+   end
 end
 
 local function reset_positions(player, dummy)
@@ -647,7 +671,7 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
                attack_timer:begin()
             end
             if should_display_info then
-               table.insert(info_labels, "menu_" .. first_jump_name)
+               info_labels[#info_labels + 1] = "menu_" .. first_jump_name
                delay_timer = gamestate.frame_number
             end
          end
@@ -661,13 +685,13 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
             attack_timer:begin()
             if should_display_info then
                local elapsed = gamestate.frame_number - delay_timer + second_jump_input_length
-               table.insert(info_labels, {"menu_" .. second_jump_name, " ", elapsed, "hud_f", " ", "hud_after"})
+               info_labels[#info_labels + 1] = {"menu_" .. second_jump_name, " ", elapsed, "hud_f", " ", "hud_after"}
                delay_timer = gamestate.frame_number
             end
          end
       }
 
-      table.insert(command, second_jump)
+      command[#command + 1] = second_jump
    end
    if is_target_combo then
       local input_delay = Delay:new(3)
@@ -678,7 +702,7 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
                queue_input_sequence_and_wait(player, {attack_input[1]})
                if should_display_info then
                   local elapsed = gamestate.frame_number - delay_timer + 1
-                  table.insert(info_labels, {"menu_" .. attack_name, " ", elapsed, "hud_f", " ", "hud_after"})
+                  info_labels[#info_labels + 1] = {"menu_" .. attack_name, " ", elapsed, "hud_f", " ", "hud_after"}
                   delay_timer = gamestate.frame_number
                end
 
@@ -697,9 +721,9 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
             action = function() queue_input_sequence_and_wait(player, {attack_input[2]}) end
          }
       }
-      table.insert(command, target_combo[1])
-      table.insert(command, target_combo[2])
-      table.insert(command, target_combo[3])
+      command[#command + 1] = target_combo[1]
+      command[#command + 1] = target_combo[2]
+      command[#command + 1] = target_combo[3]
    else
       local attack = {
          {
@@ -708,14 +732,14 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
                queue_input_sequence_and_wait(player, attack_input, 0, true)
                if should_display_info then
                   local elapsed = gamestate.frame_number - delay_timer + #attack_input
-                  table.insert(info_labels, {"menu_" .. attack_name, " ", elapsed, "hud_f", " ", "hud_after"})
+                  info_labels[#info_labels + 1] = {"menu_" .. attack_name, " ", elapsed, "hud_f", " ", "hud_after"}
                   delay_timer = gamestate.frame_number
                end
             end
          }, {condition = function() return player.has_just_connected or player.has_just_landed end, action = nil}
       }
-      table.insert(command, attack[1])
-      table.insert(command, attack[2])
+      command[#command + 1] = attack[1]
+      command[#command + 1] = attack[2]
    end
    if followup then
       local followup_input
@@ -786,12 +810,12 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
                   table.insert(label_text, 2, followup_data.button)
                   if require("src.settings").language == "en" then table.insert(label_text, 2, " ") end
                end
-               table.insert(info_labels, label_text)
+               info_labels[#info_labels + 1] = label_text
                delay_timer = gamestate.frame_number
             end
          end
       }
-      table.insert(command, followup_command)
+      command[#command + 1] = followup_command
    end
 
    advanced_control.queue_programmed_movement(player, command)
@@ -823,7 +847,7 @@ local function load_all_jumps(settings, dummy)
          load_jump(jump)
          local j = tools.deepcopy(jump)
          j.playback = {}
-         table.insert(jumps, j)
+         jumps[#jumps + 1] = j
       end
    end
 end
@@ -857,9 +881,7 @@ local function queue_jump(jump, dummy_offset, attack_delay)
 end
 
 local function begin_edit(settings, jump_settings)
-   if not is_active then
-      init()
-   end
+   if not is_active then init() end
    is_active = true
    if training.dummy ~= jumpins_player then training.toggle_swap_characters() end
    require("src.control.recording").set_recording_state(inputs.input, 1)
@@ -933,8 +955,9 @@ local function update()
          if state == states.POSITION then
             local player_pos_x = get_current_player_position()
             local dummy_pos_x = get_current_dummy_position()
-            if gamestate.frame_number - move_right_frame >= test_jump_start_delay and gamestate.frame_number -
-                move_left_frame >= test_jump_start_delay and
+            if gamestate.frame_number - move_right_frame >= test_jump_start_after_move_delay and gamestate.frame_number -
+                move_left_frame >= test_jump_start_after_move_delay and
+                gamestate.frame_number - test_jump_end_frame >= test_jump_start_delay and
                 jumpins_tables.get_jump_names()[current_jump_settings.jump_name] ~= "off" then
                if (jumpins_player.action == 0 or (player_pose == 2 and jumpins_player.action == 7)) and
                    jumpins_dummy.action == 0 and math.floor(jumpins_player.pos_x) == player_pos_x and
@@ -957,7 +980,9 @@ local function update()
          elseif state == states.TEST_JUMP then
             if (jumpins_player.action == 0 or (player_pose == 2 and jumpins_player.action == 7)) and
                 jumpins_dummy.action == 0 and all_commands_complete(jumpins_dummy) and
-                not inputs.is_playing_input_sequence(jumpins_dummy) then state = states.POSITION end
+                not inputs.is_playing_input_sequence(jumpins_dummy) then
+                  test_jump_end_frame = gamestate.frame_number
+                  state = states.POSITION end
             if jumpins_dummy.has_just_landed and current_jump_settings.followup.type == 1 then
                advanced_control.clear_programmed_movement(jumpins_dummy)
             end

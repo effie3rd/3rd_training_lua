@@ -22,7 +22,7 @@ for _, char in pairs(opponents) do
    if data then defense_data[char] = data end
 end
 
-for char, _ in pairs(defense_data) do table.insert(opponents_menu, "menu_" .. char) end
+for char, _ in pairs(defense_data) do opponents_menu[#opponents_menu + 1] = "menu_" .. char end
 
 local function get_setup_names(char_str) return defense_data[char_str].setup_names end
 
@@ -34,9 +34,24 @@ local function get_followup_followup_names(char_str, i) return defense_data[char
 
 local function reset_followups(settings, char_str)
    local setups_object = settings.special_training.defense.characters[char_str].setups
-   for i, setup in ipairs(setups_object) do setups_object[i] = true end
+   local all_selected = true
+   for i, setup in ipairs(setups_object) do
+      if not setup then all_selected = false end
+      setups_object[i] = true
+   end
    local followups_object = settings.special_training.defense.characters[char_str].followups
-   for i, followups in ipairs(followups_object) do for j, followup in ipairs(followups) do followups[j] = true end end
+   for i, followups in ipairs(followups_object) do
+      for j, followup in ipairs(followups) do
+         if not followup then all_selected = false end
+         followups[j] = true
+      end
+   end
+   if all_selected then
+      for i, setup in ipairs(setups_object) do setups_object[i] = false end
+      for i, followups in ipairs(followups_object) do
+         for j, followup in ipairs(followups) do followups[j] = false end
+      end
+   end
 end
 
 local function reset_weights(char_str)

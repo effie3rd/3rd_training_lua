@@ -4,18 +4,17 @@ local fd = require("src.modules.framedata")
 local gamestate = require("src.gamestate")
 local attack_data = require("src.modules.attack_data")
 local frame_advantage = require("src.modules.frame_advantage")
-local text = require("src.ui.text")
 local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
-local images = require("src.ui.image_tables")
+local image_tables = require("src.ui.image_tables")
 local recording = require("src.control.recording")
 local tools = require("src.tools")
 
 local frame_data, character_specific = fd.frame_data, fd.character_specific
-local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = text.render_text,
-                                                                                             text.render_text_multiple,
-                                                                                             text.get_text_dimensions,
-                                                                                             text.get_text_dimensions_multiple
+local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = draw.render_text,
+                                                                                             draw.render_text_multiple,
+                                                                                             draw.get_text_dimensions,
+                                                                                             draw.get_text_dimensions_multiple
 
 local info_text_display_time = 90
 local info_text_fade_time = 30
@@ -100,13 +99,13 @@ local function score_text_display()
    end
 end
 
-local kaiten_images = {
-   active = {images.img_dir_small[6], images.img_dir_small[2], images.img_dir_small[4], images.img_dir_small[8]},
-   inactive = {
-      images.img_dir_inactive[6], images.img_dir_inactive[2], images.img_dir_inactive[4], images.img_dir_inactive[8]
-   }
-}
 local function draw_kaiten(x, y, dirs, flip)
+   local kaiten_images = {
+      active = {image_tables.images.img_dir_small[6], image_tables.images.img_dir_small[2], image_tables.images.img_dir_small[4], image_tables.images.img_dir_small[8]},
+      inactive = {
+         image_tables.images.img_dir_inactive[6], image_tables.images.img_dir_inactive[2], image_tables.images.img_dir_inactive[4], image_tables.images.img_dir_inactive[8]
+      }
+   }
    -- input       2 4 6 8 2 4 6 8
    -- reorder to  6 2 4 8 6 2 4 8
    local dirs_ordered = tools.deepcopy(dirs)
@@ -192,7 +191,7 @@ local function parry_gauge_display(player)
          end
       end
 
-      local str = "parry_" .. parry_object.name
+      local str = "parry_parry_" .. parry_object.name
 
       render_text(x + 1, y, str)
       gui.box(cooldown_gauge_left + 1, y + 11, validity_gauge_left, y + 11, 0x00000000, colors.gauges.outline)
@@ -332,7 +331,7 @@ local function charge_display(player)
 
       local name_y_offset = 0
       if settings.language == "jp" then name_y_offset = -1 end
-      render_text(x + 1, y + name_y_offset, kaiten_object.name)
+      render_text(x + 1, y + name_y_offset, "charge_" .. kaiten_object.name)
 
       draw_kaiten(x, y + 8, kaiten_object.directions, not player.flip_input)
 
@@ -349,24 +348,24 @@ local function charge_display(player)
    local function draw_legs_gauge_group(x, y, legs_object)
       local width = 43 * gauge_x_scale
       local style = draw.controller_styles[settings.training.controller_style]
-      local tw, th = get_text_dimensions("hyakuretsu_MK")
+      local tw, th = get_text_dimensions("hud_hyakuretsu_MK")
       local margin = tw + 1
       local x_offset = margin
-      render_text(x, y, "hyakuretsu_LK")
+      render_text(x, y, "hud_hyakuretsu_LK")
       for i = 1, legs_object.l_legs_count do
-         gui.image(x + x_offset, y, images.img_button_small[style][4])
+         gui.image(x + x_offset, y, image_tables.images.img_button_small[style][4])
          x_offset = x_offset + 8
       end
       x_offset = margin
-      render_text(x, y + 8, "hyakuretsu_MK")
+      render_text(x, y + 8, "hud_hyakuretsu_MK")
       for i = 1, legs_object.m_legs_count do
-         gui.image(x + x_offset, y + 8, images.img_button_small[style][5])
+         gui.image(x + x_offset, y + 8, image_tables.images.img_button_small[style][5])
          x_offset = x_offset + 8
       end
       x_offset = margin
-      render_text(x, y + 16, "hyakuretsu_HK")
+      render_text(x, y + 16, "hud_hyakuretsu_HK")
       for i = 1, legs_object.h_legs_count do
-         gui.image(x + x_offset, y + 16, images.img_button_small[style][6])
+         gui.image(x + x_offset, y + 16, image_tables.images.img_button_small[style][6])
          x_offset = x_offset + 8
       end
       x_offset = margin
@@ -537,7 +536,7 @@ local function add_fading_text(x, y, str, lang, color, display_time, fade_time, 
       y = y,
       text = str,
       lang = lang or settings.language,
-      color = color or text.default_color,
+      color = color or colors.text.default,
       display_time = display_time or fading_text_display_time_default,
       fade_time = fade_time or fading_text_fade_time_default,
       animate = animate,
@@ -783,7 +782,7 @@ local last_hit_history_size = 2
 
 local function last_hit_bars_reset() last_hit_history = nil end
 
-local function last_hit_bars_display()
+local function last_hit_bars_display(player)
    if settings.training.display_attack_bars > 1 then
       if settings.training.display_attack_bars == 2 then
          last_hit_history_size = 1
@@ -816,12 +815,13 @@ local function last_hit_bars_display()
       end
       if last_hit_history then
          for i = 1, #last_hit_history do
+            local id = player.id --force things to be drawn on one side for now
             if last_hit_history[i].total_damage > 0 then
                local life_width = last_hit_history[i].total_damage
                local life_offset = 160 - last_hit_history[i].start_life
 
-               if last_hit_history[i].player_id == 1 then life_width = life_width - 2 end
-               if last_hit_history[i].player_id == 1 then
+               if id == 1 then life_width = life_width - 2 end
+               if id == 1 then
                   life_x = draw.SCREEN_WIDTH - 8
                   stun_x = life_x - life_max_width + 1
                   sign = -1
@@ -837,10 +837,8 @@ local function last_hit_bars_display()
                             colors.last_hit_bars.life)
                local text_width = get_text_dimensions(tostring(last_hit_history[i].total_damage), "en")
                local text_pos_x = tools.round(sign * (life_width - text_width) / 2) + life_x + sign * life_offset
-               --           if text_width + 4 > life_width then
-               --             text_pos_x = life_x+sign*life_offset+sign*life_width - 1 + 2 * sign
-               --           else
-               if last_hit_history[i].player_id == 1 then text_pos_x = text_pos_x - text_width end
+
+               if id == 1 then text_pos_x = text_pos_x - text_width end
                local text_pos_y = 9 - (i - 1) * life_height
                render_text(text_pos_x, text_pos_y, tostring(last_hit_history[i].total_damage), "en", nil,
                            colors.last_hit_bars.life)
@@ -849,7 +847,7 @@ local function last_hit_bars_display()
                local stun_offset = last_hit_history[i].start_stun
 
                if stun_width > 0 then
-                  if last_hit_history[i].player_id == 2 then stun_width = stun_width - 2 end
+                  if id == 2 then stun_width = stun_width - 2 end
 
                   gui.drawline(stun_x - sign * stun_offset, stun_y + (i - 1) * stun_height,
                                stun_x - sign * stun_offset - sign * stun_width - 1, stun_y + (i - 1) * stun_height,
@@ -862,14 +860,14 @@ local function last_hit_bars_display()
                   if settings.training.attack_bars_show_decimal then
                      text_width = get_text_dimensions(string.format("%.2f", last_hit_history[i].total_stun), "en")
                      text_pos_x = stun_x - sign * stun_offset - sign * stun_width - 1 - 2 * sign
-                     if last_hit_history[i].player_id == 2 then text_pos_x = text_pos_x - text_width end
+                     if id == 2 then text_pos_x = text_pos_x - text_width end
                      text_pos_y = stun_y + (i - 1) * stun_height - 2
                      render_text(text_pos_x, text_pos_y, string.format("%.2f", last_hit_history[i].total_stun), "en",
                                  nil, colors.last_hit_bars.stun)
                   else
                      text_width = get_text_dimensions(tostring(tools.round(last_hit_history[i].total_stun)), "en")
                      text_pos_x = tools.round(-1 * sign * (stun_width - text_width) / 2) + stun_x - sign * stun_offset
-                     if last_hit_history[i].player_id == 2 then text_pos_x = text_pos_x - text_width end
+                     if id == 2 then text_pos_x = text_pos_x - text_width end
                      text_pos_y = stun_y + (i - 1) * stun_height - 2
                      render_text(text_pos_x, text_pos_y, tostring(tools.round(last_hit_history[i].total_stun)), "en",
                                  nil, colors.last_hit_bars.stun)
@@ -962,6 +960,7 @@ end
 local function player_label_display()
    for id, state in ipairs(player_label_state) do
       local elapsed = gamestate.frame_number - state.start_frame
+      if require("src.ui.menu").is_open then state.start_frame = state.start_frame + 1 end
       if elapsed <= player_label_display_time + player_label_fade_time then
          local opacity = 1
          if elapsed > player_label_display_time then
@@ -970,13 +969,9 @@ local function player_label_display()
          local player = gamestate.player_objects[id]
          local x, y = draw.get_above_character_position(player)
          y = y - 2
-         gui.image(x - 4, y, images.img_dir_small[2], opacity)
+         gui.image(x - 4, y, image_tables.images.img_tri_down, opacity)
          local w, h = get_text_dimensions(state.label)
-         if settings.language == "en" then
-            h = h + 2
-         elseif settings.language == "jp" then
-            h = h + 1
-         end
+         h = h + 1
          render_text(x - tools.round(w / 2), y - h, state.label, nil, nil, nil, opacity)
       end
    end
@@ -1030,14 +1025,13 @@ local function blocking_direction_display(player, dummy)
          end
          local x, y = draw.get_above_character_position(dummy)
          gui.image(x, y - (#blocking_direction_history - i - 1) * offset_y,
-                   images.img_dir_small[blocking_direction_history[i].dir], opacity)
+                   image_tables.images.img_dir_small[blocking_direction_history[i].dir], opacity)
          i = i + 1
       else
          table.remove(blocking_direction_history, i)
       end
    end
 end
-
 
 local p1_filter = nil -- {["push"] = true, ["vulnerability"] = true}
 local p2_filter = nil -- {["push"] = true}
@@ -1456,7 +1450,7 @@ local function show_please_wait_display(bool) is_please_wait_display_on = bool e
 
 local function please_wait_display()
    local x, y = 0, 45
-   local tx, ty = get_text_dimensions("please_wait")
+   local tx, ty = get_text_dimensions("hud_please_wait")
    if settings.training.language == 1 then ty = ty - 1 end
    local fade_in = 14
    local width, height = tx + fade_in * 2 + 6, ty + 4
@@ -1473,15 +1467,15 @@ local function please_wait_display()
    local textx = tools.round(x + width / 2 - tx / 2)
    local texty = tools.round(y + height / 2 - ty / 2)
    if settings.training.language == 1 then texty = texty + 1 end
-   render_text(textx, texty, "please_wait")
+   render_text(textx, texty, "hud_please_wait")
 end
 
 local show_player_position = false
 local function player_position_display()
    local x, y = draw.game_to_screen_space(gamestate.P1.pos_x, gamestate.P1.pos_y)
-   gui.image(x - 4, y, images.img_dir_small[8])
+   gui.image(x - 4, y, image_tables.images.img_dir_small[8])
    x, y = draw.game_to_screen_space(gamestate.P2.pos_x, gamestate.P2.pos_y)
-   gui.image(x - 4, y, images.img_dir_small[8])
+   gui.image(x - 4, y, image_tables.images.img_dir_small[8])
 end
 
 local draw_list = {}
@@ -1508,7 +1502,7 @@ local function draw_hud(player, dummy)
    if settings.training.display_attack_range ~= 1 then attack_range_display() end
    if settings.training.display_hitboxes then hitboxes_display() end
 
-   last_hit_bars_display()
+   last_hit_bars_display(player)
 
    if settings.training.display_red_parry_miss then red_parry_miss_display(player) end
    if settings.training.display_blocking_direction then blocking_direction_display(player, dummy) end
