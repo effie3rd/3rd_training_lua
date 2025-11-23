@@ -3,7 +3,7 @@
 [日本語](https://github.com/effie3rd/3rd_training_lua/blob/main/README.jp.md)
 [Installation](#Installation)\
 \
-![Static Badge](https://img.shields.io/badge/https%3A%2F%2Fyoutu.be%2Fk8VYlQ2uFLI?logo=YouTube&label=Trailer)
+[![Static Badge](https://img.shields.io/badge/Trailer-grey?logo=YouTube&labelColor=ff0033)](https://youtu.be/k8VYlQ2uFLI)
 
 ### Main Features
   - Blocking system completely rewritten
