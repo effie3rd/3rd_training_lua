@@ -159,7 +159,7 @@ local function parry_gauge_display(player)
    local group_y_margin = 6
 
    local function draw_parry_gauge_group(x, y, parry_object)
-      local gauge_height = 4
+      local gauge_height = 5
 
       local x_border = 8
 
@@ -198,20 +198,20 @@ local function parry_gauge_display(player)
       gui.box(cooldown_gauge_left, y + 10, cooldown_gauge_left, y + 12, 0x00000000, colors.gauges.outline)
       gui.box(validity_gauge_right, y + 11, cooldown_gauge_right - 1, y + 11, 0x00000000, colors.gauges.outline)
       gui.box(cooldown_gauge_right, y + 10, cooldown_gauge_right, y + 12, 0x00000000, colors.gauges.outline)
-      draw.draw_gauge(validity_gauge_left, y + 8, validity_gauge_width, gauge_height + 1,
+      draw.draw_gauge(validity_gauge_left, y + 8, validity_gauge_width, gauge_height,
                       parry_object.validity_time / parry_object.max_validity, colors.gauges.valid_fill,
                       colors.gauges.background, colors.gauges.outline, true)
-      draw.draw_gauge(cooldown_gauge_left, y + 8 + gauge_height + 2, cooldown_gauge_width, gauge_height,
+      draw.draw_gauge(cooldown_gauge_left, y + 8 + gauge_height + 1, cooldown_gauge_width, gauge_height - 1,
                       parry_object.cooldown_time / parry_object.max_cooldown, colors.gauges.cooldown_fill,
                       colors.gauges.background, colors.gauges.outline, true)
 
       gui.box(validity_gauge_left + 3 * gauge_x_scale, y + 8, validity_gauge_left + 2 + 3 * gauge_x_scale,
-              y + 8 + gauge_height + 2, colors.gauges.outline, 0x00000000)
+              y + 8 + gauge_height + 1, colors.gauges.outline, 0x00000000)
 
       if parry_object.delta then
          local marker_x = validity_gauge_left + parry_object.delta * gauge_x_scale
          marker_x = math.min(math.max(marker_x, x), cooldown_gauge_right)
-         gui.box(marker_x, y + 7, marker_x + gauge_x_scale, y + 8 + gauge_height + 2, validity_text_color,
+         gui.box(marker_x, y + 7, marker_x + gauge_x_scale, y + 8 + gauge_height, validity_text_color,
                  validity_outline_color)
       end
 
@@ -262,7 +262,7 @@ local function charge_display(player)
 
    local y_offset = 0
    local group_y_margin = 6
-   local gauge_height = 3
+   local gauge_height = 4
    local overcharge_color = colors.charge.overcharge
    local x_border = 16
 
@@ -292,14 +292,14 @@ local function charge_display(player)
       local name_y_offset = 0
       if settings.language == "jp" then name_y_offset = -1 end
       render_text(x + 1, y + name_y_offset, charge_object.name)
-      draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 1,
+      draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height,
                       charge_object.charge_time / charge_object.max_charge, colors.gauges.valid_fill,
                       colors.gauges.background, colors.gauges.outline, true)
-      draw.draw_gauge(reset_gauge_left, y + 8 + gauge_height + 2, reset_gauge_width, gauge_height,
+      draw.draw_gauge(reset_gauge_left, y + 8 + gauge_height + 1, reset_gauge_width, gauge_height - 1,
                       charge_object.reset_time / charge_object.max_reset, colors.gauges.cooldown_fill,
                       colors.gauges.background, colors.gauges.outline, true)
       if settings.training.charge_overcharge_on and charge_object.overcharge ~= 0 and charge_object.overcharge < 42 then
-         draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height + 2,
+         draw.draw_gauge(charge_gauge_left, y + 8, charge_gauge_width, gauge_height,
                          charge_object.overcharge / charge_object.max_charge, overcharge_color,
                          colors.gauges.background, colors.gauges.outline, true)
          local w = get_text_dimensions(charge_time_text, "en")
@@ -371,7 +371,7 @@ local function charge_display(player)
       x_offset = margin
 
       if legs_object.active ~= 0xFF then
-         draw.draw_gauge(x, y + 24, width, gauge_height + 1, legs_object.reset_time / 99, colors.gauges.valid_fill,
+         draw.draw_gauge(x, y + 24, width, gauge_height, legs_object.reset_time / 99, colors.gauges.cooldown_fill,
                          colors.gauges.background, colors.gauges.outline, true)
       end
 

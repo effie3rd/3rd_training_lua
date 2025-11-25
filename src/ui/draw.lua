@@ -548,14 +548,11 @@ local function draw_gauge(x, y, width, height, fill_ratio, fill_color, bg_color,
    border_color = border_color or 0xFFFFFFFF
    reverse_fill = reverse_fill or false
 
-   width = width + 1
-   height = height + 1
-
-   gui.box(x, y, x + width, y + height, bg_color, border_color)
+   gui.box(x, y, x + width + 1, y + height + 1, bg_color, border_color)
    if reverse_fill then
-      gui.box(x + width, y, x + width - width * tools.clamp(fill_ratio, 0, 1), y + height, fill_color, 0x00000000)
+      gui.box(x + width + 1, y , x + width - width * tools.clamp(fill_ratio, 0, 1), y + height + 1, fill_color, 0x00000000)
    else
-      gui.box(x, y, x + width * tools.clamp(fill_ratio, 0, 1), y + height, fill_color, 0x00000000)
+      gui.box(x, y , x + 1 + width * tools.clamp(fill_ratio, 0, 1), y + height + 1, fill_color, 0x00000000)
    end
 end
 

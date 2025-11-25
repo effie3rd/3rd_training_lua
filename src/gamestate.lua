@@ -1319,10 +1319,12 @@ local function read_player_vars(player)
    -- STUN
    player.stun_bar_max = memory.readbyte(player.addresses.stun_bar_max) or 64
    player.stun_activate = memory.readbyte(player.addresses.stun_activate) or 0
+   player.previous_stun_timer = player.stun_timer or 0
    player.stun_timer = memory.readbyte(player.addresses.stun_timer) or 0
    player.stun_bar_char = memory.readbyte(player.addresses.stun_bar_char) or 0
    player.stun_bar_mantissa = memory.readbyte(player.addresses.stun_bar_mantissa) or 0
    player.stun_bar = player.stun_bar_char + player.stun_bar_mantissa / 256
+   player.previous_stunned = player.is_stunned or false
    player.stun_just_began = false
    player.stun_just_ended = false
 
@@ -1338,9 +1340,6 @@ local function read_player_vars(player)
          player.stun_just_ended = true
       end
    end
-
-   player.previous_stunned = player.is_stunned
-   player.previous_stun_timer = player.stun_timer
 
    -- THROW INVULNERABILITY
    player.throw_invulnerability_cooldown = player.throw_invulnerability_cooldown or 0

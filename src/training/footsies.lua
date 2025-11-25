@@ -289,8 +289,6 @@ local function update()
    end
 end
 
-debug.add_debug_variable("footsies_state", function () return state end)
-
 local function process_gesture(gesture) end
 
 local footsies = {

@@ -6,13 +6,14 @@
 [![Static Badge](https://img.shields.io/badge/Trailer-grey?logo=YouTube&labelColor=ff0033)](https://youtu.be/k8VYlQ2uFLI)
 
 ### Main Features
-  - Blocking system completely rewritten
-  - Framedata model improved and re-recorded from scratch
+  - Smarter dummy
   - Special training modes
   - Several new options and displays
   - UI redesign
    
 ### Prediction
+  - Blocking system completely rewritten
+  - Framedata model improved and re-recorded from scratch
   - Now uses subpixel positions and velocity based movement for everything.
   - Able to parry unblockables, tengu stones, seiei enbu, and other nonsense
   - Wakeup prediction - Dummy can now do reversals after loading a savestate.
