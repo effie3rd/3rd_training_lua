@@ -259,11 +259,13 @@ local function update_player_animation(previous_input, player)
    if player.has_animation_just_changed then next_animation[player] = animations.NONE end
    -- animation changes next frame
    if player.has_just_blocked then
-      if not player.received_connection_is_projectile and player.other.pos_y >=
-          fd.character_specific[player.char_str].height.standing.min - 56 then
-         next_animation[player] = animations.BLOCK_HIGH_AIR
-      elseif gamestate.is_standing_state(player, player.standing_state) then
-         next_animation[player] = animations.BLOCK_HIGH
+      if not tools.is_pressing_down(player, previous_input) then
+         if not player.received_connection_is_projectile and player.other.pos_y >=
+             fd.character_specific[player.char_str].height.standing.min - 56 then
+            next_animation[player] = animations.BLOCK_HIGH_AIR
+         else
+            next_animation[player] = animations.BLOCK_HIGH
+         end
       else
          next_animation[player] = animations.BLOCK_LOW
       end
@@ -290,50 +292,47 @@ end
 
 local function predict_next_animation(player, input)
    local player_framedata = fd.frame_data[player.char_str]
-   next_animation[player] = animations.NONE
-   if player.is_idle then
-      if player.is_standing then
-         if tools.is_pressing_down(player, input) then
-            if player.action ~= 30 and player.action ~= 25 then
-               next_animation[player] = animations.CROUCHING_BEGIN
-            end
-         elseif tools.is_pressing_forward(player, input) then
-            if player.action == 23 or player.action == 30 then
-               next_animation[player] = animations.WALK_FORWARD
-            elseif player.action == 3 then
-               next_animation[player] = animations.WALK_TRANSITION
-            end
-         elseif tools.is_pressing_back(player, input) then
+   local animation = animations.NONE
+   if player.is_standing then
+      if tools.is_pressing_down(player, input) then
+         if player.is_idle then animation = animations.CROUCHING_BEGIN end
+      elseif tools.is_pressing_forward(player, input) then
+         if player.action == 0 or player.action == 23 or player.action == 29 or player.action == 30 then
+            animation = animations.WALK_FORWARD
+         elseif player.action == 3 then
+            animation = animations.WALK_TRANSITION
+         end
+      elseif tools.is_pressing_back(player, input) then
+         if player.is_idle then
             if player.blocking and player.blocking.last_block and player.blocking.last_block.blocking_type == "player" and
                 player.pos_y >= fd.character_specific[player.char_str].height.standing.min - 56 then
-               next_animation[player] = animations.BLOCK_HIGH_AIR_PROXIMITY
+               animation = animations.BLOCK_HIGH_AIR_PROXIMITY
             else
-               next_animation[player] = animations.BLOCK_HIGH_PROXIMITY
+               animation = animations.BLOCK_HIGH_PROXIMITY
             end
-         end
-      elseif player.is_crouching then
-         if not tools.is_pressing_down(player, input) then
-            if player.action ~= 31 and player.action ~= 26 then
-               next_animation[player] = animations.STANDING_BEGIN
-            end
-         elseif tools.is_pressing_back(player, input) then
-            next_animation[player] = animations.BLOCK_LOW_PROXIMITY
          end
       end
+   elseif player.is_crouching then
+      if not tools.is_pressing_down(player, input) then
+         if player.is_idle then animation = animations.STANDING_BEGIN end
+      elseif tools.is_pressing_back(player, input) then
+         if player.is_idle then animation = animations.BLOCK_LOW_PROXIMITY end
+      end
    end
-   if player.recovery_time + player.additional_recovery_time <= 1 then
+   local recovery_time = player.recovery_time + player.additional_recovery_time
+   if recovery_time > 0 and recovery_time <= 1 then
       if player.animation == player_framedata.block_low and not tools.is_pressing_down(player, input) then
-         next_animation[player] = animations.STANDING_BEGIN
+         animation = animations.STANDING_BEGIN
       elseif (player.animation == player_framedata.block_high or player.animation == player_framedata.block_high_air) and
           tools.is_pressing_down(player, input) then
-         next_animation[player] = animations.CROUCHING_BEGIN
+         animation = animations.CROUCHING_BEGIN
       end
    end
+   return animation
 end
 
-local function get_next_animation(player)
+local function get_next_animation(player, animation)
    local player_framedata = fd.frame_data[player.char_str]
-   local animation = next_animation[player]
    if animation == animations.WALK_FORWARD then
       return player_framedata.walk_forward
    elseif animation == animations.WALK_BACK then
@@ -368,30 +367,30 @@ local function get_next_animation(player)
 end
 
 local function insert_projectile(player, motion_data, predicted_hit)
-   local fd = frame_data[player.char_str][predicted_hit.animation]
-   if fd and fd.frames[predicted_hit.frame + 1] and fd.frames[predicted_hit.frame + 1].projectile then
-      local proj_fd = frame_data["projectiles"][fd.frames[predicted_hit.frame + 1].projectile.type]
+   local fdata = frame_data[player.char_str][predicted_hit.animation]
+   if fdata and fdata.frames[predicted_hit.frame + 1] and fdata.frames[predicted_hit.frame + 1].projectile then
+      local proj_fdata = frame_data["projectiles"][fdata.frames[predicted_hit.frame + 1].projectile.type]
       local obj = {base = 0, projectile = 99}
-      obj.id = fd.frames[predicted_hit.frame + 1].projectile.type ..
+      obj.id = fdata.frames[predicted_hit.frame + 1].projectile.type ..
                    tostring(gamestate.frame_number + player.remaining_freeze_frames + predicted_hit.delta)
       obj.emitter_id = player.id
       obj.alive = true
-      obj.projectile_type = fd.frames[predicted_hit.frame + 1].projectile.type
+      obj.projectile_type = fdata.frames[predicted_hit.frame + 1].projectile.type
       obj.projectile_start_type = obj.projectile_type
-      obj.pos_x = motion_data.pos_x + fd.frames[predicted_hit.frame + 1].projectile.offset[1] *
+      obj.pos_x = motion_data.pos_x + fdata.frames[predicted_hit.frame + 1].projectile.offset[1] *
                       tools.flip_to_sign(motion_data.flip_x)
-      obj.pos_y = motion_data.pos_y + fd.frames[predicted_hit.frame + 1].projectile.offset[2]
+      obj.pos_y = motion_data.pos_y + fdata.frames[predicted_hit.frame + 1].projectile.offset[2]
       obj.velocity_x = 0
       obj.velocity_y = 0
       obj.acceleration_x = 0
       obj.acceleration_y = 0
-      if proj_fd.frames[1].velocity then
-         obj.velocity_x = proj_fd.frames[1].velocity[1]
-         obj.velocity_y = proj_fd.frames[1].velocity[2]
+      if proj_fdata.frames[1].velocity then
+         obj.velocity_x = proj_fdata.frames[1].velocity[1]
+         obj.velocity_y = proj_fdata.frames[1].velocity[2]
       end
-      if proj_fd.frames[1].acceleration then
-         obj.acceleration_x = proj_fd.frames[1].acceleration[1]
-         obj.acceleration_y = proj_fd.frames[1].acceleration[2]
+      if proj_fdata.frames[1].acceleration then
+         obj.acceleration_x = proj_fdata.frames[1].acceleration[1]
+         obj.acceleration_y = proj_fdata.frames[1].acceleration[2]
       end
       obj.flip_x = motion_data.flip_x
       obj.boxes = {}
@@ -637,29 +636,34 @@ local function predict_next_player_movement(p1, p1_motion_data, p1_line, p2, p2_
          mdata[index].velocity_x = mdata[index].velocity_x + mdata[index - 1].acceleration_x
          mdata[index].velocity_y = mdata[index].velocity_y + mdata[index - 1].acceleration_y
 
-         if current_frame_data then
-            if current_frame then
-               if current_frame.movement then
-                  mdata[index].pos_x = mdata[index].pos_x + current_frame.movement[1] * sign
-                  mdata[index].pos_y = mdata[index].pos_y + current_frame.movement[2]
-               end
-               if current_frame.velocity then
-                  mdata[index].velocity_x = mdata[index].velocity_x + current_frame.velocity[1]
-                  mdata[index].velocity_y = mdata[index].velocity_y + current_frame.velocity[2]
-               end
-               if current_frame.acceleration then
-                  mdata[index].acceleration_x = mdata[index].acceleration_x + current_frame.acceleration[1]
-                  mdata[index].acceleration_y = mdata[index].acceleration_y + current_frame.acceleration[2]
-               end
+         if current_frame then
+            if current_frame.movement then
+               mdata[index].pos_x = mdata[index].pos_x + current_frame.movement[1] * sign
+               mdata[index].pos_y = mdata[index].pos_y + current_frame.movement[2]
             end
-         end
-         if should_apply_velocity then
-            mdata[index].pos_x = mdata[index].pos_x + mdata[index - 1].velocity_x * sign
-            mdata[index].pos_y = mdata[index].pos_y + mdata[index - 1].velocity_y
+            if current_frame.velocity then
+               mdata[index].velocity_x = mdata[index].velocity_x + current_frame.velocity[1]
+               mdata[index].velocity_y = mdata[index].velocity_y + current_frame.velocity[2]
+            end
+            if current_frame.acceleration then
+               mdata[index].acceleration_x = mdata[index].acceleration_x + current_frame.acceleration[1]
+               mdata[index].acceleration_y = mdata[index].acceleration_y + current_frame.acceleration[2]
+            end
          end
       end
 
       if current_frame then
+         if current_frame.clear_motion then
+            mdata[index].velocity_x = 0
+            mdata[index].velocity_y = 0
+            mdata[index].acceleration_x = 0
+            mdata[index].acceleration_y = 0
+            should_apply_velocity = false
+         end
+         if not should_ignore_motion and should_apply_velocity then
+            mdata[index].pos_x = mdata[index].pos_x + mdata[index - 1].velocity_x * sign
+            mdata[index].pos_y = mdata[index].pos_y + mdata[index - 1].velocity_y
+         end
          if current_frame.set_acceleration then
             mdata[index].acceleration_x = current_frame.set_acceleration[1]
             mdata[index].acceleration_y = current_frame.set_acceleration[2]
@@ -919,8 +923,6 @@ local first_hit_frame_expections = {
    ["36"] = true
 }
 
-local hitbox_dilation_x = .3125
-
 local function predict_player_movement(player, player_anim, player_frame, player_motion_data, dummy, dummy_anim,
                                        dummy_frame, dummy_motion_data, frames_prediction)
    -- returns all possible sequences of the next 3 frames
@@ -968,7 +970,7 @@ end
 local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim, dummy_frame, frames_prediction)
    local specify_frame = player_anim and player_frame
    if not specify_frame and next_animation[player] ~= animations.NONE then
-      player_anim = get_next_animation(player)
+      player_anim = get_next_animation(player, next_animation[player])
       player_frame = 0
       specify_frame = true
    end
@@ -994,7 +996,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
 
    specify_frame = dummy_anim and dummy_frame
    if not specify_frame and next_animation[dummy] ~= animations.NONE then
-      dummy_anim = get_next_animation(dummy)
+      dummy_anim = get_next_animation(dummy, next_animation[dummy])
       dummy_frame = 0
       specify_frame = true
    end
@@ -1004,6 +1006,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
 
    local has_tengu_stones = false
    local predicted_state = {}
+
    for _, player_line in pairs(player_lines) do
       local player_motion_data = init_motion_data(player)
       local dummy_motion_data = init_motion_data(dummy)
@@ -1103,7 +1106,6 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                          frame_data_meta[player.char_str][predicted_frame.animation].hit_throw then
                         box_type_matches[#box_type_matches + 1] = {{"throwable"}, {"throw"}}
                      end
-
                      if tools.test_collision(dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y,
                                              dummy_motion_data[i].flip_x, dummy_boxes, player_motion_data[i].pos_x,
                                              player_motion_data[i].pos_y, player_motion_data[i].flip_x,
@@ -1114,6 +1116,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                         end
                         local side = gamestate.get_side(player_motion_data[i].pos_x, dummy_motion_data[i].pos_x,
                                                         player_motion_data[i - 1].pos_x, dummy_motion_data[i - 1].pos_x)
+
                         local expected_hit = {
                            id = player.id,
                            blocking_type = "player",
@@ -1243,7 +1246,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                predict_next_projectile_movement(projectile, proj_motion_data, proj_line, i, ignore_flip)
 
                local dummy_boxes = get_hurtboxes(dummy.char_str, dummy_line[i].animation, dummy_line[i].frame)
-               if not dummy_boxes then dummy_boxes = dummy.boxes end
+               if #dummy_boxes == 0 then dummy_boxes = dummy.boxes end
 
                local delta = proj_line[i].delta + remaining_cooldown
                if not fdata or
@@ -1258,18 +1261,23 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                         nil, nil, color
                      }, "projectile" .. projectile.id)
                   end
-
                   if tools.test_collision(dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y,
                                           dummy_motion_data[i].flip_x, dummy_boxes, proj_motion_data[i].pos_x,
                                           proj_motion_data[i].pos_y, proj_motion_data[i].flip_x, proj_boxes,
                                           box_type_matches) then
+                     local side = gamestate.get_side(predicted_state.player_motion_data[i].pos_x,
+                                                     dummy_motion_data[i].pos_x,
+                                                     predicted_state.player_motion_data[i - 1].pos_x,
+                                                     dummy_motion_data[i - 1].pos_x)
+
                      local expected_hit = {
                         id = projectile.id,
                         blocking_type = "projectile",
                         hit_id = 1,
                         delta = delta,
                         animation = proj_line[i].animation,
-                        flip_x = proj_motion_data[i].flip_x
+                        flip_x = proj_motion_data[i].flip_x,
+                        side = side
                      }
                      if projectile.projectile_type == "00_tenguishi" then
                         expected_hit.tengu_order = projectile.tengu_order
@@ -1341,8 +1349,8 @@ local function update_before(previous_input, player, dummy)
 end
 
 local function update_after(input, player, dummy)
-   predict_next_animation(player, input)
-   predict_next_animation(dummy, input)
+   next_animation[player] = predict_next_animation(player, input)
+   next_animation[dummy] = predict_next_animation(dummy, input)
 end
 
 return {
@@ -1352,6 +1360,8 @@ return {
    predict_jump_arc = predict_jump_arc,
    predict_player_movement = predict_player_movement,
    predict_frames_before_landing = predict_frames_before_landing,
+   predict_next_animation = predict_next_animation,
+   get_next_animation = get_next_animation,
    get_frames_until_idle = get_frames_until_idle,
    init_motion_data = init_motion_data,
    init_motion_data_zero = init_motion_data_zero

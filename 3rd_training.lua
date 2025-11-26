@@ -34,7 +34,6 @@ print("- Lua Hotkey 1 (alt+1) to return to character select screen")
 -- Lua-GD Scripting reference:
 -- https://www.ittner.com.br/lua-gd/manual.html
 
--- Includes
 local settings = require("src.settings")
 local debug_settings = require("src.debug_settings")
 local recording = require("src.control.recording")

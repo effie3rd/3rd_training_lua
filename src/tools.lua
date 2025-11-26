@@ -305,10 +305,10 @@ local function test_collision(defender_x, defender_y, defender_flip_x, defender_
    if (#defender_boxes == 0) then return false end
    if (#attacker_boxes == 0) then return false end
 
-   defender_x = defender_x
-   defender_y = defender_y
-   attacker_x = attacker_x
-   attacker_y = attacker_y
+   defender_x = math.floor(defender_x)
+   defender_y = math.floor(defender_y)
+   attacker_x = math.floor(attacker_x)
+   attacker_y = math.floor(attacker_y)
 
    for k = 1, #box_type_matches do
       local box_type_match = box_type_matches[k]
@@ -368,8 +368,7 @@ local function test_collision(defender_x, defender_y, defender_flip_x, defender_
                   a_t = a_t + attacker_hitbox_dilation_y
 
                   -- check collision
-                  if (a_l < d_r) and (a_r > d_l) and (a_b < d_t) and (a_t > d_b) then
-                     return true end
+                  if (a_l < d_r) and (a_r > d_l) and (a_b < d_t) and (a_t > d_b) then return true end
                end
             end
          end
@@ -380,7 +379,7 @@ local function test_collision(defender_x, defender_y, defender_flip_x, defender_
 end
 
 local function is_pressing_forward(player, input)
-   if player.flip_x == 0 then
+   if player.side == 2 then
       return input[player.prefix .. " Left"]
    else
       return input[player.prefix .. " Right"]
@@ -388,7 +387,7 @@ local function is_pressing_forward(player, input)
 end
 
 local function is_pressing_back(player, input)
-   if player.flip_x == 0 then
+   if player.side == 2 then
       return input[player.prefix .. " Right"]
    else
       return input[player.prefix .. " Left"]
@@ -507,9 +506,7 @@ end
 
 local function get_menu_names(tbl)
    local result = {}
-   for k, v in ipairs(tbl) do
-      result[#result + 1] = "menu_" .. v
-   end
+   for k, v in ipairs(tbl) do result[#result + 1] = "menu_" .. v end
    return result
 end
 

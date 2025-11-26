@@ -893,6 +893,7 @@ local function begin_edit(settings, jump_settings)
    mode = modes.EDIT
    state = states.POSITION
    move_left_frame, move_right_frame = 0, 0
+   test_jump_end_frame = 0 
    advanced_control.clear_all()
    info_labels = {}
    hud.register_draw(jumpins_display)
@@ -961,7 +962,8 @@ local function update()
                 jumpins_tables.get_jump_names()[current_jump_settings.jump_name] ~= "off" then
                if (jumpins_player.action == 0 or (player_pose == 2 and jumpins_player.action == 7)) and
                    jumpins_dummy.action == 0 and math.floor(jumpins_player.pos_x) == player_pos_x and
-                   math.floor(jumpins_dummy.pos_x) == dummy_pos_x then state = states.QUEUE_TEST_JUMP end
+                   math.floor(jumpins_dummy.pos_x) == dummy_pos_x then
+                     state = states.QUEUE_TEST_JUMP end
             end
             screen_reset_pos_x = get_center_screen_position(jumpins_player, player_pos_x, dummy_pos_x)
             if screen_reset_pos_x < gamestate.screen_x then

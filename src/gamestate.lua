@@ -128,7 +128,11 @@ local function make_player_object(id, base, prefix)
       max_meter_gauge = 0,
       max_meter_count = 0,
       cooldown = 0,
-      remaining_wakeup_time = 0
+      remaining_wakeup_time = 0,
+      pos_x = 0,
+      previous_pos_x = 0,
+      pos_y = 0,
+      previous_pos_y = 0
    }
 end
 
@@ -509,12 +513,14 @@ local function read_player_vars(player)
    player.standing_state = memory.readbyte(player.addresses.standing_state)
    player.has_just_started_jump = (player.action == 12 and previous_action ~= 12) or
                                       (player.action == 13 and previous_action ~= 13)
-   player.is_standing = player.posture == 0x0 and player.pos_y == 0
+   player.is_standing = (player.posture == 0x0 and player.pos_y == 0) or player.posture == 0x2 or player.posture == 0x6
    player.is_crouching = player.posture == 0x20 or player.posture == 0x21
    player.is_jumping = jump_postures[player.posture] or false
    player.is_airborne = player.is_jumping or (player.posture == 0 and player.pos_y ~= 0) -- maybe a memory location exists for distinguishing these states
    player.is_grounded = player.is_standing or player.is_crouching or movement_postures[player.posture] or
                             (player.posture == 0 and player.standing_state ~= 0 and player.pos_y == 0)
+
+   player.side = get_side(player.pos_x, player.other.pos_x, player.previous_pos_x, player.other.previous_pos_x)
 
    player.busy_flag = memory.readword(player.addresses.busy_flag)
 
@@ -1691,6 +1697,10 @@ local function read_projectiles()
                emitter.other.last_received_connection_animation = obj.projectile_type
                emitter.other.last_received_connection_hit_id = 1
             end
+
+            local box_type_matches = {{{"vulnerability", "ext. vulnerability"}, {"attack"}}}
+            tools.test_collision(emitter.other.pos_x, emitter.other.pos_y, emitter.other.flip_x, emitter.other.boxes,
+                                 obj.pos_x, obj.pos_y, obj.flip_x, obj.boxes, box_type_matches)
          end
 
          projectiles[obj.id] = obj

@@ -54,7 +54,7 @@ local function update_pose(input, player, dummy, pose)
    end
 end
 local Block_Style = {BLOCK = 1, PARRY = 2, RED_PARRY = 3}
-local Block_Type = {BLOCK = 1, PARRY = 2, NONE = 3}
+local Block_Type = {BLOCK = 1, PARRY = 2, NEUTRAL = 3, NONE = 4}
 local force_block_timeout = 20
 
 local function update_blocking(input, player, dummy, mode, style, red_parry_hit_count, parry_every_n_count)
@@ -115,6 +115,8 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
                return block_attack(hit_type, Block_Type.BLOCK, parry_type, delta, side)
             end
          end
+      elseif block_type == Block_Type.NEUTRAL then
+         return {type = "parry", sub_type = "pre_parry", hit_type = hit_type, frame_number = gamestate.frame_number}
       end
       return nil
    end
@@ -218,7 +220,6 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
    local expected_attacks = prediction.predict_hits(player, nil, nil, dummy, nil, nil, frames_prediction)
    -- EX Aegis must be blocked within 5f of screen darkening
    if player.superfreeze_decount > 0 and player.char_str == "urien" and player.animation == "774c" then
-      local side = gamestate.get_side(player.pos_x, dummy.pos_x, player.previous_pos_x, dummy.previous_pos_x)
       local attack = {
          id = player.id,
          blocking_type = "player",
@@ -226,7 +227,7 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
          delta = 1,
          animation = "774c",
          flip_x = player.flip_x,
-         side = side
+         side = player.side
       }
       if not expected_attacks[1] then expected_attacks[1] = {} end
       expected_attacks[1][#expected_attacks[1] + 1] = attack
@@ -272,10 +273,6 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
              dummy.blocking.force_block_start_frame >= force_block_timeout then
             dummy.blocking.block_until_confirmed = false
          end
-      end
-
-      if dummy.has_just_blocked or dummy.has_just_parried or dummy.has_just_been_hit then
-         dummy.blocking.last_block.has_connected = true
       end
 
       to_remove = {}
@@ -379,8 +376,8 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
 
       if #next_attacks > 0 or dummy.blocking.block_until_confirmed then
          local hit_type = 1
-         local player_side = gamestate.get_side(player.pos_x, dummy.pos_x, player.previous_pos_x, dummy.previous_pos_x)
-         local dummy_side = player_side == 1 and 2 or 1
+         local player_side = player.side
+         local dummy_side = dummy.side
          local allow_cheat_parry = false
          local allow_reset_parry = false
          local blocking_target = ""
@@ -448,6 +445,7 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
                if delta - 1 > 0 and delta <= blocking_delta_threshold + 1 and gamestate.frame_number -
                    dummy.blocking.pre_parry_frame > 1 then
                   inputs.clear_input_sequence(dummy)
+                  block_type = Block_Type.NEUTRAL
                   dummy.blocking.is_pre_parrying = true
                   dummy.blocking.pre_parry_frame = gamestate.frame_number
                   dummy.blocking.is_blocking = true
@@ -464,8 +462,11 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
             end
          end
 
-         if (delta <= blocking_delta_threshold and
-             not (block_type == Block_Type.PARRY and dummy.blocking.is_pre_parrying)) or
+         if dummy.blocking.block_until_confirmed and dummy.blocking.last_block then
+            if dummy.blocking.last_block.side ~= dummy_side then dummy.blocking.block_until_confirmed = false end
+         end
+
+         if (delta <= blocking_delta_threshold or (block_type == Block_Type.PARRY and dummy.blocking.is_pre_parrying)) or
              dummy.blocking.block_until_confirmed then
             dummy.blocking.is_blocking = true
             dummy.blocking.is_blocking_this_frame = true
@@ -477,7 +478,33 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
             end
 
             if block_result then
-               dummy.blocking.last_block = block_result
+               -- if we change our animation, we potentially run into attacks that would otherwise miss
+               local should_repeat_block = false
+               if dummy.blocking.last_block and dummy.blocking.last_block.inputs then
+                  if input[dummy.prefix .. " Right"] ~= dummy.blocking.last_block.inputs.Right or
+                      input[dummy.prefix .. " Left"] ~= dummy.blocking.last_block.inputs.Left or
+                      input[dummy.prefix .. " Down"] ~= dummy.blocking.last_block.inputs.Down then
+                     if block_result.type == "block" then
+                        local next_anim_id = prediction.predict_next_animation(dummy, input)
+                        local next_anim = prediction.get_next_animation(dummy, next_anim_id)
+                        expected_attacks = prediction.predict_hits(player, nil, nil, dummy, next_anim, 0, 1)
+                        if expected_attacks[1] then
+                           if (expected_attacks[1][1].side == 1) ~= input[dummy.prefix .. " Right"] or
+                               (expected_attacks[1][1].side == 2) ~= input[dummy.prefix .. " Left"] then
+                              should_repeat_block = true
+                           end
+                        end
+                     end
+                  end
+               end
+               if should_repeat_block then
+                  input[dummy.prefix .. " Right"] = dummy.blocking.last_block.inputs.Right
+                  input[dummy.prefix .. " Left"] = dummy.blocking.last_block.inputs.Left
+                  input[dummy.prefix .. " Down"] = dummy.blocking.last_block.inputs.Down
+               else
+                  dummy.blocking.last_block = block_result
+                  dummy.blocking.last_block.side = dummy_side
+               end
                dummy.blocking.last_block.blocking_type = ""
                dummy.blocking.last_block.frame_number = gamestate.frame_number
                dummy.blocking.last_block.has_connected = false

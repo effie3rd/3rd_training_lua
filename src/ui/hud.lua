@@ -947,12 +947,15 @@ end
 
 local player_label_display_time = 90
 local player_label_fade_time = 30
-local player_label_state = {{start_frame = 0, label = ""}, {start_frame = 0, label = ""}}
+local player_label_state = {}
 
-local function player_label_reset() player_label_state = {{start_frame = 0, label = ""}, {start_frame = 0, label = ""}} end
+local function player_label_reset() player_label_state = {} end
 
 -- hud_cpu hud_p1 hud_p2 hud_dummy
 local function add_player_label(player, label)
+   if not player_label_state[player.id] then
+      player_label_state[player.id] = {}
+   end
    player_label_state[player.id].start_frame = gamestate.frame_number
    player_label_state[player.id].label = label
 end

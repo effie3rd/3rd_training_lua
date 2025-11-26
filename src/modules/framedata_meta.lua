@@ -1225,7 +1225,7 @@ frame_data_meta["projectiles"]["51"] = { hit_type = {3}}                        
 frame_data_meta["projectiles"]["52"] = { hit_type = {3}}                         --meteor_strike
 frame_data_meta["projectiles"]["07"] = { hit_type = {3}}                         --shinkuu_hadouken
 frame_data_meta["projectiles"]["3B"] = { hit_type = {2}}                         --electric_snake
-frame_data_meta["projectiles"]["00_hadouken"] = { hit_type = {3}}                --hadouken_LP
+frame_data_meta["projectiles"]["00_hadouken"] = { hit_type = {3}}                --hadouken_LP ryu
 frame_data_meta["projectiles"]["18"] = { hit_type = {3}}                         --hadouken_LP
 frame_data_meta["projectiles"]["01"] = { hit_type = {3}}                         --hadouken_MP
 frame_data_meta["projectiles"]["19"] = { hit_type = {3}}                         --hadouken_MP

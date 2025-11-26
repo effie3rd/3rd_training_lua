@@ -25,7 +25,7 @@ local show_debug_variables_display = false
 local show_memory_view_display = false
 local show_memory_results_display = true
 
-local hitbox_display_frames = 3
+local hitbox_display_frames = 1
 
 local debug = {
    player_debug_variables = player_debug_variables,

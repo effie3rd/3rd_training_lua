@@ -60,6 +60,7 @@ end
 local function get_differences(canvas)
    if #canvas.draw_queue_cache == 0 or #canvas.draw_queue ~= #canvas.draw_queue_cache then return end
    local diff = {}
+   local to_check = {}
    for i, image in ipairs(canvas.draw_queue) do
       if image.image ~= canvas.draw_queue_cache[i].image or image.x ~= canvas.draw_queue_cache[i].x or image.y ~=
           canvas.draw_queue_cache[i].y then
@@ -68,7 +69,33 @@ local function get_differences(canvas)
          image.old_width = canvas.draw_queue_cache[i].width
          image.old_height = canvas.draw_queue_cache[i].height
          diff[#diff + 1] = image
+      else
+         to_check[#to_check + 1] = canvas.draw_queue_cache[i]
       end
+   end
+   local to_add = {}
+   for _, diff_image in ipairs(diff) do
+      local diff_image_left = diff_image.old_x
+      local diff_image_right = diff_image.old_x + diff_image.old_width - 1
+      local diff_image_top = diff_image.old_y
+      local diff_image_bottom = diff_image.old_y + diff_image.old_height - 1
+      for i, image in ipairs(to_check) do
+         local image_left = image.x
+         local image_right = image.x + image.width - 1
+         local image_top = image.y
+         local image_bottom = image.y + image.height - 1
+         if (image_left <= diff_image_right) and (image_right >= diff_image_left) and (image_bottom >= diff_image_top) and
+             (image_top <= diff_image_bottom) then
+            image.old_x = image.x
+            image.old_y = image.y
+            image.old_width = image.width
+            image.old_height = image.height
+            to_add[#to_add + 1] = image
+         end
+      end
+   end
+   for i, image in ipairs(to_add) do
+      diff[#diff + 1] = image
    end
    return diff
 end
@@ -116,7 +143,8 @@ local function draw_canvas(canvas)
                if alpha == 0 then
                   row_tbl[#row_tbl + 1] = string.sub(image.image, col_start, col_start + GD_BYTES_PER_PIXEL - 1)
                else
-                  row_tbl[#row_tbl + 1] = string.sub(row, offset + img_col * GD_BYTES_PER_PIXEL + 1, offset + img_col * GD_BYTES_PER_PIXEL +  GD_BYTES_PER_PIXEL)
+                  row_tbl[#row_tbl + 1] = string.sub(row, offset + img_col * GD_BYTES_PER_PIXEL + 1,
+                                                     offset + img_col * GD_BYTES_PER_PIXEL + GD_BYTES_PER_PIXEL)
                end
             end
             row_tbl[#row_tbl + 1] = string.sub(row, offset + img_row_size + 1)
@@ -550,9 +578,10 @@ local function draw_gauge(x, y, width, height, fill_ratio, fill_color, bg_color,
 
    gui.box(x, y, x + width + 1, y + height + 1, bg_color, border_color)
    if reverse_fill then
-      gui.box(x + width + 1, y , x + width - width * tools.clamp(fill_ratio, 0, 1), y + height + 1, fill_color, 0x00000000)
+      gui.box(x + width + 1, y, x + width - width * tools.clamp(fill_ratio, 0, 1), y + height + 1, fill_color,
+              0x00000000)
    else
-      gui.box(x, y , x + 1 + width * tools.clamp(fill_ratio, 0, 1), y + height + 1, fill_color, 0x00000000)
+      gui.box(x, y, x + 1 + width * tools.clamp(fill_ratio, 0, 1), y + height + 1, fill_color, 0x00000000)
    end
 end
 
@@ -606,9 +635,8 @@ end
 local function get_above_character_position(player)
    local char_height = 0
    if gamestate.is_standing_state(player, player.standing_state) or
-       gamestate.is_crouching_state(player, player.standing_state)
-       or (player.standing_state == 0 and player.character_state_byte == 4)
-       then
+       gamestate.is_crouching_state(player, player.standing_state) or
+       (player.standing_state == 0 and player.character_state_byte == 4) then
       char_height = require("src.modules.framedata").character_specific[player.char_str].height.standing.max + 10
    else
       char_height = tools.get_boxes_highest_position(player.boxes, {"vulnerability", "push"})

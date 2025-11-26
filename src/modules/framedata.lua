@@ -231,7 +231,45 @@ character_specific.twelve.timed_sa[3] = true
 character_specific.yang.timed_sa[3] = true
 character_specific.yun.timed_sa[3] = true
 
+local function find_move_frame_data(char_str, animation_id)
+   if not frame_data[char_str] then return nil end
+   return frame_data[char_str][animation_id]
+end
+
+local function find_frame_data_by_name(char_str, name, button)
+   local fdata = frame_data[char_str]
+   local search_name = name
+   if button then search_name = search_name .. "_" .. button end
+   if fdata then
+      for k, data in pairs(fdata) do if data.name == search_name then return k, data end end
+      if not button then return nil end
+      for k, data in pairs(fdata) do if data.name == name then return k, data end end
+   end
+   return nil
+end
+
 local function patch_frame_data()
+   local movement_items = {
+      "walk_forward", "walk_back", "jump_forward", "jump_neutral", "jump_back", "sjump_forward", "sjump_neutral",
+      "sjump_back"
+   }
+   for i, char_name in ipairs(game_data.characters) do
+      for j, move_name in ipairs(movement_items) do
+         local anim, fdata = find_frame_data_by_name(char_name, move_name)
+         if anim then
+            frame_data[char_name][anim].frames[1].clear_motion = true
+            if frame_data[char_name][anim].frames[1].velocity then
+               frame_data[char_name][anim].frames[1].set_velocity = frame_data[char_name][anim].frames[1].velocity
+               frame_data[char_name][anim].frames[1].velocity = nil
+            end
+            if frame_data[char_name][anim].frames[1].acceleration then
+               frame_data[char_name][anim].frames[1].set_acceleration =
+               frame_data[char_name][anim].frames[1].acceleration
+               frame_data[char_name][anim].frames[1].acceleration = nil
+            end
+         end
+      end
+   end
    if frame_data["alex"] then
       frame_data["alex"]["80d4"].max_hits = 0 -- PA
    end
@@ -338,6 +376,10 @@ local function patch_frame_data()
       frame_data["remy"]["0d18"].landing_height = -6 -- EX Cold Blue
    end
    if frame_data["twelve"] then
+
+      frame_data["twelve"]["b394"].set_velocity = {0, 0} -- Air Dash
+      frame_data["twelve"]["b394"].set_acceleration = {0, 0} -- Air Dash
+
       frame_data["twelve"]["5a6c"].landing_height = -5 -- Air Dash LP
       frame_data["twelve"]["5b2c"].landing_height = -32 -- Air Dash MP
       frame_data["twelve"]["5bec"].landing_height = -18 -- Air Dash HP
@@ -485,23 +527,6 @@ local function get_wakeup_time(char_str, anim, frame)
       end
    end
    return wakeup_time
-end
-
-local function find_move_frame_data(char_str, animation_id)
-   if not frame_data[char_str] then return nil end
-   return frame_data[char_str][animation_id]
-end
-
-local function find_frame_data_by_name(char_str, name, button)
-   local fdata = frame_data[char_str]
-   local search_name = name
-   if button then search_name = search_name .. "_" .. button end
-   if fdata then
-      for k, data in pairs(fdata) do if data.name == search_name then return k, data end end
-      if not button then return nil end
-      for k, data in pairs(fdata) do if data.name == name then return k, data end end
-   end
-   return nil
 end
 
 local function get_kara_distance_by_name(char_str, name, button)

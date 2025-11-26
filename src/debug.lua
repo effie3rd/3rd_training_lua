@@ -91,13 +91,13 @@ local function debug_update_framedata()
       -- -- debuggui("attacking", tostring(player.is_attacking))
       -- debuggui("wakeup", player.remaining_wakeup_time)
       -- debuggui("wakeup2", other.remaining_wakeup_time)
-      -- debuggui("pos", string.format("%.04f,%.04f", player.pos_x, player.pos_y))
-      -- debuggui("pos", string.format("%04f,%04f",other.pos_x, other.pos_y))
+      debuggui("pos", string.format("%.04f,%.04f", player.pos_x, player.pos_y))
+      debuggui("pos", string.format("%04f,%04f",other.pos_x, other.pos_y))
       -- debuggui("diff", string.format("%04f,%04f",player.pos_x - player.previous_pos_x, player.pos_y - player.previous_pos_y ))
       -- debuggui("diff", string.format("%04f,%04f",other.pos_x - other.previous_pos_x, other.pos_y - other.previous_pos_y ))
-      -- debuggui("vel", string.format("%.04f,%.04f", player.velocity_x, player.velocity_y))
-      -- debuggui("vel", string.format("%04f,%04f", other.velocity_x, other.velocity_y))
-      -- debuggui("acc", string.format("%.04f,%.04f", player.acceleration_x, player.acceleration_y))
+      debuggui("vel", string.format("%.04f,%.04f", player.velocity_x, player.velocity_y))
+      debuggui("vel", string.format("%04f,%04f", other.velocity_x, other.velocity_y))
+      debuggui("acc", string.format("%.04f,%.04f", player.acceleration_x, player.acceleration_y))
       -- debuggui("recording", tostring(recording))
 
       -- debuggui("screenx", gamestate.screen_x)
@@ -519,6 +519,16 @@ end
 
 local function debug_things()
 
+   -- write_memory.write_pos(gamestate.P1, 424, 0)
+   -- write_memory.write_pos(gamestate.P2, 431.625 + .375 - .0625, 83.0625 - 4)
+   -- write_memory.write_pos(gamestate.P1, 424 + .375, 0)
+   -- write_memory.write_pos(gamestate.P2, 431.625 + .375 - .0625 + 45.07625 - .0625+ 0.05078125, 83.0625 - 4)
+   -- write_memory.write_pos(gamestate.P1, 424, 0)
+   -- write_memory.write_pos(gamestate.P2, 416.375 + .625, 83.0625 - 4)
+   write_memory.write_pos(gamestate.P1, 424, 1/256)
+   write_memory.write_pos(gamestate.P2, 465.5, 70.78125 + 1.21875)
+
+   write_memory.clear_motion_data(gamestate.P2)
 end
 
 local debug = {
