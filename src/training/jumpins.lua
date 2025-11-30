@@ -726,22 +726,23 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
       command[#command + 1] = target_combo[3]
    else
       local attack = {
-         {
-            condition = function() return attack_timer:is_complete() end,
-            action = function()
-               queue_input_sequence_and_wait(player, attack_input, 0, true)
-               if should_display_info then
-                  local elapsed = gamestate.frame_number - delay_timer + #attack_input
-                  info_labels[#info_labels + 1] = {"menu_" .. attack_name, " ", elapsed, "hud_f", " ", "hud_after"}
-                  delay_timer = gamestate.frame_number
-               end
+         condition = function() return attack_timer:is_complete() end,
+         action = function()
+            queue_input_sequence_and_wait(player, attack_input, 0, true)
+            if should_display_info then
+               local elapsed = gamestate.frame_number - delay_timer + #attack_input
+               info_labels[#info_labels + 1] = {"menu_" .. attack_name, " ", elapsed, "hud_f", " ", "hud_after"}
+               delay_timer = gamestate.frame_number
             end
-         }, {condition = function() return player.has_just_connected or player.has_just_landed end, action = nil}
+         end
       }
-      command[#command + 1] = attack[1]
-      command[#command + 1] = attack[2]
+      command[#command + 1] = attack
    end
-   if followup then
+   if followup and followup.type ~= 1 then
+      command[#command + 1] = {
+         condition = function() return player.has_just_connected or player.has_just_landed end,
+         action = nil
+      }
       local followup_input
       local followup_data = utils.create_move_data_from_selection(followup, jumpins_dummy)
       local followup_name = followup_data.name
@@ -893,7 +894,7 @@ local function begin_edit(settings, jump_settings)
    mode = modes.EDIT
    state = states.POSITION
    move_left_frame, move_right_frame = 0, 0
-   test_jump_end_frame = 0 
+   test_jump_end_frame = 0
    advanced_control.clear_all()
    info_labels = {}
    hud.register_draw(jumpins_display)
@@ -957,13 +958,11 @@ local function update()
             local player_pos_x = get_current_player_position()
             local dummy_pos_x = get_current_dummy_position()
             if gamestate.frame_number - move_right_frame >= test_jump_start_after_move_delay and gamestate.frame_number -
-                move_left_frame >= test_jump_start_after_move_delay and
-                gamestate.frame_number - test_jump_end_frame >= test_jump_start_delay and
-                jumpins_tables.get_jump_names()[current_jump_settings.jump_name] ~= "off" then
+                move_left_frame >= test_jump_start_after_move_delay and gamestate.frame_number - test_jump_end_frame >=
+                test_jump_start_delay and jumpins_tables.get_jump_names()[current_jump_settings.jump_name] ~= "off" then
                if (jumpins_player.action == 0 or (player_pose == 2 and jumpins_player.action == 7)) and
                    jumpins_dummy.action == 0 and math.floor(jumpins_player.pos_x) == player_pos_x and
-                   math.floor(jumpins_dummy.pos_x) == dummy_pos_x then
-                     state = states.QUEUE_TEST_JUMP end
+                   math.floor(jumpins_dummy.pos_x) == dummy_pos_x then state = states.QUEUE_TEST_JUMP end
             end
             screen_reset_pos_x = get_center_screen_position(jumpins_player, player_pos_x, dummy_pos_x)
             if screen_reset_pos_x < gamestate.screen_x then
@@ -983,8 +982,9 @@ local function update()
             if (jumpins_player.action == 0 or (player_pose == 2 and jumpins_player.action == 7)) and
                 jumpins_dummy.action == 0 and all_commands_complete(jumpins_dummy) and
                 not inputs.is_playing_input_sequence(jumpins_dummy) then
-                  test_jump_end_frame = gamestate.frame_number
-                  state = states.POSITION end
+               test_jump_end_frame = gamestate.frame_number
+               state = states.POSITION
+            end
             if jumpins_dummy.has_just_landed and current_jump_settings.followup.type == 1 then
                advanced_control.clear_programmed_movement(jumpins_dummy)
             end
