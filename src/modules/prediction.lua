@@ -696,7 +696,8 @@ local function predict_next_player_movement(p1, p1_motion_data, p1_line, p2, p2_
             mdata[index].pos_y = 0
             mdata[index].standing_state = 1
             mdata[index].just_landed = true
-            local line = predict_frames_branching(player, player.jump_recovery, 0, #lines[player] - index + 1, true)[1]
+            -- there are specific recovery frames for special moves, but this is good enough for now
+            local line = predict_frames_branching(player, frame_data[player.char_str].jump_recovery, 0, #lines[player] - index + 1, true)[1]
             if line then for j = 1, #line do lines[player][index + j - 1] = line[j] end end
          end
       end

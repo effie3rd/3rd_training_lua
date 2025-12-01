@@ -331,6 +331,7 @@ local function on_gui()
 
       draw.draw_canvas(draw.menu_canvas)
    end
+
    gui.box(0, 0, 0, 0, 0, 0) -- if we don't draw something, what we drew last frame will not clear
 end
 

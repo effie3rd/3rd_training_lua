@@ -259,7 +259,9 @@ local function simulate_jump(player, start_x, first_jump_name, second_jump_name,
    end
    local attack_input, is_target_combo
    if attack_name then
-      attack_anim, attack_fdata = find_frame_data_by_name(player.char_str, attack_name)
+      local jump_name = second_jump_name or first_jump_name
+      local search_name = jumpins_tables.get_attack_framedata_name(player.char_str, jump_name, attack_name)
+      attack_anim, attack_fdata = find_frame_data_by_name(player.char_str, search_name)
       attack_input, is_target_combo = jumpins_tables.get_move_inputs(attack_name)
    end
    if startup_fdata and first_jump_fdata then
@@ -868,7 +870,7 @@ local function queue_jump(jump, dummy_offset, attack_delay)
       inputs.clear_input_sequence(jumpins_dummy)
       local second_jump_name = jumpins_tables.get_second_jump_names()[jump.second_jump_name]
       local second_jump_delay = jump.second_jump_delay[1]
-      local attack_name = jumpins_tables.get_attack_names()[jump.attack_name]
+      local attack_name = jumpins_tables.get_attack_name(jump.attack_name)
       local followup = jump.followup
       local followup_delay = jump.followup_delay
       execute_jump(jumpins_dummy, first_jump_name, second_jump_name, second_jump_delay, attack_name, attack_delay,

@@ -57,10 +57,11 @@ local function clear_canvas(canvas)
    canvas.draw_queue = {}
 end
 
+local max_depth = 10
 local function get_differences(canvas)
    if #canvas.draw_queue_cache == 0 or #canvas.draw_queue ~= #canvas.draw_queue_cache then return end
    local diff = {}
-   local to_check = {}
+   local existing = {}
    for i, image in ipairs(canvas.draw_queue) do
       if image.image ~= canvas.draw_queue_cache[i].image or image.x ~= canvas.draw_queue_cache[i].x or image.y ~=
           canvas.draw_queue_cache[i].y then
@@ -70,33 +71,41 @@ local function get_differences(canvas)
          image.old_height = canvas.draw_queue_cache[i].height
          diff[#diff + 1] = image
       else
-         to_check[#to_check + 1] = canvas.draw_queue_cache[i]
+         existing[#existing + 1] = canvas.draw_queue_cache[i]
       end
    end
-   local to_add = {}
-   for _, diff_image in ipairs(diff) do
-      local diff_image_left = diff_image.old_x
-      local diff_image_right = diff_image.old_x + diff_image.old_width - 1
-      local diff_image_top = diff_image.old_y
-      local diff_image_bottom = diff_image.old_y + diff_image.old_height - 1
-      for i, image in ipairs(to_check) do
-         local image_left = image.x
-         local image_right = image.x + image.width - 1
-         local image_top = image.y
-         local image_bottom = image.y + image.height - 1
-         if (image_left <= diff_image_right) and (image_right >= diff_image_left) and (image_bottom >= diff_image_top) and
-             (image_top <= diff_image_bottom) then
-            image.old_x = image.x
-            image.old_y = image.y
-            image.old_width = image.width
-            image.old_height = image.height
-            to_add[#to_add + 1] = image
+   local depth = 0
+   local to_check = diff
+   repeat
+      local results = {}
+      local new_existing = {}
+      for _, diff_image in ipairs(to_check) do
+         local diff_image_left = diff_image.old_x
+         local diff_image_right = diff_image.old_x + diff_image.old_width - 1
+         local diff_image_top = diff_image.old_y
+         local diff_image_bottom = diff_image.old_y + diff_image.old_height - 1
+         for i, image in ipairs(existing) do
+            local image_left = image.x
+            local image_right = image.x + image.width - 1
+            local image_top = image.y
+            local image_bottom = image.y + image.height - 1
+            if (image_left <= diff_image_right) and (image_right >= diff_image_left) and
+                (image_bottom >= diff_image_top) and (image_top <= diff_image_bottom) then
+               image.old_x = image.x
+               image.old_y = image.y
+               image.old_width = image.width
+               image.old_height = image.height
+               results[#results + 1] = image
+            else
+               new_existing[#new_existing + 1] = image
+            end
          end
       end
-   end
-   for i, image in ipairs(to_add) do
-      diff[#diff + 1] = image
-   end
+      for i, image in ipairs(results) do if not tools.table_contains(diff, image) then diff[#diff + 1] = image end end
+      depth = depth + 1
+      to_check = results
+      existing = new_existing
+   until depth >= max_depth or (#results == 0)
    return diff
 end
 

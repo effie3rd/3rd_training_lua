@@ -133,7 +133,40 @@ local function get_jump_names() return jumps end
 
 local function get_second_jump_names() return second_jumps end
 
-local function get_attack_names() return moves end
+local function get_attack_framedata_name(char_str, jump_name, move_name)
+   if move_name == "throw" then
+      if char_str == "chunli" or char_str == "ibuki" or char_str == "oro" then
+         move_name = "throw_air"
+      else
+         move_name = "LP"
+      end
+   elseif tools.table_contains({"HP_HP", "LP_MK", "MP_HP", "LP_f_HP", "HP_f_MK", "LK_f_MK", "MK_raigeki_MK"}, move_name) then
+      move_name = move_inputs[move_name][1][1]
+   end
+   local jump_prefix = "uf_"
+   if jump_name == "jump_neutral" or jump_name == "sjump_neutral" then jump_prefix = "u_" end
+   if tools.table_contains({"LP", "MP", "HP", "LK", "MK", "HK"}, move_name) then
+      local search_name = jump_prefix .. move_name
+      local anim, fdata = find_frame_data_by_name(char_str, search_name)
+      if fdata then
+         move_name = search_name
+      else
+         if jump_prefix == "uf_" then
+            jump_prefix = "u_"
+         else
+            jump_prefix = "uf_"
+         end
+         move_name = jump_prefix .. move_name
+      end
+   elseif move_name == "d_HP" or move_name == "d_MK" then
+      move_name = move_name .. "_air"
+   end
+   return move_name
+end
+
+local function get_attack_name(move_index)
+   return moves[move_index]
+end
 
 local function get_menu_jump_names()
    local jump_names = copytable(jumps)
@@ -154,44 +187,11 @@ local function get_menu_attack_names()
 end
 
 local function get_move_inputs(name)
-   local is_target_combo = false
-   is_target_combo = target_combos[name]
+   local is_target_combo = target_combos[name] or false
    return move_inputs[name], is_target_combo
 end
 
 local function get_jump_inputs(name) return jump_inputs[name] end
-
-local function get_move_framedata(char_str, jump_name, move_name)
-   if move_name == "throw" then
-      if char_str == "chunli" or char_str == "ibuki" or char_str == "oro" then
-         return find_frame_data_by_name(char_str, "throw_air")
-      else
-         move_name = "LP"
-      end
-   elseif tools.table_contains({"HP_HP", "LP_MK", "MP_HP", "LP_f_HP", "HP_f_MK", "LK_f_MK", "MK_raigeki_MK"}, move_name) then
-      move_name = move_inputs[move_name][1][1]
-   end
-   local jump_prefix = "uf_"
-   if jump_name == "jump_neutral" or jump_name == "sjump_neutral" then jump_prefix = "u_" end
-   if tools.table_contains({"LP", "MP", "HP", "LK", "MK", "HK"}, move_name) then
-      local search_name = jump_prefix .. move_name
-      local anim, fdata = find_frame_data_by_name(char_str, search_name)
-      if not fdata then
-         if jump_prefix == "uf_" then
-            jump_prefix = "u_"
-         else
-            jump_prefix = "uf_"
-         end
-         search_name = jump_prefix .. move_name
-         anim, fdata = find_frame_data_by_name(char_str, search_name)
-      end
-      return anim, fdata
-   elseif move_name == "d_HP" or move_name == "d_MK" then
-      return find_frame_data_by_name(char_str, move_name .. "_air")
-   else
-      return find_frame_data_by_name(char_str, move_name)
-   end
-end
 
 local function create_settings(dummy)
    local data = {
@@ -228,13 +228,13 @@ return {
    update_character = update_character,
    get_jump_names = get_jump_names,
    get_second_jump_names = get_second_jump_names,
-   get_attack_names = get_attack_names,
+   get_attack_framedata_name = get_attack_framedata_name,
+   get_attack_name = get_attack_name,
    get_menu_jump_names = get_menu_jump_names,
    get_menu_second_jump_names = get_menu_second_jump_names,
    get_menu_attack_names = get_menu_attack_names,
    get_move_inputs = get_move_inputs,
    get_jump_inputs = get_jump_inputs,
-   get_move_framedata = get_move_framedata,
    create_settings = create_settings,
    max_jumps = max_jumps
 }

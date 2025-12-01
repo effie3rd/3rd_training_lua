@@ -491,7 +491,7 @@ local function run_debug()
    -- if el > 1 / 60 then print(string.format("[draw] frame: %d, fps: %.2f", gamestate.frame_number, 1 / el)) end
    -- fps_data[#fps_data + 1] = fps
    -- if #fps_data > 200 then table.remove(fps_data, 1) end
-   -- if loading.images_loaed then draw.render_text(3, 2, string.format("fps: %.2f / %.2f", fps, average(fps_data))) end
+   -- if loading.images_loaded then draw.render_text(3, 2, string.format("fps: %.2f / %.2f", fps, average(fps_data))) end
 end
 
 local function draw_debug()
@@ -518,7 +518,6 @@ local function draw_debug()
 end
 
 local function debug_things()
-
    -- write_memory.write_pos(gamestate.P1, 424, 0)
    -- write_memory.write_pos(gamestate.P2, 431.625 + .375 - .0625, 83.0625 - 4)
    -- write_memory.write_pos(gamestate.P1, 424 + .375, 0)
