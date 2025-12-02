@@ -28,7 +28,7 @@ local move_names = {
       "f_MP", "MK", "d_MP", "d_MK", "d_HK", "slash_elbow_LP", "slash_elbow_MP", "slash_elbow_HP", "slash_elbow_EXP",
       "kara_throw"
    },
-   chunli = {"MP", "d_MP", "d_MK", "HP", "b_HP", "HK", "d_HK", "hazanshuu_LK", "kara_throw"},
+   chunli = {"MP", "d_MP", "d_MK", "HP", "b_HP", "HK", "f_HK", "d_HK", "hazanshuu_LK", "kara_throw"},
    dudley = {"MP", "d_MP", "f_MK", "HP", "f_HP", "HK", "d_HK"},
    elena = {"d_MP", "f_MK", "d_MK", "HK", "d_HK", "kara_throw"}, -- , "mallet_smash_LP", "mallet_smash_EXP"
    gill = {"MK", "d_MK", "d_HK", "HP"},
@@ -217,6 +217,7 @@ local function get_execute_distance(player, action_type)
 
    local box_types = {"vulnerability", "ext.vulnerability"}
    if current_attack.data.type == "throw" then box_types = {"throwable"} end
+
    return dist -
               utils.get_box_connection_distance(player, current_attack.data.hitboxes, player.other, player.other.boxes,
                                                 box_types, current_attack.data.should_hit) -
@@ -240,9 +241,8 @@ function followup_attack:setup(player, stage, actions, i_actions)
    self.opponent_has_been_thrown = false
    local input_delay = Delay:new(6)
    local should_delay = false
-   if current_attack.data.name == "hadouken_EXP" or current_attack.data.name == "gohadouken_HP" 
-   or current_attack.data.name == "zesshou_LP"
-   then
+   if current_attack.data.name == "hadouken_EXP" or current_attack.data.name == "gohadouken_HP" or
+       current_attack.data.name == "zesshou_LP" then
       local previous_action = actions[i_actions - 1]
       if previous_action and previous_action.type == Action_Type.WALK_FORWARD then should_delay = true end
    end
@@ -666,6 +666,24 @@ local function init(char_str)
          data.hit_frame = 8
          data.hitboxes = framedata.get_hitboxes(char_str, "01_ndl_exp", 0)
          data.range = 140
+      elseif move_name == "HK" and char_str == "chunli" then
+         local hitboxes = framedata.get_hitboxes_by_name(char_str, "HK", nil, data.hit_frame)
+         data.hitboxes = {}
+         for _, box in ipairs(hitboxes) do
+            local b = copytable(box)
+            b[2] = b[2] + 14
+            data.hitboxes[#data.hitboxes + 1] = b
+         end
+      elseif move_name == "f_HK" and char_str == "chunli" then
+         data.hit_frame = framedata.get_first_hit_frame_by_name(char_str, "HK")
+         local hitboxes = framedata.get_hitboxes_by_name(char_str, "HK", nil, data.hit_frame)
+         data.hitboxes = {}
+         for _, box in ipairs(hitboxes) do
+            local b = copytable(box)
+            b[2] = b[2] + 14
+            data.hitboxes[#data.hitboxes + 1] = b
+         end
+         data.range = framedata.get_hitbox_max_range_by_name(char_str, "HK", nil, -1) + 25
       end
       menu_move_names[#menu_move_names + 1] = "menu_" .. move_name
       moves[#moves + 1] = {data = data, default_weight = 1, weight = 1}
