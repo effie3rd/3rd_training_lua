@@ -293,7 +293,7 @@ local function before_frame()
 end
 
 local function on_gui()
-   draw.clear_canvas(draw.menu_canvas)
+   draw.clear_canvases()
    -- loading done here to decouple it from game execution
    if not loading.images_loaded or not loading.frame_data_loaded then
       local number_loaded = loading.load_all()
@@ -329,7 +329,7 @@ local function on_gui()
 
       menu.update()
 
-      draw.draw_canvas(draw.menu_canvas)
+      draw.draw_canvases()
    end
 
    gui.box(0, 0, 0, 0, 0, 0) -- if we don't draw something, what we drew last frame will not clear

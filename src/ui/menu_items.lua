@@ -33,14 +33,14 @@ function Gauge_Menu_Item:new(name, object, property_name, unit, fill_color, gaug
    return obj
 end
 
-function Gauge_Menu_Item:draw(x, y, selected)
+function Gauge_Menu_Item:draw(depth, x, y, selected)
    local color = colors.text.default
    if selected then color = colors.text.selected end
 
    local offset = 0
    if self.indent then offset = indent_width end
 
-   draw.render_text_multiple_to_canvas(draw.menu_canvas, x + offset, y, {self.name, ":  "}, nil, nil, color)
+   draw.render_text_multiple_to_canvas(depth, x + offset, y, {self.name, ":  "}, nil, nil, color)
    local w, h = draw.get_text_dimensions_multiple({self.name, ":  "})
 
    offset = offset + w
@@ -51,12 +51,13 @@ function Gauge_Menu_Item:draw(x, y, selected)
    local box_left = x + offset
    local box_right = box_left + box_width
    local box_bottom = box_top + 4
-   gui.box(box_left, box_top, box_right, box_bottom, colors.menu.gauge_background, colors.menu.gauge_border)
+   draw.add_box_to_canvas(depth, box_left, box_top, box_right, box_bottom, colors.menu.gauge_background,
+                          colors.menu.gauge_border)
    local content_width = self.object[self.property_name] / self.unit
-   gui.box(box_left, box_top, box_left + content_width, box_bottom, self.fill_color, 0x00000000)
+   draw.add_box_to_canvas(depth, box_left, box_top, box_left + content_width, box_bottom, self.fill_color, 0x00000000)
    for i = 1, self.subdivision_count - 1 do
       local line_x = box_left + i * self.gauge_max / (self.subdivision_count * self.unit)
-      gui.line(line_x, box_top, line_x, box_bottom, colors.menu.gauge_border)
+      draw.add_line_to_canvas(depth, line_x, box_top, line_x, box_bottom, colors.menu.gauge_border)
    end
 
 end
@@ -140,7 +141,7 @@ function Textfield_Menu_Item:crop_char_table()
    end
 end
 
-function Textfield_Menu_Item:draw(x, y, selected)
+function Textfield_Menu_Item:draw(depth, x, y, selected)
    local color = colors.text.default
    if self.is_in_edition then
       color = colors.text.button_activated
@@ -151,14 +152,18 @@ function Textfield_Menu_Item:draw(x, y, selected)
    local value = self.object[self.property_name]
 
    if self.is_in_edition then
-      local frequency = 0.05
-      color = colors.colorscale(color, (math.sin(gamestate.frame_number * frequency) + 1) / 2 * .5 + 0.5)
-      self:calc_dimensions()
-      local u_w = draw.get_text_dimensions("_")
-      draw.render_text_to_canvas(draw.menu_canvas, x + self.width - u_w, y + 2, "_", nil, nil, color)
+      local frequency = 0.03
+      color = colors.colorscale(color, (math.sin(gamestate.frame_number * frequency) + 1) / 2 * .4 + 0.8)
+      local u_w, u_h = draw.get_text_dimensions("_")
+      if settings.language == "en" then u_h = u_h - 1 end
+      local w, h = draw.get_text_dimensions_multiple({self.name, ":  ", value})
+      local l_w = draw.get_text_dimensions(available_characters[self.content[#self.content]])
+      draw.add_image_to_canvas(depth, x + w - l_w + u_w / 2 - image_tables.scroll_arrow_width / 2, y + u_h - 1,
+                               image_tables.scroll_arrow_width, image_tables.scroll_arrow_height,
+                               draw.get_image(image_tables.images.img_scroll_up, color))
    end
 
-   draw.render_text_multiple_to_canvas(draw.menu_canvas, x, y, {self.name, ":  ", value}, nil, nil, color)
+   draw.render_text_multiple_to_canvas(depth, x, y, {self.name, ":  ", value}, nil, nil, color)
 
 end
 
@@ -260,7 +265,7 @@ function On_Off_Menu_Item:new(name, object, property_name, default_value, on_cha
    return obj
 end
 
-function On_Off_Menu_Item:draw(x, y, selected)
+function On_Off_Menu_Item:draw(depth, x, y, selected)
    local color = colors.text.default
    if selected then
       color = colors.text.selected
@@ -277,7 +282,7 @@ function On_Off_Menu_Item:draw(x, y, selected)
    local offset = 0
    if self.indent then offset = indent_width end
 
-   draw.render_text_multiple_to_canvas(draw.menu_canvas, x + offset, y, {self.name, ":  ", value}, nil, nil, color)
+   draw.render_text_multiple_to_canvas(depth, x + offset, y, {self.name, ":  ", value}, nil, nil, color)
 end
 
 function On_Off_Menu_Item:calc_dimensions()
@@ -328,7 +333,7 @@ function List_Menu_Item:new(name, object, property_name, list, default_value, on
    return obj
 end
 
-function List_Menu_Item:draw(x, y, selected)
+function List_Menu_Item:draw(depth, x, y, selected)
    self.is_selected = selected
    local color = colors.text.default
    if selected then
@@ -339,7 +344,7 @@ function List_Menu_Item:draw(x, y, selected)
    local offset = 0
    if self.indent then offset = indent_width end
 
-   draw.render_text_multiple_to_canvas(draw.menu_canvas, x + offset, y,
+   draw.render_text_multiple_to_canvas(depth, x + offset, y,
                                        {self.name, ":  ", self.list[self.object[self.property_name]]}, nil, nil, color)
 end
 
@@ -407,7 +412,7 @@ function Check_Box_Grid_Item:new(name, object, list, max_cols, on_change)
    return obj
 end
 
-function Check_Box_Grid_Item:draw(x, y, selected)
+function Check_Box_Grid_Item:draw(depth, x, y, selected)
    local color = colors.text.default
    if selected then
       color = colors.text.selected
@@ -434,7 +439,7 @@ function Check_Box_Grid_Item:draw(x, y, selected)
       text_table = {self.name, ":  "}
    end
 
-   draw.render_text_multiple_to_canvas(draw.menu_canvas, x + offset_x, y + offset_y, text_table, nil, nil, color)
+   draw.render_text_multiple_to_canvas(depth, x + offset_x, y + offset_y, text_table, nil, nil, color)
 
    local tx, ty = draw.get_text_dimensions_multiple(text_table)
    offset_x = offset_x + tx
@@ -461,10 +466,9 @@ function Check_Box_Grid_Item:draw(x, y, selected)
                end
             end
             local checkbox = draw.get_image(checkbox_image, item_color)
-            draw.add_image_to_canvas(draw.menu_canvas, x + offset_x + col_offset,
-                                     y + offset_y + row_offset + checkbox_offset_y, image_tables.check_box_width,
-                                     image_tables.check_box_height, checkbox)
-            draw.render_text_to_canvas(draw.menu_canvas, x + offset_x + col_offset + self.checkbox_padding_x,
+            draw.add_image_to_canvas(depth, x + offset_x + col_offset, y + offset_y + row_offset + checkbox_offset_y,
+                                     image_tables.check_box_width, image_tables.check_box_height, checkbox)
+            draw.render_text_to_canvas(depth, x + offset_x + col_offset + self.checkbox_padding_x,
                                        y + offset_y + row_offset, self.list[index], nil, nil, item_color)
 
             local w, h = draw.get_text_dimensions(self.list[index])
@@ -625,7 +629,7 @@ function Slider_Menu_Item:new(name, line_width, points, range)
    return obj
 end
 
-function Slider_Menu_Item:draw(x, y, selected)
+function Slider_Menu_Item:draw(depth, x, y, selected)
    local color = colors.text.default
    if selected then
       color = colors.text.selected
@@ -639,7 +643,7 @@ function Slider_Menu_Item:draw(x, y, selected)
    if self.indent then offset_x = indent_width end
 
    local text_table = {self.name, ":  "}
-   draw.render_text_multiple_to_canvas(draw.menu_canvas, x + offset_x, y, text_table, nil, nil, color)
+   draw.render_text_multiple_to_canvas(depth, x + offset_x, y, text_table, nil, nil, color)
 
    local w, h = draw.get_text_dimensions_multiple(text_table)
    offset_x = offset_x + w
@@ -651,7 +655,7 @@ function Slider_Menu_Item:draw(x, y, selected)
    local box_right = box_left + box_width
    local box_bottom = box_top + 2
    local arrow_offset = -3
-   gui.box(box_left, box_top, box_right, box_bottom, color, colors.menu.gauge_border)
+   draw.add_box_to_canvas(depth, box_left, box_top, box_right, box_bottom, color, colors.menu.gauge_border)
 
    local arrow_color, arrow_position
    if self.mode == 2 then
@@ -661,7 +665,7 @@ function Slider_Menu_Item:draw(x, y, selected)
          if i ~= self.point_index then
             arrow_position = math.floor((self.points[i] - self.range[1]) / (self.range[2] - self.range[1]) *
                                             self.line_width)
-            draw.add_image_to_canvas(draw.menu_canvas, box_left + arrow_offset + arrow_position + 1, box_bottom + 1,
+            draw.add_image_to_canvas(depth, box_left + arrow_offset + arrow_position + 1, box_bottom + 1,
                                      image_tables.scroll_arrow_width, image_tables.scroll_arrow_height,
                                      draw.get_image(image_tables.images.img_scroll_up, arrow_color))
          end
@@ -670,7 +674,7 @@ function Slider_Menu_Item:draw(x, y, selected)
    arrow_color = color
    arrow_position = math.floor((self.points[self.point_index] - self.range[1]) / (self.range[2] - self.range[1]) *
                                    self.line_width)
-   draw.add_image_to_canvas(draw.menu_canvas, box_left + arrow_offset + arrow_position + 1, box_bottom + 1,
+   draw.add_image_to_canvas(depth, box_left + arrow_offset + arrow_position + 1, box_bottom + 1,
                             image_tables.scroll_arrow_width, image_tables.scroll_arrow_height,
                             draw.get_image(image_tables.images.img_scroll_up, arrow_color))
 
@@ -680,7 +684,7 @@ function Slider_Menu_Item:draw(x, y, selected)
    else
       num_text = {"  ", self.points[1], "—", self.points[2]}
    end
-   draw.render_text_multiple_to_canvas(draw.menu_canvas, box_right, y, num_text, nil, nil, color)
+   draw.render_text_multiple_to_canvas(depth, box_right, y, num_text, nil, nil, color)
 end
 
 function Slider_Menu_Item:calc_dimensions()
@@ -789,7 +793,7 @@ function Motion_List_Menu_Item:new(name, object, property_name, list, default_va
    return obj
 end
 
-function Motion_List_Menu_Item:draw(x, y, selected)
+function Motion_List_Menu_Item:draw(depth, x, y, selected)
    local color = colors.text.default
    if selected then
       color = colors.text.selected
@@ -800,7 +804,7 @@ function Motion_List_Menu_Item:draw(x, y, selected)
    local offset_y = -1
    if self.indent then offset_x = indent_width end
 
-   draw.render_text_multiple_to_canvas(draw.menu_canvas, x + offset_x, y, {self.name, ":  "}, nil, nil, color)
+   draw.render_text_multiple_to_canvas(depth, x + offset_x, y, {self.name, ":  "}, nil, nil, color)
    local w, _ = draw.get_text_dimensions_multiple({self.name, ":  "})
    offset_x = offset_x + w
 
@@ -904,7 +908,7 @@ function Motion_List_Menu_Item:draw(x, y, selected)
       end
    end
    for i = 1, #img_list do
-      draw.add_image_to_canvas(draw.menu_canvas, x + offset_x, y + offset_y, image_tables.dir_small_width,
+      draw.add_image_to_canvas(depth, x + offset_x, y + offset_y, image_tables.dir_small_width,
                                image_tables.dir_small_height, img_list[i])
       offset_x = offset_x + image_tables.dir_small_width
    end
@@ -959,7 +963,7 @@ function Move_Input_Display_Menu_Item:new(name, object, select_special_item)
    return obj
 end
 
-function Move_Input_Display_Menu_Item:draw(x, y)
+function Move_Input_Display_Menu_Item:draw(depth, x, y)
 
    local offset_x = 6
    local offset_y = -1
@@ -1157,7 +1161,7 @@ function Move_Input_Display_Menu_Item:draw(x, y)
       end
 
       for j = 1, #img_list do
-         draw.add_image_to_canvas(draw.menu_canvas, x + offset_x, y + offset_y, image_tables.dir_small_width,
+         draw.add_image_to_canvas(depth, x + offset_x, y + offset_y, image_tables.dir_small_width,
                                   image_tables.dir_small_height, img_list[j])
          offset_x = offset_x + image_tables.dir_small_width
       end
@@ -1190,13 +1194,13 @@ function Controller_Style_Item:new(name, object, property_name, list, default_va
    return obj
 end
 
-function Controller_Style_Item:draw(x, y, selected)
+function Controller_Style_Item:draw(depth, x, y, selected)
    local color = colors.text.default
    if selected then color = colors.text.selected end
    local offset_x = 0
    if self.indent then offset_x = indent_width end
 
-   draw.render_text_multiple_to_canvas(draw.menu_canvas, x + offset_x, y, {self.name, ":  "}, nil, nil, color)
+   draw.render_text_multiple_to_canvas(depth, x + offset_x, y, {self.name, ":  "}, nil, nil, color)
    local w, _ = draw.get_text_dimensions_multiple({self.name, ":  "})
 
    offset_x = offset_x + w
@@ -1205,8 +1209,8 @@ function Controller_Style_Item:draw(x, y, selected)
    local style = draw.controller_styles[self.object[self.property_name]]
    draw.draw_buttons_preview_big(x + offset_x, y + c_offset_y, style)
    offset_x = offset_x + 21
-   draw.render_text_to_canvas(draw.menu_canvas, x + offset_x, y, tostring(self.list[self.object[self.property_name]]),
-                              nil, nil, color)
+   draw.render_text_to_canvas(depth, x + offset_x, y, tostring(self.list[self.object[self.property_name]]), nil, nil,
+                              color)
 end
 
 function Controller_Style_Item:calc_dimensions()
@@ -1264,7 +1268,7 @@ function Integer_Menu_Item:new(name, object, property_name, min, max, loop, defa
    return obj
 end
 
-function Integer_Menu_Item:draw(x, y, selected)
+function Integer_Menu_Item:draw(depth, x, y, selected)
    local color = colors.text.default
    if selected then
       color = colors.text.selected
@@ -1275,8 +1279,8 @@ function Integer_Menu_Item:draw(x, y, selected)
    local w, h = 0, 0
    if self.indent then offset_x = indent_width end
 
-   draw.render_text_multiple_to_canvas(draw.menu_canvas, x + offset_x, y,
-                                       {self.name, ":  ", self.object[self.property_name]}, nil, nil, color)
+   draw.render_text_multiple_to_canvas(depth, x + offset_x, y, {self.name, ":  ", self.object[self.property_name]}, nil,
+                                       nil, color)
 
 end
 
@@ -1343,7 +1347,7 @@ function Hits_Before_Menu_Item:new(name, suffix, object, property_name, min, max
    return obj
 end
 
-function Hits_Before_Menu_Item:draw(x, y, selected)
+function Hits_Before_Menu_Item:draw(depth, x, y, selected)
    local color = colors.text.default
    if selected then
       color = colors.text.selected
@@ -1356,24 +1360,22 @@ function Hits_Before_Menu_Item:draw(x, y, selected)
    local w, h = 0, 0
 
    if localization[self.name][settings.language] ~= "" then
-      draw.render_text_to_canvas(draw.menu_canvas, x + offset_x, y, self.name, nil, nil, color)
+      draw.render_text_to_canvas(depth, x + offset_x, y, self.name, nil, nil, color)
       w, h = draw.get_text_dimensions(self.name)
       offset_x = offset_x + w + 1
    end
-   draw.render_text_to_canvas(draw.menu_canvas, x + offset_x, y, self.object[self.property_name], nil, nil, color)
+   draw.render_text_to_canvas(depth, x + offset_x, y, self.object[self.property_name], nil, nil, color)
    w, h = draw.get_text_dimensions(self.object[self.property_name])
    offset_x = offset_x + w + 1
 
    local hits_text = "menu_hits"
    if settings.language == "en" then
       if self.object[self.property_name] == 1 then hits_text = "menu_hit" end
-      draw.render_text_to_canvas(draw.menu_canvas, x + offset_x, y, hits_text, nil, nil, color)
+      draw.render_text_to_canvas(depth, x + offset_x, y, hits_text, nil, nil, color)
       w, h = draw.get_text_dimensions(hits_text)
       offset_x = offset_x + w + 1
    end
-   if self.suffix ~= "" then
-      draw.render_text_to_canvas(draw.menu_canvas, x + offset_x, y, self.suffix, nil, nil, color)
-   end
+   if self.suffix ~= "" then draw.render_text_to_canvas(depth, x + offset_x, y, self.suffix, nil, nil, color) end
 
 end
 
@@ -1426,7 +1428,7 @@ function Map_Menu_Item:new(name, object, property_name, map_object, map_property
    return obj
 end
 
-function Map_Menu_Item:draw(x, y, selected)
+function Map_Menu_Item:draw(depth, x, y, selected)
    local color = colors.text.default
    if selected then
       color = colors.text.selected
@@ -1436,8 +1438,8 @@ function Map_Menu_Item:draw(x, y, selected)
 
    local offset_x = 0
 
-   draw.render_text_multiple_to_canvas(draw.menu_canvas, x + offset_x, y,
-                                       {self.name, ":  ", self.object[self.property_name]}, nil, nil, color)
+   draw.render_text_multiple_to_canvas(depth, x + offset_x, y, {self.name, ":  ", self.object[self.property_name]}, nil,
+                                       nil, color)
 
 end
 
@@ -1507,7 +1509,7 @@ function Button_Menu_Item:new(name, validate_function)
    return obj
 end
 
-function Button_Menu_Item:draw(x, y, selected)
+function Button_Menu_Item:draw(depth, x, y, selected)
    local color = colors.text.default
    if selected then
       color = colors.text.selected
@@ -1518,9 +1520,9 @@ function Button_Menu_Item:draw(x, y, selected)
    if self.is_enabled and not self:is_enabled() then color = colors.text.disabled end
 
    if type(self.name) == "table" then
-      draw.render_text_multiple_to_canvas(draw.menu_canvas, x, y, self.name, nil, nil, color)
+      draw.render_text_multiple_to_canvas(depth, x, y, self.name, nil, nil, color)
    else
-      draw.render_text_to_canvas(draw.menu_canvas, x, y, self.name, nil, nil, color)
+      draw.render_text_to_canvas(depth, x, y, self.name, nil, nil, color)
    end
 end
 
@@ -1552,7 +1554,7 @@ function Header_Menu_Item:new(name)
    return obj
 end
 
-function Header_Menu_Item:draw(x, y, state)
+function Header_Menu_Item:draw(depth, x, y, state)
    local color = colors.text.default
    if state == "active" then
       color = colors.text.default
@@ -1562,7 +1564,7 @@ function Header_Menu_Item:draw(x, y, state)
       color = colors.text.inactive
    end
 
-   draw.render_text_to_canvas(draw.menu_canvas, x, y, self.name, nil, nil, color)
+   draw.render_text_to_canvas(depth, x, y, self.name, nil, nil, color)
 end
 
 function Header_Menu_Item:calc_dimensions() self.width, self.height = draw.get_text_dimensions(self.name) end
@@ -1578,9 +1580,9 @@ function Footer_Menu_Item:new(name)
    return obj
 end
 
-function Footer_Menu_Item:draw(x, y, state)
+function Footer_Menu_Item:draw(depth, x, y, state)
    local color = colors.text.inactive
-   draw.render_text_to_canvas(draw.menu_canvas, x, y, self.name, settings.language, nil, color)
+   draw.render_text_to_canvas(depth, x, y, self.name, settings.language, nil, color)
 end
 
 function Footer_Menu_Item:calc_dimensions() self.width, self.height = draw.get_text_dimensions(self.name) end
@@ -1614,12 +1616,12 @@ function Label_Menu_Item:new(name, text_list, object, property, small, inline)
    return obj
 end
 
-function Label_Menu_Item:draw(x, y)
+function Label_Menu_Item:draw(depth, x, y)
    local color = colors.text.inactive
    local size
    if self.index > 0 then self.text_list[self.index] = self.object[self.property] end
    if self.small and settings.language == "jp" then size = 8 end
-   draw.render_text_multiple_to_canvas(draw.menu_canvas, x, y, self.text_list, nil, size, color)
+   draw.render_text_multiple_to_canvas(depth, x, y, self.text_list, nil, size, color)
 end
 
 function Label_Menu_Item:calc_dimensions()
@@ -1803,7 +1805,7 @@ function Multitab_Menu:menu_stack_update(input)
    last_menu:update(input)
 end
 
-function Multitab_Menu:menu_stack_draw() for i, menu in ipairs(self.menu_stack) do menu:draw() end end
+function Multitab_Menu:menu_stack_draw() for depth, menu in ipairs(self.menu_stack) do menu:draw(depth) end end
 
 function Multitab_Menu:update_dimensions_of_all_items()
    for _, menu in ipairs(self.menu_stack) do
@@ -2108,7 +2110,7 @@ function Multitab_Menu:update(input)
    end
 end
 
-function Multitab_Menu:draw()
+function Multitab_Menu:draw(depth)
    if self.should_cache then
       self:cache_background()
       self.background_cache_index = #self.background_cache
@@ -2138,7 +2140,7 @@ function Multitab_Menu:draw()
          state = "active"
          if self.is_main_menu_selected then state = "selected" end
       end
-      self.content[i].header:draw(self.left + gap + offset, self.top + self.y_padding, state)
+      self.content[i].header:draw(depth, self.left + gap + offset, self.top + self.y_padding, state)
       offset = offset + self.content[i].header.width + gap
    end
    menu_y = self.top + self.y_padding * 2 + self.content[1].header.height
@@ -2161,12 +2163,13 @@ function Multitab_Menu:draw()
             local y_adj = -1 *
                               (self.content[self.main_menu_selected_index].entries[i - 1].height +
                                   self.menu_item_spacing)
-            self.content[self.main_menu_selected_index].entries[i]:draw(menu_x + x_offset, menu_y + y_offset + y_adj,
+            self.content[self.main_menu_selected_index].entries[i]:draw(depth, menu_x + x_offset,
+                                                                        menu_y + y_offset + y_adj,
                                                                         not self.is_main_menu_selected and is_focused and
                                                                             self.sub_menu_selected_index == i)
          else
             if menu_y + y_offset + self.content[self.main_menu_selected_index].entries[i].height <= legend_y then
-               self.content[self.main_menu_selected_index].entries[i]:draw(menu_x, menu_y + y_offset,
+               self.content[self.main_menu_selected_index].entries[i]:draw(depth, menu_x, menu_y + y_offset,
                                                                            not self.is_main_menu_selected and is_focused and
                                                                                self.sub_menu_selected_index == i)
                y_offset = y_offset + self.content[self.main_menu_selected_index].entries[i].height +
@@ -2181,15 +2184,15 @@ function Multitab_Menu:draw()
 
    if not self.is_main_menu_selected then
       if self:current_entry().legend then
-         draw.render_text_to_canvas(draw.menu_canvas, menu_x, legend_y, self:current_entry():legend(), nil, nil,
+         draw.render_text_to_canvas(depth, menu_x, legend_y, self:current_entry():legend(), nil, nil,
                                     colors.text.inactive)
       end
    end
 
    local scroll_up = self.content[self.main_menu_selected_index].top_entry_index > 1
    if scroll_down or scroll_up then
-      draw.render_text_to_canvas(draw.menu_canvas, self.right - w - self.x_padding, legend_y, "legend_hp_scroll", nil,
-                                 nil, colors.text.inactive)
+      draw.render_text_to_canvas(depth, self.right - w - self.x_padding, legend_y, "legend_hp_scroll", nil, nil,
+                                 colors.text.inactive)
 
       local scroll_up_y_pos = math.floor(menu_y + h / 2 - 3)
       local scroll_down_y_pos = math.floor(menu_y + (y_offset - self.menu_item_spacing - h) + h / 2 - 2)
@@ -2205,12 +2208,12 @@ function Multitab_Menu:draw()
          scroll_down_color = colors.text.selected
       end
       if scroll_up then
-         draw.add_image_to_canvas(draw.menu_canvas, math.floor(self.left + self.x_padding / 2 - 2), scroll_up_y_pos,
+         draw.add_image_to_canvas(depth, math.floor(self.left + self.x_padding / 2 - 2), scroll_up_y_pos,
                                   image_tables.scroll_arrow_width, image_tables.scroll_arrow_height,
                                   draw.get_image(image_tables.images.img_scroll_up, scroll_up_color))
       end
       if scroll_down then
-         draw.add_image_to_canvas(draw.menu_canvas, math.floor(self.left + self.x_padding / 2 - 2), scroll_down_y_pos,
+         draw.add_image_to_canvas(depth, math.floor(self.left + self.x_padding / 2 - 2), scroll_down_y_pos,
                                   image_tables.scroll_arrow_width, image_tables.scroll_arrow_height,
                                   draw.get_image(image_tables.images.img_scroll_down, scroll_down_color))
       end
@@ -2512,12 +2515,13 @@ function Menu:update(input)
    end
 end
 
-function Menu:draw()
+function Menu:draw(depth)
    local legend_w, legend_h = draw.get_text_dimensions("legend_hp_scroll")
 
    self:calc_dimensions()
 
-   gui.box(self.left, self.top, self.right, self.bottom, self.background_color, colors.menu.outline)
+   draw.add_box_to_canvas(depth, self.left, self.top, self.right, self.bottom, self.background_color,
+                          colors.menu.outline)
 
    local menu_x = self.left + self.x_padding
    local menu_y = self.top + self.y_padding
@@ -2534,10 +2538,10 @@ function Menu:draw()
             local x_offset = self.content[i - 1].width + indent_width
             if settings.language == "jp" then x_offset = x_offset + 2 end
             local y_adj = -1 * (self.content[i - 1].height + menu_item_spacing)
-            self.content[i]:draw(menu_x + x_offset, menu_y + y_offset + y_adj, self.selected_index == i)
+            self.content[i]:draw(depth, menu_x + x_offset, menu_y + y_offset + y_adj, self.selected_index == i)
          else
             if not (menu_y + y_offset + 5 >= legend_y) then
-               self.content[i]:draw(menu_x, menu_y + y_offset, self.selected_index == i)
+               self.content[i]:draw(depth, menu_x, menu_y + y_offset, self.selected_index == i)
                y_offset = y_offset + self.content[i].height + menu_item_spacing
             end
          end
@@ -2545,12 +2549,13 @@ function Menu:draw()
    end
 
    if self.draw_legend and self.content[self.selected_index].legend then
-      draw.render_text_to_canvas(draw.menu_canvas, menu_x, legend_y + self.legend_y_padding,
+      draw.render_text_to_canvas(depth, menu_x, legend_y + self.legend_y_padding,
                                  self.content[self.selected_index]:legend(), nil, nil, colors.text.inactive)
    end
    if self.status_item then
       self.status_item:calc_dimensions()
-      self.status_item:draw(self.right - self.x_padding - self.status_item.width, legend_y + self.legend_y_padding)
+      self.status_item:draw(depth, self.right - self.x_padding - self.status_item.width,
+                            legend_y + self.legend_y_padding)
    end
 end
 

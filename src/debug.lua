@@ -479,7 +479,7 @@ local function run_debug()
    local keys = input.get()
    if keys.F12 and loading.frame_data_loaded then debug_settings.recording_framedata = true end
 
-   -- local p = tools.Perf_Timer:new()
+   -- local p = require("src.tools").Perf_Timer:new()
    -- local fps_data = {}
    -- local function average(t)
    --    local sum = 0

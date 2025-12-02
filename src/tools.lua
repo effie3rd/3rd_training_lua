@@ -224,6 +224,19 @@ local function clear_table(tbl)
    for _, key in ipairs(to_remove) do tbl[key] = nil end
 end
 
+local function compact_table(tbl)
+   local compacted = {}
+   local keys = {}
+
+   for k in pairs(tbl) do if type(k) == "number" then table.insert(keys, k) end end
+
+   table.sort(keys)
+
+   for _, k in ipairs(keys) do table.insert(compacted, tbl[k]) end
+
+   return compacted
+end
+
 local function combine_arrays(a, b)
    local combined = {}
    local n = 1
@@ -617,6 +630,7 @@ return {
    table_contains_deep = table_contains_deep,
    deepcopy = deepcopy,
    clear_table = clear_table,
+   compact_table = compact_table,
    combine_arrays = combine_arrays,
    float_to_byte = float_to_byte,
    test_collision = test_collision,

@@ -131,19 +131,19 @@ local function draw_jump_arc(jump_arc)
       else
          local x, y = draw.game_to_screen_space(point[1], point[2] + point[3])
          if not (i == current_point) then
-            gui.image(x - 1, y - 1, draw.get_image(image_tables.images.img_dot, color))
+            gui.image(x - 2, y - 2, draw.get_image(image_tables.images.img_dot, color))
          end
       end
    end
    for i, point in pairs(selected_points) do
       local x, y = draw.game_to_screen_space(point[1], point[2] + point[3])
-      gui.image(x - 1, y - 1, draw.get_image(image_tables.images.img_dot, colors.text.selected))
+      gui.image(x - 2, y - 2, draw.get_image(image_tables.images.img_dot, colors.text.selected))
    end
    local color = get_color(current_point)
    local point = jump_arc[current_point]
    if point then
       local x, y = draw.game_to_screen_space(point[1], point[2] + point[3])
-      gui.image(x - 1, y - 1, draw.get_image(image_tables.images.img_scroll_up, color))
+      gui.image(x - image_tables.scroll_arrow_width/2, y, draw.get_image(image_tables.images.img_scroll_up, color))
    end
 end
 

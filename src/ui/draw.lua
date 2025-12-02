@@ -17,8 +17,11 @@ local BLANK_CANVAS = {}
 local BLANK_ROW = ""
 local GD_HEADER_SIZE = 11
 local GD_BYTES_PER_PIXEL = 4
+local DRAW_TYPE = {IMAGE = 1, BOX = 2, LINE = 3}
 
 local menu_canvas = {canvas = BLANK_CANVAS, width = CANVAS_WIDTH, height = SCREEN_HEIGHT, draw_queue = {}}
+local canvas_stack = {}
+local draw_depth = 1
 
 local screen_scale = 1
 
@@ -43,10 +46,12 @@ local function new_canvas(width, height)
    return {
       header = string.char(0xff, 0xfe, w1, w2, h1, h2, 0x01, 0xff, 0xff, 0xff, 0xff),
       rows = copytable(BLANK_CANVAS),
+      rows_cache = copytable(BLANK_CANVAS),
       row_size = width * GD_BYTES_PER_PIXEL,
       width = CANVAS_WIDTH,
       height = CANVAS_HEIGHT,
-      draw_queue = {}
+      draw_queue = {},
+      draw_queue_cache = {}
    }
 end
 
@@ -62,16 +67,22 @@ local function get_differences(canvas)
    if #canvas.draw_queue_cache == 0 or #canvas.draw_queue ~= #canvas.draw_queue_cache then return end
    local diff = {}
    local existing = {}
-   for i, image in ipairs(canvas.draw_queue) do
-      if image.image ~= canvas.draw_queue_cache[i].image or image.x ~= canvas.draw_queue_cache[i].x or image.y ~=
-          canvas.draw_queue_cache[i].y then
-         image.old_x = canvas.draw_queue_cache[i].x
-         image.old_y = canvas.draw_queue_cache[i].y
-         image.old_width = canvas.draw_queue_cache[i].width
-         image.old_height = canvas.draw_queue_cache[i].height
-         diff[#diff + 1] = image
-      else
-         existing[#existing + 1] = canvas.draw_queue_cache[i]
+   local other_calls = {}
+   for i, draw_call in ipairs(canvas.draw_queue) do
+      if draw_call.type == DRAW_TYPE.IMAGE then
+         if draw_call.image ~= canvas.draw_queue_cache[i].image --
+         or draw_call.x ~= canvas.draw_queue_cache[i].x --
+         or draw_call.y ~= canvas.draw_queue_cache[i].y then --
+            draw_call.old_x = canvas.draw_queue_cache[i].x
+            draw_call.old_y = canvas.draw_queue_cache[i].y
+            draw_call.old_width = canvas.draw_queue_cache[i].width
+            draw_call.old_height = canvas.draw_queue_cache[i].height
+            diff[#diff + 1] = draw_call
+         else
+            existing[#existing + 1] = canvas.draw_queue_cache[i]
+         end
+      elseif draw_call.type == DRAW_TYPE.BOX or draw_call.type == DRAW_TYPE.LINE then
+         other_calls[#other_calls + 1] = draw_call
       end
    end
    local depth = 0
@@ -95,17 +106,21 @@ local function get_differences(canvas)
                image.old_y = image.y
                image.old_width = image.width
                image.old_height = image.height
-               results[#results + 1] = image
+               if not tools.table_contains(diff, image) then
+                  results[#results + 1] = image
+                  diff[#diff + 1] = image
+               end
             else
                new_existing[#new_existing + 1] = image
             end
          end
       end
-      for i, image in ipairs(results) do if not tools.table_contains(diff, image) then diff[#diff + 1] = image end end
       depth = depth + 1
       to_check = results
       existing = new_existing
    until depth >= max_depth or (#results == 0)
+   for i, draw_call in ipairs(other_calls) do diff[#diff + 1] = draw_call end
+   table.sort(diff, function(a, b) return a.order < b.order end)
    return diff
 end
 
@@ -122,56 +137,119 @@ local function draw_canvas(canvas)
       else
          canvas.rows = canvas.rows_cache
          draw_queue = diff
-         for i, image in ipairs(draw_queue) do
-            local old_img_row_size = image.old_width * GD_BYTES_PER_PIXEL
-            for img_row = 0, image.old_height - 1 do
-               local canvas_row = image.old_y + img_row + 1
-               if canvas_row >= 1 and canvas_row <= canvas.height then
-                  local img_row_str = string.sub(BLANK_ROW, 1, old_img_row_size)
-                  local row = canvas.rows[canvas_row]
-                  local offset = image.old_x * GD_BYTES_PER_PIXEL
-                  canvas.rows[canvas_row] = string.sub(row, 1, offset) .. img_row_str ..
-                                                string.sub(row, offset + old_img_row_size + 1)
+         for i, draw_call in ipairs(draw_queue) do
+            if draw_call.type == DRAW_TYPE.IMAGE then
+               local old_img_row_size = draw_call.old_width * GD_BYTES_PER_PIXEL
+               for img_row = 0, draw_call.old_height - 1 do
+                  local canvas_row = draw_call.old_y + img_row + 1
+                  if canvas_row >= 1 and canvas_row <= canvas.height then
+                     local img_row_str = string.sub(BLANK_ROW, 1, old_img_row_size)
+                     local row = canvas.rows[canvas_row]
+                     local offset = draw_call.old_x * GD_BYTES_PER_PIXEL
+                     canvas.rows[canvas_row] = string.sub(row, 1, offset) .. img_row_str ..
+                                                   string.sub(row, offset + old_img_row_size + 1)
+                  end
                end
             end
          end
       end
    end
-   for i, image in ipairs(draw_queue) do
-      local img_row_size = image.width * GD_BYTES_PER_PIXEL
-      for img_row = 0, image.height - 1 do
-         local canvas_row = image.y + img_row + 1
-         if canvas_row >= 1 and canvas_row <= canvas.height then
-            local image_start = GD_HEADER_SIZE + 1 + img_row * img_row_size
-            local row = canvas.rows[canvas_row]
-            local offset = image.x * GD_BYTES_PER_PIXEL
-            local row_tbl = {string.sub(row, 1, offset)}
-            for img_col = 0, image.width - 1 do
-               local col_start = image_start + img_col * GD_BYTES_PER_PIXEL
-               local alpha = string.byte(string.sub(image.image, col_start, col_start))
-               if alpha == 0 then
-                  row_tbl[#row_tbl + 1] = string.sub(image.image, col_start, col_start + GD_BYTES_PER_PIXEL - 1)
-               else
-                  row_tbl[#row_tbl + 1] = string.sub(row, offset + img_col * GD_BYTES_PER_PIXEL + 1,
-                                                     offset + img_col * GD_BYTES_PER_PIXEL + GD_BYTES_PER_PIXEL)
+   for i, draw_call in ipairs(draw_queue) do
+      if draw_call.type == DRAW_TYPE.IMAGE then
+         local img_row_size = draw_call.width * GD_BYTES_PER_PIXEL
+         for img_row = 0, draw_call.height - 1 do
+            local canvas_row = draw_call.y + img_row + 1
+            if canvas_row >= 1 and canvas_row <= canvas.height then
+               local image_start = GD_HEADER_SIZE + 1 + img_row * img_row_size
+               local row = canvas.rows[canvas_row]
+               local offset = draw_call.x * GD_BYTES_PER_PIXEL
+               local row_tbl = {string.sub(row, 1, offset)}
+               for img_col = 0, draw_call.width - 1 do
+                  local col_start = image_start + img_col * GD_BYTES_PER_PIXEL
+                  local alpha = string.byte(string.sub(draw_call.image, col_start, col_start))
+                  if alpha == 0 then
+                     row_tbl[#row_tbl + 1] = string.sub(draw_call.image, col_start, col_start + GD_BYTES_PER_PIXEL - 1)
+                  else
+                     row_tbl[#row_tbl + 1] = string.sub(row, offset + img_col * GD_BYTES_PER_PIXEL + 1,
+                                                        offset + img_col * GD_BYTES_PER_PIXEL + GD_BYTES_PER_PIXEL)
+                  end
                end
+               row_tbl[#row_tbl + 1] = string.sub(row, offset + img_row_size + 1)
+               canvas.rows[canvas_row] = table.concat(row_tbl)
             end
-            row_tbl[#row_tbl + 1] = string.sub(row, offset + img_row_size + 1)
-            canvas.rows[canvas_row] = table.concat(row_tbl)
          end
+      elseif draw_call.type == DRAW_TYPE.BOX then
+         gui.box(draw_call.x, draw_call.y, draw_call.right, draw_call.bottom, draw_call.background_color,
+                 draw_call.outline_color)
+      elseif draw_call.type == DRAW_TYPE.LINE then
+         gui.line(draw_call.x, draw_call.y, draw_call.right, draw_call.bottom, draw_call.color)
       end
    end
    canvas.image = canvas.header .. table.concat(canvas.rows)
    if canvas.image then gui.image(0, 0, canvas.image) end
 end
 
-local function add_image_to_canvas(canvas, x, y, w, h, image)
+local function clear_canvases()
+   draw_depth = 1
+   for i, canvas in ipairs(canvas_stack) do clear_canvas(canvas) end
+end
+
+local function draw_canvases()
+   canvas_stack = tools.compact_table(canvas_stack)
+   local to_remove = {}
+   for i, canvas in ipairs(canvas_stack) do
+      if i <= draw_depth then
+         draw_canvas(canvas)
+      else
+         to_remove[#to_remove + 1] = i
+      end
+   end
+   for _, j in ipairs(to_remove) do canvas_stack[j] = nil end
+end
+
+local function add_image_to_canvas(depth, x, y, w, h, image)
+   if not canvas_stack[depth] then canvas_stack[depth] = new_canvas(CANVAS_WIDTH, SCREEN_HEIGHT) end
+   if depth > draw_depth then draw_depth = depth end
+   local canvas = canvas_stack[depth]
    canvas.draw_queue[#canvas.draw_queue + 1] = {
       x = math.floor(x),
       y = math.floor(y),
       width = w,
       height = h,
-      image = image
+      image = image,
+      type = DRAW_TYPE.IMAGE,
+      order = #canvas.draw_queue + 1
+   }
+end
+
+local function add_box_to_canvas(depth, x, y, r, b, background_color, outline_color)
+   if not canvas_stack[depth] then canvas_stack[depth] = new_canvas(CANVAS_WIDTH, SCREEN_HEIGHT) end
+   if depth > draw_depth then draw_depth = depth end
+   local canvas = canvas_stack[depth]
+   canvas.draw_queue[#canvas.draw_queue + 1] = {
+      x = math.floor(x),
+      y = math.floor(y),
+      right = math.floor(r),
+      bottom = math.floor(b),
+      background_color = background_color,
+      outline_color = outline_color,
+      type = DRAW_TYPE.BOX,
+      order = #canvas.draw_queue + 1
+   }
+end
+
+local function add_line_to_canvas(depth, x, y, r, b, color)
+   if not canvas_stack[depth] then canvas_stack[depth] = new_canvas(CANVAS_WIDTH, SCREEN_HEIGHT) end
+   if depth > draw_depth then draw_depth = depth end
+   local canvas = canvas_stack[depth]
+   canvas.draw_queue[#canvas.draw_queue + 1] = {
+      x = math.floor(x),
+      y = math.floor(y),
+      right = math.floor(r),
+      bottom = math.floor(b),
+      color = color,
+      type = DRAW_TYPE.LINE,
+      order = #canvas.draw_queue + 1
    }
 end
 
@@ -270,20 +348,20 @@ local function render_text(x, y, str, lang, size, color, opacity)
    end
 end
 
-local function draw_text_to_canvas(canvas, x, y, str, lang, size, color, opacity)
+local function draw_text_to_canvas(depth, x, y, str, lang, size, color, opacity)
    if size and string.sub(str, 1, 3) == "utf" then lang = lang .. "_" .. size end
    if image_tables.text[str][lang][color] then
-      add_image_to_canvas(canvas, x, y, image_tables.text[str][lang].width, image_tables.text[str][lang].height,
+      add_image_to_canvas(depth, x, y, image_tables.text[str][lang].width, image_tables.text[str][lang].height,
                           image_tables.text[str][lang][color])
    else
       image_tables.text[str][lang][color] = colors.substitute_color_gdstr(image_tables.text[str][lang][colors.white],
                                                                           colors.white, color)
-      add_image_to_canvas(canvas, x, y, image_tables.text[str][lang].width, image_tables.text[str][lang].height,
+      add_image_to_canvas(depth, x, y, image_tables.text[str][lang].width, image_tables.text[str][lang].height,
                           image_tables.text[str][lang][color])
    end
 end
 
-local function render_text_jp_to_canvas(canvas, x, y, str, lang, size, color, opacity)
+local function render_text_jp_to_canvas(depth, x, y, str, lang, size, color, opacity)
    local offset = 0
    lang = lang or "jp"
    color = color or colors.text.default
@@ -292,7 +370,7 @@ local function render_text_jp_to_canvas(canvas, x, y, str, lang, size, color, op
       local code = utf8.codepoint(v)
       if code ~= 32 then -- not space
          code = "utf_" .. tostring(code)
-         draw_text_to_canvas(canvas, x + offset, y, code, lang, size, color, opacity)
+         draw_text_to_canvas(depth, x + offset, y, code, lang, size, color, opacity)
          offset = offset + image_tables.text[code][lang].width - 1
       else
          offset = offset + 2
@@ -300,7 +378,7 @@ local function render_text_jp_to_canvas(canvas, x, y, str, lang, size, color, op
    end
 end
 
-local function render_text_to_canvas(canvas, x, y, str, lang, size, color, opacity)
+local function render_text_to_canvas(depth, x, y, str, lang, size, color, opacity)
    local offset = 0
    str = tostring(str)
    lang = lang or settings.language
@@ -309,7 +387,7 @@ local function render_text_to_canvas(canvas, x, y, str, lang, size, color, opaci
 
    -- draw block of text if it exists
    if image_tables.text[str] then
-      draw_text_to_canvas(canvas, x + offset, y, str, lang, size, color, opacity)
+      draw_text_to_canvas(depth, x + offset, y, str, lang, size, color, opacity)
       return
    end
 
@@ -319,7 +397,7 @@ local function render_text_to_canvas(canvas, x, y, str, lang, size, color, opaci
       -- char is jp
       if code >= 12288 and code <= 40879 then
          -- render individual jp characters
-         render_text_jp_to_canvas(canvas, x, y, str, lang, size, color, opacity)
+         render_text_jp_to_canvas(depth, x, y, str, lang, size, color, opacity)
          return
       end
    end
@@ -330,7 +408,7 @@ local function render_text_to_canvas(canvas, x, y, str, lang, size, color, opaci
       local code = utf8.codepoint(v)
       if code ~= 32 then -- not space
          code = "utf_" .. tostring(code)
-         draw_text_to_canvas(canvas, x + offset, y, code, lang, size, color, opacity)
+         draw_text_to_canvas(depth, x + offset, y, code, lang, size, color, opacity)
          offset = offset + image_tables.text[code][lang_ext].width - 1
       else
          offset = offset + 2
@@ -393,10 +471,10 @@ local function render_text_multiple(x, y, list_str, lang, size, color, opacity)
    end
 end
 
-local function render_text_multiple_to_canvas(canvas, x, y, list_str, lang, size, color, opacity)
+local function render_text_multiple_to_canvas(depth, x, y, list_str, lang, size, color, opacity)
    local offset_x = 0
    for _, str in pairs(list_str) do
-      render_text_to_canvas(canvas, x + offset_x, y, str, lang, size, color, opacity)
+      render_text_to_canvas(depth, x + offset_x, y, str, lang, size, color, opacity)
       local tw, th = get_text_dimensions(str, lang, size)
       offset_x = offset_x + tw
    end
@@ -710,6 +788,7 @@ for i = 1, CANVAS_WIDTH do result[#result + 1] = string.char(127, 0, 0, 0) end
 BLANK_ROW = table.concat(result)
 BLANK_CANVAS = create_blank_canvas(CANVAS_WIDTH, CANVAS_HEIGHT)
 menu_canvas = new_canvas(CANVAS_WIDTH, SCREEN_HEIGHT)
+canvas_stack = {menu_canvas}
 
 local draw = {
    SCREEN_WIDTH = SCREEN_WIDTH,
@@ -725,9 +804,13 @@ local draw = {
    render_text_to_canvas = render_text_to_canvas,
    render_text_multiple_to_canvas = render_text_multiple_to_canvas,
    add_image_to_canvas = add_image_to_canvas,
+   add_box_to_canvas = add_box_to_canvas,
+   add_line_to_canvas = add_line_to_canvas,
    new_canvas = new_canvas,
    clear_canvas = clear_canvas,
    draw_canvas = draw_canvas,
+   clear_canvases = clear_canvases,
+   draw_canvases = draw_canvases,
    controller_styles = controller_styles,
    controller_style_menu_names = image_tables.controller_style_menu_names,
    game_to_screen_space_x = game_to_screen_space_x,
