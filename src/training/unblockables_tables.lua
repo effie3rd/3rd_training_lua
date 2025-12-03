@@ -34,6 +34,7 @@ local function urien_midscreen_setup_tackle_dash(player)
    local hk_tackle_delay = Delay:new(0)
 
    if player.other.char_str == "makoto" then hk_tackle_delay:reset(4) end
+   if player.other.char_str == "elena" then hk_tackle_delay:reset(4) end
    local commands = {
       {
          condition = nil,
@@ -372,7 +373,6 @@ local function urien_corner_setup_tackle_mk_mk_mk_mk(player)
    return commands
 end
 
-
 local function urien_corner_setup_alex(player)
    local d_HP = {{"down", "HP"}}
    local LP_aegis = move_data.get_move_inputs_by_name("urien", "aegis_reflector", "LP")
@@ -606,6 +606,19 @@ local function urien_midscreen_tackle_dash_followup_throw(player)
          action = function() queue_input_sequence_and_wait(player, forward_dash) end
       }
       table.insert(commands, 1, dash)
+   elseif player.other.char_str == "makoto" then
+      local walk_delay = Delay:new(14)
+      commands[2] = {
+         condition = function() return is_idle_timing(player, 1, true) end,
+         action = function()
+            inputs.queue_input_sequence(player, walk_forward)
+            walk_delay:begin()
+         end
+      }
+      commands[3] = {
+         condition = function() return walk_delay:is_complete() end,
+         action = function() inputs.clear_input_sequence(player) end
+      }
    end
 
    return commands
@@ -921,7 +934,7 @@ local function urien_mid_screen_anago_followup_d_lk(player)
    local d_hp = {{"down", "HP"}}
 
    local walk_delay = Delay:new(8)
-   if player.other.char_str == "hugo" or player.other.char_str == "dudley" or player.other.char_str == "necro"then
+   if player.other.char_str == "hugo" or player.other.char_str == "dudley" or player.other.char_str == "necro" then
       walk_delay:reset(10)
    elseif player.other.char_str == "alex" then
       walk_delay:reset(12)
@@ -1013,13 +1026,21 @@ local function urien_mid_screen_anago_followup_f_mk(player)
    local forward_dash = {{"forward"}, {}, {"forward"}}
    local d_hp = {{"down", "HP"}}
 
-   local cancel_delay = Delay:new(0)
-   local walk_delay = Delay:new(0)
-   if player.other.char_str == "hugo" or player.other.char_str == "alex" then
+   local d_hp_delay = Delay:new(0)
+   local walk_delay = Delay:new(10)
+   if player.other.char_str == "hugo" or player.other.char_str == "chunli" or player.other.char_str == "alex" then
       walk_delay:reset(6)
+   elseif player.other.char_str == "yang" or player.other.char_str == "dudley" or player.other.char_str == "yun" then
+      walk_delay:reset(4)
+   elseif player.other.char_str == "twelve" or player.other.char_str == "remy" or player.other.char_str == "urien" or
+       player.other.char_str == "gill" then
+      walk_delay:reset(3)
+   elseif player.other.char_str == "q" then
+      walk_delay:reset(2)
+      d_hp_delay:reset(8)
    elseif player.other.char_str == "ibuki" then
-      walk_delay:reset(12)
-      cancel_delay:reset(4)
+      walk_delay:reset(10)
+      d_hp_delay:reset(4)
    end
 
    local commands = {
@@ -1033,7 +1054,7 @@ local function urien_mid_screen_anago_followup_f_mk(player)
          condition = function() return walk_delay:is_complete() end,
          action = function() queue_input_sequence_and_wait(player, f_mk) end
       }, {
-         condition = function() return cancel_delay:delay_after_idle_timing(player, #d_hp, true) end,
+         condition = function() return d_hp_delay:delay_after_idle_timing(player, #d_hp, true) end,
          action = function() queue_input_sequence_and_wait(player, d_hp) end
       }
    }
@@ -1666,10 +1687,7 @@ local available_unblockables = {
       "urien_midscreen_standard", "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard",
       "oro_midscreen_mp_yagyou"
    },
-   ibuki = {
-      "urien_midscreen_ex_head_sphere", "urien_midscreen_anago",
-      "oro_midscreen_mp_yagyou"
-   },
+   ibuki = {"urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "oro_midscreen_mp_yagyou"},
    necro = {
       "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard", "oro_midscreen_lp_yagyou"
    },
@@ -1869,7 +1887,6 @@ local function get_unblockables_type_menu_names(char)
    for i, name in ipairs(available_unblockables[char]) do result[#result + 1] = "menu_" .. name end
    return result
 end
-
 
 local function get_selected_unblockable_type(player_char, dummy_char)
    for i, unblockable in ipairs(available_unblockables[player_char]) do

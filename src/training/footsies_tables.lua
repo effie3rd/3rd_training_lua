@@ -30,7 +30,7 @@ local move_names = {
    },
    chunli = {"MP", "d_MP", "d_MK", "HP", "b_HP", "HK", "f_HK", "d_HK", "hazanshuu_LK", "kara_throw"},
    dudley = {"MP", "d_MP", "f_MK", "HP", "f_HP", "HK", "d_HK"},
-   elena = {"d_MP", "f_MK", "d_MK", "HK", "d_HK", "kara_throw"}, -- , "mallet_smash_LP", "mallet_smash_EXP"
+   elena = {"d_MP", "f_MK", "d_MK", "HK", "b_HK", "d_HK", "kara_throw"}, -- , "mallet_smash_LP", "mallet_smash_EXP"
    gill = {"MK", "d_MK", "d_HK", "HP"},
    gouki = {"d_MP", "MK", "d_MK", "d_HK", "gohadouken_HP"},
    hugo = {
@@ -38,16 +38,16 @@ local move_names = {
       "giant_palm_bomber_HP", "giant_palm_bomber_EXP"
    },
    ibuki = {"MP", "MK", "d_MP", "d_MK", "f_HK"},
-   ken = {"d_MP", "d_MK", "HK", "d_HK", "hadouken_EXP"},
-   makoto = {"MP", "d_MP", "d_MK", "d_HP", "d_HK", "kara_karakusa_lk"},
-   necro = {"d_LK", "MP", "HP", "b_MP", "b_MK", "d_MK", "d_HP", "d_HK", "denji_blast_LP"},
+   ken = {"d_MP", "d_MK", "HK", "d_HK", "hadouken_HP", "hadouken_EXP"},
+   makoto = {"MP", "d_MP", "MK", "d_MK", "d_HP", "d_HK", "kara_karakusa_lk"},
+   necro = {"d_LK", "MP", "HP", "b_MP", "b_MK", "d_MK", "d_HP", "db_HP", "d_HK", "denji_blast_LP"},
    oro = {"MP", "MK", "HK", "d_MP", "d_MK", "d_HK", "kara_throw", "nichirin_LP", "niouriki", "kara_niouriki"},
    q = {"MK", "d_MK", "HP", "b_HP", "d_HP", "kara_throw", "capture_and_deadly_blow_HK", "kara_capture_and_deadly_blow"},
    remy = {
       "d_LK", "d_MP", "MK", "d_MK", "d_HK", "cold_blue_kick_LK", "cold_blue_kick_MK", "cold_blue_kick_HK",
       "cold_blue_kick_EXK"
    },
-   ryu = {"d_MP", "MK", "d_MK", "d_HK", "hadouken_EXP"},
+   ryu = {"d_MP", "MK", "d_MK", "d_HK", "hadouken_HP", "hadouken_EXP"},
    sean = {"d_MK", "HP", "d_HK"},
    shingouki = {"d_MP", "MK", "d_MK", "d_HK", "gohadouken_HP"},
    twelve = {"d_MK", "HK", "ndl_EXP"},
@@ -241,7 +241,7 @@ function followup_attack:setup(player, stage, actions, i_actions)
    self.opponent_has_been_thrown = false
    local input_delay = Delay:new(6)
    local should_delay = false
-   if current_attack.data.name == "hadouken_EXP" or current_attack.data.name == "gohadouken_HP" or
+   if current_attack.data.name == "hadouken_HP" or current_attack.data.name == "hadouken_EXP" or current_attack.data.name == "gohadouken_HP" or
        current_attack.data.name == "zesshou_LP" then
       local previous_action = actions[i_actions - 1]
       if previous_action and previous_action.type == Action_Type.WALK_FORWARD then should_delay = true end
@@ -658,6 +658,16 @@ local function init(char_str)
          data.hit_frame = 7
          data.hitboxes = framedata.get_hitboxes(char_str, "C6", 0)
          data.range = 140
+      elseif move_name == "hadouken_HP" then
+         if char_str == "ken" then
+            data.hit_frame = 10
+            data.hitboxes = framedata.get_hitboxes(char_str, "1A", 0)
+            data.range = 140
+         elseif char_str == "ryu" then
+            data.hit_frame = 9
+            data.hitboxes = framedata.get_hitboxes(char_str, "02", 0)
+            data.range = 140
+         end
       elseif move_name == "hadouken_EXP" then
          data.hit_frame = 8
          data.hitboxes = framedata.get_hitboxes(char_str, "03", 0)
@@ -684,6 +694,8 @@ local function init(char_str)
             data.hitboxes[#data.hitboxes + 1] = b
          end
          data.range = framedata.get_hitbox_max_range_by_name(char_str, "HK", nil, -1) + 25
+      elseif move_name == "b_HK" and char_str == "elena" then
+         data.range = data.range + 4
       end
       menu_move_names[#menu_move_names + 1] = "menu_" .. move_name
       moves[#moves + 1] = {data = data, default_weight = 1, weight = 1}

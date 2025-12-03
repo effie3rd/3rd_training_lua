@@ -118,7 +118,7 @@ local function make_player_object(id, base, prefix)
          state_time = make_input_set(0)
       },
       blocking = {},
-      counter = {attack_frame = -1, ref_time = -1, recording_slot = -1},
+      counter = {attack_frame = -1, ref_time = -1, recording_slot = -1, offset = 0, counter_type = ""},
       stunned = false,
       throw_invulnerability_cooldown = 0,
       animation_frame = 0,
@@ -151,6 +151,18 @@ local function reset_player_objects()
       for i, debug_vars in ipairs(debug_settings.player_debug_variables) do
          for k, v in pairs(debug_vars) do player_objects[i][k] = v end
       end
+   end
+end
+
+local function get_side(player_x, other_x, player_previous_x, other_previous_x)
+   local diff = math.floor(player_x) - math.floor(other_x)
+   if diff == 0 then diff = math.floor(player_previous_x) - math.floor(other_previous_x) end
+   return diff > 0 and 2 or 1
+end
+
+local function update_sides()
+   for _, player in ipairs(player_objects) do
+      player.side = get_side(player.pos_x, player.other.pos_x, player.previous_pos_x, player.other.previous_pos_x)
    end
 end
 
@@ -203,12 +215,6 @@ local function get_additional_recovery_delay(char_str, crouching)
       if char_str == "q" then return 1 end
    end
    return 0
-end
-
-local function get_side(player_x, other_x, player_previous_x, other_previous_x)
-   local diff = math.floor(player_x) - math.floor(other_x)
-   if diff == 0 then diff = math.floor(player_previous_x) - math.floor(other_previous_x) end
-   return diff > 0 and 2 or 1
 end
 
 local function get_parry_type(player)
@@ -519,8 +525,6 @@ local function read_player_vars(player)
    player.is_airborne = player.is_jumping or (player.posture == 0 and player.pos_y ~= 0) -- maybe a memory location exists for distinguishing these states
    player.is_grounded = player.is_standing or player.is_crouching or movement_postures[player.posture] or
                             (player.posture == 0 and player.standing_state ~= 0 and player.pos_y == 0)
-
-   player.side = get_side(player.pos_x, player.other.pos_x, player.previous_pos_x, player.other.previous_pos_x)
 
    player.busy_flag = memory.readword(player.addresses.busy_flag)
 
@@ -1764,6 +1768,8 @@ local function gamestate_read()
    read_projectiles()
 
    if is_in_match then
+      update_sides()
+
       update_received_hits(P1, P2)
       update_received_hits(P2, P1)
 

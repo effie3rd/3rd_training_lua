@@ -1426,7 +1426,7 @@ local function recording_display(dummy)
       local text = {""}
       if settings.training.replay_mode == 1 or settings.training.replay_mode == 4 then
          text = {
-            "hud_playing", " (", dummy.pending_input_sequence.current_frame, "/",
+            "hud_playing", " (", dummy.pending_input_sequence.current_frame - 1, "/",
             #dummy.pending_input_sequence.sequence, ")"
          }
       else

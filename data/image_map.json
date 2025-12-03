@@ -2075,6 +2075,10 @@
     "en": "images/menu/menu_dashing_leg_attack_en_5_white.png",
     "jp": "images/menu/menu_dashing_leg_attack_jp_10_white.png"
   },
+  "menu_db_HP": {
+    "en": "images/menu/menu_db_HP_en_5_white.png",
+    "jp": "images/menu/menu_db_HP_jp_10_white.png"
+  },
   "menu_deadly_double_combination": {
     "en": "images/menu/menu_deadly_double_combination_en_5_white.png",
     "jp": "images/menu/menu_deadly_double_combination_jp_10_white.png"
@@ -2486,6 +2490,10 @@
   "menu_hadouken_EXP": {
     "en": "images/menu/menu_hadouken_EXP_en_5_white.png",
     "jp": "images/menu/menu_hadouken_EXP_jp_10_white.png"
+  },
+  "menu_hadouken_HP": {
+    "en": "images/menu/menu_hadouken_HP_en_5_white.png",
+    "jp": "images/menu/menu_hadouken_HP_jp_10_white.png"
   },
   "menu_hammer_mountain": {
     "en": "images/menu/menu_hammer_mountain_en_5_white.png",

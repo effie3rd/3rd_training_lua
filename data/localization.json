@@ -1515,6 +1515,10 @@
     "en": "_HK",
     "jp": "前大K"
   },
+  "menu_db_HP": {
+    "en": "_HP",
+    "jp": "_大P"
+  },
   "menu_throw": {
     "en": "throw",
     "jp": "投げ"
@@ -1722,6 +1726,10 @@
   "menu_giant_palm_bomber_EXP": {
     "en": "EX giant palm bomber",
     "jp": "EX ジャイアントパームボンバー"
+  },
+  "menu_hadouken_HP": {
+    "en": "HP hadouken",
+    "jp": "大P 波動拳"
   },
   "menu_hadouken_EXP": {
     "en": "EX hadouken",

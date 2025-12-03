@@ -143,7 +143,7 @@ local function draw_jump_arc(jump_arc)
    local point = jump_arc[current_point]
    if point then
       local x, y = draw.game_to_screen_space(point[1], point[2] + point[3])
-      gui.image(x - image_tables.scroll_arrow_width/2, y, draw.get_image(image_tables.images.img_scroll_up, color))
+      gui.image(x - image_tables.scroll_arrow_width / 2, y, draw.get_image(image_tables.images.img_scroll_up, color))
    end
 end
 
@@ -695,50 +695,52 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
 
       command[#command + 1] = second_jump
    end
-   if is_target_combo then
-      local input_delay = Delay:new(3)
-      local target_combo = {
-         {
+   if attack_name ~= "none" then
+      if is_target_combo then
+         local input_delay = Delay:new(3)
+         local target_combo = {
+            {
+               condition = function() return attack_timer:is_complete() end,
+               action = function()
+                  queue_input_sequence_and_wait(player, {attack_input[1]})
+                  if should_display_info then
+                     local elapsed = gamestate.frame_number - delay_timer + 1
+                     info_labels[#info_labels + 1] = {"menu_" .. attack_name, " ", elapsed, "hud_f", " ", "hud_after"}
+                     delay_timer = gamestate.frame_number
+                  end
+
+               end
+            }, {
+               condition = function()
+                  if player.has_just_connected then
+                     return true
+                  elseif player.has_just_landed then
+                     advanced_control.clear_programmed_movement(player)
+                  end
+               end,
+               action = nil
+            }, {
+               condition = function() return input_delay:is_complete() end,
+               action = function() queue_input_sequence_and_wait(player, {attack_input[2]}) end
+            }
+         }
+         command[#command + 1] = target_combo[1]
+         command[#command + 1] = target_combo[2]
+         command[#command + 1] = target_combo[3]
+      else
+         local attack = {
             condition = function() return attack_timer:is_complete() end,
             action = function()
-               queue_input_sequence_and_wait(player, {attack_input[1]})
+               queue_input_sequence_and_wait(player, attack_input, 0, true)
                if should_display_info then
-                  local elapsed = gamestate.frame_number - delay_timer + 1
+                  local elapsed = gamestate.frame_number - delay_timer + #attack_input
                   info_labels[#info_labels + 1] = {"menu_" .. attack_name, " ", elapsed, "hud_f", " ", "hud_after"}
                   delay_timer = gamestate.frame_number
                end
-
             end
-         }, {
-            condition = function()
-               if player.has_just_connected then
-                  return true
-               elseif player.has_just_landed then
-                  advanced_control.clear_programmed_movement(player)
-               end
-            end,
-            action = nil
-         }, {
-            condition = function() return input_delay:is_complete() end,
-            action = function() queue_input_sequence_and_wait(player, {attack_input[2]}) end
          }
-      }
-      command[#command + 1] = target_combo[1]
-      command[#command + 1] = target_combo[2]
-      command[#command + 1] = target_combo[3]
-   else
-      local attack = {
-         condition = function() return attack_timer:is_complete() end,
-         action = function()
-            queue_input_sequence_and_wait(player, attack_input, 0, true)
-            if should_display_info then
-               local elapsed = gamestate.frame_number - delay_timer + #attack_input
-               info_labels[#info_labels + 1] = {"menu_" .. attack_name, " ", elapsed, "hud_f", " ", "hud_after"}
-               delay_timer = gamestate.frame_number
-            end
-         end
-      }
-      command[#command + 1] = attack
+         command[#command + 1] = attack
+      end
    end
    if followup and followup.type ~= 1 then
       command[#command + 1] = {
@@ -759,12 +761,14 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
       local throw_hit_frame = 3
 
       if followup.type == 2 then
+         if attack_name == "none" then followup_adjustment = -1 end
          if followup_data.button == "LP+LK" or followup.motion == 15 then
             is_throw = true
             if followup.motion == 15 then followup_adjustment = -#followup_input + 1 end
          end
       elseif followup.type == 3 then
          local move_name = followup_data.name
+         followup_name = "menu_" .. followup_data.name
          if tools.table_contains(require("src.modules.move_data").kara_command_throws, followup_data.name) then
             local base_name = {
                kara_power_bomb = "power_bomb",

@@ -250,7 +250,7 @@ local function press_right(input, id)
 end
 
 local function create_input_sequence(move_selection_data)
-   if move_selection_data.type == 5 then return nil end  -- recording
+   if move_selection_data.type == 5 then return {}, 0 end  -- recording
 
    local sequence = {}
    local offset = 0

@@ -447,7 +447,6 @@ local function update()
             inputs.block_input(2, "all")
          end
          if state == states.SETUP_MATCH_START and gamestate.has_match_just_started then
-            emu.speedmode("turbo")
             savestate.save(match_start_state)
             settings.special_training.defense.match_savestate_player = gamestate.P1.char_str
             settings.special_training.defense.match_savestate_dummy = gamestate.P2.char_str
