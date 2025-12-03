@@ -5,7 +5,7 @@
 \
 [![Static Badge](https://img.shields.io/badge/PV-grey?logo=YouTube&labelColor=ff0033)](https://youtu.be/k8VYlQ2uFLI)
 
-**'Auto Frameskip'が無効になっていることを確認してください**
+>'Auto Frameskip'が無効になっていることを確認してください
 
 ### 主な機能
   - 賢いダミー

@@ -5,7 +5,7 @@
 \
 [![Static Badge](https://img.shields.io/badge/Trailer-grey?logo=YouTube&labelColor=ff0033)](https://youtu.be/k8VYlQ2uFLI)
 
-**Make sure 'Auto Frameskip' is disabled**
+>Make sure 'Auto Frameskip' is disabled
 
 ### Main Features
   - Smarter dummy
