@@ -5,6 +5,8 @@
 \
 [![Static Badge](https://img.shields.io/badge/PV-grey?logo=YouTube&labelColor=ff0033)](https://youtu.be/k8VYlQ2uFLI)
 
+**'Auto Frameskip'が無効になっていることを確認してください**
+
 ### 主な機能
   - 賢いダミー
   - 特殊なトレーニングモード
@@ -86,4 +88,3 @@
 
 ### インストール
 <table><tr><td>ファイルを`fbneo-training-mode`ディレクトリに貼り付け、すべて上書きしてください<br>ファイケーのメニューから「Training」をクリックして起動する。</td></tr></table>
-注意：`Auto Frameskip`を有効にすると問題が発生する。

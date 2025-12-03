@@ -5,6 +5,8 @@
 \
 [![Static Badge](https://img.shields.io/badge/Trailer-grey?logo=YouTube&labelColor=ff0033)](https://youtu.be/k8VYlQ2uFLI)
 
+**Make sure 'Auto Frameskip' is disabled**
+
 ### Main Features
   - Smarter dummy
   - Special training modes
@@ -86,4 +88,3 @@
 
 ### Installation
 <table><tr><td>Paste files into 'fbneo-training-mode' directory, overwriting all files.<br>Click "Training" from fightcade menu to run.</td></tr></table>
-Note: Having 'Auto Frameskip' enabled will break things.
