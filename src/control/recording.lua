@@ -213,7 +213,7 @@ local function set_recording_state(input, state)
       end
 
       if replay_slot > 0 then
-         inputs.queue_input_sequence(training.dummy, recording_slots[replay_slot].inputs)
+         inputs.queue_input_sequence(training.dummy, recording_slots[replay_slot].inputs, 0, true)
       end
    end
 end

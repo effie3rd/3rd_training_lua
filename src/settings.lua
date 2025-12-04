@@ -37,18 +37,6 @@ local function save_training_data()
 end
 
 
-local function upgrade_version()
-end
-local function cmp(a, b)
-    local a1,a2,a3 = a:match("(%d+)%.(%d+)%.(%d+)")
-    local b1,b2,b3 = b:match("(%d+)%.(%d+)%.(%d+)")
-    a1,a2,a3 = tonumber(a1), tonumber(a2), tonumber(a3)
-    b1,b2,b3 = tonumber(b1), tonumber(b2), tonumber(b3)
-    if a1 ~= b1 then return a1 < b1 end
-    if a2 ~= b2 then return a2 < b2 end
-    return a3 < b3
-end
-
 local function load_training_data()
    local training_settings = tools.read_object_from_json_file(saved_path .. training_settings_file)
    -- no file then create defaults

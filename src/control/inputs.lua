@@ -358,28 +358,28 @@ local function create_input_sequence(move_selection_data)
    elseif move_selection_data.type == 4 then
       if name == "guard_jump_back" then
          sequence = {
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"back", "up"}, {"back", "up"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}
          }
       elseif name == "guard_jump_neutral" then
          sequence = {
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"up"}, {"up"}, {"down", "back"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}
          }
       elseif name == "guard_jump_forward" then
          sequence = {
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"forward", "up"}, {"forward", "up"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}
          }
       elseif name == "guard_jump_back_air_parry" then
          sequence = {
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"back", "up"}, {"back", "up"}, {}, {}, {},
             {"forward"}
          }
@@ -391,7 +391,7 @@ local function create_input_sequence(move_selection_data)
          end
       elseif name == "guard_jump_neutral_air_parry" then
          sequence = {
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"up"}, {"up"}, {}, {}, {}, {"forward"}
          }
          if (is_slow_jumper(move_selection_data.char_str)) then
@@ -402,7 +402,7 @@ local function create_input_sequence(move_selection_data)
          end
       elseif name == "guard_jump_forward_air_parry" then
          sequence = {
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"up", "forward"}, {"up", "forward"}, {}, {}, {},
             {"forward"}
          }

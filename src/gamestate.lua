@@ -512,6 +512,7 @@ local function read_player_vars(player)
    --  0x18 -- flying backwards
    --  0x1A -- high jump
    --  0x26 -- knocked down
+   player.previous_posture = player.posture or 0
    player.posture = memory.readbyte(player.addresses.posture)
    player.posture_ext = memory.readbyte(player.addresses.posture_ext)
    player.recovery_type = memory.readbyte(player.addresses.recovery_type) -- 1 was hit on ground, 4 attacking normal, 5 attacking special, 6 was hit in air, 7 body hit ground, updates frame after hit
@@ -1369,6 +1370,8 @@ local function read_player_vars(player)
       player.throw_invulnerability_cooldown = player.remaining_wakeup_time + 7
    elseif player.just_received_connection or player.remaining_freeze_frames > 0 then
       player.throw_invulnerability_cooldown = 10
+   elseif player.has_just_landed and previous_is_in_air_recovery then
+      player.throw_invulnerability_cooldown = 6
    end
 end
 

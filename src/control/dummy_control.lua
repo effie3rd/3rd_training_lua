@@ -32,8 +32,8 @@ local function update_pose(input, player, dummy, pose)
    or disable.pose then return end
    if gamestate.is_in_match and not inputs.is_playing_input_sequence(dummy) then
       local on_ground = gamestate.is_ground_state(dummy, dummy.standing_state)
-      local is_waking_up = dummy.is_waking_up and dummy.remaining_wakeup_time > 0 and dummy.remaining_wakeup_time <= 3
-      local wakeup_frame = dummy.standing_state == 0 and dummy.posture == 0
+      local is_waking_up = dummy.is_waking_up and dummy.remaining_wakeup_time > 0 and dummy.is_past_fast_wakeup_frame
+      local wakeup_frame = dummy.standing_state == 0 and dummy.posture == 0 and dummy.previous_posture == 0x26
 
       if pose == poses.CROUCHING and (on_ground or is_waking_up or wakeup_frame) then
          inputs.queue_input_sequence(dummy, {{"down"}})
@@ -465,6 +465,9 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
                if player.superfreeze_decount > 0 then allow_cheat_parry = true end
 
                -- determine parry type
+               local parry_low = hit_type == 2 or (prefer_parry_low and hit_type == 1 and dummy.pos_y <= 8)
+               if parry_low then parry_type = "parry_down" end
+
                local dummy_airborne = not gamestate.is_ground_state(dummy, dummy.standing_state)
                local opponent_airborne = not gamestate.is_ground_state(player, player.standing_state)
                if dummy_airborne and dummy.pos_y > 0 then
@@ -472,9 +475,6 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
                elseif opponent_airborne and not is_projectile then
                   parry_type = "parry_antiair"
                end
-
-               local parry_low = hit_type == 2 or (prefer_parry_low and hit_type == 1 and dummy.pos_y <= 8)
-               if parry_low then parry_type = "parry_down" end
 
                -- input neutral before parry
                if delta - 1 > 0 and delta <= blocking_delta_threshold + 1 and gamestate.frame_number -
@@ -500,7 +500,7 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
          if dummy.blocking.block_until_confirmed and dummy.blocking.last_block then
             if dummy.blocking.last_block.side ~= dummy_side then dummy.blocking.block_until_confirmed = false end
          end
-         
+
          if (delta <= blocking_delta_threshold or (block_type == Block_Type.PARRY and dummy.blocking.is_pre_parrying)) or
              dummy.blocking.block_until_confirmed then
             dummy.blocking.is_blocking = true
@@ -746,6 +746,20 @@ local function is_guard_jump(str)
    return false
 end
 
+local function get_attack_frame_offset(counter_attack_data)
+   local offset = 0
+   if counter_attack_data.type == 4 then
+      if is_guard_jump(counter_attack_data.name) then
+         offset = -4 -- avoid hj input
+      elseif counter_attack_data.name == "crouch_tech" or counter_attack_data.name == "block_late_tech" then
+         offset = -2
+      end
+   elseif (counter_attack_data.type == 2 and counter_attack_data.motion == "kara_throw") then
+      offset = -2
+   end
+   return offset
+end
+
 local counter_attack_jump_motions = {
    dir_7 = true,
    dir_8 = true,
@@ -758,6 +772,7 @@ local counter_attack_jump_motions = {
 -- counter attack types: reversal - time inputs to finish on target frame, replay - begin playing seequence on target frame
 local function update_counter_attack(input, attacker, defender, counter_attack_data, hits_before)
    local debug = false
+   if counter_attack_data and counter_attack_data.type == 1 then defender.counter.is_counterattacking = false end
 
    if not gamestate.is_in_match or recording.current_recording_state == 4 or not counter_attack_data or
        counter_attack_data.type == 1 then return end
@@ -834,7 +849,8 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
          defender.counter.ref_time = -1
          handle_recording()
          defender.counter.connection_queued = false
-      elseif (defender.just_received_connection or defender.has_just_been_thrown) and not defender.is_airborne then
+      elseif (defender.just_received_connection or defender.has_just_been_thrown) and not defender.is_airborne and
+          not defender.counter.is_counterattacking then
          if debug then print(gamestate.frame_number .. " - init ca (hit/block)") end
          -- log(defender.prefix, "counter_attack", "init ca (hit/block)")
          defender.counter.connection_queued = true
@@ -844,34 +860,25 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
          defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
          defender.counter.is_awaiting_queue = true
          defender.counter.recording_slot = -1
-      elseif defender.is_waking_up and defender.remaining_wakeup_time > 0 and defender.remaining_wakeup_time <= 20 and
+      elseif defender.is_waking_up and defender.remaining_wakeup_time > 0 and
           not defender.counter.wakeup_queued and not defender.counter.stun_queued then
          if debug then print(gamestate.frame_number .. " - init ca (wake up)") end
          -- log(defender.prefix, "counter_attack", "init ca (wakeup)")
-         defender.counter.attack_frame = gamestate.frame_number + defender.remaining_wakeup_time
+         defender.counter.attack_frame = gamestate.frame_number + defender.remaining_wakeup_time + 2 +
+                                             get_attack_frame_offset(counter_attack_data)
          defender.counter.wakeup_queued = true
-         if counter_attack_data.type == 4 then
-            defender.counter.counter_type = "replay"
-            if is_guard_jump(counter_attack_data.name) then
-               defender.counter.attack_frame = defender.counter.attack_frame - 4 -- avoid hj input
-            end
-         elseif (counter_attack_data.type == 2 and counter_attack_data.motion == "kara_throw") then
-            defender.counter.counter_type = "reversal"
-            defender.counter.attack_frame = defender.counter.attack_frame
-         else
-            defender.counter.counter_type = "reversal"
-            defender.counter.attack_frame = defender.counter.attack_frame + 2
-         end
+         defender.counter.counter_type = get_counter_type(counter_attack_data)
          defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
          defender.counter.is_awaiting_queue = true
          defender.counter.ref_time = -1
          handle_recording()
+         defender.counter.connection_queued = false
       elseif defender.has_just_entered_air_recovery then
          if debug then print(gamestate.frame_number .. " - init ca (air)") end
          inputs.clear_input_sequence(defender)
          defender.counter.counter_type = get_counter_type(counter_attack_data)
          defender.counter.ref_time = -1
-         defender.counter.attack_frame = gamestate.frame_number + 100
+         defender.counter.attack_frame = gamestate.frame_number + 99
          defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
          defender.counter.is_awaiting_queue = true
          defender.counter.air_recovery = true
@@ -897,30 +904,28 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
    if defender.counter.connection_queued then -- has just blocked/been hit
       if debug then print(gamestate.frame_number .. " - update ca") end
       defender.counter.attack_frame = gamestate.frame_number + defender.recovery_time +
-                                          defender.additional_recovery_time
+                                          defender.additional_recovery_time + 2 +
+                                          get_attack_frame_offset(counter_attack_data)
       if defender.just_received_connection or defender.freeze_just_ended or defender.is_being_thrown or
           defender.remaining_freeze_frames > 0 then defender.counter.attack_frame = gamestate.frame_number + 20 end
       defender.counter.counter_type = get_counter_type(counter_attack_data)
-      if counter_attack_data.type == 4 then
-         if is_guard_jump(counter_attack_data.name) then
-            defender.counter.attack_frame = defender.counter.attack_frame - 3 -- avoid hj input
-         end
-      elseif counter_attack_data.type == 2 and counter_attack_data.motion == "kara_throw" then
-
-      else
-         defender.counter.attack_frame = defender.counter.attack_frame + 2
-      end
       defender.counter.ref_time = -1
       handle_recording()
+      -- cancel if we are being hit in the air, also applies to throws
+      if defender.posture == 0x18 and defender.character_state_byte == 1 then
+         defender.counter.connection_queued = false
+         defender.counter.is_awaiting_queue = false
+      end
    end
 
    if defender.counter.is_awaiting_queue then
       if defender.counter.air_recovery then
          local frames_before_landing = prediction.predict_frames_before_landing(defender)
          if frames_before_landing > 0 then
-            defender.counter.attack_frame = gamestate.frame_number + frames_before_landing + 2
+            defender.counter.attack_frame = gamestate.frame_number + frames_before_landing + 2 +
+                                                get_attack_frame_offset(counter_attack_data)
          elseif frames_before_landing == 0 then
-            defender.counter.attack_frame = gamestate.frame_number
+            defender.counter.attack_frame = gamestate.frame_number + get_attack_frame_offset(counter_attack_data)
          end
       end
       if defender.counter.stun_queued then
@@ -940,6 +945,10 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
             defender.counter.attack_frame = gamestate.frame_number + frames_until_recovery
          end
       end
+      if defender.counter.wakeup_queued then
+         defender.counter.attack_frame = gamestate.frame_number + defender.remaining_wakeup_time + 2 +
+                                             get_attack_frame_offset(counter_attack_data)
+      end
       local frames_remaining = defender.counter.attack_frame - gamestate.frame_number
       if debug then print(defender.counter.attack_frame, frames_remaining) end
       -- option select
@@ -955,7 +964,7 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
             defender.counter.air_recovery = false
          end
       elseif counter_attack_data.type == 5 and defender.counter.recording_slot > 0 then
-         if frames_remaining <= 0 then
+         if frames_remaining <= 2 then
             if settings.training.replay_mode == 2 or settings.training.replay_mode == 3 or settings.training.replay_mode ==
                 5 or settings.training.replay_mode == 6 then
                recording.override_replay_slot = defender.counter.recording_slot

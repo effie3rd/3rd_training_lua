@@ -24,7 +24,7 @@ local function dump_variables()
             string.format("Action: %d Ext: %d Count: %d", player.action, player.action_ext, player.action_count),
             string.format("Recovery Time: %d Flag %d", player.recovery_time, player.recovery_flag),
             string.format("Movement Type: %d Type 2: %d", player.movement_type, player.movement_type2),
-            string.format("Posture: %d State: %d", player.posture, player.character_state_byte),
+            string.format("Posture: %d Ext: %d State: %d", player.posture, player.posture_ext, player.character_state_byte),
             string.format("Is Attacking: %d Ext: %d", player.is_attacking_byte, player.is_attacking_ext_byte),
             string.format("Is Blocking: %s Busy: %d", tostring(player.is_blocking), player.busy_flag),
             string.format("In Basic Action: %s Idle: %s", tostring(player.is_in_basic_action), tostring(player.is_idle)),
@@ -85,19 +85,20 @@ local function debug_update_framedata()
       -- debuggui("max hit id", player.max_hit_id)
       -- debuggui("is recovery", other.is_in_recovery)
       -- debuggui("proj", player.total_received_projectiles_count)
-      -- debuggui("throw invul", player.throw_invulnerability_cooldown)
-      -- debuggui("throw r f", player.throw_recovery_frame)
       debuggui("miss", player.animation_miss_count)
       -- -- debuggui("attacking", tostring(player.is_attacking))
-      -- debuggui("wakeup", player.remaining_wakeup_time)
-      -- debuggui("wakeup2", other.remaining_wakeup_time)
-      debuggui("pos", string.format("%.04f,%.04f", player.pos_x, player.pos_y))
-      debuggui("pos", string.format("%04f,%04f",other.pos_x, other.pos_y))
+      debuggui("throw invul", player.throw_invulnerability_cooldown)
+      debuggui("throw invul2", other.throw_invulnerability_cooldown)
+      -- debuggui("throw r f", player.throw_recovery_frame)
+      debuggui("wakeup", player.remaining_wakeup_time)
+      debuggui("wakeup2", other.remaining_wakeup_time)
+      -- debuggui("pos", string.format("%.04f,%.04f", player.pos_x, player.pos_y))
+      -- debuggui("pos", string.format("%04f,%04f",other.pos_x, other.pos_y))
       -- debuggui("diff", string.format("%04f,%04f",player.pos_x - player.previous_pos_x, player.pos_y - player.previous_pos_y ))
       -- debuggui("diff", string.format("%04f,%04f",other.pos_x - other.previous_pos_x, other.pos_y - other.previous_pos_y ))
-      debuggui("vel", string.format("%.04f,%.04f", player.velocity_x, player.velocity_y))
-      debuggui("vel", string.format("%04f,%04f", other.velocity_x, other.velocity_y))
-      debuggui("acc", string.format("%.04f,%.04f", player.acceleration_x, player.acceleration_y))
+      -- debuggui("vel", string.format("%.04f,%.04f", player.velocity_x, player.velocity_y))
+      -- debuggui("vel", string.format("%04f,%04f", other.velocity_x, other.velocity_y))
+      -- debuggui("acc", string.format("%.04f,%.04f", player.acceleration_x, player.acceleration_y))
       -- debuggui("recording", tostring(recording))
 
       -- debuggui("screenx", gamestate.screen_x)
@@ -423,8 +424,7 @@ local function init_scan_value(n)
    mem_scan = {}
    for i = 0, 80000000 do
       local v = memory.readdword(i)
-      if v == n then 
-         mem_scan[i] = v end
+      if v == n then mem_scan[i] = v end
    end
 end
 
@@ -524,7 +524,7 @@ local function debug_things()
    -- write_memory.write_pos(gamestate.P2, 431.625 + .375 - .0625 + 45.07625 - .0625+ 0.05078125, 83.0625 - 4)
    -- write_memory.write_pos(gamestate.P1, 424, 0)
    -- write_memory.write_pos(gamestate.P2, 416.375 + .625, 83.0625 - 4)
-   write_memory.write_pos(gamestate.P1, 424, 1/256)
+   write_memory.write_pos(gamestate.P1, 424, 1 / 256)
    write_memory.write_pos(gamestate.P2, 465.5, 70.78125 + 1.21875)
 
    write_memory.clear_motion_data(gamestate.P2)
