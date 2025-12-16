@@ -14,11 +14,13 @@ local utils = require("src.modules.utils")
 local tools = require("src.tools")
 local hud = require("src.ui.hud")
 local training = require("src.training")
+local managers = require("src.control.managers")
 local find_frame_data_by_name = framedata.find_frame_data_by_name
 local Delay = advanced_control.Delay
 local queue_input_sequence_and_wait, all_commands_complete = advanced_control.queue_input_sequence_and_wait,
                                                              advanced_control.all_commands_complete
 
+local jumpins
 local module_name = "jumpins"
 
 local is_active = false
@@ -32,7 +34,8 @@ local states = {
    SELECT_JUMP = 5,
    QUEUE_JUMP = 6,
    JUMP = 7,
-   IDLE = 8
+   WAIT_BEFORE_NEXT_JUMP = 8,
+   IDLE = 9
 }
 local replay_modes = {RANDOM = 1, ORDERED = 2}
 local range_modes = {FIXED_POINT = 1, RANGE_RANDOM = 2, RANGE_ORDERED = 3, RANGE_ENDPOINTS = 4}
@@ -47,7 +50,6 @@ local contact_dist = 0
 local test_jump_start_delay = 20
 local test_jump_start_after_move_delay = 20
 local test_jump_end_frame = 0
-local new_jump_start_delay = 30
 local reset_position_margin = 5
 local screen_reset_pos_x = 0
 local screen_scroll_speed = 8
@@ -65,12 +67,12 @@ local dummy_offset_bounds = {0, 0}
 local attack_delay_bounds = {0, 0}
 local second_jump_delay_bounds = {0, 0}
 
-local dummy_offset_edit_mode = 1
-local dummy_offset_edit_index = 1
+local dummy_offset_edit_mode = {value = 1}
+local dummy_offset_edit_index = {value = 1}
 local dummy_offset_edit_max_points = 2
 
-local attack_delay_edit_mode = 1
-local attack_delay_edit_index = 1
+local attack_delay_edit_mode = {value = 1}
+local attack_delay_edit_index = {value = 1}
 local attack_delay_edit_max_points = 2
 
 local player_pose = 1
@@ -89,19 +91,35 @@ local current_jump
 
 local info_labels = {}
 
+local function set_players()
+   jumpins_dummy = training.get_controlled_player_by_name(module_name) --
+   or training.get_player_controlled_by_active_mode() --
+   or (training.get_controlled_player_by_name("player") and training.get_controlled_player_by_name("player").other) --
+   or gamestate.P2
+   jumpins_player = jumpins_dummy.other
+end
+
 local function init()
-   if not is_active then
-      jumpins_player = training.player
-      jumpins_dummy = training.dummy
-      jumpins_tables.init(training.dummy.char_str)
-      contact_dist = framedata.get_contact_distance(jumpins_player) - 1
-   end
+   set_players()
+   jumpins_tables.init(jumpins_dummy.char_str)
+   contact_dist = framedata.get_contact_distance(jumpins_player)
+end
+
+local old_controller_settings = {"player", "dummy_control"}
+
+local function save_controller_settings()
+   old_controller_settings = {training.P1_controller.name, training.P2_controller.name}
+end
+
+local function restore_controller_settings()
+   training.set_controllers_by_name(old_controller_settings[1], old_controller_settings[2])
 end
 
 local function draw_player_distances(player)
-   local dist = math.floor(math.abs(dummy_offset_range[dummy_offset_edit_index]))
+   local dist = math.floor(math.abs(dummy_offset_range[dummy_offset_edit_index.value]))
    local px, py = draw.game_to_screen_space(player_position_range[1], 0)
-   local dx, dy = draw.game_to_screen_space(player_position_range[1] + dummy_offset_range[dummy_offset_edit_index], 0)
+   local dx, dy = draw.game_to_screen_space(
+                      player_position_range[1] + dummy_offset_range[dummy_offset_edit_index.value], 0)
    draw.draw_horizontal_text_segment(px, dx, py, dist, colors.gui_text.default, 2, "up", "en")
 end
 
@@ -110,9 +128,9 @@ local function draw_jump_arc(jump_arc)
    local function get_color(index)
       local color = colors.text.default
       if mode == modes.EDIT then
-         if attack_delay_edit_mode == 1 then
-            if index == attack_delay_range[1] then color = colors.text.selected end
-         elseif attack_delay_edit_mode == 2 then
+         if attack_delay_edit_mode.value == 1 then
+            if index == attack_delay_range[attack_delay_edit_index.value] then color = colors.text.selected end
+         elseif attack_delay_edit_mode.value == 2 then
             if index >= attack_delay_range[1] and index <= attack_delay_range[2] then
                color = colors.text.selected
             end
@@ -153,49 +171,11 @@ local function jumpins_display()
    if jumpins_settings.show_jump_info then hud.add_info_text(info_labels, jumpins_dummy.id) end
 end
 
-local function change_dummy_offset_edit_mode()
-   dummy_offset_edit_mode = dummy_offset_edit_mode % 2 + 1
-   if dummy_offset_edit_mode == 1 then dummy_offset_edit_index = 1 end
-   current_jump_settings.dummy_offset_mode = dummy_offset_edit_mode
-   return dummy_offset_edit_mode
-end
-
-local function change_dummy_offset_edit_index()
-   dummy_offset_edit_index = dummy_offset_edit_index % dummy_offset_edit_max_points + 1
-   return dummy_offset_edit_index
-end
-
-local function change_attack_delay_edit_mode()
-   attack_delay_edit_mode = attack_delay_edit_mode % 2 + 1
-   if attack_delay_edit_mode == 1 then attack_delay_edit_index = 1 end
-   current_jump_settings.attack_delay_mode = attack_delay_edit_mode
-   return attack_delay_edit_mode
-end
-
-local function change_attack_delay_edit_index()
-   attack_delay_edit_index = attack_delay_edit_index % attack_delay_edit_max_points + 1
-   return attack_delay_edit_index
-end
-
 local function get_current_player_position() return player_position_range[1] end
 
-local function get_current_dummy_offset()
-   if dummy_offset_edit_mode == 1 then
-      return dummy_offset_range[1]
-   elseif dummy_offset_edit_mode == 2 then
-      return dummy_offset_range[dummy_offset_edit_index]
-   end
-end
+local function get_current_dummy_offset() return dummy_offset_range[dummy_offset_edit_index.value] end
 
 local function get_current_dummy_position() return get_current_player_position() + get_current_dummy_offset() end
-
-local function get_current_attack_delay()
-   if attack_delay_edit_mode == 1 then
-      return attack_delay_range[1]
-   elseif attack_delay_edit_mode == 2 then
-      return attack_delay_range[attack_delay_edit_index]
-   end
-end
 
 local function add_jump_arc(jump_arc, player, player_line, player_motion_data)
    for i = 1, #player_motion_data do
@@ -269,6 +249,7 @@ local function simulate_jump(player, start_x, first_jump_name, second_jump_name,
       if is_sjump(first_jump_name) then input_sim_time = 2 end
       local input_player_motion_data = prediction.init_motion_data_zero(player)
       input_player_motion_data[0].pos_x = start_x
+      input_player_motion_data[0].pos_y = 0
 
       local input_dummy_motion_data = prediction.init_motion_data(dummy)
       local input_state = prediction.predict_jump_arc(player, nil, nil, input_player_motion_data, player.other, nil,
@@ -281,9 +262,10 @@ local function simulate_jump(player, start_x, first_jump_name, second_jump_name,
       elseif attack_name and attack_name ~= "none" then
          first_jump_sim_time = attack_delay - #attack_input - #startup_fdata.frames
       end
-      local jump_startup_length = #startup_fdata.frames
+      local jump_startup_length = get_frames_until_jump(startup_fdata) or 5
       local startup_player_motion_data = prediction.init_motion_data_zero(player)
       startup_player_motion_data[0].pos_x = start_x
+      startup_player_motion_data[0].pos_y = 0
 
       local startup_dummy_motion_data = prediction.init_motion_data(dummy)
       local startup_state = prediction.predict_jump_arc(player, startup_anim, 0, startup_player_motion_data,
@@ -296,6 +278,7 @@ local function simulate_jump(player, start_x, first_jump_name, second_jump_name,
                                                                 1
       local first_jump_player_motion_data = {[0] = startup_state.player_motion_data[#startup_state.player_motion_data]}
       local first_jump_dummy_motion_data = {[0] = startup_state.dummy_motion_data[#startup_state.dummy_motion_data]}
+
       local first_jump_state = prediction.predict_jump_arc(player, first_jump_anim, 0, first_jump_player_motion_data,
                                                            player.other, first_jump_dummy_anim, first_jump_dummy_frame,
                                                            first_jump_dummy_motion_data, first_jump_sim_time)
@@ -309,7 +292,7 @@ local function simulate_jump(player, start_x, first_jump_name, second_jump_name,
             local second_startup_anim, second_startup_fdata =
                 find_frame_data_by_name(player.char_str, "air_jump_startup")
             if second_startup_fdata then
-               second_jump_sim_time = #second_startup_fdata.frames
+               second_jump_sim_time = get_frames_until_jump(second_startup_fdata) or 5
                second_jump_startup_time = #second_startup_fdata.frames
             end
             local second_startup_dummy_anim, second_startup_dummy_frame =
@@ -357,17 +340,6 @@ local function simulate_jump(player, start_x, first_jump_name, second_jump_name,
    end
 
    return jump_arc
-end
-
-local function get_center_screen_position(player, player_pos_x, other_pos_x)
-   local left_player = player.pos_x - player.other.pos_x < 0 and player or player.other
-   local right_player = left_player.other
-
-   local screen_pos_x = (player_pos_x + other_pos_x +
-                            framedata.character_specific[right_player.char_str].corner_offset_right -
-                            framedata.character_specific[left_player.char_str].corner_offset_left + 1) / 2
-   local screen_limit_left, screen_limit_right = utils.get_stage_screen_limits(gamestate.stage)
-   return tools.clamp(screen_pos_x, screen_limit_left, screen_limit_right)
 end
 
 local function get_valid_offset_range(player, other_player_x, offset_min, offset_max)
@@ -429,10 +401,10 @@ local function update_delay_bounds()
          second_jump_delay_bounds[1] = min_delay + 5
          attack_delay_bounds[1] = 10
       end
-      attack_delay_bounds[2] = #jump_arc
+      attack_delay_bounds[2] = #jump_arc - 1
    else
       attack_delay_bounds[1] = min_delay
-      attack_delay_bounds[2] = #jump_arc
+      attack_delay_bounds[2] = #jump_arc - 1
    end
 end
 
@@ -565,7 +537,7 @@ local function move_dummy_left()
       dist = math.min(dist, max_move_speed)
    end
    local new_x = move_left(jumpins_dummy, get_current_dummy_position(), get_current_player_position(), dist)
-   if dummy_offset_edit_mode == 2 then
+   if dummy_offset_edit_mode.value == 2 then
       update_position_bounds()
       while new_x >= dummy_offset_bounds[1] do
          if not tools.table_contains(dummy_offset_range, new_x) then break end
@@ -573,10 +545,10 @@ local function move_dummy_left()
       end
    end
    local new_offset = new_x - get_current_player_position()
-   dummy_offset_range[dummy_offset_edit_index] = new_offset
-   if dummy_offset_edit_mode == 2 then
+   dummy_offset_range[dummy_offset_edit_index.value] = new_offset
+   if dummy_offset_edit_mode.value == 2 then
       table.sort(dummy_offset_range)
-      dummy_offset_edit_index = tools.table_indexof(dummy_offset_range, new_offset) or 1
+      dummy_offset_edit_index.value = tools.table_indexof(dummy_offset_range, new_offset) or 1
    end
    local dummy_right = get_current_dummy_position() + contact_dist
    local dummy_left = get_current_dummy_position() - contact_dist
@@ -605,7 +577,7 @@ local function move_dummy_right()
       dist = math.min(dist, max_move_speed)
    end
    local new_x = move_right(jumpins_dummy, get_current_dummy_position(), get_current_player_position(), dist)
-   if dummy_offset_edit_mode == 2 then
+   if dummy_offset_edit_mode.value == 2 then
       update_position_bounds()
       while new_x <= dummy_offset_bounds[2] do
          if not tools.table_contains(dummy_offset_range, new_x) then break end
@@ -613,10 +585,10 @@ local function move_dummy_right()
       end
    end
    local new_offset = new_x - get_current_player_position()
-   dummy_offset_range[dummy_offset_edit_index] = new_offset
-   if dummy_offset_edit_mode == 2 then
+   dummy_offset_range[dummy_offset_edit_index.value] = new_offset
+   if dummy_offset_edit_mode.value == 2 then
       table.sort(dummy_offset_range)
-      dummy_offset_edit_index = tools.table_indexof(dummy_offset_range, new_offset) or 1
+      dummy_offset_edit_index.value = tools.table_indexof(dummy_offset_range, new_offset) or 1
    end
    local dummy_right = get_current_dummy_position() + contact_dist
    local dummy_left = get_current_dummy_position() - contact_dist
@@ -836,10 +808,12 @@ local function load_jump(jump_settings)
    dummy_offset_range = jump_settings.dummy_offset
    attack_delay_range = jump_settings.attack_delay
    second_jump_delay_range = jump_settings.second_jump_delay
-   dummy_offset_edit_mode = jump_settings.dummy_offset_mode
-   attack_delay_edit_mode = jump_settings.attack_delay_mode
-   dummy_offset_edit_index = 1
-   attack_delay_edit_index = 1
+   dummy_offset_edit_mode = tools.create_dynamic_value(jump_settings, "dummy_offset_mode")
+   attack_delay_edit_mode = tools.create_dynamic_value(jump_settings, "attack_delay_mode")
+   dummy_offset_edit_index = tools.create_dynamic_value(jump_settings, "dummy_offset_index")
+   attack_delay_edit_index = tools.create_dynamic_value(jump_settings, "attack_delay_index")
+   if not dummy_offset_edit_index.value then dummy_offset_edit_index.value = 1 end
+   if not attack_delay_edit_index.value then attack_delay_edit_index.value = 1 end
    update_position_bounds()
    update_delay_bounds()
    bound_settings()
@@ -862,9 +836,15 @@ end
 local function try_jump()
    mode = modes.RUN
    state = states.IDLE
-   if gamestate.is_ground_state(jumpins_player, jumpins_player.standing_state) and
-       gamestate.is_ground_state(jumpins_dummy, jumpins_dummy.standing_state) and jumpins_dummy.character_state_byte ==
-       0 then state = states.SELECT_JUMP end
+   advanced_control.clear_programmed_movement(jumpins_dummy)
+   write_memory.write_pos_y(jumpins_dummy, -10)
+   -- if gamestate.is_ground_state(jumpins_player, jumpins_player.standing_state) and
+   --     gamestate.is_ground_state(jumpins_dummy, jumpins_dummy.standing_state) and jumpins_dummy.character_state_byte ==
+   --     0 then 
+
+   state = states.SELECT_JUMP
+
+   --  end
 end
 
 local function queue_jump(jump, dummy_offset, attack_delay)
@@ -888,10 +868,12 @@ local function queue_jump(jump, dummy_offset, attack_delay)
 end
 
 local function begin_edit(settings, jump_settings)
-   if not is_active then init() end
-   is_active = true
-   if training.dummy ~= jumpins_player then training.toggle_swap_characters() end
-   require("src.control.recording").set_recording_state(inputs.input, 1)
+   local recording = require("src.control.recording")
+   recording.set_recording_state({}, recording.RECORDING_STATE.STOPPED)
+   if not is_active then save_controller_settings() end
+   require("src.special_modes").set_active_mode(jumpins)
+   training.set_module_control_by_name(module_name, "dummy_control")
+   init()
    load_settings(settings)
    load_jump(jump_settings)
    inputs.block_input(1, "all")
@@ -904,28 +886,37 @@ local function begin_edit(settings, jump_settings)
    advanced_control.clear_all()
    info_labels = {}
    hud.register_draw(jumpins_display)
+   if gamestate.is_in_match then hud.indicate_player_controllers() end
 end
 
 local function end_edit()
-   is_active = false
-   training.reset_swap_characters()
-   inputs.unblock_input(1)
-   inputs.unblock_input(2)
-   dummy_control.disable_update("pose", false)
-   advanced_control.clear_all()
-   hud.unregister_draw(jumpins_display)
-   hud.clear_info_text()
+   if mode == modes.EDIT then
+      require("src.special_modes").stop_mode(jumpins)
+      restore_controller_settings()
+      inputs.unblock_input(1)
+      inputs.unblock_input(2)
+      dummy_control.disable_update("pose", false)
+      advanced_control.clear_all()
+      hud.unregister_draw(jumpins_display)
+      hud.clear_info_text()
+      if gamestate.is_in_match then hud.indicate_player_controllers() end
+   end
 end
 
 local function start(settings)
-   if not is_active then init() end
-   is_active = true
+   local recording = require("src.control.recording")
+   recording.set_recording_state({}, recording.RECORDING_STATE.STOPPED)
+   if not is_active then save_controller_settings() end
+   training.set_module_control_by_name(module_name)
+   init()
+   if not is_active or mode == modes.EDIT then
+      hud.add_notification_text("hud_coin_restart_hold_start_stop", 0, 208, "center_horizontal", 60)
+   end
+   require("src.special_modes").set_active_mode(jumpins)
    inputs.unblock_input(1)
    inputs.unblock_input(2)
-   require("src.control.recording").set_recording_state(inputs.input, 1)
    load_settings(settings)
    load_all_jumps(settings, jumpins_dummy)
-   mode = modes.RUN
    if jumpins_settings.automatic_replay then
       state = states.WAIT_FOR_START_STATE
    else
@@ -935,11 +926,14 @@ local function start(settings)
    advanced_control.clear_all()
    info_labels = {}
    hud.register_draw(jumpins_display)
+   if gamestate.is_in_match then hud.indicate_player_controllers() end
+   mode = modes.RUN
 end
 
 local function stop()
    if is_active then
-      is_active = false
+      require("src.special_modes").stop_mode(jumpins)
+      restore_controller_settings()
       inputs.unblock_input(1)
       inputs.unblock_input(2)
       training.disable_dummy[1] = false
@@ -951,6 +945,8 @@ local function stop()
          end_edit()
          require("src.ui.menu").close_menu()
       end
+      if gamestate.is_in_match then hud.indicate_player_controllers() end
+      hud.clear_notification_text()
    end
 end
 
@@ -970,19 +966,18 @@ local function update()
                    jumpins_dummy.action == 0 and math.floor(jumpins_player.pos_x) == player_pos_x and
                    math.floor(jumpins_dummy.pos_x) == dummy_pos_x then state = states.QUEUE_TEST_JUMP end
             end
-            screen_reset_pos_x = get_center_screen_position(jumpins_player, player_pos_x, dummy_pos_x)
-            if screen_reset_pos_x < gamestate.screen_x then
-               write_memory.set_screen_pos(math.max(screen_reset_pos_x, gamestate.screen_x - screen_scroll_speed), 0)
-            elseif screen_reset_pos_x > gamestate.screen_x then
-               write_memory.set_screen_pos(math.min(gamestate.screen_x + screen_scroll_speed, screen_reset_pos_x), 0)
+            if managers.Screen_Scroll:is_idle() then
+               local scroll_context = {scroll_speed_x = screen_scroll_speed, scroll_speed_y = screen_scroll_speed}
+               managers.Screen_Scroll:scroll_to_center(jumpins_player, player_pos_x, dummy_pos_x, scroll_context)
             end
             write_memory.write_pos(jumpins_player, player_pos_x, 0)
             write_memory.write_pos(jumpins_dummy, dummy_pos_x, 0)
          elseif state == states.QUEUE_TEST_JUMP then
-            queue_jump(current_jump_settings, player_position_range[1] + dummy_offset_range[dummy_offset_edit_index],
-                       current_jump_settings.attack_delay[attack_delay_edit_index])
+            queue_jump(current_jump_settings,
+                       player_position_range[1] + dummy_offset_range[dummy_offset_edit_index.value],
+                       current_jump_settings.attack_delay[attack_delay_edit_index.value])
             dummy_control.disable_update("pose", false)
-            dummy_control.update_pose(nil, nil, jumpins_player, player_pose)
+            dummy_control.update_pose(nil, jumpins_player, player_pose)
             state = states.TEST_JUMP
          elseif state == states.TEST_JUMP then
             if (jumpins_player.action == 0 or (player_pose == 2 and jumpins_player.action == 7)) and
@@ -997,16 +992,19 @@ local function update()
          end
          if player_pose == 2 then
             dummy_control.disable_update("pose", false)
-            dummy_control.update_pose(nil, nil, jumpins_player, player_pose)
+            dummy_control.update_pose(nil, jumpins_player, player_pose)
          end
          dummy_control.disable_update("pose", true)
       elseif mode == modes.RUN then
+         inputs.block_input(jumpins_dummy.id, "all")
          if state == states.WAIT_FOR_START_STATE then
+            training.disable_dummy[jumpins_dummy.id] = true
             if gamestate.is_ground_state(jumpins_player, jumpins_player.standing_state) and
                 gamestate.is_ground_state(jumpins_dummy, jumpins_dummy.standing_state) and
                 jumpins_dummy.character_state_byte == 0 then state = states.SELECT_JUMP end
          end
          if state == states.SELECT_JUMP then
+            training.disable_dummy[jumpins_dummy.id] = true
             if #jumps > 0 then
                if jumpins_settings.jump_replay_mode == replay_modes.RANDOM then
                   jump_index = math.random(1, #jumps)
@@ -1021,7 +1019,7 @@ local function update()
                end
                local should_increment_dummy_position = true
                if jumpins_settings.attack_delay_mode == range_modes.FIXED_POINT or current_jump.attack_delay_mode == 1 then
-                  current_jump.playback.attack_delay = current_jump.attack_delay[1]
+                  current_jump.playback.attack_delay = current_jump.attack_delay[current_jump.attack_delay_index]
                elseif jumpins_settings.attack_delay_mode == range_modes.RANGE_RANDOM then
                   current_jump.playback.attack_delay = math.random(current_jump.attack_delay[1],
                                                                    current_jump.attack_delay[2])
@@ -1144,10 +1142,9 @@ local function update()
             end
          end
          if state == states.POSITION then
+            training.disable_dummy[jumpins_dummy.id] = true
             if current_jump then
-               local should_scroll = true
                if jumpins_settings.player_position_mode == 2 then
-                  should_scroll = false
                   local new_pos = {
                      [-1] = current_jump.playback.player_reset_position - current_jump.playback.dummy_reset_offset,
                      [1] = current_jump.playback.player_reset_position + current_jump.playback.dummy_reset_offset
@@ -1165,25 +1162,9 @@ local function update()
                       (#dummy_valid_range == 2 and new_pos[sign] >= dummy_valid_range[2][1] and new_pos[sign] <=
                           dummy_valid_range[2][2])) then sign = -sign end
                   current_jump.playback.dummy_reset_position = new_pos[sign]
-
-                  local screen_limit_left = gamestate.screen_x - 192 +
-                                                framedata.character_specific[jumpins_dummy.char_str].corner_offset_left
-                  local screen_limit_right = gamestate.screen_x + 191 +
-                                                 framedata.character_specific[jumpins_dummy.char_str]
-                                                     .corner_offset_right
-                  if current_jump.playback.dummy_reset_position < screen_limit_left then
-                     screen_reset_pos_x = screen_limit_left
-                     should_scroll = true
-                  elseif current_jump.playback.dummy_reset_position > screen_limit_right then
-                     screen_reset_pos_x = screen_limit_right
-                     should_scroll = true
-                  end
                else
                   current_jump.playback.dummy_reset_position =
                       current_jump.playback.player_reset_position + current_jump.playback.dummy_reset_offset
-                  screen_reset_pos_x = get_center_screen_position(jumpins_player,
-                                                                  current_jump.playback.player_reset_position,
-                                                                  current_jump.playback.dummy_reset_position)
                end
 
                if jumpins_settings.player_position_mode == 1 then
@@ -1191,17 +1172,23 @@ local function update()
                       math.abs(current_jump.playback.player_reset_position - math.floor(jumpins_player.pos_x)) <=
                       reset_position_margin and math.floor(jumpins_dummy.pos_x) ==
                       current_jump.playback.dummy_reset_position then state = states.QUEUE_JUMP end
+                  if managers.Screen_Scroll:is_idle() then
+                     local scroll_context = {scroll_speed_x = screen_scroll_speed, scroll_speed_y = screen_scroll_speed}
+                     managers.Screen_Scroll:scroll_to_center(jumpins_player,
+                                                             current_jump.playback.player_reset_position,
+                                                             current_jump.playback.dummy_reset_position, scroll_context)
+                  end
                elseif jumpins_settings.player_position_mode == 2 then
                   if jumpins_dummy.action == 0 and math.floor(jumpins_dummy.pos_x) ==
                       current_jump.playback.dummy_reset_position then state = states.QUEUE_JUMP end
-               end
-               if should_scroll then
-                  if screen_reset_pos_x < gamestate.screen_x then
-                     write_memory.set_screen_pos(math.max(screen_reset_pos_x, gamestate.screen_x - screen_scroll_speed),
-                                                 0)
-                  elseif screen_reset_pos_x > gamestate.screen_x then
-                     write_memory.set_screen_pos(math.min(gamestate.screen_x + screen_scroll_speed, screen_reset_pos_x),
-                                                 0)
+                  if managers.Screen_Scroll:is_idle() then
+                     local scroll_context = {
+                        target_x = current_jump.playback.dummy_reset_position,
+                        target_y = 0,
+                        scroll_speed_x = screen_scroll_speed,
+                        scroll_speed_y = screen_scroll_speed
+                     }
+                     managers.Screen_Scroll:scroll_to_player_position(jumpins_dummy, scroll_context)
                   end
                end
 
@@ -1217,19 +1204,23 @@ local function update()
             state = states.JUMP
          elseif state == states.JUMP then
             if all_commands_complete(jumpins_dummy) and not inputs.is_playing_input_sequence(jumpins_dummy) then
-               training.disable_dummy[jumpins_dummy.id] = false
-               if jumpins_dummy.idle_time >= new_jump_start_delay then
-                  if jumpins_settings.automatic_replay then
-                     state = states.WAIT_FOR_START_STATE
-                  else
-                     state = states.IDLE
-                  end
-               end
+               state = states.WAIT_BEFORE_NEXT_JUMP
             end
             if (jumpins_dummy.has_just_landed and current_jump.followup.type == 1) or
                 jumpins_dummy.just_received_connection then
                advanced_control.clear_programmed_movement(jumpins_dummy)
             end
+         elseif state == states.WAIT_BEFORE_NEXT_JUMP then
+            training.disable_dummy[jumpins_dummy.id] = false
+            if jumpins_dummy.idle_time >= jumpins_settings.next_attack_delay then
+               if jumpins_settings.automatic_replay then
+                  state = states.WAIT_FOR_START_STATE
+               else
+                  state = states.IDLE
+               end
+            end
+         elseif state == states.IDLE then
+            if jumpins_settings.automatic_replay then state = states.WAIT_FOR_START_STATE end
          end
       end
       if jumpins_player.superfreeze_decount > 0 or jumpins_dummy.superfreeze_decount > 0 then
@@ -1238,13 +1229,24 @@ local function update()
    end
 end
 
-local function process_gesture(gesture)
-   if is_active then if gesture == "single_tap" then if not jumpins_settings.automatic_replay then try_jump() end end end
+local function process_gesture(gesture) if is_active then if gesture == "single_tap" then try_jump() end end end
+
+local function get_valid_control_schemes()
+   if mode == modes.EDIT then
+      return {{"dummy_control", module_name}, {module_name, "dummy_control"}}
+   else
+      if jumpins_dummy.id == 2 then
+         return {{"player", module_name}, {"dummy_control", module_name}}
+      else
+         return {{module_name, "player"}, {module_name, "dummy_control"}}
+      end
+   end
 end
 
-local jumpins = {
-   module_name = module_name,
+jumpins = {
+   name = module_name,
    init = init,
+   modes = modes,
    begin_edit = begin_edit,
    end_edit = end_edit,
    load_settings = load_settings,
@@ -1254,15 +1256,13 @@ local jumpins = {
    move_dummy_left = move_dummy_left,
    move_dummy_right = move_dummy_right,
    update_selected_jump = update_selected_jump,
-   change_dummy_offset_edit_mode = change_dummy_offset_edit_mode,
-   change_dummy_offset_edit_index = change_dummy_offset_edit_index,
-   change_attack_delay_edit_mode = change_attack_delay_edit_mode,
-   change_attack_delay_edit_index = change_attack_delay_edit_index,
    start = start,
    stop = stop,
    reset = reset,
    update = update,
-   process_gesture = process_gesture
+   process_gesture = process_gesture,
+   get_valid_control_schemes = get_valid_control_schemes,
+   set_players = set_players
 }
 
 setmetatable(jumpins, {
@@ -1295,10 +1295,12 @@ setmetatable(jumpins, {
          return dummy_offset_edit_mode
       elseif key == "attack_delay_edit_mode" then
          return attack_delay_edit_mode
-      elseif key == "jumpins_player" then
+      elseif key == "player" then
          return jumpins_player
-      elseif key == "jumpins_dummy" then
+      elseif key == "dummy" then
          return jumpins_dummy
+      elseif key == "mode" then
+         return mode
       end
    end,
 

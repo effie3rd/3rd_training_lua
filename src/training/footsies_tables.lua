@@ -8,9 +8,6 @@ local utils = require("src.modules.utils")
 local inputs = require("src.control.inputs")
 local write_memory = require("src.control.write_memory")
 local gamestate = require("src.gamestate")
--- accuracy
--- walk = {"", ""}
--- leave option for specials
 local Delay = advanced_control.Delay
 local Setup, Followup, Action_Type, Setup_Type = training_classes.Setup, training_classes.Followup,
                                                  training_classes.Action_Type, training_classes.Setup_Type
@@ -25,7 +22,7 @@ local character_specific = framedata.character_specific
 local moves = {}
 local move_names = {
    alex = {
-      "f_MP", "MK", "d_MP", "d_MK", "d_HK", "slash_elbow_LP", "slash_elbow_MP", "slash_elbow_HP", "slash_elbow_EXP",
+      "f_MP", "MK", "d_MP", "d_MK", "d_HK", "flash_chop_LP", "flash_chop_MP", "flash_chop_HP", "flash_chop_EXP",
       "kara_throw"
    },
    chunli = {"MP", "d_MP", "d_MK", "HP", "b_HP", "HK", "f_HK", "d_HK", "hazanshuu_LK", "kara_throw"},
@@ -96,6 +93,9 @@ local block_high_input = {{"back"}, {"back"}}
 local block_low_input = {{"back", "down"}, {"back", "down"}}
 local reaction_time = 0
 
+local sa_input = {}
+local sa_after_parry_mode = 1
+
 local walk_in_followups
 local walk_out_followups
 
@@ -114,10 +114,7 @@ local distance_judgement = 100
 local walk_in_range = 8
 local walk_in_range_min = 8
 
-local last_back_input = 0
-local last_forward_input = 0
-
-local dash_input_window = 8
+local dash_input_window = 12
 
 local function update_walk_time(player)
    if player.previous_action == 2 and player.action ~= 2 then
@@ -197,12 +194,9 @@ end
 
 local function handle_interruptions(player, stage, actions, i_actions)
    if (player.has_just_been_hit and not player.is_being_thrown) or player.other.has_just_parried then
-      return true, {score = 1, should_end = true}
+      if not actions[i_actions].type == Action_Type.BLOCK then return true, {score = 1, should_block = true} end
    end
    if (player.is_being_thrown and player.throw_tech_countdown <= 0) then return true, {score = 1, should_end = true} end
-   if player.has_just_missed then
-      if not player.other.is_attacking then return true, {score = 0, should_end = true} end
-   end
    return false
 end
 
@@ -217,7 +211,6 @@ local function get_execute_distance(player, action_type)
 
    local box_types = {"vulnerability", "ext.vulnerability"}
    if current_attack.data.type == "throw" then box_types = {"throwable"} end
-
    return dist -
               utils.get_box_connection_distance(player, current_attack.data.hitboxes, player.other, player.other.boxes,
                                                 box_types, current_attack.data.should_hit) -
@@ -226,10 +219,16 @@ end
 
 local function is_in_execute_range(player, action_type)
    local remaining_dist = get_execute_distance(player, action_type)
+   local movement = 0
+   if action_type == Action_Type.WALK_FORWARD then
+      movement = character_specific[player.char_str].forward_walk_speed
+   elseif action_type == Action_Type.WALK_BACKWARD then
+      movement = character_specific[player.char_str].backward_walk_speed
+   end
    if current_attack.data.should_hit then
       if remaining_dist <= 0 then return true end
    else
-      if remaining_dist >= 0 then return true end
+      if remaining_dist >= 0 and remaining_dist < movement * 2 then return true end
    end
    return false
 end
@@ -239,12 +238,16 @@ local followup_attack = Followup:new("followup_attack", Action_Type.ATTACK)
 function followup_attack:setup(player, stage, actions, i_actions)
    self.end_delay = 12
    self.opponent_has_been_thrown = false
+   self.has_used_sa = false
    local input_delay = Delay:new(6)
    local should_delay = false
-   if current_attack.data.name == "hadouken_HP" or current_attack.data.name == "hadouken_EXP" or current_attack.data.name == "gohadouken_HP" or
-       current_attack.data.name == "zesshou_LP" then
+   if current_attack.data.name == "hadouken_HP" or current_attack.data.name == "hadouken_EXP" or
+       current_attack.data.name == "gohadouken_HP" or current_attack.data.name == "zesshou_LP" then
       local previous_action = actions[i_actions - 1]
       if previous_action and previous_action.type == Action_Type.WALK_FORWARD then should_delay = true end
+   elseif current_attack.data.name == "kara_throw" and player.char_str == "alex" then
+      local previous_action = actions[i_actions - 1]
+      if previous_action and previous_action.type == Action_Type.WALK_BACKWARD then should_delay = true end
    end
    return {
       {
@@ -263,8 +266,16 @@ end
 
 function followup_attack:run(player, stage, actions, i_actions)
    if all_commands_complete(player) then
-      if player.has_just_missed or player.other.is_attacking or player.has_just_been_blocked or
-          player.other.has_just_blocked then return true, {score = 0, should_block = true} end
+      if player.other.has_just_parried and not self.has_used_sa then
+         if sa_after_parry_mode == 2 or (sa_after_parry_mode == 3 and math.random() > 0.5) then
+            queue_input_sequence_and_wait(player, sa_input, nil, true)
+            self.has_used_sa = true
+         end
+      end
+      if player.other.is_attacking then return true, {score = 0, should_block = true} end
+      if player.has_just_missed or player.has_just_been_blocked or player.other.has_just_blocked then
+         return true, {score = 0, should_end = true}
+      end
       if player.has_just_hit or player.other.has_just_been_hit then return true, {score = -1, should_end = true} end
       if player.is_idle then return true, {score = 0, should_end = true} end
       if player.is_in_throw_tech or player.other.is_in_throw_tech then return true, {score = 0, should_end = true} end
@@ -290,25 +301,37 @@ function followup_attack:should_execute(player, stage, actions, i_actions)
    local previous_action = actions[i_actions - 1]
    if previous_action and
        (previous_action.type == Action_Type.WALK_FORWARD or previous_action.type == Action_Type.WALK_BACKWARD) then
+      local remaining_dist = get_execute_distance(player, previous_action.type)
+      local movement = 0
+      if previous_action.type == Action_Type.WALK_FORWARD then
+         movement = character_specific[player.char_str].forward_walk_speed
+         if not current_attack.data.should_hit then
+            if remaining_dist < -movement then return false end
+         end
+      elseif previous_action.type == Action_Type.WALK_BACKWARD then
+         movement = character_specific[player.char_str].backward_walk_speed
+         if current_attack.data.should_hit then
+            if remaining_dist > movement * 2 then return false end
+         end
+      end
       return true
    end
    return is_in_execute_range(player)
 end
 
 function followup_attack:walk_in_condition(player, walk_followup)
-   local dist = get_execute_distance(player)
+   local dist = get_execute_distance(player, Action_Type.WALK_FORWARD)
    local should_walk = false
    if current_attack.data.should_hit then
       if dist > 0 then should_walk = true end
    else
       if dist > character_specific[player.char_str].forward_walk_speed then should_walk = true end
    end
-   if should_walk then walk_followup:extend(player) end
    return not should_walk
 end
 
 function followup_attack:walk_out_condition(player, walk_followup)
-   local dist = get_execute_distance(player)
+   local dist = get_execute_distance(player, Action_Type.WALK_BACKWARD)
    local should_walk = false
    if current_attack.data.should_hit then
       if dist < character_specific[player.char_str].backward_walk_speed then should_walk = true end
@@ -325,7 +348,6 @@ function followup_walk_in:setup(player, stage, actions, i_actions)
    self.min_walk_frames = 4
    self.max_walk_frames = 600
    self.walked_frames = 0
-   last_forward_input = gamestate.frame_number
 
    local setup = {
       {condition = nil, action = function() inputs.queue_input_sequence(player, walk_forward_input, 0, true) end}
@@ -353,8 +375,17 @@ function followup_walk_in:extend(player)
    inputs.queue_input_sequence(player, walk_forward_input, 0, true)
 end
 
+function followup_walk_in:should_execute(player, stage, actions, i_actions)
+   if gamestate.frame_number - player.input_info.last_forward_input <= dash_input_window and
+       not tools.is_pressing_forward(player, inputs.previous_input) then return false end
+   return true
+end
+
 function followup_walk_in:is_valid(player, stage, actions, i_actions)
-   if gamestate.frame_number - last_forward_input < dash_input_window then return false end
+   local previous_action = actions[i_actions - 1]
+   if previous_action and previous_action.type == Action_Type.WALK_BACKWARD then return true end
+   if gamestate.frame_number - player.input_info.last_forward_input < dash_input_window and
+       not tools.is_pressing_forward(player, inputs.previous_input) then return false end
    local dist = get_execute_distance(player, Action_Type.WALK_FORWARD)
 
    if current_attack.data.should_hit then
@@ -378,7 +409,6 @@ function followup_walk_out:setup(player, stage, actions, i_actions)
    local distance_judgement_range = distance_judgement_max - distance_judgement_max * distance_judgement / 100
    local offset = tools.random_quadratic(0, distance_judgement_range, 0, 0.6)
    self.execute_range = get_recent_attack().range + offset
-   last_back_input = gamestate.frame_number
    local setup = {
       {condition = nil, action = function() inputs.queue_input_sequence(player, walk_back_input, 0, true) end}
    }
@@ -400,9 +430,10 @@ function followup_walk_out:run(player, stage, actions, i_actions)
              utils.get_box_connection_distance(player.other, attack.hitboxes, player, player.boxes) - self.execute_range <=
              0 then
             self:extend(player)
+         elseif self.next_action and self.next_action.walk_out_condition then
+            if self.next_action:walk_out_condition(player, self) then return true, {score = 0} end
          else
-            if self.next_action and self.next_action.walk_out_condition and
-                self.next_action:walk_out_condition(player, self) then return true, {score = 0} end
+            return true, {score = 0}
          end
       end
    end
@@ -423,9 +454,18 @@ function followup_walk_out:walk_in_condition(player, walk_followup)
    return false
 end
 
+function followup_walk_out:should_execute(player, stage, actions, i_actions)
+   if player.other.action == 2 then return false end
+   if gamestate.frame_number - player.input_info.last_back_input <= dash_input_window and
+       not tools.is_pressing_back(player, inputs.previous_input) then return false end
+   return true
+end
+
 function followup_walk_out:is_valid(player, stage, actions, i_actions)
-   if gamestate.frame_number - last_back_input < dash_input_window then return false end
+   local previous_action = actions[i_actions - 1]
+   if previous_action and previous_action.type == Action_Type.WALK_FORWARD then return true end
    local dist = get_execute_distance(player, Action_Type.WALK_BACKWARD)
+
    if current_attack.data.should_hit then
       if dist < character_specific[player.char_str].backward_walk_speed then return true end
    else
@@ -434,39 +474,44 @@ function followup_walk_out:is_valid(player, stage, actions, i_actions)
    return false
 end
 
-function followup_walk_out:should_execute(player, stage, actions, i_actions) return not (player.other.action == 2) end
-
 function followup_walk_out:followups() return walk_out_followups end
 
 function followup_walk_out:label() return {self.name, " ", self.walked_frames, "hud_f"} end
 
 local followup_reset_distance = Followup:new("followup_reset_distance", Action_Type.WALK_FORWARD)
 
+local reset_distance_margin = 4
 function followup_reset_distance:setup(player, stage, actions, i_actions)
    self.walked_frames = 0
    self.input = walk_forward_input
    local sign = player.pos_x - player.other.pos_x > 0 and 1 or -1
    local player_stage_left, player_stage_right = utils.get_stage_limits(stage, player.char_str)
-   self.reset_position = tools.clamp(player.other.pos_x + sign * framedata.get_contact_distance(player) + 110,
+   self.reset_position = tools.clamp(player.other.pos_x + sign * (framedata.get_contact_distance(player) + 110),
                                      player_stage_left, player_stage_right)
-   if player.pos_x > self.reset_position and player.flip_input or player.pos_x < self.reset_position and
-       not player.flip_input then self.input = walk_back_input end
-   local setup = {{condition = nil, action = function() inputs.queue_input_sequence(player, self.input, 0, true) end}}
-   if self.input == walk_forward_input then
-      last_forward_input = gamestate.frame_number
-   else
-      last_back_input = gamestate.frame_number
-   end
+   if (player.pos_x > self.reset_position and player.flip_input) or
+       (player.pos_x < self.reset_position and not player.flip_input) then self.input = walk_back_input end
+   local setup = {
+      {
+         condition = nil,
+         action = function()
+            if math.abs(self.reset_position - player.pos_x) > reset_distance_margin then
+               inputs.queue_input_sequence(player, self.input, 0, true)
+            end
+         end
+      }
+   }
    return setup
 end
 
 function followup_reset_distance:run(player, stage, actions, i_actions)
-   if not player.other.is_waking_up then return true, {score = 0, should_end = true} end
    if all_commands_complete(player) then
-      if math.abs(self.reset_position - player.pos_x) > 4 then
+      if (player.pos_x > self.reset_position and player.flip_input) or
+          (player.pos_x < self.reset_position and not player.flip_input) then self.input = walk_back_input end
+      if math.abs(self.reset_position - player.pos_x) > reset_distance_margin then
          self:extend(player)
       else
          write_memory.write_pos_x(player, self.reset_position)
+         return true, {score = 0, should_end = true}
       end
    end
    return handle_interruptions(player, stage, actions, i_actions)
@@ -475,6 +520,33 @@ end
 function followup_reset_distance:extend(player)
    if player.action == 2 or player.action == 3 then self.walked_frames = self.walked_frames + 1 end
    inputs.queue_input_sequence(player, self.input, 0, true)
+end
+
+function followup_reset_distance:should_execute(player, stage, actions, i_actions)
+   self.input = walk_forward_input
+   local sign = player.pos_x - player.other.pos_x > 0 and 1 or -1
+   local player_stage_left, player_stage_right = utils.get_stage_limits(stage, player.char_str)
+   self.reset_position = tools.clamp(player.other.pos_x + sign * (framedata.get_contact_distance(player) + 110),
+                                     player_stage_left, player_stage_right)
+   if (player.pos_x > self.reset_position and player.flip_input) or
+       (player.pos_x < self.reset_position and not player.flip_input) then self.input = walk_back_input end
+   if self.input == walk_forward_input then
+      if gamestate.frame_number - player.input_info.last_forward_input <= dash_input_window and
+          not tools.is_pressing_forward(player, inputs.previous_input) then return false end
+   else
+      if gamestate.frame_number - player.input_info.last_back_input <= dash_input_window and
+          not tools.is_pressing_back(player, inputs.previous_input) then return false end
+   end
+   return true
+end
+
+function followup_reset_distance:is_valid(player, stage, actions, i_actions)
+   local sign = player.pos_x - player.other.pos_x > 0 and 1 or -1
+   local player_stage_left, player_stage_right = utils.get_stage_limits(stage, player.char_str)
+   local reset_position = tools.clamp(player.other.pos_x + sign * framedata.get_contact_distance(player) + 110,
+                                      player_stage_left, player_stage_right)
+   if math.abs(reset_position - player.pos_x) > reset_distance_margin then return true end
+   return false
 end
 
 function followup_reset_distance:label() return {self.name, " ", self.walked_frames, "hud_f"} end
@@ -532,14 +604,23 @@ function followup_block:run(player, stage, actions, i_actions)
          local fdata_meta = fdm.frame_data_meta[player.other.char_str][player.other.animation]
          if fdata_meta and fdata_meta.hit_type then
             hit_type = fdata_meta.hit_type[player.other.current_hit_id + 1]
-            if hit_type == 4 then
-               if framedata.get_next_hit_frame(player.other.char_str, player.other.animation,
-                                               player.other.current_hit_id + 1) >= reaction_time then
-                  self.block_input = block_high_input
+            if hit_type == 2 or hit_type == 4 then
+               if player.other.animation_frame + 1 >= reaction_time then
+                  if hit_type == 4 then
+                     self.switch_blocking = {start_frame = gamestate.frame_number, input = block_high_input}
+                  else
+                     self.block_input = {start_frame = gamestate.frame_number, input = block_low_input}
+                  end
                end
             end
          end
       end
+
+      if self.switch_blocking and gamestate.frame_number >= self.switch_blocking.start_frame then
+         self.block_input = self.switch_blocking.input
+         self.switch_blocking = nil
+      end
+
       if player.has_just_hit then return true, {score = -1, should_end = true} end
       self.next_action = actions[i_actions + 1]
       if self.next_action and self.next_action.block_condition and self.next_action:block_condition(player, self) then
@@ -575,23 +656,26 @@ function followup_block:should_block(player)
       self.block_time = self.blocked_frames + 2
       return true
    end
-   if player.is_waking_up or (player.other.is_attacking and player.other.current_hit_id < player.other.max_hit_id) or
-       (player.character_state_byte == 1 and player.remaining_freeze_frames > 0) then return true end
+   if player.is_waking_up or player.other.character_state_byte == 4 or
+       (player.character_state_byte == 1 and player.remaining_freeze_frames > 0) then
+      self.block_time = self.blocked_frames + 1
+      return true
+   end
    return false
 end
 
 function followup_block:extend(player)
    self.blocked_frames = self.blocked_frames + 1
-   if player.other.is_attacking then inputs.queue_input_sequence(player, self.block_input) end
+   inputs.queue_input_sequence(player, self.block_input)
 end
 
 local menu_move_names = {}
-local function init(char_str)
+local function init(player)
+
+   local char_str = player.char_str
    moves = {}
    menu_move_names = {}
    recent_moves = {}
-   last_back_input = 0
-   last_forward_input = 0
    local anim = framedata.find_move_frame_data(char_str, relevant_move_default[char_str]) or "none"
    local hf = framedata.get_first_hit_frame_by_name(char_str, relevant_move_default[char_str])
    local hb = framedata.get_hitboxes_by_name(char_str, relevant_move_default[char_str], nil, hf)
@@ -619,6 +703,8 @@ local function init(char_str)
          range = framedata.get_hitbox_max_range_by_name(char_str, move_name, nil, -1)
       }
       if move_name == "cold_blue_kick_EXK" then
+         data.range = framedata.get_hitbox_max_range_by_name(char_str, move_name, nil, 1)
+      elseif move_name == "flash_chop_EXP" then
          data.range = framedata.get_hitbox_max_range_by_name(char_str, move_name, nil, 1)
       end
       if move_name == "kara_throw" then
@@ -700,6 +786,11 @@ local function init(char_str)
       menu_move_names[#menu_move_names + 1] = "menu_" .. move_name
       moves[#moves + 1] = {data = data, default_weight = 1, weight = 1}
    end
+
+   local sa_name = move_data.get_move_name_by_type(char_str, "sa" .. player.selected_sa)
+   local buttons = move_data.get_buttons_by_move_name(char_str, sa_name)
+   local button = buttons and buttons[#buttons] or nil
+   sa_input = move_data.get_move_inputs_by_name(char_str, sa_name, button)
 end
 
 local function create_settings()
@@ -778,6 +869,8 @@ setmetatable(footsies_tables, {
          return accuracy
       elseif key == "distance_judgement" then
          return distance_judgement
+      elseif key == "sa_after_parry_mode" then
+         return sa_after_parry_mode
       end
    end,
 
@@ -786,6 +879,8 @@ setmetatable(footsies_tables, {
          accuracy = value
       elseif key == "distance_judgement" then
          distance_judgement = value
+      elseif key == "sa_after_parry_mode" then
+         sa_after_parry_mode = value
       else
          rawset(footsies_tables, key, value)
       end

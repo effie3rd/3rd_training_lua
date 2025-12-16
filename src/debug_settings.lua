@@ -21,9 +21,8 @@ local player_debug_variables = {
 
 local show_dump_state_display = false
 local show_debug_frames_display = false
-local show_debug_variables_display = false
+local show_debug_variables_display = true
 local show_memory_view_display = false
-local show_memory_results_display = true
 
 local hitbox_display_frames = 1
 
@@ -51,8 +50,6 @@ setmetatable(debug, {
          return show_debug_variables_display
       elseif key == "show_memory_view_display" then
          return show_memory_view_display
-      elseif key == "show_memory_results_display" then
-         return show_memory_results_display
       elseif key == "hitbox_display_frames" then
          return hitbox_display_frames
       end
@@ -75,8 +72,6 @@ setmetatable(debug, {
          show_debug_variables_display = value
       elseif key == "show_memory_view_display" then
          show_memory_view_display = value
-      elseif key == "show_memory_results_display" then
-         show_memory_results_display = value
       elseif key == "hitbox_display_frames" then
          hitbox_display_frames = value
       else

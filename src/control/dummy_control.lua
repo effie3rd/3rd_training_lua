@@ -11,6 +11,8 @@ local utils = require("src.modules.utils")
 
 local frame_data_meta = fdm.frame_data_meta
 
+local module_name = "dummy_control"
+
 local poses = {
    STANDING = 1,
    CROUCHING = 2,
@@ -25,9 +27,9 @@ local poses = {
 local disable = {}
 local function disable_update(name, value) disable[name] = value end
 
-local function update_pose(input, player, dummy, pose)
-   if recording.current_recording_state == 4 -- Replaying
-   or dummy.blocking.is_blocking --
+local function update_pose(input, dummy, pose)
+   if recording.current_recording_state == recording.RECORDING_STATE.POSITIONING or recording.current_recording_state ==
+       recording.RECORDING_STATE.REPLAYING or dummy.blocking.is_blocking --
    or dummy.is_stunned --
    or disable.pose then return end
    if gamestate.is_in_match and not inputs.is_playing_input_sequence(dummy) then
@@ -59,7 +61,9 @@ local Block_Style = {BLOCK = 1, PARRY = 2, RED_PARRY = 3}
 local Block_Type = {BLOCK = 1, PARRY = 2, NEUTRAL = 3, NONE = 4}
 local force_block_timeout = 20
 
-local function update_blocking(input, player, dummy, mode, style, red_parry_hit_count, parry_every_n_count)
+local function update_blocking(input, dummy, mode, style, red_parry_hit_count, parry_every_n_count)
+
+   local player = dummy.other
 
    local function has_enough_parry_validity(parry_type, delta)
       return (not dummy.is_blocking and dummy[parry_type].validity_time > delta) or
@@ -246,7 +250,8 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
    end
 
    if not gamestate.is_in_match or mode == 1 or dummy.counter.is_counterattacking or recording.current_recording_state ==
-       4 then return end
+       recording.RECORDING_STATE.POSITIONING or recording.current_recording_state ==
+       recording.RECORDING_STATE.REPLAYING then return end
 
    local frames_prediction = 3
 
@@ -329,8 +334,11 @@ local function update_blocking(input, player, dummy, mode, style, red_parry_hit_
             if attack.blocking_type == "player" then
                if player.animation_frame > fd.get_last_hit_frame(player.char_str, player.animation) or player.animation ~=
                    attack.animation then
-                  dummy.blocking.block_until_confirmed = false
-                  attack.force_block = nil
+                  -- geneijin kara cancels can make the dummy dash unexpectedly
+                  if not (player.char_str == "yun" and player.is_in_timed_sa) then
+                     dummy.blocking.block_until_confirmed = false
+                     attack.force_block = nil
+                  end
                end
             elseif attack.blocking_type == "projectile" then
                if not tools.table_contains_property(gamestate.projectiles, "id", attack.id) then
@@ -599,11 +607,14 @@ local i_mash_buttons = 1
 
 local mash_inputs_mode = 1
 
-local function update_mash_inputs(input, player, dummy, mode)
+local function update_mash_inputs(input, dummy, mode)
    mash_inputs_mode = mode
 
-   if not gamestate.is_in_match or mode == 1 or recording.current_recording_state == 4 or dummy.posture == 24 or
-       dummy.posture == 38 or disable.mash_inputs then return end
+   if not gamestate.is_in_match or mode == 1 or recording.current_recording_state ==
+       recording.RECORDING_STATE.POSITIONING or recording.current_recording_state ==
+       recording.RECORDING_STATE.REPLAYING or dummy.posture == 24 or dummy.posture == 38 or disable.mash_inputs then
+      return
+   end
    if dummy.stun_just_began or dummy.has_just_been_thrown then
       mash_start_frame = gamestate.frame_number
       i_mash_directions = 1
@@ -673,8 +684,10 @@ local function update_mash_inputs(input, player, dummy, mode)
    end
 end
 
-local function update_fast_wake_up(input, player, dummy, mode)
-   if gamestate.is_in_match and mode ~= 1 and recording.current_recording_state ~= 4 then
+local function update_fast_wake_up(input, dummy, mode)
+   if gamestate.is_in_match and mode ~= 1 and
+       (recording.current_recording_state ~= recording.RECORDING_STATE.POSITIONING and
+           recording.current_recording_state ~= recording.RECORDING_STATE.REPLAYING) then
       local should_tap_down = dummy.previous_can_fast_wakeup == 0 and dummy.can_fast_wakeup == 1
 
       if should_tap_down then
@@ -770,11 +783,12 @@ local counter_attack_jump_motions = {
 }
 
 -- counter attack types: reversal - time inputs to finish on target frame, replay - begin playing seequence on target frame
-local function update_counter_attack(input, attacker, defender, counter_attack_data, hits_before)
+local function update_counter_attack(input, defender, counter_attack_data, hits_before)
    local debug = false
    if counter_attack_data and counter_attack_data.type == 1 then defender.counter.is_counterattacking = false end
 
-   if not gamestate.is_in_match or recording.current_recording_state == 4 or not counter_attack_data or
+   if not gamestate.is_in_match or recording.current_recording_state == recording.RECORDING_STATE.POSITIONING or
+       recording.current_recording_state == recording.RECORDING_STATE.REPLAYING or not counter_attack_data or
        counter_attack_data.type == 1 then return end
 
    if defender.posture ~= 0x26 then defender.counter.wakeup_queued = false end
@@ -860,8 +874,8 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
          defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
          defender.counter.is_awaiting_queue = true
          defender.counter.recording_slot = -1
-      elseif defender.is_waking_up and defender.remaining_wakeup_time > 0 and
-          not defender.counter.wakeup_queued and not defender.counter.stun_queued then
+      elseif defender.is_waking_up and defender.remaining_wakeup_time > 0 and not defender.counter.wakeup_queued and
+          not defender.counter.stun_queued then
          if debug then print(gamestate.frame_number .. " - init ca (wake up)") end
          -- log(defender.prefix, "counter_attack", "init ca (wakeup)")
          defender.counter.attack_frame = gamestate.frame_number + defender.remaining_wakeup_time + 2 +
@@ -967,7 +981,7 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
          if frames_remaining <= 2 then
             if settings.training.replay_mode == 2 or settings.training.replay_mode == 3 or settings.training.replay_mode ==
                 5 or settings.training.replay_mode == 6 then
-               recording.override_replay_slot = defender.counter.recording_slot
+               recording.set_replay_options("override_replay_slot", defender.counter.recording_slot)
             end
             if debug then print(gamestate.frame_number .. " - queue recording") end
             -- log(defender.prefix, "counter_attack", "queue recording")
@@ -976,9 +990,7 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
             defender.counter.attack_frame = -1
             defender.counter.recording_slot = -1
             defender.counter.air_recovery = false
-            recording.set_recording_state(input, 1)
-            recording.set_recording_state(input, 4)
-            recording.override_replay_slot = -1
+            recording.play_recording_without_positioning()
          end
       elseif defender.counter.counter_type == "reversal" then
          if frames_remaining <= (#defender.counter.sequence + 1) then
@@ -1015,7 +1027,7 @@ local function update_counter_attack(input, attacker, defender, counter_attack_d
 end
 
 local tech_throw_frame = 0
-local function update_tech_throws(input, attacker, defender, mode)
+local function update_tech_throws(input, defender, mode)
    if not gamestate.is_in_match or mode == 1 then return end
    if defender.has_just_been_thrown then
       -- latest possible tech
@@ -1044,5 +1056,6 @@ return {
    update_counter_attack = update_counter_attack,
    update_tech_throws = update_tech_throws,
    reset = reset,
-   disable_update = disable_update
+   disable_update = disable_update,
+   name = module_name
 }

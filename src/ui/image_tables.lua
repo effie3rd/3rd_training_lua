@@ -81,8 +81,9 @@ local function build_images()
    end
 
    result.img_hold = gd.createFromPng("images/controller/hold_s.png"):gdStr()
-   result.img_maru = gd.createFromPng("images/controller/maru_s.png"):gdStr()
-   result.img_kaku = gd.createFromPng("images/controller/kaku_s.png"):gdStr()
+   result.img_maru = gd.createFromPng("images/controller/check_plus2.png"):gdStr()
+   result.img_square_hollow = gd.createFromPng("images/controller/square_hollow_s.png"):gdStr()
+   result.img_square_filled = gd.createFromPng("images/controller/square_filled_s.png"):gdStr()
    result.img_tilda = gd.createFromPng("images/controller/tilda_s.png"):gdStr()
    result.img_scroll_up = gd.createFromPng("images/menu/menu_scroll_up.png"):gdStr()
    result.img_scroll_down = gd.createFromPng("images/menu/menu_scroll_down.png"):gdStr()

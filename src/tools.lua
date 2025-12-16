@@ -7,7 +7,11 @@ local function t_assert(condition, msg)
    if assert_enabled and not condition then error(msg, 2) end
 end
 
+local function trunc(n) return n >= 0 and math.floor(n) or math.ceil(n) end
+
 local function round(n) return math.floor(n + 0.5) end
+
+local function round_to_nearest(x, n) return math.floor((x + n / 2) / n) * n end
 
 local function sign(n) return n > 0 and 1 or (n == 0 and 0 or -1) end
 
@@ -84,6 +88,18 @@ local function clamp(val, min, max)
    if val < min then val = min end
    if val > max then val = max end
    return val
+end
+
+local function create_dynamic_value(object, key)
+   local obj = {}
+   setmetatable(obj, {
+      __index = function(_, k) if k == "value" then return object[key] end end,
+
+      __newindex = function(_, k, v) if k == "value" then object[key] = v end end,
+
+      __tostring = function(t) return tostring(object[key]) end
+   })
+   return obj
 end
 
 local function check_input_down_autofire(player_object, input, autofire_rate, autofire_time)
@@ -608,6 +624,8 @@ end
 return {
    t_assert = t_assert,
    round = round,
+   trunc = trunc,
+   round_to_nearest = round_to_nearest,
    sign = sign,
    flip_to_sign = flip_to_sign,
    bool_xor = bool_xor,
@@ -615,6 +633,7 @@ return {
    string_to_color = string_to_color,
    to_bit = to_bit,
    memory_readword_reverse = memory_readword_reverse,
+   create_dynamic_value = create_dynamic_value,
    clamp = clamp,
    check_input_down_autofire = check_input_down_autofire,
    Perf_Timer = Perf_Timer,

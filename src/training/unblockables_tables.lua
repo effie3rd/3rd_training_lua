@@ -1679,195 +1679,348 @@ local function oro_midscreen_followup_back_dash_down_lk(player)
    return commands
 end
 
-local available_unblockables = {
-   alex = {
-      "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard_alex", "oro_midscreen_lp_yagyou"
-   },
-   sean = {
-      "urien_midscreen_standard", "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard",
-      "oro_midscreen_mp_yagyou"
-   },
-   ibuki = {"urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "oro_midscreen_mp_yagyou"},
-   necro = {
-      "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard", "oro_midscreen_lp_yagyou"
-   },
-   urien = {
-      "urien_midscreen_standard", "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard",
-      "oro_midscreen_lp_yagyou"
-   },
-   gouki = {
-      "urien_midscreen_standard", "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard",
-      "oro_midscreen_mp_yagyou"
-   },
-   yang = {
-      "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard_short", "oro_midscreen_mp_mp"
-   },
-   twelve = {
-      "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard", "oro_midscreen_lp_yagyou"
-   },
-   makoto = {
-      "urien_midscreen_standard", "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard",
-      "oro_midscreen_lp_yagyou"
-   },
-   chunli = {
-      "urien_midscreen_standard", "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard",
-      "oro_midscreen_lp_yagyou"
-   },
-   q = {
-      "urien_midscreen_ex_head_standard", "urien_midscreen_anago", "urien_corner_standard_q_remy",
-      "oro_midscreen_lp_yagyou"
-   },
-   remy = {
-      "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard_q_remy",
-      "oro_midscreen_mp_yagyou"
-   },
-   yun = {
-      "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard_short", "oro_midscreen_mp_mp"
-   },
-   ken = {
-      "urien_midscreen_standard", "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard",
-      "oro_midscreen_mp_yagyou"
-   },
-   hugo = {"urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard", "oro_midscreen_mp_mp"},
-   elena = {"urien_midscreen_standard", "urien_corner_standard_q_remy", "oro_midscreen_mp_yagyou"},
-   dudley = {
-      "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard_short",
-      "oro_midscreen_mp_yagyou_walk"
-   },
-   oro = {"urien_midscreen_ex_head_sphere", "urien_corner_standard_short", "oro_midscreen_lp_yagyou"},
-   ryu = {
-      "urien_midscreen_standard", "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard",
-      "oro_midscreen_mp_yagyou"
-   },
-   gill = {
-      "urien_midscreen_standard", "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard",
-      "oro_midscreen_lp_yagyou"
-   },
-   shingouki = {
-      "urien_midscreen_standard", "urien_midscreen_ex_head_sphere", "urien_midscreen_anago", "urien_corner_standard",
-      "oro_midscreen_mp_yagyou"
-   },
-   default = {"urien_midscreen_standard", "urien_corner_standard", "urien_midscreen_anago", "oro_midscreen_mp_yagyou"}
+local urien_midscreen_standard = {
+   name = "urien_midscreen_standard",
+   commands = urien_midscreen_setup_tackle_dash,
+   reset_offset_x = 700
+}
+local urien_midscreen_ex_head_sphere = {
+   name = "urien_midscreen_ex_head_sphere",
+   commands = urien_midscreen_setup_ex_head_sphere,
+   reset_offset_x = 600
+}
+local urien_midscreen_ex_head_standard = {
+   name = "urien_midscreen_ex_head_standard",
+   commands = urien_midscreen_setup_ex_head_standard,
+   reset_offset_x = 600
+}
+local urien_midscreen_anago = {
+   name = "urien_midscreen_anago",
+   commands = urien_midscreen_setup_anago,
+   reset_offset_x = 600
 }
 
-local unblockables_data = {
-   urien_midscreen_standard = {
-      character = "urien",
-      reset_offset_x = 700,
-      setup = urien_midscreen_setup_tackle_dash,
-      followups = {
-         {name = "menu_f_MK", commands = urien_midscreen_tackle_dash_followup_f_mk},
-         {name = "menu_d_LK", commands = urien_midscreen_tackle_dash_followup_d_lk},
-         {name = "menu_throw", commands = urien_midscreen_tackle_dash_followup_throw}
+local urien_corner_standard = {
+   name = "urien_corner_standard",
+   commands = urien_corner_setup_tackle_mk_mk_mk_hk,
+   reset_offset_x = 220
+}
+local urien_corner_standard_short = {
+   name = "urien_corner_standard_short",
+   commands = urien_corner_setup_tackle_mk_mk_mk_mk,
+   reset_offset_x = 220
+}
+local urien_corner_standard_alex = {
+   name = "urien_corner_standard_alex",
+   commands = urien_corner_setup_alex,
+   reset_offset_x = 120
+}
+local urien_corner_standard_q_remy = {
+   name = "urien_corner_standard_q_remy",
+   commands = urien_corner_setup_tackle_mk_mk_mk_hk_q_remy,
+   reset_offset_x = 220
+}
+
+local oro_midscreen_lp_yagyou = {
+   name = "oro_midscreen_lp_yagyou",
+   commands = oro_midscreen_setup_lp_yagyou_dash_dash,
+   reset_offset_x = 800
+}
+local oro_midscreen_mp_yagyou = {
+   name = "oro_midscreen_mp_yagyou",
+   commands = oro_midscreen_setup_mp_yagyou_dash_dash,
+   reset_offset_x = 800
+}
+local oro_midscreen_mp_mp = {
+   name = "oro_midscreen_mp_mp",
+   commands = oro_midscreen_setup_mp_mp_lp_yagyou,
+   reset_offset_x = 800
+}
+local oro_midscreen_mp_yagyou_walk = {
+   name = "oro_midscreen_mp_yagyou_walk",
+   commands = oro_midscreen_setup_mp_yagyou_dash_walk,
+   reset_offset_x = 800
+}
+
+local setups = {
+   urien = {
+      alex = {urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard_alex},
+      sean = {urien_midscreen_standard, urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard},
+      ibuki = {urien_midscreen_ex_head_sphere, urien_midscreen_anago},
+      necro = {urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard},
+      urien = {urien_midscreen_standard, urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard},
+      gouki = {urien_midscreen_standard, urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard},
+      yang = {urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard_short},
+      twelve = {urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard},
+      makoto = {urien_midscreen_standard, urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard},
+      chunli = {urien_midscreen_standard, urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard},
+      q = {urien_midscreen_ex_head_standard, urien_midscreen_anago, urien_corner_standard_q_remy},
+      remy = {urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard_q_remy},
+      yun = {urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard_short},
+      ken = {urien_midscreen_standard, urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard},
+      hugo = {urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard},
+      elena = {urien_midscreen_standard, urien_corner_standard_q_remy},
+      dudley = {urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard_short},
+      oro = {urien_midscreen_ex_head_sphere, urien_corner_standard_short},
+      ryu = {urien_midscreen_standard, urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard},
+      gill = {urien_midscreen_standard, urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard},
+      shingouki = {
+         urien_midscreen_standard, urien_midscreen_ex_head_sphere, urien_midscreen_anago, urien_corner_standard
       }
    },
-   urien_midscreen_ex_head_sphere = {
-      character = "urien",
-      reset_offset_x = 600,
-      setup = urien_midscreen_setup_ex_head_sphere,
-      followups = {
-         {name = "menu_jump_HK", commands = urien_mid_screen_ex_head_sphere_followup_jump_hk},
-         {name = "menu_f_MK", commands = urien_mid_screen_ex_head_sphere_followup_f_mk},
-         {name = "menu_d_LK", commands = urien_mid_screen_ex_head_sphere_followup_d_lk},
-         {name = "menu_throw", commands = urien_mid_screen_ex_head_sphere_followup_throw}
+   oro = {
+      alex = {oro_midscreen_lp_yagyou},
+      sean = {oro_midscreen_mp_yagyou},
+      ibuki = {oro_midscreen_mp_yagyou},
+      necro = {oro_midscreen_lp_yagyou},
+      urien = {oro_midscreen_lp_yagyou},
+      gouki = {oro_midscreen_mp_yagyou},
+      yang = {oro_midscreen_mp_mp},
+      twelve = {oro_midscreen_lp_yagyou},
+      makoto = {oro_midscreen_lp_yagyou},
+      chunli = {oro_midscreen_lp_yagyou},
+      q = {oro_midscreen_lp_yagyou},
+      remy = {oro_midscreen_mp_yagyou},
+      yun = {oro_midscreen_mp_mp},
+      ken = {oro_midscreen_mp_yagyou},
+      hugo = {oro_midscreen_mp_mp},
+      elena = {oro_midscreen_mp_yagyou},
+      dudley = {oro_midscreen_mp_yagyou_walk},
+      oro = {oro_midscreen_lp_yagyou},
+      ryu = {oro_midscreen_mp_yagyou},
+      gill = {oro_midscreen_lp_yagyou},
+      shingouki = {oro_midscreen_mp_yagyou}
+   }
+}
+
+local followup_data = {
+   urien = {
+      urien_midscreen_standard = {
+         default = {
+            {name = "f_MK", commands = urien_midscreen_tackle_dash_followup_f_mk},
+            {name = "d_LK", commands = urien_midscreen_tackle_dash_followup_d_lk},
+            {name = "throw", commands = urien_midscreen_tackle_dash_followup_throw}
+         }
+      },
+      urien_midscreen_ex_head_sphere = {
+         default = {
+            {name = "jump_HK", commands = urien_mid_screen_ex_head_sphere_followup_jump_hk},
+            {name = "f_MK", commands = urien_mid_screen_ex_head_sphere_followup_f_mk},
+            {name = "d_LK", commands = urien_mid_screen_ex_head_sphere_followup_d_lk},
+            {name = "throw", commands = urien_mid_screen_ex_head_sphere_followup_throw}
+         }
+      },
+      urien_midscreen_ex_head_standard = {
+         default = {
+            {name = "uoh", commands = urien_mid_screen_ex_head_standard_followup_leap},
+            {name = "f_MK", commands = urien_mid_screen_ex_head_standard_followup_f_mk},
+            {name = "d_LK", commands = urien_mid_screen_ex_head_standard_followup_d_lk},
+            {name = "throw", commands = urien_mid_screen_ex_head_standard_followup_throw}
+         }
+      },
+      urien_midscreen_anago = {
+         default = {
+            {name = "d_LK", commands = urien_mid_screen_anago_followup_d_lk},
+            {name = "d_LK_dash", commands = urien_mid_screen_anago_followup_d_lk_dash},
+            {name = "f_MK", commands = urien_mid_screen_anago_followup_f_mk}
+         }
+      },
+      urien_corner_standard = {
+         default = {{name = "HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_hk_followup_knee}}
+      },
+      urien_corner_standard_short = {
+         default = {{name = "HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_mk_followup_knee}}
+      },
+      urien_corner_standard_alex = {
+         default = {{name = "HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_hk_followup_knee}}
+      },
+      urien_corner_standard_q_remy = {
+         default = {{name = "HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_hk_q_remy_followup_knee}}
       }
    },
-   urien_midscreen_ex_head_standard = {
-      character = "urien",
-      reset_offset_x = 600,
-      setup = urien_midscreen_setup_ex_head_standard,
-      followups = {
-         {name = "menu_uoh", commands = urien_mid_screen_ex_head_standard_followup_leap},
-         {name = "menu_f_MK", commands = urien_mid_screen_ex_head_standard_followup_f_mk},
-         {name = "menu_d_LK", commands = urien_mid_screen_ex_head_standard_followup_d_lk},
-         {name = "menu_throw", commands = urien_mid_screen_ex_head_standard_followup_throw}
-      }
-   },
-   urien_midscreen_anago = {
-      character = "urien",
-      reset_offset_x = 600,
-      setup = urien_midscreen_setup_anago,
-      followups = {
-         {name = "menu_d_LK", commands = urien_mid_screen_anago_followup_d_lk},
-         {name = "menu_d_LK_dash", commands = urien_mid_screen_anago_followup_d_lk_dash},
-         {name = "menu_f_MK", commands = urien_mid_screen_anago_followup_f_mk}
-      }
-   },
-   urien_corner_standard = {
-      character = "urien",
-      reset_offset_x = 220,
-      setup = urien_corner_setup_tackle_mk_mk_mk_hk,
-      followups = {{name = "menu_HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_hk_followup_knee}}
-   },
-   urien_corner_standard_short = {
-      character = "urien",
-      reset_offset_x = 220,
-      setup = urien_corner_setup_tackle_mk_mk_mk_mk,
-      followups = {{name = "menu_HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_mk_followup_knee}}
-   },
-   urien_corner_standard_q_remy = {
-      character = "urien",
-      reset_offset_x = 220,
-      setup = urien_corner_setup_tackle_mk_mk_mk_hk_q_remy,
-      followups = {{name = "menu_HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_hk_q_remy_followup_knee}}
-   },
-   urien_corner_standard_alex = {
-      character = "urien",
-      reset_offset_x = 120,
-      setup = urien_corner_setup_alex,
-      followups = {{name = "menu_HK_kneedrop", commands = urien_corner_tackle_mk_mk_mk_hk_followup_knee}}
-   },
-   oro_midscreen_hp_yagyou = {
-      character = "oro",
-      reset_offset_x = 800,
-      setup = oro_midscreen_setup_hp_yagyou_dash_dash,
-      followups = {
-         {name = "menu_jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
-         {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
-         {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
-      }
-   },
-   oro_midscreen_mp_yagyou = {
-      character = "oro",
-      reset_offset_x = 800,
-      setup = oro_midscreen_setup_mp_yagyou_dash_dash,
-      followups = {
-         {name = "menu_jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
-         {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
-         {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
-      }
-   },
-   oro_midscreen_lp_yagyou = {
-      character = "oro",
-      reset_offset_x = 800,
-      setup = oro_midscreen_setup_lp_yagyou_dash_dash,
-      followups = {
-         {name = "menu_jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
-         {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
-         {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
-      }
-   },
-   oro_midscreen_mp_mp = {
-      character = "oro",
-      reset_offset_x = 800,
-      setup = oro_midscreen_setup_mp_mp_lp_yagyou,
-      followups = {
-         {name = "menu_jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
-         {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
-         {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
-      }
-   },
-   oro_midscreen_mp_yagyou_walk = {
-      character = "oro",
-      reset_offset_x = 800,
-      setup = oro_midscreen_setup_mp_yagyou_dash_walk,
-      followups = {
-         {name = "menu_jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
-         {name = "menu_back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
-         {name = "menu_back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
+   oro = {
+      oro_midscreen_hp_yagyou = {
+         default = {
+            {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
+            {name = "back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
+            {name = "back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
+         }
+      },
+      oro_midscreen_mp_yagyou = {
+         default = {
+            {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
+            {name = "back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
+            {name = "back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
+         }
+      },
+      oro_midscreen_lp_yagyou = {
+         default = {
+            {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
+            {name = "back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
+            {name = "back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
+         }
+      },
+      oro_midscreen_mp_mp = {
+         default = {
+            {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
+            {name = "back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
+            {name = "back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
+         }
+      },
+      oro_midscreen_mp_yagyou_walk = {
+         default = {
+            {name = "jump_MK", commands = oro_midscreen_followup_neutral_jump_jump_mk},
+            {name = "back_dash_jump_MK", commands = oro_midscreen_followup_back_dash_jump_mk},
+            {name = "back_dash_down_LK", commands = oro_midscreen_followup_back_dash_down_lk}
+         }
       }
    }
 }
+
+local followups = {
+   urien = {
+      alex = {
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard_alex = followup_data.urien.urien_corner_standard_alex.default
+      },
+      chunli = {
+         urien_midscreen_standard = followup_data.urien.urien_midscreen_standard.default,
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard = followup_data.urien.urien_corner_standard.default
+      },
+      dudley = {
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard_short = followup_data.urien.urien_corner_standard_short.default
+      },
+      elena = {
+         urien_midscreen_standard = followup_data.urien.urien_midscreen_standard.default,
+         urien_corner_standard_q_remy = followup_data.urien.urien_corner_standard_q_remy.default
+      },
+      gouki = {
+         urien_midscreen_standard = followup_data.urien.urien_midscreen_standard.default,
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard = followup_data.urien.urien_corner_standard.default
+      },
+      gill = {
+         urien_midscreen_standard = followup_data.urien.urien_midscreen_standard.default,
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard = followup_data.urien.urien_corner_standard.default
+      },
+      hugo = {
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard = followup_data.urien.urien_corner_standard.default
+      },
+      ibuki = {
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default
+      },
+      ken = {
+         urien_midscreen_standard = followup_data.urien.urien_midscreen_standard.default,
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard = followup_data.urien.urien_corner_standard.default
+      },
+      makoto = {
+         urien_midscreen_standard = followup_data.urien.urien_midscreen_standard.default,
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard = followup_data.urien.urien_corner_standard.default
+      },
+      necro = {
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard = followup_data.urien.urien_corner_standard.default
+      },
+      oro = {
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_corner_standard_short = followup_data.urien.urien_corner_standard_short.default
+      },
+      q = {
+         urien_midscreen_ex_head_standard = followup_data.urien.urien_midscreen_ex_head_standard.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard_q_remy = followup_data.urien.urien_corner_standard_q_remy.default
+      },
+      remy = {
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard_q_remy = followup_data.urien.urien_corner_standard_q_remy.default
+      },
+      ryu = {
+         urien_midscreen_standard = followup_data.urien.urien_midscreen_standard.default,
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard = followup_data.urien.urien_corner_standard.default
+      },
+      sean = {
+         urien_midscreen_standard = followup_data.urien.urien_midscreen_standard.default,
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard = followup_data.urien.urien_corner_standard.default
+      },
+      shingouki = {
+         urien_midscreen_standard = followup_data.urien.urien_midscreen_standard.default,
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard = followup_data.urien.urien_corner_standard.default
+      },
+      twelve = {
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard = followup_data.urien.urien_corner_standard.default
+      },
+      urien = {
+         urien_midscreen_standard = followup_data.urien.urien_midscreen_standard.default,
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard = followup_data.urien.urien_corner_standard.default
+      },
+      yang = {
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard_short = followup_data.urien.urien_corner_standard_short.default
+      },
+      yun = {
+         urien_midscreen_ex_head_sphere = followup_data.urien.urien_midscreen_ex_head_sphere.default,
+         urien_midscreen_anago = followup_data.urien.urien_midscreen_anago.default,
+         urien_corner_standard_short = followup_data.urien.urien_corner_standard_short.default
+      }
+   },
+   oro = {
+      alex = {oro_midscreen_lp_yagyou = followup_data.oro.oro_midscreen_lp_yagyou.default},
+      chunli = {oro_midscreen_lp_yagyou = followup_data.oro.oro_midscreen_lp_yagyou.default},
+      dudley = {oro_midscreen_mp_yagyou_walk = followup_data.oro.oro_midscreen_mp_yagyou_walk.default},
+      elena = {oro_midscreen_mp_yagyou = followup_data.oro.oro_midscreen_mp_yagyou.default},
+      gouki = {oro_midscreen_mp_yagyou = followup_data.oro.oro_midscreen_mp_yagyou.default},
+      gill = {oro_midscreen_lp_yagyou = followup_data.oro.oro_midscreen_lp_yagyou.default},
+      hugo = {oro_midscreen_mp_mp = followup_data.oro.oro_midscreen_mp_mp.default},
+      ibuki = {oro_midscreen_mp_yagyou = followup_data.oro.oro_midscreen_mp_yagyou.default},
+      ken = {oro_midscreen_mp_yagyou = followup_data.oro.oro_midscreen_mp_yagyou.default},
+      makoto = {oro_midscreen_lp_yagyou = followup_data.oro.oro_midscreen_lp_yagyou.default},
+      necro = {oro_midscreen_lp_yagyou = followup_data.oro.oro_midscreen_lp_yagyou.default},
+      oro = {oro_midscreen_lp_yagyou = followup_data.oro.oro_midscreen_lp_yagyou.default},
+      q = {oro_midscreen_lp_yagyou = followup_data.oro.oro_midscreen_lp_yagyou.default},
+      remy = {oro_midscreen_mp_yagyou = followup_data.oro.oro_midscreen_mp_yagyou.default},
+      ryu = {oro_midscreen_mp_yagyou = followup_data.oro.oro_midscreen_mp_yagyou.default},
+      sean = {oro_midscreen_mp_yagyou = followup_data.oro.oro_midscreen_mp_yagyou.default},
+      shingouki = {oro_midscreen_mp_yagyou = followup_data.oro.oro_midscreen_mp_yagyou.default},
+      twelve = {oro_midscreen_lp_yagyou = followup_data.oro.oro_midscreen_lp_yagyou.default},
+      urien = {oro_midscreen_lp_yagyou = followup_data.oro.oro_midscreen_lp_yagyou.default},
+      yang = {oro_midscreen_mp_mp = followup_data.oro.oro_midscreen_mp_mp.default},
+      yun = {oro_midscreen_mp_mp = followup_data.oro.oro_midscreen_mp_mp.default}
+   }
+}
+
+local unblockables_data = {}
+local available_opponents = {"urien", "oro"}
+local opponents_menu_names = {}
+
+for i, opponent in ipairs(available_opponents) do opponents_menu_names[#opponents_menu_names + 1] = "menu_" .. opponent end
 
 local followup_names = {}
 for key, data in pairs(unblockables_data) do
@@ -1875,31 +2028,61 @@ for key, data in pairs(unblockables_data) do
    for i = 1, #data.followups do followup_names[key][#followup_names[key] + 1] = data.followups[i].name end
 end
 
-local function get_unblockables_data(char, type)
-   local key = available_unblockables[char][type]
-   return unblockables_data[key]
-end
+local function get_setup(opponent, char_str, index) return setups[opponent][char_str][index] end
+local function get_followups(opponent, char_str, setup_name) return followups[opponent][char_str][setup_name] end
 
-local function get_unblockables_character(key) return unblockables_data[key].character end
-
-local function get_unblockables_type_menu_names(char)
+local function get_setups_menu_names(opponent, char_str)
    local result = {}
-   for i, name in ipairs(available_unblockables[char]) do result[#result + 1] = "menu_" .. name end
+   for i, setup in ipairs(setups[opponent][char_str]) do result[#result + 1] = "menu_" .. setup.name end
    return result
 end
 
-local function get_selected_unblockable_type(player_char, dummy_char)
-   for i, unblockable in ipairs(available_unblockables[player_char]) do
-      if unblockables_data[unblockable].character == dummy_char then return i end
+local function get_followups_menu_names(opponent, char_str, setup_name)
+   local result = {}
+   for i, followup in ipairs(followups[opponent][char_str][setup_name]) do
+      result[#result + 1] = "menu_" .. followup.name
    end
-   return 1
+   return result
+end
+
+local function create_settings()
+   local data = {
+      opponent = 1,
+      setup = 1,
+      controllers = {"player", "unblockables"},
+      savestate_setup = 1,
+      savestate_opponent = "",
+      savestate_player = "",
+      match_savestate_opponent = "",
+      match_savestate_player = "",
+      followups = {}
+   }
+   for _, opponent in ipairs(available_opponents) do
+      data.followups[opponent] = {}
+      for __, char_str in ipairs(require("src.modules.game_data").characters) do
+         data.followups[opponent][char_str] = {}
+         local s = data.followups[opponent][char_str]
+         for ___, current_setup in ipairs(setups[opponent][char_str]) do
+            s[#s + 1] = {}
+            local f = s[#s]
+            local setup_name = current_setup.name
+            for ____, current_followup in ipairs(followups[opponent][char_str][setup_name]) do
+               f[#f + 1] = false
+            end
+         end
+      end
+   end
+   return data
 end
 
 return {
-   get_unblockables_data = get_unblockables_data,
-   get_unblockables_character = get_unblockables_character,
-   get_unblockables_type_menu_names = get_unblockables_type_menu_names,
-   get_selected_unblockable_type = get_selected_unblockable_type,
-   available_unblockables = available_unblockables,
-   followup_names = followup_names
+   get_setup = get_setup,
+   get_followups = get_followups,
+   get_setups_menu_names = get_setups_menu_names,
+   get_followups_menu_names = get_followups_menu_names,
+   get_followup_index = get_followup_index,
+   available_opponents = available_opponents,
+   opponents_menu_names = opponents_menu_names,
+   followup_names = followup_names,
+   create_settings = create_settings
 }

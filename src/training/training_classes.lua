@@ -5,7 +5,7 @@ local Setup = {}
 Setup.__index = Setup
 
 function Setup:new(name, type)
-   local obj = {name = name, type = type or Action_Type.ACTION}
+   local obj = {name = name, type = type or Action_Type.ATTACK}
 
    setmetatable(obj, self)
    return obj

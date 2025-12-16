@@ -9,7 +9,6 @@ local image_tables = require("src.ui.image_tables")
 
 local frame_data = framedata.frame_data
 
-
 -- store default color. everything else is recolored in real time and cached
 local function load_text_images(filepath)
    local map = tools.read_object_from_json_file(filepath)

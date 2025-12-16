@@ -148,6 +148,14 @@ local function get_fix_screen_pos(p1, p2, stage)
    return math.min(math.max(mid, min_x), max_x), math.max(math.max(p1.pos_y - 40, 0), 0)
 end
 
+local function set_screen_pos_x(x)
+   memory.writeword(memory_addresses.global.screen_pos_x, x)
+end
+
+local function set_screen_pos_y(y)
+   memory.writeword(memory_addresses.global.screen_pos_y, y)
+end
+
 local function set_screen_pos(x, y)
    memory.writeword(memory_addresses.global.screen_pos_x, x)
    memory.writeword(memory_addresses.global.screen_pos_y, y)
@@ -240,6 +248,8 @@ return {
    clear_motion_data = clear_motion_data,
    get_fix_screen_pos = get_fix_screen_pos,
    fix_screen_pos = fix_screen_pos,
+   set_screen_pos_x = set_screen_pos_x,
+   set_screen_pos_y = set_screen_pos_y,
    set_screen_pos = set_screen_pos,
    make_invulnerable = make_invulnerable,
    set_freeze = set_freeze,

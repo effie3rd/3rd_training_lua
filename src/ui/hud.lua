@@ -81,29 +81,41 @@ local function info_text_display()
    end
 end
 
-local score_text
-local function add_score_text(str) score_text = str end
-
-local function clear_score_text() score_text = nil end
+local score_text = {"", ""}
+local function add_score_text(id, str) score_text[id] = str end
+local function clear_score_text() score_text = {"", ""} end
 local function score_text_display()
-   if score_text then
-      local padding_x = 10
-      local x, y = padding_x, 50
+   for id, str in pairs(score_text) do
+      if str ~= "" then
+         local padding_x = 10
+         local x, y = padding_x, 50
+         local input_history_offset = 34
 
-      local input_history_offset = 34
-
-      if settings.training.display_input_history == 2 or settings.training.display_input_history == 4 then
-         x = x + input_history_offset
+         if id == 2 then
+            local w, h = get_text_dimensions(str, "score")
+            x = draw.SCREEN_WIDTH - padding_x - w
+            if settings.training.display_input_history == 3 or settings.training.display_input_history == 4 then
+               x = x - input_history_offset
+            end
+         else
+            if settings.training.display_input_history == 2 or settings.training.display_input_history == 4 then
+               x = x + input_history_offset
+            end
+         end
+         render_text(x, y, str, "score", nil, colors.score.plus)
       end
-      render_text(x, y, score_text, "score", nil, colors.score.plus)
    end
 end
 
 local function draw_kaiten(x, y, dirs, flip)
    local kaiten_images = {
-      active = {image_tables.images.img_dir_small[6], image_tables.images.img_dir_small[2], image_tables.images.img_dir_small[4], image_tables.images.img_dir_small[8]},
+      active = {
+         image_tables.images.img_dir_small[6], image_tables.images.img_dir_small[2],
+         image_tables.images.img_dir_small[4], image_tables.images.img_dir_small[8]
+      },
       inactive = {
-         image_tables.images.img_dir_inactive[6], image_tables.images.img_dir_inactive[2], image_tables.images.img_dir_inactive[4], image_tables.images.img_dir_inactive[8]
+         image_tables.images.img_dir_inactive[6], image_tables.images.img_dir_inactive[2],
+         image_tables.images.img_dir_inactive[4], image_tables.images.img_dir_inactive[8]
       }
    }
    -- input       2 4 6 8 2 4 6 8
@@ -815,7 +827,7 @@ local function last_hit_bars_display(player)
       end
       if last_hit_history then
          for i = 1, #last_hit_history do
-            local id = player.id --force things to be drawn on one side for now
+            local id = player.id -- force things to be drawn on one side for now
             if last_hit_history[i].total_damage > 0 then
                local life_width = last_hit_history[i].total_damage
                local life_offset = 160 - last_hit_history[i].start_life
@@ -953,17 +965,17 @@ local function player_label_reset() player_label_state = {} end
 
 -- hud_cpu hud_p1 hud_p2 hud_dummy
 local function add_player_label(player, label)
-   if not player_label_state[player.id] then
-      player_label_state[player.id] = {}
-   end
+   if not player_label_state[player.id] then player_label_state[player.id] = {} end
    player_label_state[player.id].start_frame = gamestate.frame_number
    player_label_state[player.id].label = label
 end
 
 local function player_label_display()
-   for id, state in ipairs(player_label_state) do
+   local to_remove = {}
+   for id, state in pairs(player_label_state) do
       local elapsed = gamestate.frame_number - state.start_frame
-      if require("src.ui.menu").is_open then state.start_frame = state.start_frame + 1 end
+      local menu = require("src.ui.menu")
+      if menu.is_open and not menu.allow_update_while_open then state.start_frame = state.start_frame + 1 end
       if elapsed <= player_label_display_time + player_label_fade_time then
          local opacity = 1
          if elapsed > player_label_display_time then
@@ -976,8 +988,18 @@ local function player_label_display()
          local w, h = get_text_dimensions(state.label)
          h = h + 1
          render_text(x - tools.round(w / 2), y - h, state.label, nil, nil, nil, opacity)
+      else
+         to_remove[#to_remove + 1] = id
       end
    end
+   for _, key in ipairs(to_remove) do player_label_state[key] = nil end
+end
+
+local function indicate_player_controllers()
+   local training = require("src.training")
+   add_player_label(gamestate.P1, "hud_" .. training.P1_controller.name)
+   add_player_label(gamestate.P2, "hud_" .. training.P2_controller.name)
+   require("src.ui.menu").reset_background_cache()
 end
 
 local blocking_direction_history = {}
@@ -986,7 +1008,7 @@ local last_dir = 1
 
 local function blocking_direction_display_reset() blocking_direction_history = {} end
 
-local function update_blocking_direction(input, player, dummy)
+local function update_blocking_direction(input, dummy)
    if settings.training.blocking_mode > 1 then
       blocking_dir = 5
       if input[dummy.prefix .. " Up"] == false then
@@ -1006,8 +1028,8 @@ local function update_blocking_direction(input, player, dummy)
             end
          end
       end
-      if dummy.blocking.last_block.frame_number == gamestate.frame_number and dummy.blocking.last_block.sub_type ~=
-          "pass" and blocking_dir ~= last_dir then
+      if dummy.blocking.last_block and dummy.blocking.last_block.frame_number == gamestate.frame_number and
+          dummy.blocking.last_block.sub_type ~= "pass" and blocking_dir ~= last_dir then
          table.insert(blocking_direction_history, {start_frame = gamestate.frame_number, dir = blocking_dir})
       end
       last_dir = blocking_dir
@@ -1062,68 +1084,234 @@ local function hitboxes_display()
    end
 end
 
-local function bonuses_display(player_object)
-   local x = 0
-   local y = 4
-   local padding = 4
-   local spacing = 4
+local active_mode_display_data = {
+   active_mode = nil,
+   last_active_mode = nil,
+   ratio = 0,
+   strikeout = false,
+   is_fading = false,
+   fade_time = 14,
+   fade_start_frame = 0
+}
+
+local function update_active_mode_strikeout(start_time, stop_mode_hold_time)
+   active_mode_display_data.ratio = math.min(start_time / stop_mode_hold_time, 1)
+   active_mode_display_data.strikeout = true
+end
+
+local function reset_active_mode_strikeout()
+   active_mode_display_data = {
+      active_mode = nil,
+      last_active_mode = nil,
+      ratio = 0,
+      strikeout = false,
+      is_fading = false,
+      fade_time = 14,
+      fade_start_frame = 0
+   }
+end
+
+local function top_bar_display(player)
    local lang = settings.language
-   if player_object.id == 1 then
-      x = padding
-   elseif player_object.id == 2 then
-      x = draw.SCREEN_WIDTH - padding
-   end
-   if player_object.damage_bonus > 0 then
-      -- gui.text(x, y, t, 0xFF7184FF, 0x392031FF)
-      local bonus_text = {"+", player_object.damage_bonus, "bonus_damage"}
-      local w, h = 0, 0
-      if lang == "en" then
-         w, h = get_text_dimensions_multiple(bonus_text)
-      elseif lang == "jp" then
-         w, h = get_text_dimensions_multiple(bonus_text, "jp", "8")
+   local spacing = 4
+   local padding_x, padding_y = 4, 5
+   if lang == "jp" then padding_y = padding_y - 1 end
+   local x, y = padding_x, padding_y
+   local limit_left, limit_right = padding_x, draw.SCREEN_WIDTH - padding_x
+   local dummy = player.other
+
+   local function active_mode_display()
+      local active_mode = require("src.special_modes").active_mode
+      if active_mode then
+         if not active_mode_display_data.active_mode then reset_active_mode_strikeout() end
+         active_mode_display_data.last_active_mode = active_mode
+      elseif active_mode_display_data.active_mode then
+         active_mode_display_data.fade_start_frame = gamestate.frame_number
       end
-      if player_object.id == 2 then x = x - w - spacing end
-      if lang == "en" then
-         render_text_multiple(x, y, bonus_text, "en", nil, colors.bonuses.damage)
-      elseif lang == "jp" then
-         render_text_multiple(x, y, bonus_text, "jp", "8", colors.bonuses.damage)
+      active_mode_display_data.active_mode = active_mode
+
+      if lang == "jp" then y = padding_y - 2 end
+      local mode_text = ""
+      local opacity = 1
+      if active_mode then
+         mode_text = "hud_top_" .. active_mode.name
+      elseif active_mode_display_data.last_active_mode then
+         mode_text = "hud_top_" .. active_mode_display_data.last_active_mode.name
+         local elapsed = gamestate.frame_number - active_mode_display_data.fade_start_frame
+         if elapsed <= active_mode_display_data.fade_time then
+            opacity = 1 - (elapsed / active_mode_display_data.fade_time)
+            active_mode_display_data.is_fading = true
+         else
+            reset_active_mode_strikeout()
+         end
       end
-      if player_object.id == 1 then x = x + w + spacing end
+
+      if active_mode or active_mode_display_data.is_fading then
+         render_text(x, y, mode_text, nil, nil, nil, opacity)
+         local w, h = get_text_dimensions(mode_text)
+         limit_left = x + w + spacing
+
+         if active_mode_display_data.strikeout then
+            local line_color = 0xFFFFFF00 + math.floor(0xFF * opacity)
+            local outline_color = 0x00000000 + math.floor(0xFF * opacity)
+            local line_length = (w + 2) * active_mode_display_data.ratio
+            local line_y = y + h / 2 - 1
+            if lang == "en" then line_y = line_y - 1 end
+            gui.box(x - 1, line_y, x - 1+ line_length, line_y + 2, line_color, outline_color)
+         end
+      end
    end
 
-   if player_object.defense_bonus > 0 then
-      local bonus_text = {"+", player_object.defense_bonus, "bonus_defense"}
-      local w, h = 0, 0
-      if lang == "en" then
-         w, h = get_text_dimensions_multiple(bonus_text)
-      elseif lang == "jp" then
-         w, h = get_text_dimensions_multiple(bonus_text, "jp", "8")
+   local function recording_display()
+      if recording.current_recording_state == recording.RECORDING_STATE.STOPPED then return end
+      local current_recording_size = 0
+      if (recording.recording_slots[settings.training.current_recording_slot].inputs) then
+         current_recording_size = #recording.recording_slots[settings.training.current_recording_slot].inputs
       end
-      if player_object.id == 2 then x = x - w - spacing end
-      if lang == "en" then
-         render_text_multiple(x, y, bonus_text, "en", nil, colors.bonuses.defense)
-      elseif lang == "jp" then
-         render_text_multiple(x, y, bonus_text, "jp", "8", colors.bonuses.defense)
+      if recording.current_recording_state == recording.RECORDING_STATE.WAIT_FOR_RECORDING then
+         local text = {
+            "hud_slot", " ", settings.training.current_recording_slot, ": ", "hud_wait_for_recording", " ",
+            current_recording_size
+         }
+         local w, h = 0, 0
+         if lang == "en" then
+            w, h = get_text_dimensions_multiple(text)
+         elseif lang == "jp" then
+            w, h = get_text_dimensions_multiple(text, "jp", "8")
+         end
+         x = draw.SCREEN_WIDTH - w - padding_x
+         y = padding_y
+         if lang == "en" then
+            render_text_multiple(x, y, text)
+         elseif lang == "jp" then
+            render_text_multiple(x, y, text, "jp", "8")
+         end
+      elseif recording.current_recording_state == recording.RECORDING_STATE.RECORDING then
+         local text = {
+            "hud_slot", " ", settings.training.current_recording_slot, ": ", "hud_recording", "... (",
+            current_recording_size, ")"
+         }
+         local w, h = 0, 0
+         if lang == "en" then
+            w, h = get_text_dimensions_multiple(text)
+         elseif lang == "jp" then
+            w, h = get_text_dimensions_multiple(text, "jp", "8")
+         end
+         x = draw.SCREEN_WIDTH - w - padding_x
+         y = padding_y
+         if lang == "en" then
+            render_text_multiple(x, y, text)
+         elseif lang == "jp" then
+            render_text_multiple(x, y, text, "jp", "8")
+         end
+      elseif recording.current_recording_state == recording.RECORDING_STATE.POSITIONING then
+         local text = {"hud_positioning"}
+         local w, h = 0, 0
+         if lang == "en" then
+            w, h = get_text_dimensions_multiple(text)
+         elseif lang == "jp" then
+            w, h = get_text_dimensions_multiple(text, "jp", "8")
+         end
+         x = draw.SCREEN_WIDTH - w - padding_x
+         y = padding_y
+         if lang == "en" then
+            render_text_multiple(x, y, text)
+         elseif lang == "jp" then
+            render_text_multiple(x, y, text, "jp", "8")
+         end
+      elseif recording.current_recording_state == recording.RECORDING_STATE.REPLAYING and dummy.pending_input_sequence and
+          dummy.pending_input_sequence.sequence then
+         local text = {""}
+         if settings.training.replay_mode == 1 or settings.training.replay_mode == 4 then
+            text = {
+               "hud_playing", " (", dummy.pending_input_sequence.current_frame - 1, "/",
+               #dummy.pending_input_sequence.sequence, ")"
+            }
+         else
+            text = {"hud_playing"}
+         end
+         local w, h = 0, 0
+         if lang == "en" then
+            w, h = get_text_dimensions_multiple(text)
+         elseif lang == "jp" then
+            w, h = get_text_dimensions_multiple(text, "jp", "8")
+         end
+         x = draw.SCREEN_WIDTH - w - padding_x
+         y = padding_y
+         if lang == "en" then
+            render_text_multiple(x, y, text)
+         elseif lang == "jp" then
+            render_text_multiple(x, y, text, "jp", "8")
+         end
       end
-      if player_object.id == 1 then x = x + w + spacing end
+      limit_right = x - spacing
    end
 
-   if player_object.stun_bonus > 0 then
-      local bonus_text = {"+", player_object.stun_bonus, "bonus_stun"}
-      local w, h = 0, 0
-      if lang == "en" then
-         w, h = get_text_dimensions_multiple(bonus_text)
-      elseif lang == "jp" then
-         w, h = get_text_dimensions_multiple(bonus_text, "jp", "8")
+   local function bonuses_display()
+      y = padding_y
+      if settings.training.display_bonuses then
+         if player.id == 1 then
+            x = limit_left
+         elseif player.id == 2 then
+            x = limit_right
+         end
+         if player.damage_bonus > 0 then
+            local bonus_text = {"+", player.damage_bonus, "bonus_damage"}
+            local w, h = 0, 0
+            if lang == "en" then
+               w, h = get_text_dimensions_multiple(bonus_text)
+            elseif lang == "jp" then
+               w, h = get_text_dimensions_multiple(bonus_text, "jp", "8")
+            end
+            if player.id == 2 then x = x - w end
+            if lang == "en" then
+               render_text_multiple(x, y, bonus_text, "en", nil, colors.bonuses.damage)
+            elseif lang == "jp" then
+               render_text_multiple(x, y, bonus_text, "jp", "8", colors.bonuses.damage)
+            end
+            if player.id == 1 then x = x + w + spacing end
+         end
+
+         if player.defense_bonus > 0 then
+            local bonus_text = {"+", player.defense_bonus, "bonus_defense"}
+            local w, h = 0, 0
+            if lang == "en" then
+               w, h = get_text_dimensions_multiple(bonus_text)
+            elseif lang == "jp" then
+               w, h = get_text_dimensions_multiple(bonus_text, "jp", "8")
+            end
+            if player.id == 2 then x = x - w - spacing end
+            if lang == "en" then
+               render_text_multiple(x, y, bonus_text, "en", nil, colors.bonuses.defense)
+            elseif lang == "jp" then
+               render_text_multiple(x, y, bonus_text, "jp", "8", colors.bonuses.defense)
+            end
+            if player.id == 1 then x = x + w + spacing end
+         end
+
+         if player.stun_bonus > 0 then
+            local bonus_text = {"+", player.stun_bonus, "bonus_stun"}
+            local w, h = 0, 0
+            if lang == "en" then
+               w, h = get_text_dimensions_multiple(bonus_text)
+            elseif lang == "jp" then
+               w, h = get_text_dimensions_multiple(bonus_text, "jp", "8")
+            end
+            if player.id == 2 then x = x - w - spacing end
+            if lang == "en" then
+               render_text_multiple(x, y, bonus_text, "en", nil, colors.bonuses.stun)
+            elseif lang == "jp" then
+               render_text_multiple(x, y, bonus_text, "jp", "8", colors.bonuses.stun)
+            end
+            if player.id == 1 then x = x + w + spacing end
+         end
       end
-      if player_object.id == 2 then x = x - w - spacing end
-      if lang == "en" then
-         render_text_multiple(x, y, bonus_text, "en", nil, colors.bonuses.stun)
-      elseif lang == "jp" then
-         render_text_multiple(x, y, bonus_text, "jp", "8", colors.bonuses.stun)
-      end
-      if player_object.id == 1 then x = x + w + spacing end
    end
+
+   active_mode_display()
+   recording_display()
+   bonuses_display()
+
 end
 
 local printed_geometry = {}
@@ -1376,101 +1564,68 @@ local function display_draw_distances(p1_object, p2_object, mid_distance_height,
             text_default_color, text_default_border_color)
 end
 
-local function recording_display(dummy)
-   local current_recording_size = 0
-   if (recording.recording_slots[settings.training.current_recording_slot].inputs) then
-      current_recording_size = #recording.recording_slots[settings.training.current_recording_slot].inputs
-   end
-   local x = 0
-   local y = 4
-   local padding = 4
-   local lang = settings.language
-   if recording.current_recording_state == 2 then
-      local text = {
-         "hud_slot", " ", settings.training.current_recording_slot, ": ", "hud_wait_for_recording", " ",
-         current_recording_size
-      }
-      local w, h = 0, 0
-      if lang == "en" then
-         w, h = get_text_dimensions_multiple(text)
-      elseif lang == "jp" then
-         w, h = get_text_dimensions_multiple(text, "jp", "8")
-      end
-      x = draw.SCREEN_WIDTH - w - padding
-      y = padding
-      if lang == "en" then
-         render_text_multiple(x, y, text)
-      elseif lang == "jp" then
-         render_text_multiple(x, y, text, "jp", "8")
-      end
-   elseif recording.current_recording_state == 3 then
-      local text = {
-         "hud_slot", " ", settings.training.current_recording_slot, ": ", "hud_recording", "... (",
-         current_recording_size, ")"
-      }
-      local w, h = 0, 0
-      if lang == "en" then
-         w, h = get_text_dimensions_multiple(text)
-      elseif lang == "jp" then
-         w, h = get_text_dimensions_multiple(text, "jp", "8")
-      end
-      x = draw.SCREEN_WIDTH - w - padding
-      y = padding
-      if lang == "en" then
-         render_text_multiple(x, y, text)
-      elseif lang == "jp" then
-         render_text_multiple(x, y, text, "jp", "8")
-      end
-   elseif recording.current_recording_state == 4 and dummy.pending_input_sequence and
-       dummy.pending_input_sequence.sequence then
-      local text = {""}
-      if settings.training.replay_mode == 1 or settings.training.replay_mode == 4 then
-         text = {
-            "hud_playing", " (", dummy.pending_input_sequence.current_frame - 1, "/",
-            #dummy.pending_input_sequence.sequence, ")"
-         }
-      else
-         text = {"hud_playing"}
-      end
-      local w, h = 0, 0
-      if lang == "en" then
-         w, h = get_text_dimensions_multiple(text)
-      elseif lang == "jp" then
-         w, h = get_text_dimensions_multiple(text, "jp", "8")
-      end
-      x = draw.SCREEN_WIDTH - w - padding
-      y = padding
-      if lang == "en" then
-         render_text_multiple(x, y, text)
-      elseif lang == "jp" then
-         render_text_multiple(x, y, text, "jp", "8")
-      end
-   end
+local notification_text_data = {}
+local notification_text_display_time = 10
+local notification_text_fade_time = 14
+
+local function add_notification_text(str, x, y, align, display_time)
+   notification_text_data[str] = {
+      str = str,
+      x = x,
+      y = y,
+      align = align,
+      display_time = display_time or notification_text_display_time,
+      start_frame = gamestate.frame_number
+   }
 end
+local function clear_notification_text() notification_text_data = {} end
 
-local is_please_wait_display_on = false
-local function show_please_wait_display(bool) is_please_wait_display_on = bool end
+local function notification_text_display()
+   if not notification_text_data then return end
+   local menu = require("src.ui.menu")
+   local to_remove = {}
+   for key, notification_text in pairs(notification_text_data) do
+      if menu.is_open and not menu.allow_update_while_open then
+         notification_text.start_frame = notification_text.start_frame + 1
+      end
+      local elapsed = gamestate.frame_number - notification_text.start_frame
+      if elapsed <= notification_text.display_time + notification_text_fade_time then
+         local lang = settings.language
+         local size
+         local text_width, text_height = get_text_dimensions(notification_text.str, lang, size)
+         local x, y = notification_text.x, notification_text.y
+         local text_x, text_y = x, y
+         local fade_in = 10
+         local width = text_width + fade_in * 2 + 4
+         local height = text_height + 2
+         if notification_text.align == "center_horizontal" then
+            x = (draw.SCREEN_WIDTH - width) / 2
+            text_x = (draw.SCREEN_WIDTH - text_width) / 2
+         end
 
-local function please_wait_display()
-   local x, y = 0, 45
-   local tx, ty = get_text_dimensions("hud_please_wait")
-   if settings.training.language == 1 then ty = ty - 1 end
-   local fade_in = 14
-   local width, height = tx + fade_in * 2 + 6, ty + 4
-   x = math.floor((draw.SCREEN_WIDTH - width) / 2)
-   local base_color = bit.lshift(bit.rshift(colors.menu.background, 8), 8)
-   local opacity = bit.band(colors.menu.background, 0xFF)
+         text_y = y + (height - text_height) / 2
+         if lang == "en" then text_y = text_y + 1 end
 
-   for pad = 0, fade_in - 1 do
-      local color = base_color + math.floor(opacity * (pad + 1) / fade_in)
-      gui.box(x + pad, y, x + pad, y + height, 0x00000000, color)
-      gui.box(x + width - pad, y, x + width - pad, y + height, 0x00000000, color)
+         local opacity = 1
+         if elapsed > notification_text.display_time then
+            opacity = 1 - ((elapsed - notification_text.display_time) / notification_text_fade_time)
+         end
+         local base_color = bit.lshift(bit.rshift(colors.menu.background, 8), 8)
+         local bg_opacity = opacity * 0xFF * .6
+         local bg_color = base_color + math.floor(bg_opacity)
+
+         for pad = 0, fade_in - 1 do
+            local color = base_color + math.floor(bg_opacity * (pad + 1) / fade_in)
+            gui.line(x + pad, y, x + pad, y + height, color)
+            gui.line(x + width - pad, y, x + width - pad, y + height, color)
+         end
+         gui.box(x + fade_in, y, x + width - fade_in, y + height, bg_color, bg_color)
+         render_text(text_x, text_y, notification_text.str, nil, nil, nil, opacity)
+      else
+         to_remove[#to_remove + 1] = key
+      end
    end
-   gui.box(x + fade_in, y, x + width - fade_in, y + height, colors.menu.background, colors.menu.background)
-   local textx = tools.round(x + width / 2 - tx / 2)
-   local texty = tools.round(y + height / 2 - ty / 2)
-   if settings.training.language == 1 then texty = texty + 1 end
-   render_text(textx, texty, "hud_please_wait")
+   for _, key in ipairs(to_remove) do notification_text_data[key] = nil end
 end
 
 local show_player_position = false
@@ -1480,6 +1635,10 @@ local function player_position_display()
    x, y = draw.game_to_screen_space(gamestate.P2.pos_x, gamestate.P2.pos_y)
    gui.image(x - 4, y, image_tables.images.img_dir_small[8])
 end
+
+local function update_input_accuracy() end
+
+local function input_accuracy_display(player) if player.is_idle and player.other.is_idle then end end
 
 local draw_list = {}
 local function register_draw(func) draw_list[func] = func end
@@ -1497,13 +1656,26 @@ local function reset_hud()
    player_label_reset()
    clear_fading_text()
    clear_score_text()
-
-   is_please_wait_display_on = false
+   clear_notification_text()
+   reset_active_mode_strikeout()
 end
+
+local function update_hud(input, dummy) update_blocking_direction(input, dummy) end
 
 local function draw_hud(player, dummy)
    if settings.training.display_attack_range ~= 1 then attack_range_display() end
    if settings.training.display_hitboxes then hitboxes_display() end
+
+   if settings.training.display_gauges then
+      life_text_display(player)
+      life_text_display(dummy)
+
+      meter_text_display(player)
+      meter_text_display(dummy)
+
+      stun_text_display(player)
+      stun_text_display(dummy)
+   end
 
    last_hit_bars_display(player)
 
@@ -1520,21 +1692,8 @@ local function draw_hud(player, dummy)
    end
    if settings.training.display_air_time then air_time_display(player, dummy) end
    if show_player_position then player_position_display() end
-   if recording.current_recording_state ~= 1 then recording_display(dummy) end
-   if settings.training.display_gauges then
-      life_text_display(player)
-      life_text_display(dummy)
 
-      meter_text_display(player)
-      meter_text_display(dummy)
-
-      stun_text_display(player)
-      stun_text_display(dummy)
-   end
-   if settings.training.display_bonuses then
-      bonuses_display(player)
-      bonuses_display(dummy)
-   end
+   top_bar_display(player)
 
    frame_advantage_display(player, frame_advantage.advantage)
 
@@ -1544,7 +1703,7 @@ local function draw_hud(player, dummy)
                              settings.training.p2_distances_reference_point)
    end
 
-   if is_please_wait_display_on then please_wait_display() end
+   notification_text_display()
 
    info_text_display()
 
@@ -1560,16 +1719,21 @@ end
 return {
    draw_hud = draw_hud,
    reset_hud = reset_hud,
+   update_hud = update_hud,
    register_draw = register_draw,
    unregister_draw = unregister_draw,
    add_player_label = add_player_label,
    update_blocking_direction = update_blocking_direction,
-   show_please_wait_display = show_please_wait_display,
+   add_notification_text = add_notification_text,
+   clear_notification_text = clear_notification_text,
+   update_active_mode_strikeout = update_active_mode_strikeout,
+   reset_active_mode_strikeout = reset_active_mode_strikeout,
    display_frame_advantage_numbers = display_frame_advantage_numbers,
    add_info_text = add_info_text,
    clear_info_text = clear_info_text,
    add_fading_text = add_fading_text,
    clear_fading_text = clear_fading_text,
    add_score_text = add_score_text,
-   clear_score_text = clear_score_text
+   clear_score_text = clear_score_text,
+   indicate_player_controllers = indicate_player_controllers
 }

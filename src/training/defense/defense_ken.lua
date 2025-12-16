@@ -58,11 +58,12 @@ local shippu_hit_frame
 
 local kara_throw_input
 local b_mk_kara_dist
+local kara_throw_delay = 2
 
 local throw_input
 local throw_hit_frame
 local throw_range
-local throw_threshold = 1
+local throw_threshold = 2
 local b_mk_kara_throw_range
 
 local parry_frames = 10
@@ -193,7 +194,7 @@ function punish_d_mk_lp_shoryu:is_valid(player, stage, predicted_state)
    if player.has_just_hit then
       if player.animation_frame_data and player.animation_frame_data.name == "d_MK" then
          if player.other.is_crouching and player.other.char_str ~= "yang" then return dist <= 66 end
-         return dist <= framedata.get_contact_distance(player) + 18
+         return dist <= framedata.get_contact_distance(player) + 19
       end
    else
       if get_frame_advantage(player) > d_mk_hit_frame + 1 then
@@ -359,7 +360,7 @@ function punish_mp_hp_shoryu:is_valid(player, stage, predicted_state)
       if player.animation_frame_data and player.animation_frame_data.name == "tc_1_ext" then
          if player.other.is_crouching then return dist <= 50 end
          if player.other.is_crouching and player.other.char_str ~= "yang" then return dist <= 66 end
-         return dist <= framedata.get_contact_distance(player) + 18
+         return dist <= framedata.get_contact_distance(player) + 19
       end
    else
       if get_frame_advantage(player) > cl_mp_hit_frame + 1 then
@@ -526,7 +527,18 @@ function followup_punish:run(player, stage, actions, i_actions)
    if all_commands_complete(player) and not inputs.is_playing_input_sequence(player) then
       self.end_delay = self.end_delay - 1
       if player.other.has_just_been_blocked then return true, {score = 1} end
-      if self.end_delay <= 0 then
+      local should_end = false
+      if player.superfreeze_decount > 0 then
+         if player.remaining_freeze_frames <= 14 then
+            if memory.readdword(player.addresses.action_address) == 0x06301834 then
+               memory.writeword(player.addresses.action_line, 0x010e)
+            end
+            should_end = true
+         end
+      elseif self.end_delay <= 0 then
+         should_end = true
+      end
+      if should_end then
          if self.is_valid_punish then return true, {score = -3} end
          if self.has_hit then return true, {score = -1} end
          return true, {score = 0}
@@ -640,7 +652,7 @@ function followup_far_mp:should_execute(player, stage, actions, i_actions)
       dist = math.abs(predicted_state.dummy_motion_data[#predicted_state.dummy_motion_data].pos_x -
                           predicted_state.player_motion_data[#predicted_state.player_motion_data].pos_x)
    end
-   return dist >= framedata.get_contact_distance(player) + 25 and dist <= framedata.get_contact_distance(player) + 40
+   return dist >= framedata.get_contact_distance(player) + 26 and dist <= framedata.get_contact_distance(player) + 41
 end
 
 local followup_b_mk = Followup:new("followup_b_mk", Action_Type.ATTACK)
@@ -838,10 +850,10 @@ function followup_mp_hp:setup(player, stage, actions, i_actions)
    self.connection_count = 0
    self.min_walk_frames = 4
    self.max_walk_frames = 14
-   self.attack_range = framedata.get_contact_distance(player) + 20
+   self.attack_range = framedata.get_contact_distance(player) + 21
    self.attack_range_reduction = 5
    if player.other.char_str == "yang" or player.other.char_str == "yun" then
-      self.attack_range = self.attack_range - 4
+      self.attack_range = self.attack_range - 6
       self.attack_range_reduction = 0
    end
    if not utils.is_in_opponent_throw_range(player) then self.min_walk_frames = 6 end
@@ -920,7 +932,7 @@ function followup_mp_hp:should_execute(player, stage, actions, i_actions)
    local previous_action = actions[i_actions - 1]
    if previous_action and (previous_action.type == Action_Type.WALK_FORWARD) then return true end
    local dist = math.abs(player.other.pos_x - player.pos_x)
-   return dist <= framedata.get_contact_distance(player) + 20
+   return dist <= framedata.get_contact_distance(player) + 21
 end
 
 local followup_d_lk_d_lk = Followup:new("followup_d_lk_d_lk", Action_Type.ATTACK)
@@ -930,7 +942,7 @@ function followup_d_lk_d_lk:setup(player, stage, actions, i_actions)
    self.min_walk_frames = 4
    self.max_walk_frames = 14
    self.attack_range_reduction = 0
-   self.attack_range = framedata.get_contact_distance(player) + 32
+   self.attack_range = framedata.get_contact_distance(player) + 33
    if not utils.is_in_opponent_throw_range(player) then self.min_walk_frames = 6 end
    self.previous_action = actions[i_actions - 1]
    return {
@@ -994,7 +1006,7 @@ function followup_d_lk_d_lk:should_execute(player, stage, actions, i_actions)
    local previous_action = actions[i_actions - 1]
    if previous_action and (previous_action.type == Action_Type.WALK_FORWARD) then return true end
    local dist = math.abs(player.other.pos_x - player.pos_x)
-   return dist <= framedata.get_contact_distance(player) + 32
+   return dist <= framedata.get_contact_distance(player) + 33
 end
 
 local followup_d_mp = Followup:new("followup_d_mp", Action_Type.ATTACK)
@@ -1183,10 +1195,15 @@ function followup_kara_throw:setup(player, stage, actions, i_actions)
    self.max_walk_frames = throw_walk_frames
    self.opponent_has_been_thrown = false
    self.end_delay = 12
+   self.throw_delay = 0
+   self.throw_threshold = throw_threshold
    local previous_action = actions[i_actions - 1]
    if previous_action then
       if previous_action.type == Action_Type.BLOCK then previous_action.block_time = throw_min_block_frames end
-
+      if previous_action.type == Action_Type.ATTACK then
+         self.throw_delay = kara_throw_delay
+         self.throw_threshold = throw_threshold + 2
+      end
       if previous_action.type ~= Action_Type.WALK_FORWARD then
          local dist = math.abs(player.other.pos_x - player.pos_x)
          if player.other.remaining_freeze_frames > 0 or player.other.freeze_just_ended or player.other.is_in_pushback then
@@ -1197,7 +1214,7 @@ function followup_kara_throw:setup(player, stage, actions, i_actions)
                                 predicted_state.player_motion_data[#predicted_state.player_motion_data].pos_x)
             self.predicted_dist = dist
          end
-         self.should_walk_in = b_mk_kara_throw_range - throw_threshold < dist -
+         self.should_walk_in = b_mk_kara_throw_range - self.throw_threshold < dist -
                                    character_specific[player.other.char_str].pushbox_width / 2
       end
    end
@@ -1207,9 +1224,8 @@ function followup_kara_throw:setup(player, stage, actions, i_actions)
       {
          condition = function()
             if is_idle_timing(player, 1, true) and player.other.standing_state > 0 and
-                is_throw_vulnerable_timing(player.other, #kara_throw_input + throw_hit_frame + 1, true) then
-               return true
-            end
+                is_throw_vulnerable_timing(player.other, #kara_throw_input + throw_hit_frame + 1 - self.throw_delay,
+                                           true) then return true end
             return false
          end,
          action = function() queue_input_sequence_and_wait(player, kara_throw_input) end
@@ -1237,8 +1253,9 @@ function followup_kara_throw:block_condition(block_followup)
 end
 
 function followup_kara_throw:walk_in_condition(player, walk_followup)
+   if walk_followup.walked_frames < kara_throw_delay then return false end
    local dist = math.abs(player.other.pos_x - player.pos_x)
-   if b_mk_kara_throw_range - throw_threshold >= dist - character_specific[player.other.char_str].pushbox_width / 2 or
+   if b_mk_kara_throw_range - self.throw_threshold >= dist - character_specific[player.other.char_str].pushbox_width / 2 or
        walk_followup.walked_frames >= self.max_walk_frames then return true end
    return false
 end
@@ -1402,6 +1419,11 @@ function followup_down_forward:run(player, stage, actions, i_actions)
    return handle_interruptions(player, stage, actions, i_actions)
 end
 
+function followup_down_forward:is_valid(player, stage, actions)
+   for _, action in ipairs(actions) do if action.type == Action_Type.WALK_FORWARD then return false end end
+   return true
+end
+
 local followup_react = Followup:new("followup_react", Action_Type.REACT)
 
 function followup_react:setup(player, stage, actions, i_actions)
@@ -1518,7 +1540,7 @@ local wakeup_walk_out_timing = 10
 
 function followup_walk_out:setup(player, stage, actions, i_actions)
    self.min_walk_in_frames = 6
-   self.min_walk_frames = 12  --debug
+   self.min_walk_frames = 12 -- debug
    self.walked_frames = 0
    local setup = {
       {
@@ -1910,23 +1932,7 @@ end
 function setup_wakeup:get_dummy_offset(player) return framedata.get_contact_distance(player) end
 
 function setup_wakeup:setup(player, stage, actions, i_actions)
-   local setup = {
-      {
-         condition = function()
-            return is_throw_vulnerable_timing(player, #throw_input + throw_hit_frame + 1, true)
-         end,
-         action = function() queue_input_sequence_and_wait(player, throw_input) end
-      }, {
-         condition = function()
-            return player.other.previous_can_fast_wakeup == 0 and player.other.can_fast_wakeup == 1
-         end,
-         action = function()
-            local input = joypad.get()
-            input[player.other.prefix .. " Down"] = true
-            joypad.set(input)
-         end
-      }
-   }
+   local setup = {{condition = nil, action = nil}}
    if player.other.is_waking_up or player.other.posture == 24 then return {condition = nil, action = nil} end
    return setup
 end
@@ -1954,7 +1960,7 @@ crossup_mk_followups = {
    {action = followup_back_dash, default_weight = 0.3}, {action = followup_mp_hp, default_weight = 1},
    {action = followup_close_mp, default_weight = 1}, {action = followup_d_lk_d_lk, default_weight = 1},
    {action = followup_close_d_lk, default_weight = 1}, {action = followup_b_mk, default_weight = 0.3},
-   {action = followup_kara_throw, default_weight = 1}, {action = followup_block, default_weight = 1}
+   {action = followup_throw, default_weight = 1}, {action = followup_block, default_weight = 1}
 }
 wakeup_followups = {
    {action = followup_walk_out, default_weight = 1}, {action = followup_close_mp, default_weight = 1},
@@ -2017,7 +2023,6 @@ for i, followup in ipairs(followups) do
       followup_followup_names[i][#followup_followup_names[i] + 1] = followup_followup.action.name
    end
 end
-
 
 return {
    setup_names = setup_names,

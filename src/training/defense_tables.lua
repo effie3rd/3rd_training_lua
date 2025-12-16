@@ -63,7 +63,6 @@ end
 
 local function get_defense_data(char_str)
    defense_data[char_str].init()
-   reset_weights(char_str)
    return defense_data[char_str]
 end
 

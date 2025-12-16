@@ -663,7 +663,7 @@ end
 
 local function get_contact_distance(player)
    return
-       (character_specific[player.char_str].pushbox_width + character_specific[player.other.char_str].pushbox_width) / 2
+       (character_specific[player.char_str].pushbox_width + character_specific[player.other.char_str].pushbox_width) / 2 - 1
 end
 
 return {

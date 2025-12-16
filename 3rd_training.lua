@@ -11,6 +11,7 @@ print("- Enter/exit recording mode by double tapping \"Coin\"")
 print("- In recording mode, press \"Coin\" again to start/stop recording")
 print("- In normal mode, press \"Coin\" to start/stop replay")
 print("- Lua Hotkey 1 (alt+1) to return to character select screen")
+print()
 
 -- Thanks to *Grouflon* for making an amazing training mode
 
@@ -52,6 +53,7 @@ local menu = require("src.ui.menu")
 local attack_data = require("src.modules.attack_data")
 local frame_advantage = require("src.modules.frame_advantage")
 local character_select = require("src.control.character_select")
+local managers = require("src.control.managers")
 local debug = require("src.debug")
 
 local disable_display = false
@@ -65,7 +67,7 @@ local loading_bar_total = loading.get_total_files()
 Load_State_Caller = ""
 
 local function hotkey1()
-   recording.set_recording_state({}, 1)
+   recording.set_recording_state({}, recording.RECORDING_STATE.STOPPED)
    character_select.start_character_select_sequence()
 end
 local function hotkey2() character_select.select_gill() end
@@ -124,6 +126,10 @@ local function on_start()
 
    math.randomseed(os.time())
 
+   training.init()
+   recording.init()
+   managers.init()
+
    character_select.start_character_select_sequence()
 end
 
@@ -134,10 +140,12 @@ local function on_load_state()
    attack_data.reset()
    frame_advantage.reset()
 
-   recording.restore_recordings()
-
+   training.update_players()
    training.update_training_state()
    training.reset_gauge_state()
+
+   recording.restore_recordings()
+   recording.reset_recording_state()
 
    if menu.is_initialized then
       menu.update_menu_items()
@@ -148,9 +156,7 @@ local function on_load_state()
 
    input_history.clear_input_history()
 
-   recording.reset_recording_state()
-
-   for _, mode in ipairs(special_modes.modes) do if not (Load_State_Caller == mode.module_name) then mode.stop() end end
+   for _, mode in ipairs(special_modes.modes) do if not (Load_State_Caller == mode.name) then mode.stop() end end
 
    if Load_State_Caller == "" or Load_State_Caller == "3rd_training" then -- player loaded savestate
       inputs.unblock_input(1)
@@ -180,26 +186,23 @@ local function on_load_state()
 end
 
 local function before_frame()
-   local previous_p2_char_str = gamestate.P2.char_str or ""
-   local previous_dummy_char_str = training.dummy.char_str or ""
    gamestate.gamestate_read()
 
    run_commands()
 
    if debug_settings.developer_mode then debug.run_debug() end
 
-   if menu.is_initialized then
-      -- load recordings according to gamestate.P2 character
-      if previous_p2_char_str ~= gamestate.P2.char_str then recording.restore_recordings(training.dummy.char_str) end
-      -- update character specific settings on training.dummy change
-      if previous_dummy_char_str ~= training.dummy.char_str then menu.update_menu_items() end
-   end
-
    training.update_training_state()
 
    inputs.input = joypad.get()
-   if gamestate.is_in_match and not menu.is_open and training.swap_characters then inputs.swap_inputs() end
-   inputs.update_input()
+   if gamestate.is_in_match and not menu.is_open then
+      if training.P2_controller == training.PLAYER_CONTROLLER then
+         inputs.swap_inputs()
+      elseif training.P1_controller ~= training.PLAYER_CONTROLLER then
+         inputs.block_input(1, "all")
+      end
+   end
+   inputs.update_input(inputs.input, gamestate.player_objects)
    joypad.set(inputs.input)
 
    if gamestate.is_in_character_select or gamestate.is_in_vs_screen then
@@ -209,53 +212,42 @@ local function before_frame()
 
    local gesture = inputs.interpret_gesture(gamestate.P1)
 
-   if gamestate.is_in_character_select then
-      if gamestate.P1.input.pressed.start then
-         character_select.start_select_random_character()
-      elseif gamestate.P1.input.released.start then
-         character_select.stop_select_random_character()
-      end
-      if gamestate.P1.input.down.start then character_select.select_random_character() end
-   end
+   managers.update_before()
 
    if loading.frame_data_loaded and gamestate.is_in_match and not debug_settings.recording_framedata then
-      attack_data.update(training.player, training.dummy)
+      attack_data.update(training.player)
 
       frame_advantage.update()
 
-      prediction.update_before(inputs.previous_input, training.player, training.dummy)
+      prediction.update_before(inputs.previous_input, training.dummy)
 
       if not training.disable_dummy[training.dummy.id] and (not menu.is_open or menu.allow_update_while_open) then
-         dummy_control.update_blocking(inputs.input, training.player, training.dummy, settings.training.blocking_mode,
+         dummy_control.update_blocking(inputs.input, training.dummy, settings.training.blocking_mode,
                                        settings.training.blocking_style, settings.training.red_parry_hit_count,
                                        settings.training.parry_every_n_count)
 
-         dummy_control.update_pose(inputs.input, training.player, training.dummy, settings.training.pose)
+         dummy_control.update_pose(inputs.input, training.dummy, settings.training.pose)
 
-         dummy_control.update_mash_inputs(inputs.input, training.player, training.dummy,
-                                          settings.training.mash_inputs_mode)
+         dummy_control.update_mash_inputs(inputs.input, training.dummy, settings.training.mash_inputs_mode)
 
-         dummy_control.update_fast_wake_up(inputs.input, training.player, training.dummy,
-                                           settings.training.fast_wakeup_mode)
+         dummy_control.update_fast_wake_up(inputs.input, training.dummy, settings.training.fast_wakeup_mode)
 
-         dummy_control.update_tech_throws(inputs.input, training.player, training.dummy,
-                                          settings.training.tech_throws_mode)
+         dummy_control.update_tech_throws(inputs.input, training.dummy, settings.training.tech_throws_mode)
 
-         dummy_control.update_counter_attack(inputs.input, training.player, training.dummy,
-                                             training.counter_attack_data,
+         dummy_control.update_counter_attack(inputs.input, training.dummy, training.counter_attack_data,
                                              settings.training.hits_before_counter_attack_count)
-
-         hud.update_blocking_direction(inputs.input, training.player, training.dummy)
       end
 
-      local is_special_mode_active = special_modes.update_all(gesture)
+      hud.update_hud(inputs.input, training.dummy)
 
-      if not is_special_mode_active then recording.process_gesture(gesture) end
+      special_modes.update_all(gesture)
 
-      advanced_control.update(inputs.input, training.player, training.dummy)
+      if not special_modes.active_mode then recording.process_gesture(gesture) end
+
+      advanced_control.update()
 
       if not menu.is_open or menu.allow_update_while_open then
-         recording.update_recording(inputs.input, training.player, training.dummy)
+         recording.update_recording(inputs.input, training.player)
       end
    end
 
@@ -271,22 +263,25 @@ local function before_frame()
       input_history.clear_input_history()
    end
 
+   if debug_settings.recording_framedata then
+      require("src.modules.record_framedata").update_framedata_recording(gamestate.P1, gamestate.projectiles)
+   end
+
+   inputs.update_input_info(inputs.input, gamestate.player_objects)
    inputs.previous_input = inputs.input
 
    joypad.set(inputs.input)
 
    if loading.frame_data_loaded and gamestate.is_in_match and not debug_settings.recording_framedata then
-      prediction.update_after(inputs.input, training.player, training.dummy)
+      prediction.update_after(inputs.input, training.dummy)
    end
+
+   managers.update_after()
 
    if menu.is_initialized and gamestate.has_match_just_started then
       if menu.open_after_match_start then menu.open_menu() end
       menu.update_menu_items()
       hud.reset_hud()
-   end
-
-   if debug_settings.recording_framedata then
-      require("src.modules.record_framedata").update_framedata_recording(gamestate.P1, gamestate.projectiles)
    end
 
    debug.log_update(gamestate.P1)

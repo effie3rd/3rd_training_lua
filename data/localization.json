@@ -19,9 +19,9 @@
     "en": "Training",
     "jp": "トレイニング"
   },
-  "menu_title_challenge": {
-    "en": "Challenge",
-    "jp": "挑戦"
+  "menu_title_modules": {
+    "en": "Modules",
+    "jp": "モジュール"
   },
   "menu_title_debug": {
     "en": "Debug",
@@ -81,7 +81,7 @@
   },
   "menu_slot_weight": {
     "en": "Slot weight",
-    "jp": "ソロット重さ"
+    "jp": "スロット比重"
   },
   "menu_replay_delay": {
     "en": "Replay delay",
@@ -139,9 +139,9 @@
     "en": "Character Select",
     "jp": "キャラクターセレクト"
   },
-  "menu_swap_dummy": {
-    "en": "Swap Dummy",
-    "jp": "ダミー交換"
+  "menu_swap_controls": {
+    "en": "Swap Controls",
+    "jp": "コントロール交換"
   },
   "menu_force_stage": {
     "en": "Force Stage",
@@ -240,11 +240,11 @@
     "jp": "P2基点"
   },
   "menu_distance_origin": {
-    "en": "Origin",
+    "en": "origin",
     "jp": "原点"
   },
   "menu_distance_hurtbox": {
-    "en": "Hurtbox",
+    "en": "hurtbox",
     "jp": "食らい判定"
   },
   "menu_display_charge": {
@@ -310,6 +310,10 @@
   "menu_start": {
     "en": "Start",
     "jp": "スタート"
+  },
+  "menu_stop": {
+    "en": "Stop",
+    "jp": "ストップ"
   },
   "menu_reset": {
     "en": "Reset",
@@ -659,9 +663,9 @@
     "en": "LP: Select",
     "jp_8": "小P: 選択"
   },
-  "legend_lp_select_coin_start": {
-    "en": "LP: Select   Coin: Start",
-    "jp_8": "小P: 選択  コイン: スタート"
+  "legend_lp_select_coin_restart": {
+    "en": "LP: Select   Coin: Restart",
+    "jp_8": "小P: 選択  コイン: 再スタート"
   },
   "legend_lp_mp_select_reset": {
     "en": "LP: Select   MP: Reset",
@@ -1067,6 +1071,10 @@
     "en": "Recording",
     "jp_8": "記録中"
   },
+  "hud_positioning": {
+    "en": "Positioning",
+    "jp_8": "位置取り中"
+  },
   "hud_playing": {
     "en": "Playing",
     "jp_8": "再生中"
@@ -1076,6 +1084,10 @@
     "jp_8": "CPU"
   },
   "hud_dummy": {
+    "en": "Dummy",
+    "jp_8": "ダミー"
+  },
+  "hud_dummy_control": {
     "en": "Dummy",
     "jp_8": "ダミー"
   },
@@ -1110,6 +1122,46 @@
   "hud_duration": {
     "en": "duration",
     "jp_8": "期間"
+  },
+  "hud_defense": {
+    "en": "Defense",
+    "jp_8": "防御"
+  },
+  "hud_footsies": {
+    "en": "Footsies",
+    "jp_8": "差し合い"
+  },
+  "hud_jumpins": {
+    "en": "Jumpins",
+    "jp_8": "飛び込み"
+  },
+  "hud_geneijin": {
+    "en": "Geneijin Defense",
+    "jp_8": "幻影陣防御"
+  },
+  "hud_unblockables": {
+    "en": "Unblockables",
+    "jp_8": "ガード不能"
+  },
+  "hud_top_unblockables": {
+    "en": "Unblockables",
+    "jp": "ガード不能"
+  },
+  "hud_top_defense": {
+    "en": "Defense",
+    "jp": "防御"
+  },
+  "hud_top_footsies": {
+    "en": "Footsies",
+    "jp": "差し合い"
+  },
+  "hud_top_jumpins": {
+    "en": "Jumpins",
+    "jp": "飛び込み"
+  },
+  "hud_top_geneijin": {
+    "en": "Geneijin Defense",
+    "jp": "幻影陣防御"
   },
   "menu_language": {
     "en": "Language",
@@ -1224,60 +1276,68 @@
     "jp": "バクステ・屈小K"
   },
   "menu_urien_midscreen_standard": {
-    "en": "urien · midscreen · standard",
-    "jp": "ユリアン・画面中央・基本"
+    "en": "midscreen · standard",
+    "jp": "画面中央・基本"
   },
   "menu_urien_midscreen_ex_head_sphere": {
-    "en": "urien · midscreen · EX headbutt",
-    "jp": "ユリアン・画面中央・EXヘッドバット"
+    "en": "midscreen · EX headbutt",
+    "jp": "画面中央・EXヘッドバット"
   },
   "menu_urien_midscreen_ex_head_standard": {
-    "en": "urien · midscreen · EX headbutt",
-    "jp": "ユリアン・画面中央・EXヘッドバット"
+    "en": "midscreen · EX headbutt",
+    "jp": "画面中央・EXヘッドバット"
   },
   "menu_urien_midscreen_anago": {
-    "en": "urien · midscreen · anago",
-    "jp": "ユリアン・画面中央・あなご"
+    "en": "midscreen · anago",
+    "jp": "画面中央・あなご"
   },
   "menu_urien_corner_standard": {
-    "en": "urien · corner · standard",
-    "jp": "ユリアン・画面端・基本"
+    "en": "corner · standard",
+    "jp": "画面端・基本"
   },
   "menu_urien_corner_standard_short": {
-    "en": "urien · corner · standard",
-    "jp": "ユリアン・画面端・基本"
+    "en": "corner · standard",
+    "jp": "画面端・基本"
   },
   "menu_urien_corner_standard_q_remy": {
-    "en": "urien · corner · standard",
-    "jp": "ユリアン・画面端・基本"
+    "en": "corner · standard",
+    "jp": "画面端・基本"
   },
   "menu_urien_corner_standard_alex": {
-    "en": "urien · corner · standard",
-    "jp": "ユリアン・画面端・基本"
+    "en": "corner · standard",
+    "jp": "画面端・基本"
   },
   "menu_oro_midscreen_hp_yagyou": {
     "en": "oro · midscreen · HP yagyou",
     "jp": "オロ・画面中央・大夜行魂"
   },
   "menu_oro_midscreen_mp_yagyou": {
-    "en": "oro · midscreen · MP yagyou",
-    "jp": "オロ・画面中央・中夜行魂"
+    "en": "midscreen · MP yagyou",
+    "jp": "画面中央・中夜行魂"
   },
   "menu_oro_midscreen_lp_yagyou": {
-    "en": "oro · midscreen · LP yagyou",
-    "jp": "オロ・画面中央・小夜行魂"
+    "en": "midscreen · LP yagyou",
+    "jp": "画面中央・小夜行魂"
   },
   "menu_oro_midscreen_mp_mp": {
-    "en": "oro · midscreen · LP yagyou",
-    "jp": "オロ・画面中央・小夜行魂"
+    "en": "midscreen · LP yagyou",
+    "jp": "画面中央・小夜行魂"
   },
   "menu_oro_midscreen_mp_yagyou_walk": {
-    "en": "oro · midscreen · MP yagyou",
-    "jp": "オロ・画面中央・中夜行魂"
+    "en": "midscreen · MP yagyou",
+    "jp": "画面中央・中夜行魂"
   },
   "hud_please_wait": {
     "en": "Please Wait",
     "jp": "お待ち下さい"
+  },
+  "hud_hold_start_stop": {
+    "en": "Hold Start: Stop",
+    "jp_8": "スタート長押し：ストップ"
+  },
+  "hud_coin_restart_hold_start_stop": {
+    "en": "Coin: Restart  Hold Start: Stop",
+    "jp_8": "コイン：再スタート  スタート長押し：ストップ"
   },
   "menu_jump": {
     "en": "Jump",
@@ -1347,6 +1407,14 @@
     "en": "Settings",
     "jp": "設定"
   },
+  "menu_player_positioning": {
+    "en": "Player Positioning",
+    "jp": "プレイヤー位置取り"
+  },
+  "menu_dummy_positioning": {
+    "en": "Dummy Positioning",
+    "jp": "ダミー位置取り"
+  },
   "menu_automatic_replay": {
     "en": "Automatic Replay",
     "jp": "自動再生"
@@ -1367,8 +1435,8 @@
     "en": "Attack Delay Mode",
     "jp": "攻撃遅延モード"
   },
-  "menu_point": {
-    "en": "point",
+  "menu_fixed_point": {
+    "en": "fixed point",
     "jp": "定点"
   },
   "menu_dynamic": {
@@ -1394,6 +1462,14 @@
   "menu_show_jump_arc": {
     "en": "Show Jump Arc",
     "jp": "ジャンプ軌道表示"
+  },
+  "menu_next_attack_delay": {
+    "en": "Next Attack Delay",
+    "jp": "次攻撃遅延"
+  },
+  "menu_sa_after_parry": {
+    "en": "SA After Parry",
+    "jp": "ブロ後にSA"
   },
   "menu_none": {
     "en": "none",
@@ -1679,21 +1755,21 @@
     "en": "HK raigeki",
     "jp": "大K 雷撃"
   },
-  "menu_slash_elbow_LP": {
-    "en": "LP slash elbow",
-    "jp": "小P スラッシュエルボー"
+  "menu_flash_chop_LP": {
+    "en": "LP flash chop",
+    "jp": "小P フラッシュチョップ"
   },
-  "menu_slash_elbow_MP": {
-    "en": "MP slash elbow",
-    "jp": "中P スラッシュエルボー"
+  "menu_flash_chop_MP": {
+    "en": "MP flash chop",
+    "jp": "中P フラッシュチョップ"
   },
-  "menu_slash_elbow_HP": {
-    "en": "HP slash elbow",
-    "jp": "大P スラッシュエルボー"
+  "menu_flash_chop_HP": {
+    "en": "HP flash chop",
+    "jp": "大P フラッシュチョップ"
   },
-  "menu_slash_elbow_EXP": {
-    "en": "EX slash elbow",
-    "jp": "EX スラッシュエルボー"
+  "menu_flash_chop_EXP": {
+    "en": "EX flash chop",
+    "jp": "EX フラッシュチョップ"
   },
   "menu_hazanshuu_LK": {
     "en": "LK hazanshuu",

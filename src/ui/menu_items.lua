@@ -457,8 +457,8 @@ function Check_Box_Grid_Item:draw(depth, x, y, selected)
          if self.list[index] then
             local row_offset = self.row_height * (row - 1)
             local item_color = base_color
-            local checkbox_image = image_tables.images.img_kaku -- unchecked
-            if self.object[index] then checkbox_image = image_tables.images.img_maru end -- checked
+            local checkbox_image = image_tables.images.img_square_hollow -- unchecked
+            if self.object[index] then checkbox_image = image_tables.images.img_square_filled end -- checked
             if index == sel_index and selected then
                item_color = colors.text.selected
                if (gamestate.frame_number - self.last_frame_validated < 5) then
@@ -603,15 +603,17 @@ local Slider_Menu_Item = {}
 Slider_Menu_Item.__index = Slider_Menu_Item
 Slider_Menu_Item.__name = "Slider_Menu_Item"
 
-function Slider_Menu_Item:new(name, line_width, points, range)
+function Slider_Menu_Item:new(name, line_width, points, range, increment, unit)
    local obj = {
       name = name,
       indent = false,
       line_width = line_width or 100,
-      mode = 1,
+      mode = {value = 1},
       points = points,
       range = range,
-      point_index = 1,
+      increment = increment or 1,
+      unit = unit or nil,
+      point_index = {value = 1},
       width = 0,
       height = 0,
       max_points = 2,
@@ -658,11 +660,11 @@ function Slider_Menu_Item:draw(depth, x, y, selected)
    draw.add_box_to_canvas(depth, box_left, box_top, box_right, box_bottom, color, colors.menu.gauge_border)
 
    local arrow_color, arrow_position
-   if self.mode == 2 then
+   if self.mode.value == 2 then
       local num_points = 2
       for i = 1, num_points do
          arrow_color = color == colors.text.disabled and colors.text.disabled or colors.text.inactive
-         if i ~= self.point_index then
+         if i ~= self.point_index.value then
             arrow_position = math.floor((self.points[i] - self.range[1]) / (self.range[2] - self.range[1]) *
                                             self.line_width)
             draw.add_image_to_canvas(depth, box_left + arrow_offset + arrow_position + 1, box_bottom + 1,
@@ -672,29 +674,31 @@ function Slider_Menu_Item:draw(depth, x, y, selected)
       end
    end
    arrow_color = color
-   arrow_position = math.floor((self.points[self.point_index] - self.range[1]) / (self.range[2] - self.range[1]) *
+   arrow_position = math.floor((self.points[self.point_index.value] - self.range[1]) / (self.range[2] - self.range[1]) *
                                    self.line_width)
    draw.add_image_to_canvas(depth, box_left + arrow_offset + arrow_position + 1, box_bottom + 1,
                             image_tables.scroll_arrow_width, image_tables.scroll_arrow_height,
                             draw.get_image(image_tables.images.img_scroll_up, arrow_color))
 
    local num_text
-   if self.mode == 1 then
-      num_text = {"  ", self.points[1]}
+   if self.mode.value == 1 then
+      num_text = {"  ", self.points[self.point_index.value]}
    else
       num_text = {"  ", self.points[1], "—", self.points[2]}
    end
+   if self.unit then num_text[#num_text + 1] = self.unit end
    draw.render_text_multiple_to_canvas(depth, box_right, y, num_text, nil, nil, color)
 end
 
 function Slider_Menu_Item:calc_dimensions()
    local w, h = draw.get_text_dimensions_multiple({self.name, ":  "})
    local num_text
-   if self.mode == 1 then
-      num_text = {"  ", self.points[1]}
+   if self.mode.value == 1 then
+      num_text = {"  ", self.points[self.point_index.value]}
    else
       num_text = {"  ", self.points[1], "—", self.points[2]}
    end
+   if self.unit then num_text[#num_text + 1] = self.unit end
    local nw, nh = draw.get_text_dimensions_multiple(num_text)
    self.width, self.height = w + nw + self.line_width, h
 end
@@ -704,23 +708,20 @@ function Slider_Menu_Item:left()
       self.left_function()
    else
       local value
-      if self.mode == 1 then
-         value = self.points[1]
-         value = tools.clamp(value - 1, self.range[1], self.range[2])
-         self.points[1] = value
-      else
-         value = self.points[self.point_index] - 1
-         while value >= self.range[1] do
-            if not tools.table_contains(self.points, value) then break end
-            value = value - 1
-         end
+      value = self.points[self.point_index.value] - self.increment
+      while value >= self.range[1] do
          value = tools.clamp(value, self.range[1], self.range[2])
-         self.points[self.point_index] = value
+         if not tools.table_contains(self.points, value) then
+            self.points[self.point_index.value] = value
+            break
+         else
+            value = value - self.increment
+         end
       end
    end
-   local val = self.points[self.point_index]
+   local val = self.points[self.point_index.value]
    table.sort(self.points)
-   self.point_index = tools.table_indexof(self.points, val) or 1
+   self.point_index.value = tools.table_indexof(self.points, val) or 1
    if self.on_change then self.on_change() end
 end
 
@@ -729,43 +730,39 @@ function Slider_Menu_Item:right()
       self.right_function()
    else
       local value
-      if self.mode == 1 then
-         value = self.points[1]
-         value = tools.clamp(value + 1, self.range[1], self.range[2])
-         self.points[1] = value
-      else
-         value = self.points[self.point_index] + 1
-         while value <= self.range[2] do
-            if not tools.table_contains(self.points, value) then break end
-            value = value + 1
-         end
+      value = self.points[self.point_index.value] + self.increment
+      while value <= self.range[2] do
          value = tools.clamp(value, self.range[1], self.range[2])
-         self.points[self.point_index] = value
+         if not tools.table_contains(self.points, value) then
+            self.points[self.point_index.value] = value
+            break
+         else
+            value = value + self.increment
+         end
       end
    end
-   local val = self.points[self.point_index]
+   local val = self.points[self.point_index.value]
    table.sort(self.points)
-   self.point_index = tools.table_indexof(self.points, val) or 1
+   self.point_index.value = tools.table_indexof(self.points, val) or 1
    if self.on_change then self.on_change() end
 end
 
 function Slider_Menu_Item:validate(input)
    if input.press or input.down then self.last_frame_validated = gamestate.frame_number end
    if not self.disable_mode_switch and input.release then
-      self.mode = self.mode % 2 + 1
+      self.mode.value = self.mode.value % 2 + 1
       if self.validate_function then self.validate_function() end
-      if self.mode == 1 then
+      if self.mode.value == 1 then
          self.legend_text = "legend_lp_mode"
-         self.point_index = 1
-      elseif self.mode == 2 then
+      elseif self.mode.value == 2 then
          self.legend_text = "legend_mp_point"
       end
    end
 end
 
 function Slider_Menu_Item:reset(input)
-   if self.mode == 2 and input.release then
-      self.point_index = self.point_index % self.max_points + 1
+   if self.mode.value == 2 and input.release then
+      self.point_index.value = self.point_index.value % self.max_points + 1
       if self.reset_function then self.reset_function() end
    end
 end
@@ -1883,8 +1880,7 @@ function Multitab_Menu:update(input)
       local total_height = 0
       local i = #entries
       while i >= 1 do
-         if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
-             (entries[i].is_visible and not entries[i]:is_visible())) then
+         if not (entries[i].inline or (entries[i].is_visible and not entries[i]:is_visible())) then
             if total_height + entries[i].height + self.menu_item_spacing <= self.content_area_height then
                total_height = total_height + entries[i].height + self.menu_item_spacing
             else
@@ -1900,18 +1896,19 @@ function Multitab_Menu:update(input)
       local entries = self:current_tab().entries
       local total_height = 0
       local i = self:current_tab().top_entry_index
+      local last_visible = i
       while i <= #entries do
-         if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
-             (entries[i].is_visible and not entries[i]:is_visible())) then
+         if not (entries[i].inline or (entries[i].is_visible and not entries[i]:is_visible())) then
             if total_height + entries[i].height + self.menu_item_spacing <= self.content_area_height then
                total_height = total_height + entries[i].height + self.menu_item_spacing
+               last_visible = i
             else
-               break
+               return last_visible
             end
          end
          i = i + 1
       end
-      return i - 1
+      return last_visible
    end
 
    local function get_next_page_top_entry_index()
@@ -2148,7 +2145,6 @@ function Multitab_Menu:draw(depth)
    menu_y = menu_y + 4
 
    self.content_area_height = legend_y - menu_y
-
    local scroll_down = false
 
    local y_offset = 0
@@ -2202,6 +2198,7 @@ function Multitab_Menu:draw(depth)
       end
 
       local scroll_up_color, scroll_down_color = colors.text.default, colors.text.default
+      -- print(self.sub_menu_selected_index, self:current_tab().top_entry_index, self:current_tab().bottom_entry_index)
       if self.sub_menu_selected_index == self:current_tab().top_entry_index then
          scroll_up_color = colors.text.selected
       elseif self.sub_menu_selected_index == self:current_tab().bottom_entry_index then

@@ -1515,13 +1515,25 @@
     "en": "images/menu/hud_character_select_line_3_en_5_white.png",
     "jp": "images/menu/hud_character_select_line_3_jp_8_white.png"
   },
+  "hud_coin_restart_hold_start_stop": {
+    "en": "images/menu/hud_coin_restart_hold_start_stop_en_5_white.png",
+    "jp": "images/menu/hud_coin_restart_hold_start_stop_jp_8_white.png"
+  },
   "hud_cpu": {
     "en": "images/menu/hud_cpu_en_5_white.png",
     "jp": "images/menu/hud_cpu_jp_8_white.png"
   },
+  "hud_defense": {
+    "en": "images/menu/hud_defense_en_5_white.png",
+    "jp": "images/menu/hud_defense_jp_8_white.png"
+  },
   "hud_dummy": {
     "en": "images/menu/hud_dummy_en_5_white.png",
     "jp": "images/menu/hud_dummy_jp_8_white.png"
+  },
+  "hud_dummy_control": {
+    "en": "images/menu/hud_dummy_control_en_5_white.png",
+    "jp": "images/menu/hud_dummy_control_jp_8_white.png"
   },
   "hud_duration": {
     "en": "images/menu/hud_duration_en_5_white.png",
@@ -1531,9 +1543,21 @@
     "en": "images/menu/hud_f_en_5_white.png",
     "jp": "images/menu/hud_f_jp_8_white.png"
   },
+  "hud_footsies": {
+    "en": "images/menu/hud_footsies_en_5_white.png",
+    "jp": "images/menu/hud_footsies_jp_8_white.png"
+  },
+  "hud_geneijin": {
+    "en": "images/menu/hud_geneijin_en_5_white.png",
+    "jp": "images/menu/hud_geneijin_jp_8_white.png"
+  },
   "hud_hit_frame": {
     "en": "images/menu/hud_hit_frame_en_5_white.png",
     "jp": "images/menu/hud_hit_frame_jp_8_white.png"
+  },
+  "hud_hold_start_stop": {
+    "en": "images/menu/hud_hold_start_stop_en_5_white.png",
+    "jp": "images/menu/hud_hold_start_stop_jp_8_white.png"
   },
   "hud_hyakuretsu_HK": {
     "en": "images/menu/hud_hyakuretsu_HK_en_5_white.png",
@@ -1546,6 +1570,10 @@
   "hud_hyakuretsu_MK": {
     "en": "images/menu/hud_hyakuretsu_MK_en_5_white.png",
     "jp": "images/menu/hud_hyakuretsu_MK_jp_8_white.png"
+  },
+  "hud_jumpins": {
+    "en": "images/menu/hud_jumpins_en_5_white.png",
+    "jp": "images/menu/hud_jumpins_jp_8_white.png"
   },
   "hud_p1": {
     "en": "images/menu/hud_p1_en_5_white.png",
@@ -1567,6 +1595,10 @@
     "en": "images/menu/hud_please_wait_en_5_white.png",
     "jp": "images/menu/hud_please_wait_jp_10_white.png"
   },
+  "hud_positioning": {
+    "en": "images/menu/hud_positioning_en_5_white.png",
+    "jp": "images/menu/hud_positioning_jp_8_white.png"
+  },
   "hud_recording": {
     "en": "images/menu/hud_recording_en_5_white.png",
     "jp": "images/menu/hud_recording_jp_8_white.png"
@@ -1578,6 +1610,30 @@
   "hud_startup": {
     "en": "images/menu/hud_startup_en_5_white.png",
     "jp": "images/menu/hud_startup_jp_8_white.png"
+  },
+  "hud_top_defense": {
+    "en": "images/menu/hud_top_defense_en_5_white.png",
+    "jp": "images/menu/hud_top_defense_jp_10_white.png"
+  },
+  "hud_top_footsies": {
+    "en": "images/menu/hud_top_footsies_en_5_white.png",
+    "jp": "images/menu/hud_top_footsies_jp_10_white.png"
+  },
+  "hud_top_geneijin": {
+    "en": "images/menu/hud_top_geneijin_en_5_white.png",
+    "jp": "images/menu/hud_top_geneijin_jp_10_white.png"
+  },
+  "hud_top_jumpins": {
+    "en": "images/menu/hud_top_jumpins_en_5_white.png",
+    "jp": "images/menu/hud_top_jumpins_jp_10_white.png"
+  },
+  "hud_top_unblockables": {
+    "en": "images/menu/hud_top_unblockables_en_5_white.png",
+    "jp": "images/menu/hud_top_unblockables_jp_10_white.png"
+  },
+  "hud_unblockables": {
+    "en": "images/menu/hud_unblockables_en_5_white.png",
+    "jp": "images/menu/hud_unblockables_jp_8_white.png"
   },
   "hud_wait_for_recording": {
     "en": "images/menu/hud_wait_for_recording_en_5_white.png",
@@ -1607,9 +1663,9 @@
     "en": "images/menu/legend_lp_select_en_5_white.png",
     "jp": "images/menu/legend_lp_select_jp_8_white.png"
   },
-  "legend_lp_select_coin_start": {
-    "en": "images/menu/legend_lp_select_coin_start_en_5_white.png",
-    "jp": "images/menu/legend_lp_select_coin_start_jp_8_white.png"
+  "legend_lp_select_coin_restart": {
+    "en": "images/menu/legend_lp_select_coin_restart_en_5_white.png",
+    "jp": "images/menu/legend_lp_select_coin_restart_jp_8_white.png"
   },
   "legend_mp_point": {
     "en": "images/menu/legend_mp_point_en_5_white.png",
@@ -2255,6 +2311,10 @@
     "en": "images/menu/menu_dummy_offset_mode_en_5_white.png",
     "jp": "images/menu/menu_dummy_offset_mode_jp_10_white.png"
   },
+  "menu_dummy_positioning": {
+    "en": "images/menu/menu_dummy_positioning_en_5_white.png",
+    "jp": "images/menu/menu_dummy_positioning_jp_10_white.png"
+  },
   "menu_dump_state_display": {
     "en": "images/menu/menu_dump_state_display_en_5_white.png",
     "jp": "images/menu/menu_dump_state_display_jp_10_white.png"
@@ -2323,9 +2383,29 @@
     "en": "images/menu/menu_first_hit_en_5_white.png",
     "jp": "images/menu/menu_first_hit_jp_10_white.png"
   },
+  "menu_fixed_point": {
+    "en": "images/menu/menu_fixed_point_en_5_white.png",
+    "jp": "images/menu/menu_fixed_point_jp_10_white.png"
+  },
   "menu_flash_chop": {
     "en": "images/menu/menu_flash_chop_en_5_white.png",
     "jp": "images/menu/menu_flash_chop_jp_10_white.png"
+  },
+  "menu_flash_chop_EXP": {
+    "en": "images/menu/menu_flash_chop_EXP_en_5_white.png",
+    "jp": "images/menu/menu_flash_chop_EXP_jp_10_white.png"
+  },
+  "menu_flash_chop_HP": {
+    "en": "images/menu/menu_flash_chop_HP_en_5_white.png",
+    "jp": "images/menu/menu_flash_chop_HP_jp_10_white.png"
+  },
+  "menu_flash_chop_LP": {
+    "en": "images/menu/menu_flash_chop_LP_en_5_white.png",
+    "jp": "images/menu/menu_flash_chop_LP_jp_10_white.png"
+  },
+  "menu_flash_chop_MP": {
+    "en": "images/menu/menu_flash_chop_MP_en_5_white.png",
+    "jp": "images/menu/menu_flash_chop_MP_jp_10_white.png"
   },
   "menu_flying_viper": {
     "en": "images/menu/menu_flying_viper_en_5_white.png",
@@ -2911,6 +2991,10 @@
     "en": "images/menu/menu_never_en_5_white.png",
     "jp": "images/menu/menu_never_jp_10_white.png"
   },
+  "menu_next_attack_delay": {
+    "en": "images/menu/menu_next_attack_delay_en_5_white.png",
+    "jp": "images/menu/menu_next_attack_delay_jp_10_white.png"
+  },
   "menu_nichirin": {
     "en": "images/menu/menu_nichirin_en_5_white.png",
     "jp": "images/menu/menu_nichirin_jp_10_white.png"
@@ -3043,9 +3127,9 @@
     "en": "images/menu/menu_player_position_mode_en_5_white.png",
     "jp": "images/menu/menu_player_position_mode_jp_10_white.png"
   },
-  "menu_point": {
-    "en": "images/menu/menu_point_en_5_white.png",
-    "jp": "images/menu/menu_point_jp_10_white.png"
+  "menu_player_positioning": {
+    "en": "images/menu/menu_player_positioning_en_5_white.png",
+    "jp": "images/menu/menu_player_positioning_jp_10_white.png"
   },
   "menu_pose": {
     "en": "images/menu/menu_pose_en_5_white.png",
@@ -3211,6 +3295,10 @@
     "en": "images/menu/menu_ryuubikyaku_en_5_white.png",
     "jp": "images/menu/menu_ryuubikyaku_jp_10_white.png"
   },
+  "menu_sa_after_parry": {
+    "en": "images/menu/menu_sa_after_parry_en_5_white.png",
+    "jp": "images/menu/menu_sa_after_parry_jp_10_white.png"
+  },
   "menu_save_frame_data": {
     "en": "images/menu/menu_save_frame_data_en_5_white.png",
     "jp": "images/menu/menu_save_frame_data_jp_10_white.png"
@@ -3355,22 +3443,6 @@
     "en": "images/menu/menu_slash_elbow_en_5_white.png",
     "jp": "images/menu/menu_slash_elbow_jp_10_white.png"
   },
-  "menu_slash_elbow_EXP": {
-    "en": "images/menu/menu_slash_elbow_EXP_en_5_white.png",
-    "jp": "images/menu/menu_slash_elbow_EXP_jp_10_white.png"
-  },
-  "menu_slash_elbow_HP": {
-    "en": "images/menu/menu_slash_elbow_HP_en_5_white.png",
-    "jp": "images/menu/menu_slash_elbow_HP_jp_10_white.png"
-  },
-  "menu_slash_elbow_LP": {
-    "en": "images/menu/menu_slash_elbow_LP_en_5_white.png",
-    "jp": "images/menu/menu_slash_elbow_LP_jp_10_white.png"
-  },
-  "menu_slash_elbow_MP": {
-    "en": "images/menu/menu_slash_elbow_MP_en_5_white.png",
-    "jp": "images/menu/menu_slash_elbow_MP_jp_10_white.png"
-  },
   "menu_slot": {
     "en": "images/menu/menu_slot_en_5_white.png",
     "jp": "images/menu/menu_slot_jp_10_white.png"
@@ -3419,6 +3491,10 @@
     "en": "images/menu/menu_start_en_5_white.png",
     "jp": "images/menu/menu_start_jp_10_white.png"
   },
+  "menu_stop": {
+    "en": "images/menu/menu_stop_en_5_white.png",
+    "jp": "images/menu/menu_stop_jp_10_white.png"
+  },
   "menu_stun_refill_mode": {
     "en": "images/menu/menu_stun_refill_mode_en_5_white.png",
     "jp": "images/menu/menu_stun_refill_mode_jp_10_white.png"
@@ -3431,9 +3507,9 @@
     "en": "images/menu/menu_supreme_rising_rage_en_5_white.png",
     "jp": "images/menu/menu_supreme_rising_rage_jp_10_white.png"
   },
-  "menu_swap_dummy": {
-    "en": "images/menu/menu_swap_dummy_en_5_white.png",
-    "jp": "images/menu/menu_swap_dummy_jp_10_white.png"
+  "menu_swap_controls": {
+    "en": "images/menu/menu_swap_controls_en_5_white.png",
+    "jp": "images/menu/menu_swap_controls_jp_10_white.png"
   },
   "menu_table": {
     "en": "images/menu/menu_table_en_5_white.png",
@@ -3499,10 +3575,6 @@
     "en": "images/menu/menu_throw_en_5_white.png",
     "jp": "images/menu/menu_throw_jp_10_white.png"
   },
-  "menu_title_challenge": {
-    "en": "images/menu/menu_title_challenge_en_5_white.png",
-    "jp": "images/menu/menu_title_challenge_jp_10_white.png"
-  },
   "menu_title_debug": {
     "en": "images/menu/menu_title_debug_en_5_white.png",
     "jp": "images/menu/menu_title_debug_jp_10_white.png"
@@ -3514,6 +3586,10 @@
   "menu_title_dummy": {
     "en": "images/menu/menu_title_dummy_en_5_white.png",
     "jp": "images/menu/menu_title_dummy_jp_10_white.png"
+  },
+  "menu_title_modules": {
+    "en": "images/menu/menu_title_modules_en_5_white.png",
+    "jp": "images/menu/menu_title_modules_jp_10_white.png"
   },
   "menu_title_recording": {
     "en": "images/menu/menu_title_recording_en_5_white.png",

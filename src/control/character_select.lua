@@ -15,7 +15,7 @@ local clear_buttons_until_frame = 0
 local character_select_coroutines = {}
 local selecting_random_character = false
 local disable_boss_select = false
-local last_player_id = 1
+local pick_p2_first = false
 local p1_forced_select = false
 local p2_forced_select = false
 
@@ -89,7 +89,7 @@ local function co_delay_load_savestate(input)
    savestate.load(character_select_savestate)
 end
 
-local function start_character_select_sequence(disable_bosses)
+local function start_character_select_sequence(disable_bosses, reverse_pick_order)
    if first_run then
       character_select_coroutine(co_delay_load_savestate, "delay_load")
       first_run = false
@@ -102,6 +102,7 @@ local function start_character_select_sequence(disable_bosses)
    last_player_id = 1
 
    disable_boss_select = disable_bosses or false
+   pick_p2_first = reverse_pick_order or false
    p1_forced_select = false
    p2_forced_select = false
    selecting_random_character = false
@@ -294,17 +295,21 @@ local function co_random_character(input)
    p1_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
    p2_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
 
-   if p1_select_state <= 2 then
-      player_id = 1
-   elseif p1_select_state >= 5 and p2_select_state <= 2 then
-      player_id = 2
-   else
-      return
-   end
-
    -- stop random select after p1 character is chosen
-   if last_player_id ~= player_id then
-      last_player_id = player_id
+   if pick_p2_first then
+      if p2_select_state <= 4 then
+         player_id = 2
+      else
+         player_id = 1
+      end
+   else
+      if p1_select_state <= 4 then
+         player_id = 1
+      else
+         player_id = 2
+      end
+   end
+   if character_select_sequence_state == 3 then
       selecting_random_character = false
       return
    end
@@ -341,12 +346,17 @@ local p1_character_select_state = 0
 local p2_character_select_state = 0
 local function update_character_select(input)
 
-   if not character_select_sequence_state == 0 then
-      return
-   end
+   if not character_select_sequence_state == 0 then return end
 
    -- Infinite select time
    -- memory.writebyte(memory_addresses.global.character_select_timer, 0x30)
+
+   if gamestate.P1.input.pressed.start then
+      start_select_random_character()
+   elseif gamestate.P1.input.released.start then
+      stop_select_random_character()
+   end
+   if gamestate.P1.input.down.start then select_random_character() end
 
    if p1_forced_select then
       inputs.block_input(1, "all")
@@ -354,11 +364,22 @@ local function update_character_select(input)
       inputs.unblock_input(1)
    end
 
+   if p2_forced_select then
+      inputs.block_input(2, "all")
+   else
+      inputs.unblock_input(2)
+   end
+
    local to_remove = {}
    for k, cs in pairs(character_select_coroutines) do
       local status = cs:status()
       if status == "suspended" then
          local r, error = cs:resume(input)
+         if cs.name == "force_p1" then
+            p1_forced_select = true
+         elseif cs.name == "force_p2" then
+            p2_forced_select = true
+         end
       elseif status == "dead" then
          to_remove[#to_remove + 1] = k
          if cs.name == "force_p1" then
@@ -367,42 +388,46 @@ local function update_character_select(input)
             p2_forced_select = false
          end
       end
-      if cs.name == "force_p1" then
-         p1_forced_select = true
-      elseif cs.name == "force_p2" then
-         p2_forced_select = true
-      end
+
    end
    for _, key in ipairs(to_remove) do character_select_coroutines[key] = nil end
 
    p1_character_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
    p2_character_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
 
-   if not p1_forced_select then
+   if pick_p2_first then
+      if p2_character_select_state <= 4 and not gamestate.is_in_match then
+         if not p2_forced_select then inputs.swap_inputs(input) end
+      else
+         if character_select_sequence_state == 2 then character_select_sequence_state = 3 end
+      end
+   else
       if p1_character_select_state > 4 and not gamestate.is_in_match then
          if character_select_sequence_state == 2 then character_select_sequence_state = 3 end
-         if not p1_forced_select and not p2_forced_select then inputs.swap_inputs(input) end
+         if not p1_forced_select then inputs.swap_inputs(input) end
       end
-
-      if gamestate.frame_number < clear_buttons_until_frame then
-         inputs.block_input(1, "buttons")
-      else
-         inputs.unblock_input(1)
-      end
-
-      -- wait for all inputs to be released
-      if character_select_sequence_state == 1 or character_select_sequence_state == 3 then
-         for _, state in pairs(input) do
-            if state == true then
-               inputs.make_input_empty(input)
-               return
-            end
-         end
-         character_select_sequence_state = character_select_sequence_state + 1
-      end
-
-      if selecting_random_character then inputs.block_input(1, "directions") end
    end
+
+   if gamestate.frame_number < clear_buttons_until_frame then
+      inputs.block_input(1, "buttons")
+      inputs.block_input(2, "buttons")
+   else
+      inputs.unblock_input(1)
+      inputs.unblock_input(2)
+   end
+
+   -- wait for all inputs to be released
+   if character_select_sequence_state == 1 or character_select_sequence_state == 3 then
+      for _, state in pairs(input) do
+         if state == true then
+            inputs.make_input_empty(input)
+            return
+         end
+      end
+      character_select_sequence_state = character_select_sequence_state + 1
+   end
+
+   if selecting_random_character then inputs.block_input(1, "directions") end
 
    if not gamestate.is_in_match and settings.training.force_stage > 1 then
       local stage = sd.menu_to_stage_map[settings.training.force_stage]
@@ -421,7 +446,7 @@ local function is_selection_complete()
 end
 
 local character_select = {
-   module_name = module_name,
+   name = module_name,
    start_character_select_sequence = start_character_select_sequence,
    update_character_select = update_character_select,
    select_gill = select_gill,

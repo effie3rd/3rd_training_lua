@@ -4742,7 +4742,7 @@ local function record_attacks(player, projectiles)
                      n = 350
                      current_attack.player_offset_y = 80
                   end
-                  for i = 1, n do
+                  for j = 1, n do
                      table.insert(sequence, {})
                      table.insert(sequence, {button})
                   end
@@ -4773,6 +4773,8 @@ local function record_attacks(player, projectiles)
                   current_attack.max_hits = 11 -- 12
                elseif current_attack.move_type == "sa2" then
                   current_attack.max_hits = 3 -- 15
+                  local kicks = {{"LK"}, {"MK"}, {"HK"}}
+                  for j = 1, 100 do sequence[#sequence + 1] = kicks[(j - 1) % 3 + 1] end
                elseif current_attack.move_type == "sa3" then
                   current_attack.max_hits = 5 -- 9
                end

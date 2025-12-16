@@ -170,8 +170,7 @@ local function init()
 end
 
 local function handle_interruptions(player, stage, actions, i_actions)
-   if (player.has_just_been_hit and not player.is_being_thrown) then
-      return true, {score = 3, should_end = true} end
+   if (player.has_just_been_hit and not player.is_being_thrown) then return true, {score = 3, should_end = true} end
    if (player.is_being_thrown and player.throw_tech_countdown <= 0) then
       local score = 3
       local hit_with_command_throw = memory.readbyte(player.other.addresses.hit_with_command_throw) > 0
@@ -569,10 +568,7 @@ function followup_block:run(player, stage, actions, i_actions)
             if hit_type == 2 or hit_type == 4 then
                if player.other.animation_frame + 1 >= reaction_time then
                   if hit_type == 4 then
-                     self.switch_blocking = {
-                        start_frame = gamestate.frame_number,
-                        input = block_high_input
-                     }
+                     self.switch_blocking = {start_frame = gamestate.frame_number, input = block_high_input}
                   else
                      self.block_input = {start_frame = gamestate.frame_number, input = block_low_input}
                   end
@@ -611,6 +607,8 @@ function followup_block:run(player, stage, actions, i_actions)
                else
                   return true, {score = 0, should_end = true}
                end
+            elseif player.is_in_throw_tech or player.other.is_in_throw_tech then
+               return true, {score = 1}
             else
                return true, {score = 0}
             end
@@ -637,8 +635,10 @@ function followup_block:should_block(player)
       self.block_time = self.blocked_frames + 2
       return true
    end
-   if player.is_waking_up or (player.other.is_attacking and player.other.current_hit_id < player.other.max_hit_id) or
-       (player.character_state_byte == 1 and player.remaining_freeze_frames > 0) then return true end
+   if player.is_waking_up or player.other.character_state_byte == 4 or
+       (player.character_state_byte == 1 and player.remaining_freeze_frames > 0) then
+         self.block_time = self.blocked_frames + 1
+         return true end
    return false
 end
 

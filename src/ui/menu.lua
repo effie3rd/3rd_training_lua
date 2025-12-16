@@ -21,6 +21,7 @@ local geneijin_tables = require("src.training.geneijin_tables")
 local footsies = require("src.training.footsies")
 local footsies_tables = require("src.training.footsies_tables")
 local special_modes = require("src.special_modes")
+local hud
 
 local is_initialized = false
 local is_open = false
@@ -39,14 +40,11 @@ local save_recording_slot_popup, load_recording_slot_popup, controller_style_men
       parry_every_n_item, prefer_down_parry_item, hits_before_counter_attack, character_select_item,
       p1_distances_reference_point_item, p2_distances_reference_point_item, mid_distance_height_item,
       air_time_player_coloring_item, attack_range_display_max_item, attack_range_display_numbers_item,
-      attack_bars_show_decimal_item, display_hitboxes_opacity_item, language_item, unblockables_start_item,
-      unblockables_type_item, unblockables_followup_item
+      attack_bars_show_decimal_item, display_hitboxes_opacity_item, language_item
 
 local main_menu, training_pages, training_mode_item, training_tab_index, training_page_indexes
-local defense_opponent_item, start_defense_item, defense_score_item, defense_setup_item, defense_character_select_item,
-      defense_learning_item, defense_reset_item
 local jumpins_edit, jumpins_training_tab, jumpins_edit_menu, jumpins_edit_settings, current_jump_settings
-local footsies_training_tab, geneijin_training_tab
+local defense_training_tab, unblockables_training_tab, footsies_training_tab, geneijin_training_tab
 local challenge_tab
 local jumpins_edit_jump_index = 1
 
@@ -74,12 +72,12 @@ local counter_attack_move_selection_data = {
 local jumpins_edit_move_selection_items = tools.deepcopy(counter_attack_move_selection_items)
 local jumpins_edit_move_selection_data = tools.deepcopy(counter_attack_move_selection_data)
 
-local close_menu
+local close_menu, update_menu_items
 
 local function reset_background_cache() main_menu:reset_background_cache() end
 
 local function update_recording_items()
-   recording.load_recordings(training.dummy.char_str)
+   recording.load_recordings(training.recordings_player.char_str)
    slot_weight_item.object = recording.recording_slots[settings.training.current_recording_slot]
    recording_delay_item.object = recording.recording_slots[settings.training.current_recording_slot]
    recording_random_deviation_item.object = recording.recording_slots[settings.training.current_recording_slot]
@@ -177,11 +175,11 @@ end
 local function update_jumpins_settings()
    if is_initialized and gamestate.is_in_match then
       jumpins.init()
-      jumpins_edit_settings = settings.special_training.jumpins.characters[jumpins.jumpins_dummy.char_str]
+      jumpins_edit_settings = settings.special_training.jumpins.characters[jumpins.dummy.char_str]
       if not jumpins_edit_settings then
-         settings.special_training.jumpins.characters[jumpins.jumpins_dummy.char_str] =
-             jumpins_tables.create_settings(jumpins.jumpins_dummy)
-         jumpins_edit_settings = settings.special_training.jumpins.characters[jumpins.jumpins_dummy.char_str]
+         settings.special_training.jumpins.characters[jumpins.dummy.char_str] =
+             jumpins_tables.create_settings(jumpins.dummy)
+         jumpins_edit_settings = settings.special_training.jumpins.characters[jumpins.dummy.char_str]
       end
       current_jump_settings = jumpins_edit_settings.jumps[jumpins_edit_jump_index]
    end
@@ -189,9 +187,9 @@ end
 
 local function update_jumpins_range_items()
    jumpins_edit.player_reset_position_item.points = jumpins.player_position_range
-   jumpins_edit.player_reset_position_item.point_index = 1
+   jumpins_edit.player_reset_position_item.point_index = {value = 1}
    jumpins_edit.player_reset_position_item.range = jumpins.player_position_bounds
-   jumpins_edit.player_reset_position_item.mode = 1
+   jumpins_edit.player_reset_position_item.mode = {value = 1}
 
    jumpins_edit.dummy_reset_offset_item.points = jumpins.dummy_offset_range
    jumpins_edit.dummy_reset_offset_item.point_index = jumpins.dummy_offset_edit_index
@@ -204,25 +202,29 @@ local function update_jumpins_range_items()
    jumpins_edit.attack_delay_item.mode = jumpins.attack_delay_edit_mode
 
    jumpins_edit.second_jump_delay_item.points = jumpins.second_jump_delay_range
-   jumpins_edit.second_jump_delay_item.point_index = 1
+   jumpins_edit.second_jump_delay_item.point_index = {value = 1}
    jumpins_edit.second_jump_delay_item.range = jumpins.second_jump_delay_bounds
-   jumpins_edit.second_jump_delay_item.mode = 1
+   jumpins_edit.second_jump_delay_item.mode = {value = 1}
 end
 
 local function update_jumpins_edit_items()
    if is_initialized and gamestate.is_in_match then
+      jumpins.set_players()
+
       update_jumpins_settings()
 
       update_move_selection_items(jumpins_edit_move_selection_items, jumpins_edit_move_selection_data,
-                                  current_jump_settings.followup, jumpins.jumpins_dummy)
+                                  current_jump_settings.followup, jumpins.dummy)
       update_move_selection_data(jumpins_edit_move_selection_items, jumpins_edit_move_selection_data,
-                                 current_jump_settings.followup, jumpins.jumpins_dummy)
+                                 current_jump_settings.followup, jumpins.dummy)
       jumpins.followup_data = jumpins_edit_move_selection_data.move_input_data
 
-      jumpins_tables.update_character(jumpins.jumpins_dummy.char_str)
+      jumpins_tables.update_character(jumpins.dummy.char_str)
 
       jumpins_edit.jump_type_item.object = current_jump_settings
       jumpins_edit.jump_type_item.list = jumpins_tables.get_menu_jump_names()
+
+      jumpins.load_jump(current_jump_settings)
 
       update_jumpins_range_items()
 
@@ -234,6 +236,12 @@ local function update_jumpins_edit_items()
       jumpins_edit.followup_delay_item.object = current_jump_settings
       jumpins_edit.status_item.object = {jump_index = jumpins_edit_jump_index}
 
+      if jumpins.is_active and jumpins.mode == jumpins.modes.RUN then
+         jumpins_training_tab.start_item.name = "menu_stop"
+      else
+         jumpins_training_tab.start_item.name = "menu_start"
+      end
+
       jumpins_training_tab.jump_replay_mode_item.object = jumpins_edit_settings
       jumpins_training_tab.player_position_mode_item.object = jumpins_edit_settings
       jumpins_training_tab.dummy_offset_mode_item.object = jumpins_edit_settings
@@ -241,6 +249,7 @@ local function update_jumpins_edit_items()
       jumpins_training_tab.show_jump_arc_item.object = jumpins_edit_settings
       jumpins_training_tab.show_jump_info_item.object = jumpins_edit_settings
       jumpins_training_tab.automatic_replay_item.object = jumpins_edit_settings
+      jumpins_training_tab.next_attack_delay_item.object = jumpins_edit_settings
 
       jumpins_edit_menu:calc_dimensions()
    end
@@ -260,11 +269,12 @@ local function update_defense_items()
    if tools.deep_equal(setups_object, {}) then for i = 1, #setup_names do setups_object[#setups_object + 1] = true end end
 
    local followups_object = settings.special_training.defense.characters[opponent].followups
-   if tools.deep_equal(followups_object, {}) then for i = 1, #setup_names do followups_object[#followups_object + 1] = {} end end
+   if tools.deep_equal(followups_object, {}) then
+      for i = 1, #setup_names do followups_object[#followups_object + 1] = {} end
+   end
 
-   defense_setup_item = menu_items.Check_Box_Grid_Item:new("menu_setup",
-                                                           settings.special_training.defense.characters[opponent].setups,
-                                                           setup_names, 4)
+   defense_training_tab.setup_item = menu_items.Check_Box_Grid_Item:new("menu_setup", settings.special_training.defense
+                                                                            .characters[opponent].setups, setup_names, 4)
 
    local defense_sub_menu_entries = training_pages[1].entries
    tools.clear_table(defense_sub_menu_entries)
@@ -278,7 +288,9 @@ local function update_defense_items()
          followup_object = settings.special_training.defense.characters[opponent].followups[i]
       end
       if tools.deep_equal(followup_object, {}) then
-         for j = 1, #defense_tables.get_followup_data(opponent)[i].list do followup_object[#followup_object + 1] = true end
+         for j = 1, #defense_tables.get_followup_data(opponent)[i].list do
+            followup_object[#followup_object + 1] = true
+         end
       end
       local followup_followup_names = defense_tables.get_followup_followup_names(opponent, i)
       local check_box_grid = menu_items.Check_Box_Grid_Item:new("menu_" .. name, followup_object,
@@ -286,87 +298,144 @@ local function update_defense_items()
       defense_followup_check_box_grids[i] = check_box_grid
    end
 
-   start_defense_item.name = "menu_start"
-
-   local saved_player = settings.special_training.defense.match_savestate_player
-   if opponent == settings.special_training.defense.match_savestate_dummy then
-      if saved_player ~= "" then start_defense_item.name = {"menu_start", "  (", "menu_" .. saved_player, ")"} end
+   if defense.is_active then
+      defense_training_tab.start_item.name = "menu_stop"
+   else
+      local saved_player = settings.special_training.defense.match_savestate_player
+      if opponent == settings.special_training.defense.match_savestate_dummy then
+         if saved_player ~= "" then
+            defense_training_tab.start_item.name = {"menu_start", "  (", "menu_" .. saved_player, ")"}
+         end
+      end
    end
 
-   defense_score_item.object = settings.special_training.defense.characters[opponent]
-   defense_setup_item.object = settings.special_training.defense.characters[opponent].setups
-   defense_learning_item.object = settings.special_training.defense.characters[opponent]
+   defense_training_tab.score_item.object = settings.special_training.defense.characters[opponent]
+   defense_training_tab.setup_item.object = settings.special_training.defense.characters[opponent].setups
+   defense_training_tab.learning_item.object = settings.special_training.defense.characters[opponent]
+   defense_training_tab.next_attack_delay_item.object = settings.special_training.defense.characters[opponent]
 
    defense_sub_menu_entries[1] = training_mode_item
-   defense_sub_menu_entries[2] = start_defense_item
-   defense_sub_menu_entries[3] = defense_score_item
-   defense_sub_menu_entries[4] = defense_character_select_item
-   defense_sub_menu_entries[5] = defense_opponent_item
-   defense_sub_menu_entries[6] = defense_setup_item
+   defense_sub_menu_entries[2] = defense_training_tab.start_item
+   defense_sub_menu_entries[3] = defense_training_tab.score_item
+   defense_sub_menu_entries[4] = defense_training_tab.character_select_item
+   defense_sub_menu_entries[5] = defense_training_tab.opponent_item
+   defense_sub_menu_entries[6] = defense_training_tab.setup_item
    local i = 1
    while i <= #defense_followup_check_box_grids do
       defense_sub_menu_entries[6 + i] = defense_followup_check_box_grids[i]
       defense_sub_menu_entries[6 + i].is_visible = function() return true end
       i = i + 1
    end
-   defense_sub_menu_entries[6 + i] = defense_learning_item
-   defense_sub_menu_entries[7 + i] = defense_reset_item
+   defense_sub_menu_entries[6 + i] = defense_training_tab.learning_item
+   defense_sub_menu_entries[7 + i] = defense_training_tab.next_attack_delay_item
+   defense_sub_menu_entries[8 + i] = defense_training_tab.reset_item
 end
 
 local function update_footsies_items()
-   if not jumpins.is_active then
-      footsies_tables.init(gamestate.P2.char_str)
-      -- footsies_training_tab.score_item.object = settings.special_training.footsies.characters[gamestate.P2.char_str]
-      footsies_training_tab.walk_out_item.object = settings.special_training.footsies.characters[gamestate.P2.char_str]
-      footsies_training_tab.moves_item.object = settings.special_training.footsies.characters[gamestate.P2.char_str]
-                                                    .moves
-      footsies_training_tab.moves_item.list = footsies_tables.get_menu_move_names()
-      footsies_training_tab.accuracy_item.points = settings.special_training.footsies.characters[gamestate.P2.char_str]
-                                                       .accuracy
-      footsies_training_tab.distance_judgement_item.points =
-          settings.special_training.footsies.characters[gamestate.P2.char_str].dist_judgement
-   end
+   footsies.set_players()
+   footsies_tables.init(footsies.dummy)
 
+   if footsies.is_active then
+      footsies_training_tab.start_item.name = "menu_stop"
+   else
+      footsies_training_tab.start_item.name = "menu_start"
+   end
+   footsies_training_tab.walk_out_item.object = settings.special_training.footsies.characters[footsies.dummy.char_str]
+   footsies_training_tab.moves_item.object = settings.special_training.footsies.characters[footsies.dummy.char_str]
+                                                 .moves
+   footsies_training_tab.moves_item.list = footsies_tables.get_menu_move_names()
+   if #footsies_training_tab.moves_item.list ~= #footsies_training_tab.moves_item.object then
+      settings.special_training.footsies.characters[footsies.dummy.char_str].moves = {}
+      for i = 1, #footsies_training_tab.moves_item.list do
+         settings.special_training.footsies.characters[footsies.dummy.char_str].moves[i] = false
+      end
+   end
+   footsies_training_tab.accuracy_item.points = settings.special_training.footsies.characters[footsies.dummy.char_str]
+                                                    .accuracy
+   footsies_training_tab.accuracy_item.mode = tools.create_dynamic_value(
+                                                  settings.special_training.footsies.characters[footsies.dummy.char_str],
+                                                  "accuracy_mode")
+   footsies_training_tab.accuracy_item.point_index = tools.create_dynamic_value(
+                                                         settings.special_training.footsies.characters[footsies.dummy
+                                                             .char_str], "accuracy_index")
+   footsies_training_tab.distance_judgement_item.points = settings.special_training.footsies.characters[footsies.dummy
+                                                              .char_str].dist_judgement
+   footsies_training_tab.distance_judgement_item.mode = tools.create_dynamic_value(
+                                                            settings.special_training.footsies.characters[footsies.dummy
+                                                                .char_str], "dist_judgement_mode")
+   footsies_training_tab.distance_judgement_item.point_index =
+       tools.create_dynamic_value(settings.special_training.footsies.characters[footsies.dummy.char_str],
+                                  "dist_judgement_index")
+   footsies_training_tab.next_attack_delay_item.points = settings.special_training.footsies.characters[footsies.dummy
+                                                             .char_str].next_attack_delay
+   footsies_training_tab.next_attack_delay_item.mode = tools.create_dynamic_value(
+                                                           settings.special_training.footsies.characters[footsies.dummy
+                                                               .char_str], "next_attack_delay_mode")
+   footsies_training_tab.next_attack_delay_item.point_index =
+       tools.create_dynamic_value(settings.special_training.footsies.characters[footsies.dummy.char_str],
+                                  "next_attack_delay_index")
+
+   footsies_training_tab.sa_after_parry_item.object = settings.special_training.footsies.characters[footsies.dummy
+                                                          .char_str]
 end
 
 local function update_geneijin_items()
    geneijin_training_tab.moves_item.object = settings.special_training.geneijin.moves
-   local saved_player = settings.special_training.geneijin.match_savestate_player
-   if saved_player ~= "" then
-      geneijin_training_tab.start_item.name = {"menu_start", "  (", "menu_" .. saved_player, ")"}
+   if geneijin.is_active then
+      geneijin_training_tab.start_item.name = "menu_stop"
+   else
+      local saved_player = settings.special_training.geneijin.match_savestate_player
+      if saved_player ~= "" then
+         geneijin_training_tab.start_item.name = {"menu_start", "  (", "menu_" .. saved_player, ")"}
+      else
+         geneijin_training_tab.start_item.name = "menu_start"
+      end
    end
-
 end
 
-local function reset_unblockables_followup()
-   local followup_obj = {}
-   for k, v in pairs(unblockables_followup_item.list) do followup_obj[#followup_obj + 1] = false end
-   settings.special_training.unblockables.followups = followup_obj
-   unblockables_followup_item.object = followup_obj
-   if #followup_obj == 1 then followup_obj[1] = true end
-end
+local function update_unblockables_items(opponent_changed)
+   unblockables.set_players()
 
-local function update_unblockables_items()
-   local should_reset_followup = false
-   if settings.special_training.unblockables.character ~= "default" then
-      unblockables_start_item.name = {
-         "menu_start", "  (", "menu_" .. settings.special_training.unblockables.character, ")"
-      }
+   if opponent_changed then settings.special_training.unblockables.setup = 1 end
+   local opponent_name = unblockables_tables.available_opponents[settings.special_training.unblockables.opponent]
+   local char_str = unblockables.player.char_str
+   local setup_menu_names = unblockables_tables.get_setups_menu_names(opponent_name, char_str)
+   if settings.special_training.unblockables.match_savestate_opponent ~= opponent_name then
+      settings.special_training.unblockables.setup = 1
    end
-   unblockables_type_item.list = unblockables_tables.get_unblockables_type_menu_names(settings.special_training
-                                                                                          .unblockables.character)
+   settings.special_training.unblockables.setup = tools.bound_index(settings.special_training.unblockables.setup,
+                                                                    #setup_menu_names)
+   local selected_setup = settings.special_training.unblockables.setup
 
-   local sel_unblockable =
-       unblockables_tables.available_unblockables[settings.special_training.unblockables.character][settings.special_training
-           .unblockables.type]
-   local new_followup_list = unblockables_tables.followup_names[sel_unblockable]
-   if new_followup_list and unblockables_followup_item.list ~= new_followup_list then
-      should_reset_followup = true
-      unblockables_followup_item.list = new_followup_list
-      unblockables_followup_item:calc_dimensions()
+   local setup_name = unblockables_tables.get_setup(opponent_name, char_str, selected_setup).name
+   local followups = settings.special_training.unblockables.followups[opponent_name][char_str][selected_setup]
+   local followup_menu_names = unblockables_tables.get_followups_menu_names(opponent_name, char_str, setup_name)
+
+   unblockables_training_tab.setup_item.list = setup_menu_names
+   unblockables_training_tab.setup_item:calc_dimensions()
+
+   unblockables_training_tab.followup_item.object = followups
+   unblockables_training_tab.followup_item.list = followup_menu_names
+   unblockables_training_tab.followup_item:calc_dimensions()
+
+   if unblockables.is_active then
+      unblockables_training_tab.start_item.name = "menu_stop"
+   else
+      if settings.special_training.unblockables.match_savestate_player ~= "" then
+         unblockables_training_tab.start_item.name = {
+            "menu_start", "  (", "menu_" .. settings.special_training.unblockables.match_savestate_player, ")"
+         }
+      else
+         unblockables_training_tab.start_item.name = "menu_start"
+      end
    end
 
-   if should_reset_followup then reset_unblockables_followup() end
+   if unblockables.is_active then
+      main_menu.on_close = function()
+         unblockables.check_for_new_setup()
+         main_menu.on_close = nil
+      end
+   end
 end
 
 local function update_active_training_page()
@@ -389,9 +458,7 @@ local function update_training_tab_page()
    local previous_page_index = main_menu.content[training_tab_index].page_index
    main_menu.content[training_tab_index].entries = training_pages[settings.training.special_training_mode].entries
    main_menu.content[training_tab_index].page_index = settings.training.special_training_mode
-   if main_menu.content[training_tab_index].page_index ~= previous_page_index then
-      update_active_training_page()
-   end
+   if main_menu.content[training_tab_index].page_index ~= previous_page_index then update_active_training_page() end
 end
 
 local function is_frame_data_loaded() return require("src.loading").frame_data_loaded end
@@ -505,44 +572,21 @@ local function create_jumpins_edit_menu()
    jumpins_edit = {}
    jumpins_edit.jump_type_item = menu_items.List_Menu_Item:new("menu_jump", current_jump_settings, "jump_name",
                                                                jumpins_tables.get_menu_jump_names(), 1)
-   jumpins_edit.jump_type_item.on_change = function()
-      jumpins.update_selected_jump()
-      update_jumpins_edit_items()
-   end
+   jumpins_edit.jump_type_item.on_change = function() jumpins.update_selected_jump() end
 
    jumpins_edit.player_reset_position_item = menu_items.Slider_Menu_Item:new("menu_player_position", 40, {400, 400},
                                                                              {200, 800})
    jumpins_edit.player_reset_position_item.disable_mode_switch = true
    jumpins_edit.player_reset_position_item.legend_text = ""
-   jumpins_edit.player_reset_position_item.left = function()
-      jumpins.move_player_left()
-      update_jumpins_range_items()
-   end
-   jumpins_edit.player_reset_position_item.right = function()
-      jumpins.move_player_right()
-      update_jumpins_range_items()
-   end
+   jumpins_edit.player_reset_position_item.left = function() jumpins.move_player_left() end
+   jumpins_edit.player_reset_position_item.right = function() jumpins.move_player_right() end
    jumpins_edit.player_reset_position_item.is_enabled = is_jump_selected
    jumpins_edit.player_reset_position_item.is_unselectable = no_jump_selected
 
    jumpins_edit.dummy_reset_offset_item =
        menu_items.Slider_Menu_Item:new("menu_dummy_offset", 40, {80, 80}, {-100, 100})
-   jumpins_edit.dummy_reset_offset_item.left = function()
-      jumpins.move_dummy_left()
-      update_jumpins_range_items()
-   end
-   jumpins_edit.dummy_reset_offset_item.right = function()
-      jumpins.move_dummy_right()
-      update_jumpins_range_items()
-   end
-   jumpins_edit.dummy_reset_offset_item.validate_function = function()
-      jumpins_edit.dummy_reset_offset_item.mode = jumpins.change_dummy_offset_edit_mode()
-      update_jumpins_edit_items()
-   end
-   jumpins_edit.dummy_reset_offset_item.reset_function = function()
-      jumpins_edit.dummy_reset_offset_item.point_index = jumpins.change_dummy_offset_edit_index()
-      update_jumpins_edit_items()
-   end
+   jumpins_edit.dummy_reset_offset_item.left = function() jumpins.move_dummy_left() end
+   jumpins_edit.dummy_reset_offset_item.right = function() jumpins.move_dummy_right() end
    jumpins_edit.dummy_reset_offset_item.is_enabled = is_jump_selected
    jumpins_edit.dummy_reset_offset_item.is_unselectable = no_jump_selected
 
@@ -552,14 +596,12 @@ local function create_jumpins_edit_menu()
    jumpins_edit.second_jump_type_item.is_visible = function() return #jumpins_edit.second_jump_type_item.list > 0 end
    jumpins_edit.second_jump_type_item.is_enabled = is_jump_selected
    jumpins_edit.second_jump_type_item.is_unselectable = no_jump_selected
-   jumpins_edit.second_jump_type_item.on_change = function()
-      jumpins.update_selected_jump()
-      update_jumpins_edit_items()
-   end
+   jumpins_edit.second_jump_type_item.on_change = function() jumpins.update_selected_jump() end
 
    jumpins_edit.second_jump_delay_item = menu_items.Slider_Menu_Item:new("menu_second_jump_delay", 40, {8, 8}, {8, 40})
    jumpins_edit.second_jump_delay_item.disable_mode_switch = true
    jumpins_edit.second_jump_delay_item.legend_text = ""
+   jumpins_edit.second_jump_delay_item.on_change = function() jumpins.update_selected_jump() end
 
    jumpins_edit.second_jump_delay_item.is_visible = function()
       return jumpins_edit.second_jump_type_item.is_visible() and current_jump_settings.second_jump_name ~= 1
@@ -574,15 +616,7 @@ local function create_jumpins_edit_menu()
    jumpins_edit.attack_type_item.on_change = update_jumpins_edit_items
 
    jumpins_edit.attack_delay_item = menu_items.Slider_Menu_Item:new("menu_attack_delay", 40, {5, 5}, {5, 100})
-   jumpins_edit.attack_delay_item.validate_function = function()
-      jumpins_edit.attack_delay_item.mode = jumpins.change_attack_delay_edit_mode()
-      update_jumpins_edit_items()
-   end
-   jumpins_edit.attack_delay_item.reset_function = function()
-      jumpins_edit.attack_delay_item.point_index = jumpins.change_attack_delay_edit_index()
-      update_jumpins_edit_items()
-   end
-   jumpins_edit.attack_delay_item.on_change = update_jumpins_edit_items
+
    jumpins_edit.attack_delay_item.is_enabled = is_jump_selected
    jumpins_edit.attack_delay_item.is_unselectable = no_jump_selected
 
@@ -791,12 +825,11 @@ local function create_dummy_tab()
          menu_items.List_Menu_Item:new("menu_mash_inputs", settings.training, "mash_inputs_mode",
                                        menu_tables.mash_inputs_mode, 1),
          menu_items.List_Menu_Item:new("menu_quick_stand", settings.training, "fast_wakeup_mode",
-                                       menu_tables.quick_stand_mode, 1),
-         menu_items.Button_Menu_Item:new("menu_swap_dummy", function()
-            training.toggle_swap_characters()
-            require("src.ui.hud").add_player_label(training.player, "hud_player")
-            require("src.ui.hud").add_player_label(training.dummy, "hud_dummy")
-            update_counter_attack_items()
+                                       menu_tables.off_on_random, 1),
+         menu_items.Button_Menu_Item:new("menu_swap_controls", function()
+            training.toggle_controls()
+            hud.indicate_player_controllers()
+            update_menu_items()
             main_menu:reset_background_cache()
          end)
       }
@@ -819,6 +852,10 @@ local function create_recording_tab()
    return {
       header = menu_items.Header_Menu_Item:new("menu_title_recording"),
       entries = {
+         menu_items.On_Off_Menu_Item:new("menu_player_positioning", settings.training, "recording_player_positioning",
+                                         false),
+         menu_items.On_Off_Menu_Item:new("menu_dummy_positioning", settings.training, "recording_dummy_positioning",
+                                         false),
          menu_items.On_Off_Menu_Item:new("menu_auto_crop_first_frames", settings.training, "auto_crop_recording_start",
                                          false),
          menu_items.On_Off_Menu_Item:new("menu_auto_crop_last_frames", settings.training, "auto_crop_recording_end",
@@ -1067,80 +1104,135 @@ local function create_training_tab()
    training_mode_item = menu_items.List_Menu_Item:new("menu_mode", settings.training, "special_training_mode",
                                                       menu_tables.special_training_mode, 1)
 
+   defense_training_tab = {}
+
    local opponent = defense_tables.opponents[settings.special_training.defense.opponent]
 
-   start_defense_item = menu_items.Button_Menu_Item:new("menu_start", function()
-      local start_opponent = defense_tables.opponents[settings.special_training.defense.opponent]
-      special_modes.stop_other_modes(defense)
-      close_menu(true)
-      defense.start(gamestate.P1.char_str, start_opponent)
+   defense_training_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
+      if defense.is_active then
+         defense.stop()
+         update_active_training_page()
+      else
+         special_modes.stop_other_modes(defense)
+         close_menu()
+         defense.start()
+      end
    end)
-   start_defense_item.is_enabled = function()
-      return is_frame_data_loaded() and defense_setup_item:at_least_one_selected() and
-                 settings.special_training.defense.match_savestate_player ~= ""
+   defense_training_tab.start_item.is_enabled = function()
+      if is_frame_data_loaded() then
+         if defense.is_active then
+            return true
+         else
+            return defense_training_tab.setup_item:at_least_one_selected() and
+                       settings.special_training.defense.match_savestate_player ~= ""
+         end
+      end
+      return false
    end
-   start_defense_item.is_unselectable = function() return not start_defense_item.is_enabled() end
+   defense_training_tab.start_item.is_unselectable = function()
+      return not defense_training_tab.start_item.is_enabled()
+   end
 
-   defense_score_item = menu_items.Label_Menu_Item:new("menu_score", {"menu_score", ": ", "value"},
-                                                       settings.special_training.defense.characters[opponent], "score",
-                                                       false, true)
+   defense_training_tab.score_item = menu_items.Label_Menu_Item:new("menu_score", {"menu_score", ": ", "value"},
+                                                                    settings.special_training.defense.characters[opponent],
+                                                                    "score", false, true)
 
-   defense_opponent_item = menu_items.List_Menu_Item:new("menu_opponent", settings.special_training.defense, "opponent",
-                                                         defense_tables.opponents_menu, 1, update_defense_items)
+   defense_training_tab.opponent_item = menu_items.List_Menu_Item:new("menu_opponent",
+                                                                      settings.special_training.defense, "opponent",
+                                                                      defense_tables.opponents_menu, 1,
+                                                                      update_defense_items)
 
-   defense_setup_item = menu_items.Check_Box_Grid_Item:new("menu_setup",
-                                                           settings.special_training.defense.characters[opponent].setups,
-                                                           defense_tables.get_setup_names(opponent), 4)
+   defense_training_tab.setup_item = menu_items.Check_Box_Grid_Item:new("menu_setup", settings.special_training.defense
+                                                                            .characters[opponent].setups,
+                                                                        defense_tables.get_setup_names(opponent), 4)
 
-   defense_character_select_item = menu_items.Button_Menu_Item:new("menu_character_select",
-                                                                   defense.start_character_select)
+   defense_training_tab.character_select_item = menu_items.Button_Menu_Item:new("menu_character_select",
+                                                                                defense.start_character_select)
 
-   defense_learning_item = menu_items.On_Off_Menu_Item:new("menu_dummy_learning",
-                                                           settings.special_training.defense.characters[opponent],
-                                                           "learning", true)
-   defense_reset_item = menu_items.Button_Menu_Item:new("menu_reset", function()
+   defense_training_tab.learning_item = menu_items.On_Off_Menu_Item:new("menu_dummy_learning",
+                                                                        settings.special_training.defense.characters[opponent],
+                                                                        "learning", true)
+   defense_training_tab.next_attack_delay_item = menu_items.Integer_Menu_Item:new("menu_next_attack_delay",
+                                                                                  settings.special_training.defense
+                                                                                      .characters[opponent],
+                                                                                  "next_attack_delay", 0, 120, false, 0)
+
+   defense_training_tab.reset_item = menu_items.Button_Menu_Item:new("menu_reset", function()
       local opp = defense_tables.opponents[settings.special_training.defense.opponent]
       defense_tables.reset_followups(settings, opp)
    end)
 
-   unblockables_type_item = menu_items.List_Menu_Item:new("menu_setup", settings.special_training.unblockables, "type",
-                                                          unblockables_tables.available_unblockables.alex, 1,
-                                                          update_unblockables_items)
+   unblockables_training_tab = {}
 
-   unblockables_followup_item = menu_items.Check_Box_Grid_Item:new("menu_followup",
-                                                                   settings.special_training.unblockables.followups,
-                                                                   unblockables_tables.followup_names
-                                                                       .urien_midscreen_standard, 3)
-   unblockables_followup_item.is_unselectable = function()
-      local sel_unblockable = unblockables_tables.available_unblockables[settings.special_training.unblockables
-                                  .character][settings.special_training.unblockables.type]
-      return gamestate.P2.char_str ~= unblockables_tables.get_unblockables_character(sel_unblockable)
+   local opponent_name = unblockables_tables.available_opponents[1]
+   local char_str = "alex"
+   local setup_menu_names = unblockables_tables.get_setups_menu_names(opponent_name, char_str)
+   local setup_name = unblockables_tables.get_setup(opponent_name, char_str, 1).name
+   local followups = settings.special_training.unblockables.followups[opponent_name][char_str][1]
+   local followup_menu_names = unblockables_tables.get_followups_menu_names(opponent_name, char_str, setup_name)
+
+   unblockables_training_tab.opponent_item = menu_items.List_Menu_Item:new("menu_opponent",
+                                                                           settings.special_training.unblockables,
+                                                                           "opponent",
+                                                                           unblockables_tables.opponents_menu_names, 1,
+                                                                           function() update_unblockables_items(true) end)
+
+   unblockables_training_tab.setup_item = menu_items.List_Menu_Item:new("menu_setup",
+                                                                        settings.special_training.unblockables, "setup",
+                                                                        setup_menu_names, 1, update_unblockables_items)
+
+   unblockables_training_tab.followup_item = menu_items.Check_Box_Grid_Item:new("menu_followup", followups,
+                                                                                followup_menu_names, 4)
+   unblockables_training_tab.followup_item.is_enabled = function()
+
+      if unblockables_tables.available_opponents[settings.special_training.unblockables.opponent] ==
+          settings.special_training.unblockables.match_savestate_opponent then return true end
+      return false
    end
-   unblockables_followup_item.is_enabled = function() return not unblockables_followup_item.is_unselectable() end
+   unblockables_training_tab.followup_item.is_unselectable = function()
+      return not unblockables_training_tab.followup_item.is_enabled()
+   end
 
-   unblockables_start_item = menu_items.Button_Menu_Item:new("menu_start", function()
-      special_modes.stop_other_modes(unblockables)
-      close_menu(true)
-      unblockables.start()
+   unblockables_training_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
+      if unblockables.is_active then
+         unblockables.stop()
+         update_active_training_page()
+      else
+         special_modes.stop_other_modes(unblockables)
+         close_menu()
+         unblockables.start()
+      end
    end)
-   unblockables_start_item.legend_text = "legend_lp_select_coin_start"
-   unblockables_start_item.is_unselectable = function()
-      local sel_unblockable = unblockables_tables.available_unblockables[settings.special_training.unblockables
-                                  .character][settings.special_training.unblockables.type]
-      return settings.special_training.unblockables.character == "default" or
-                 not unblockables_followup_item:at_least_one_selected() or
-                 unblockables_tables.get_unblockables_character(sel_unblockable) ~=
-                 settings.special_training.unblockables.match_savestate_dummy or not is_frame_data_loaded()
+   unblockables_training_tab.start_item.legend_text = "legend_lp_select_coin_restart"
+   unblockables_training_tab.start_item.is_enabled = function()
+      if is_frame_data_loaded() then
+         if unblockables.is_active then
+            return true
+         elseif unblockables_tables.available_opponents[settings.special_training.unblockables.opponent] ==
+             settings.special_training.unblockables.match_savestate_opponent and
+             unblockables_training_tab.followup_item:at_least_one_selected() then
+            return true
+         end
+      end
+      return false
    end
-   unblockables_start_item.is_enabled = function() return not unblockables_start_item.is_unselectable() end
+   unblockables_training_tab.start_item.is_unselectable = function()
+      return not unblockables_training_tab.start_item.is_enabled()
+   end
 
-   local function unblockables_character_select()
+   unblockables_training_tab.character_select_item = menu_items.Button_Menu_Item:new("menu_character_select", function()
+      main_menu.on_close = nil
       special_modes.stop_other_modes(unblockables)
       unblockables.start_character_select()
-      unblockables_followup_item.selected_col = 1
-      unblockables_followup_item.selected_row = 1
+      unblockables_training_tab.followup_item.selected_col = 1
+      unblockables_training_tab.followup_item.selected_row = 1
       open_after_match_start = true
-      main_menu:select_item(unblockables_followup_item)
+      main_menu:select_item(unblockables_training_tab.followup_item)
+   end)
+   unblockables_training_tab.character_select_item.legend_text = "legend_lp_select"
+   unblockables_training_tab.character_select_item.is_enabled = function() return is_frame_data_loaded() end
+   unblockables_training_tab.character_select_item.is_unselectable = function()
+      return not unblockables_training_tab.character_select_item.is_enabled()
    end
 
    jumpins_edit_menu = create_jumpins_edit_menu()
@@ -1155,16 +1247,33 @@ local function create_training_tab()
       jumpins.load_jump(current_jump_settings)
       update_jumpins_edit_items()
    end
-   jumpins_edit_menu.on_close = function() training.freeze_game() end
+   jumpins_edit_menu.on_close = function()
+      training.freeze_game()
+      settings.save_training_data()
+   end
 
    jumpins_training_tab = {}
    jumpins_training_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
-      special_modes.stop_other_modes(jumpins)
-      close_menu(true)
-      jumpins.start(settings.special_training.jumpins)
+      if jumpins.is_active and jumpins.mode == jumpins.modes.RUN then
+         jumpins.stop()
+         update_active_training_page()
+      else
+         special_modes.stop_other_modes(jumpins)
+         close_menu()
+         jumpins.start(settings.special_training.jumpins)
+      end
    end)
-   jumpins_training_tab.start_item.legend_text = "legend_lp_select_coin_start"
-   jumpins_training_tab.start_item.is_enabled = function() return is_frame_data_loaded() and jumpins_edit_settings end
+   jumpins_training_tab.start_item.legend_text = "legend_lp_select_coin_restart"
+   jumpins_training_tab.start_item.is_enabled = function()
+      if is_frame_data_loaded() then
+         if jumpins.is_active then
+            return true
+         else
+            return jumpins_edit_settings ~= nil
+         end
+      end
+      return false
+   end
    jumpins_training_tab.start_item.is_unselectable = function()
       return not jumpins_training_tab.start_item.is_enabled()
    end
@@ -1197,7 +1306,7 @@ local function create_training_tab()
    jumpins_training_tab.player_position_mode_item = menu_items.List_Menu_Item:new("menu_player_position_mode",
                                                                                   jumpins_edit_settings,
                                                                                   "player_position_mode",
-                                                                                  menu_tables.jumpins_position_mode)
+                                                                                  menu_tables.fixed_point_dynamic)
    jumpins_training_tab.dummy_offset_mode_item = menu_items.List_Menu_Item:new("menu_dummy_offset_mode",
                                                                                jumpins_edit_settings,
                                                                                "dummy_offset_mode",
@@ -1215,16 +1324,31 @@ local function create_training_tab()
    jumpins_training_tab.automatic_replay_item = menu_items.On_Off_Menu_Item:new("menu_automatic_replay",
                                                                                 jumpins_edit_settings,
                                                                                 "automatic_replay", true)
+   jumpins_training_tab.next_attack_delay_item = menu_items.Integer_Menu_Item:new("menu_next_attack_delay",
+                                                                                  jumpins_edit_settings,
+                                                                                  "next_attack_delay", 0, 120, false, 0)
 
    footsies_training_tab = {}
    footsies_training_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
-      special_modes.stop_other_modes(footsies)
-      close_menu(true)
-      footsies.start()
+      if footsies.is_active then
+         footsies.stop()
+         update_active_training_page()
+      else
+         special_modes.stop_other_modes(footsies)
+         close_menu()
+         footsies.start()
+      end
    end)
    footsies_training_tab.start_item.legend_text = "legend_lp_select"
    footsies_training_tab.start_item.is_enabled = function()
-      return is_frame_data_loaded() and footsies_training_tab.moves_item:at_least_one_selected()
+      if is_frame_data_loaded() then
+         if footsies.is_active then
+            return true
+         else
+            return footsies_training_tab.moves_item:at_least_one_selected()
+         end
+      end
+      return false
    end
    footsies_training_tab.start_item.is_unselectable = function()
       return not footsies_training_tab.start_item.is_enabled()
@@ -1244,25 +1368,48 @@ local function create_training_tab()
 
    footsies_training_tab.walk_out_item = menu_items.On_Off_Menu_Item:new("menu_walk_out", {walk_out = true}, "walk_out",
                                                                          true)
-   footsies_training_tab.accuracy_item = menu_items.Slider_Menu_Item:new("menu_accuracy", 100, {80, 80}, {0, 100})
+   footsies_training_tab.accuracy_item =
+       menu_items.Slider_Menu_Item:new("menu_accuracy", 80, {80, 80}, {0, 100}, 5, "%")
    footsies_training_tab.accuracy_item.disable_mode_switch = true
+   footsies_training_tab.accuracy_item.autofire_rate = 2
    footsies_training_tab.accuracy_item.legend_text = ""
 
-   footsies_training_tab.distance_judgement_item = menu_items.Slider_Menu_Item:new("menu_distance_judgement", 100,
-                                                                                   {80, 80}, {0, 100})
+   footsies_training_tab.distance_judgement_item = menu_items.Slider_Menu_Item:new("menu_distance_judgement", 80,
+                                                                                   {80, 80}, {0, 100}, 5, "%")
    footsies_training_tab.distance_judgement_item.disable_mode_switch = true
+   footsies_training_tab.distance_judgement_item.autofire_rate = 2
    footsies_training_tab.distance_judgement_item.legend_text = ""
+
+   footsies_training_tab.next_attack_delay_item = menu_items.Slider_Menu_Item:new("menu_next_attack_delay", 80,
+                                                                                  {80, 80}, {0, 40}, 1)
+   footsies_training_tab.next_attack_delay_item.autofire_rate = 2
+
+   footsies_training_tab.sa_after_parry_item = menu_items.List_Menu_Item:new("menu_sa_after_parry",
+                                                                             {sa_after_parry = 1}, "sa_after_parry",
+                                                                             menu_tables.off_on_random, 1)
 
    geneijin_training_tab = {}
    geneijin_training_tab.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
-      special_modes.stop_other_modes(geneijin)
-      close_menu(true)
-      geneijin.start()
+      if geneijin.is_active then
+         geneijin.stop()
+         update_active_training_page()
+      else
+         special_modes.stop_other_modes(geneijin)
+         close_menu()
+         geneijin.start()
+      end
    end)
    geneijin_training_tab.start_item.legend_text = "legend_lp_select"
    geneijin_training_tab.start_item.is_enabled = function()
-      return is_frame_data_loaded() and geneijin_training_tab.moves_item:at_least_one_selected() and
-                 settings.special_training.geneijin.match_savestate_player ~= ""
+      if is_frame_data_loaded() then
+         if geneijin.is_active then
+            return true
+         else
+            return geneijin_training_tab.moves_item:at_least_one_selected() and
+                       settings.special_training.geneijin.match_savestate_player ~= ""
+         end
+      end
+      return false
    end
    geneijin_training_tab.start_item.is_unselectable = function()
       return not geneijin_training_tab.start_item.is_enabled()
@@ -1292,26 +1439,29 @@ local function create_training_tab()
             jumpins_training_tab.start_edit_item, jumpins_training_tab.jump_replay_mode_item,
             jumpins_training_tab.player_position_mode_item, jumpins_training_tab.dummy_offset_mode_item,
             jumpins_training_tab.attack_delay_mode_item, jumpins_training_tab.show_jump_arc_item,
-            jumpins_training_tab.show_jump_info_item, jumpins_training_tab.automatic_replay_item
+            jumpins_training_tab.show_jump_info_item, jumpins_training_tab.automatic_replay_item,
+            jumpins_training_tab.next_attack_delay_item
          }
       }, {
          name = "training_footsies",
          entries = {
-            training_mode_item, footsies_training_tab.start_item, 
-            character_select_and_open_menu_item, footsies_training_tab.moves_item, footsies_training_tab.walk_out_item,
-            footsies_training_tab.accuracy_item, footsies_training_tab.distance_judgement_item
+            training_mode_item, footsies_training_tab.start_item, character_select_and_open_menu_item,
+            footsies_training_tab.moves_item, footsies_training_tab.walk_out_item, footsies_training_tab.accuracy_item,
+            footsies_training_tab.distance_judgement_item, footsies_training_tab.next_attack_delay_item,
+            footsies_training_tab.sa_after_parry_item
          }
       }, {
          name = "training_unblockables",
          entries = {
-            training_mode_item, unblockables_start_item, unblockables_type_item, unblockables_followup_item,
-            menu_items.Button_Menu_Item:new("menu_character_select", unblockables_character_select)
+            training_mode_item, unblockables_training_tab.start_item, unblockables_training_tab.character_select_item,
+            unblockables_training_tab.opponent_item, unblockables_training_tab.setup_item,
+            unblockables_training_tab.followup_item
          }
       }, {
          name = "training_geneijin",
          entries = {
-            training_mode_item, geneijin_training_tab.start_item,
-            geneijin_training_tab.character_select_item, geneijin_training_tab.moves_item
+            training_mode_item, geneijin_training_tab.start_item, geneijin_training_tab.character_select_item,
+            geneijin_training_tab.moves_item
          }
       }
       -- , {
@@ -1363,7 +1513,7 @@ local function create_challenge_tab()
    challenge_tab.label_item = menu_items.Label_Menu_Item:new("wip", {"menu_work_in_progress"}, {}, "", false, false)
 
    return {
-      header = menu_items.Header_Menu_Item:new("menu_title_challenge"),
+      header = menu_items.Header_Menu_Item:new("menu_title_modules"),
       entries = {
          challenge_tab.challenge_item, challenge_tab.start_item, challenge_tab.character_select_item,
          challenge_tab.label_item
@@ -1390,8 +1540,7 @@ end
 
 local function create_menu()
    local menu_tabs = {
-      create_dummy_tab(), create_recording_tab(), create_display_tab(), create_rules_tab(), create_training_tab(),
-      create_challenge_tab()
+      create_dummy_tab(), create_recording_tab(), create_display_tab(), create_rules_tab(), create_training_tab()
    }
    if debug_settings.developer_mode then menu_tabs[#menu_tabs + 1] = create_debug_tab() end
 
@@ -1407,10 +1556,12 @@ local function create_menu()
          break
       end
    end
+
+   hud = require("src.ui.hud")
    is_initialized = true
 end
 
-local function update_menu_items()
+update_menu_items = function()
    if not debug_settings.recording_framedata then
       update_counter_attack_items()
       update_gauge_items()
@@ -1432,23 +1583,38 @@ local function open_menu()
    end
 end
 
-close_menu = function(training_stays_active)
+close_menu = function()
    is_open = false
    main_menu:menu_stack_clear()
    settings.save_training_data()
-   if not training_stays_active then special_modes.stop_all() end
    training.unfreeze_game()
 end
 
 local horizontal_autofire_rate = 4
 local horizontal_autofire_time
 local vertical_autofire_rate = 4
+local stop_mode_hold_time = 16
+local menu_open_hold_limit = 8
 
 local function update()
    if is_initialized then
       if gamestate.is_in_match then
          local should_toggle = gamestate.P1.input.pressed.start
-
+         if special_modes.active_mode then
+            should_toggle = false
+            if gamestate.P1.input.down.start then
+               hud.update_active_mode_strikeout(gamestate.P1.input.state_time.start, stop_mode_hold_time)
+               if gamestate.P1.input.state_time.start >= stop_mode_hold_time then
+                  special_modes.active_mode.stop()
+                  update_menu_items()
+               end
+            elseif gamestate.P1.input.released.start then
+               hud.reset_active_mode_strikeout()
+               if gamestate.P1.input.last_state_time.start <= menu_open_hold_limit then
+                  should_toggle = true
+               end
+            end
+         end
          if should_toggle then
             if not is_open then
                open_menu()
@@ -1515,7 +1681,6 @@ local function update()
       end
    end
 end
-
 
 local menu_module = {
    create_menu = create_menu,

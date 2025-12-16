@@ -3,14 +3,23 @@ local fd = require("src.modules.framedata")
 local gamestate = require("src.gamestate")
 local settings = require("src.settings")
 local write_memory = require("src.control.write_memory")
+local utils = require("src.modules.utils")
 local tools = require("src.tools")
+local dummy_control, special_modes, defense, jumpins, footsies, unblockables, geneijin, recording
 
 local character_specific = fd.character_specific
 
-local player = gamestate.P1
-local dummy = gamestate.P2
+local training_player = gamestate.P1
+local training_dummy = gamestate.P2
+local recordings_player = gamestate.P2
 
-local swap_characters = false
+local PLAYER_CONTROLLER = {name = "player"}
+local P1_controller = PLAYER_CONTROLLER
+local P2_controller
+
+local controllers
+local VALID_CONTROL_SCHEMES_DEFAULT = {{"player", "dummy_control"}, {"dummy_control", "player"}}
+local valid_control_schemes = VALID_CONTROL_SCHEMES_DEFAULT
 
 local should_freeze_game = false
 
@@ -25,6 +34,27 @@ local meter_recovery_rate_default = 4
 local max_life = 160
 
 local gauge_state
+
+local function init()
+   dummy_control = require("src.control.dummy_control")
+   special_modes = require("src.special_modes")
+   defense = require("src.training.defense")
+   jumpins = require("src.training.jumpins")
+   footsies = require("src.training.footsies")
+   unblockables = require("src.training.unblockables")
+   geneijin = require("src.training.geneijin")
+   recording = require("src.control.recording")
+   controllers = {
+      player = PLAYER_CONTROLLER,
+      dummy_control = dummy_control,
+      defense = defense,
+      jumpins = jumpins,
+      footsies = footsies,
+      unblockables = unblockables,
+      geneijin = geneijin
+   }
+   P2_controller = dummy_control
+end
 
 local function reset_gauge_state()
    gauge_state = {
@@ -281,24 +311,156 @@ local function update_cheats()
    end
 end
 
-local function update_swap()
-   if not swap_characters then
-      player = gamestate.P1
-      dummy = gamestate.P2
+local function update_counter_attack_data(player)
+   counter_attack_data = utils.create_move_data_from_selection(settings.training.counter_attack[player.char_str], player)
+end
+
+local function update_players()
+   if P1_controller == PLAYER_CONTROLLER then
+      training_player = gamestate.P1
+   elseif P2_controller == PLAYER_CONTROLLER then
+      training_player = gamestate.P2
    else
-      player = gamestate.P2
-      dummy = gamestate.P1
+      training_player = nil
+   end
+
+   if P1_controller == dummy_control then
+      training_dummy = gamestate.P1
+   elseif P2_controller == dummy_control then
+      training_dummy = gamestate.P2
+   elseif tools.table_contains(special_modes.modes, P1_controller) then
+      training_dummy = gamestate.P1
+   elseif tools.table_contains(special_modes.modes, P2_controller) then
+      training_dummy = gamestate.P2
+   else
+      training_dummy = gamestate.P2
+   end
+
+   local recording_state = recording.current_recording_state
+   if recording_state == recording.RECORDING_STATE.STOPPED then
+      recordings_player = training_dummy
+   elseif recording_state == recording.RECORDING_STATE.WAIT_FOR_RECORDING then
+      recordings_player = training_player
+   elseif recording_state == recording.RECORDING_STATE.RECORDING then
+      recordings_player = training_player
+   elseif recording_state == recording.RECORDING_STATE.QUEUE_REPLAY then
+      recordings_player = training_dummy
+   elseif recording_state == recording.RECORDING_STATE.POSITIONING then
+      recordings_player = training_dummy
+   elseif recording_state == recording.RECORDING_STATE.REPLAYING then
+      recordings_player = training_dummy
+   else
+      recordings_player = training_dummy
+   end
+   if not training_player then training_player = training_dummy.other end
+   update_counter_attack_data(training_dummy)
+end
+
+local function reset_controls()
+   P1_controller = PLAYER_CONTROLLER
+   P2_controller = dummy_control
+   update_players()
+end
+
+local function swap_controls()
+   P1_controller, P2_controller = P2_controller, P1_controller
+   update_players()
+end
+
+local function control_names_equal(control_names_1, control_names_2)
+   if control_names_1[1] == control_names_2[1] and control_names_1[2] == control_names_2[2] then return true end
+   return false
+end
+
+local function index_of_control_scheme(control_schemes, compare_scheme)
+   for i, control_scheme in ipairs(control_schemes) do
+      if control_names_equal(control_scheme, compare_scheme) then return i end
    end
 end
 
-local function toggle_swap_characters()
-   swap_characters = not swap_characters
-   update_swap()
+local function get_controller(player_id)
+   if player_id == 1 then return P1_controller end
+   return P2_controller
 end
 
-local function reset_swap_characters()
-   swap_characters = false
-   update_swap()
+local function set_controllers_by_name(P1_controller_name, P2_controller_name)
+   P1_controller = controllers[P1_controller_name]
+   P2_controller = controllers[P2_controller_name]
+   update_players()
+end
+
+local function toggle_controls()
+   if special_modes.active_mode then
+      valid_control_schemes = special_modes.active_mode.get_valid_control_schemes()
+   else
+      valid_control_schemes = VALID_CONTROL_SCHEMES_DEFAULT
+   end
+   local index = index_of_control_scheme(valid_control_schemes, {P1_controller.name, P2_controller.name})
+   local control_scheme
+   if index then
+      control_scheme = valid_control_schemes[tools.wrap_index(index + 1, #valid_control_schemes)]
+   else
+      control_scheme = valid_control_schemes[1]
+   end
+   set_controllers_by_name(control_scheme[1], control_scheme[2])
+   update_players()
+end
+
+local function set_module_control_by_name(module_name, other_module_name)
+   local active_mode = special_modes.active_mode
+   local target_controller = 0
+   if active_mode then
+      if P1_controller == active_mode then
+         P1_controller = controllers[module_name]
+         target_controller = 1
+      elseif P2_controller == active_mode then
+         P2_controller = controllers[module_name]
+         target_controller = 2
+      end
+   end
+   if target_controller == 0 then
+      if P1_controller == PLAYER_CONTROLLER then
+         P2_controller = controllers[module_name]
+         target_controller = 2
+      else
+         P1_controller = controllers[module_name]
+         target_controller = 1
+      end
+   end
+   if other_module_name then
+      if target_controller == 1 then
+         P2_controller = controllers[other_module_name]
+      else
+         P1_controller = controllers[other_module_name]
+      end
+   end
+
+   update_players()
+end
+
+local function get_controlled_player_by_name(controller_name)
+   if P1_controller.name == controller_name then return gamestate.P1 end
+   if P2_controller.name == controller_name then return gamestate.P2 end
+   return nil
+end
+
+local function get_player_controlled_by_active_mode()
+   local active_mode = special_modes.active_mode
+   if active_mode then
+      if P1_controller == active_mode then return gamestate.P1 end
+      if P2_controller == active_mode then return gamestate.P2 end
+   end
+   return nil
+end
+
+local function check_controller_validity()
+   if not special_modes.active_mode then
+      if tools.table_contains(special_modes.modes, P1_controller) then
+         P1_controller = PLAYER_CONTROLLER
+      elseif tools.table_contains(special_modes.modes, P2_controller) then
+         P2_controller = PLAYER_CONTROLLER
+      end
+   end
 end
 
 local function update_fast_forward()
@@ -327,8 +489,6 @@ local function update_game_settings()
 end
 
 local function update_training_state()
-   update_swap()
-
    update_game_settings()
 
    update_gauges(gamestate.P1)
@@ -340,10 +500,20 @@ end
 reset_gauge_state()
 
 local training = {
+   init = init,
+   PLAYER_CONTROLLER = PLAYER_CONTROLLER,
+   controllers = controllers,
    update_training_state = update_training_state,
    reset_gauge_state = reset_gauge_state,
-   toggle_swap_characters = toggle_swap_characters,
-   reset_swap_characters = reset_swap_characters,
+   reset_controls = reset_controls,
+   swap_controls = swap_controls,
+   update_players = update_players,
+   toggle_controls = toggle_controls,
+   get_controller = get_controller,
+   set_controllers_by_name = set_controllers_by_name,
+   set_module_control_by_name = set_module_control_by_name,
+   get_controlled_player_by_name = get_controlled_player_by_name,
+   get_player_controlled_by_active_mode = get_player_controlled_by_active_mode,
    update_fast_forward = update_fast_forward,
    freeze_game = freeze_game,
    unfreeze_game = unfreeze_game
@@ -352,13 +522,17 @@ local training = {
 setmetatable(training, {
    __index = function(_, key)
       if key == "player" then
-         return player
+         return training_player
       elseif key == "dummy" then
-         return dummy
+         return training_dummy
+      elseif key == "recordings_player" then
+         return recordings_player
+      elseif key == "P1_controller" then
+         return P1_controller
+      elseif key == "P2_controller" then
+         return P2_controller
       elseif key == "disable_dummy" then
          return disable_dummy
-      elseif key == "swap_characters" then
-         return swap_characters
       elseif key == "counter_attack_data" then
          return counter_attack_data
       end
@@ -366,13 +540,11 @@ setmetatable(training, {
 
    __newindex = function(_, key, value)
       if key == "player" then
-         player = value
+         training_player = value
       elseif key == "dummy" then
-         dummy = value
+         training_dummy = value
       elseif key == "disable_dummy" then
          disable_dummy = value
-      elseif key == "swap_characters" then
-         swap_characters = value
       elseif key == "counter_attack_data" then
          counter_attack_data = value
       else

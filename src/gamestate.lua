@@ -115,8 +115,10 @@ local function make_player_object(id, base, prefix)
          pressed = make_input_set(false),
          released = make_input_set(false),
          down = make_input_set(false),
-         state_time = make_input_set(0)
+         state_time = make_input_set(0),
+         last_state_time = make_input_set(0)
       },
+      input_info = {last_back_input = 0, last_forward_input = 0, last_down_input = 0, last_up_input = 0},
       blocking = {},
       counter = {attack_frame = -1, ref_time = -1, recording_slot = -1, offset = 0, counter_type = ""},
       stunned = false,
@@ -256,37 +258,6 @@ local function read_game_vars()
 
    screen_x = memory.readwordsigned(memory_addresses.global.screen_pos_x)
    screen_y = memory.readwordsigned(memory_addresses.global.screen_pos_y)
-end
-
-local function read_input(player)
-
-   local function read_single_input(input_object, input_name, input)
-      input_object.pressed[input_name] = false
-      input_object.released[input_name] = false
-      if input_object.down[input_name] == false and input then input_object.pressed[input_name] = true end
-      if input_object.down[input_name] == true and input == false then input_object.released[input_name] = true end
-
-      if input_object.down[input_name] == input then
-         input_object.state_time[input_name] = input_object.state_time[input_name] + 1
-      else
-         input_object.state_time[input_name] = 0
-      end
-      input_object.down[input_name] = input
-   end
-
-   local local_input = joypad.get()
-   read_single_input(player.input, "start", local_input[player.prefix .. " Start"])
-   read_single_input(player.input, "coin", local_input[player.prefix .. " Coin"])
-   read_single_input(player.input, "up", local_input[player.prefix .. " Up"])
-   read_single_input(player.input, "down", local_input[player.prefix .. " Down"])
-   read_single_input(player.input, "left", local_input[player.prefix .. " Left"])
-   read_single_input(player.input, "right", local_input[player.prefix .. " Right"])
-   read_single_input(player.input, "LP", local_input[player.prefix .. " Weak Punch"])
-   read_single_input(player.input, "MP", local_input[player.prefix .. " Medium Punch"])
-   read_single_input(player.input, "HP", local_input[player.prefix .. " Strong Punch"])
-   read_single_input(player.input, "LK", local_input[player.prefix .. " Weak Kick"])
-   read_single_input(player.input, "MK", local_input[player.prefix .. " Medium Kick"])
-   read_single_input(player.input, "HK", local_input[player.prefix .. " Strong Kick"])
 end
 
 local function read_box(obj, ptr, type)
@@ -454,8 +425,6 @@ local function read_player_vars(player)
    end
 
    local debug_state_variables = player.debug_state_variables
-
-   read_input(player)
 
    read_game_object(player)
 
@@ -1239,7 +1208,6 @@ local function read_player_vars(player)
          kaiten_object.enabled = false
          return
       end
-
       kaiten_object.enabled = true
       local dir_data = memory.readbyte(kaiten_addr)
 
@@ -1322,7 +1290,8 @@ local function read_player_vars(player)
             read_kaiten_state(player.kaiten[i], kaiten.valid, kaiten.kaiten_address, kaiten.reset_address,
                               kaiten.kaiten_completed, kaiten.is_720)
          else
-            player.kaiten[i] = {name = "kaiten" .. tostring(i), enabled = false}
+            player.kaiten[i].name = "kaiten" .. tostring(i)
+            player.kaiten[i].enabled = false
          end
       end
    end

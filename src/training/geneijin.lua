@@ -13,6 +13,7 @@ local draw = require("src.ui.draw")
 local geneijin_tables = require("src.training.geneijin_tables")
 local framedata = require("src.modules.framedata")
 
+local geneijin
 local module_name = "geneijin"
 
 local is_active = false
@@ -58,6 +59,14 @@ local score_display_time = 40
 local score_fade_time = 20
 local score_min_y = 60
 
+local function set_players()
+   dummy = training.get_controlled_player_by_name(module_name) --
+   or training.get_player_controlled_by_active_mode() --
+   or (training.get_controlled_player_by_name("player") and training.get_controlled_player_by_name("player").other) --
+   or gamestate.P2
+   player = dummy.other
+end
+
 local function apply_settings()
    for i, p_setup in ipairs(geneijin_tables.get_moves()) do
       p_setup.active = settings.special_training.geneijin.moves[i]
@@ -71,8 +80,17 @@ local old_settings = {
    infinite_time = settings.training.infinite_time,
    infinite_sa_time = settings.training.infinite_sa_time
 }
+local old_controller_settings = {"player", "dummy_control"}
 
-local function ensure_training_settings()
+local function save_controller_settings()
+   old_controller_settings = {training.P1_controller.name, training.P2_controller.name}
+end
+
+local function restore_controller_settings()
+   training.set_controllers_by_name(old_controller_settings[1], old_controller_settings[2])
+end
+
+local function save_old_settings()
    old_settings = {
       life_mode = settings.training.life_mode,
       stun_mode = settings.training.stun_mode,
@@ -80,20 +98,20 @@ local function ensure_training_settings()
       infinite_time = settings.training.infinite_time,
       infinite_sa_time = settings.training.infinite_sa_time
    }
+end
+
+local function ensure_training_settings()
    settings.training.life_mode = 4
    settings.training.stun_mode = 3
    settings.training.meter_mode = 5
    settings.training.infinite_time = true
    settings.training.infinite_sa_time = true
-   training.disable_dummy = {false, true}
+   training.disable_dummy[player.id] = false
+   training.disable_dummy[dummy.id] = true
 end
 
 local function restore_training_settings()
-   settings.training.life_mode = old_settings.life_mode
-   settings.training.stun_mode = old_settings.stun_mode
-   settings.training.meter_mode = old_settings.meter_mode
-   settings.training.infinite_time = old_settings.infinite_time
-   settings.training.infinite_sa_time = old_settings.infinite_sa_time
+   for key, value in pairs(old_settings) do settings.training[key] = value end
    training.disable_dummy = {false, false}
 end
 
@@ -124,60 +142,76 @@ local function display_delta_score(d_score)
 end
 
 local function start()
+   save_controller_settings()
+   save_old_settings()
+   ensure_training_settings()
+   if settings.special_training.geneijin.controllers then
+      training.set_controllers_by_name(settings.special_training.geneijin.controllers[1],
+                                       settings.special_training.geneijin.controllers[2])
+   else
+      training.set_module_control_by_name(module_name)
+   end
    inputs.block_input(1, "all")
    inputs.block_input(2, "all")
-   ensure_training_settings()
    Register_After_Load_State(function()
-      is_active = true
-      player = gamestate.P1
-      dummy = gamestate.P2
-      require("src.control.recording").set_recording_state(inputs.input, 1)
+      require("src.special_modes").set_active_mode(geneijin)
+      set_players()
       geneijin_tables.init()
       apply_settings()
       geneijin_tables.reset_weights()
       score = 0
       state = states.SELECT_SETUP
+      if gamestate.is_in_match then
+         hud.indicate_player_controllers()
+         hud.add_notification_text("hud_hold_start_stop", 0, 208, "center_horizontal", 60)
+      end
    end)
    Queue_Command(gamestate.frame_number + 1, function() savestate.load(match_start_state) end)
 end
 
 local function start_character_select()
    state = states.SETUP_MATCH_START
+   local recording = require("src.control.recording")
+   recording.set_recording_state({}, recording.RECORDING_STATE.STOPPED)
+   save_controller_settings()
+   save_old_settings()
    ensure_training_settings()
+   training.set_module_control_by_name(module_name)
+   set_players()
    Register_After_Load_State(function()
-      is_active = true
-      player = gamestate.P1
-      dummy = gamestate.P2
-      require("src.control.recording").set_recording_state(inputs.input, 1)
-      training.reset_swap_characters()
+      require("src.special_modes").set_active_mode(geneijin)
+      set_players()
       geneijin_tables.init()
       apply_settings()
       geneijin_tables.reset_weights()
       score = 0
    end)
 
-   Register_After_Load_State(character_select.force_select_character, {2, "yun", 3, "random"})
+   Register_After_Load_State(character_select.force_select_character, {dummy.id, "yun", 3, "random"})
    character_select.start_character_select_sequence()
 end
 
 local function stop()
    if is_active then
-      is_active = false
+      require("src.special_modes").stop_mode(geneijin)
       hud.clear_info_text()
       hud.clear_score_text()
       advanced_control.clear_all()
+      restore_controller_settings()
       restore_training_settings()
       training.disable_dummy = {false, false}
       inputs.unblock_input(1)
       inputs.unblock_input(2)
+      if gamestate.is_in_match then hud.indicate_player_controllers() end
    end
 end
 
-local function reset() is_active = false end
+local function reset() require("src.special_modes").stop_mode(geneijin) end
 
 local function update()
    if is_active then
       if gamestate.is_before_curtain or gamestate.is_in_match then
+         inputs.block_input(dummy.id, "all")
          if state == states.SETUP_MATCH_START or state == states.SETUP_GENEIJIN then
             inputs.block_input(1, "all")
             inputs.block_input(2, "all")
@@ -191,10 +225,14 @@ local function update()
             geneijin_activate_frame = math.huge
             state = states.SETUP_GENEIJIN
          elseif state == states.SETUP_GENEIJIN then
+            hud.add_notification_text("hud_hold_start_stop", 0, 208, "center_horizontal", 60)
             if dummy.is_in_timed_sa then
                if dummy.superfreeze_just_ended then geneijin_activate_frame = gamestate.frame_number end
                if gamestate.frame_number - geneijin_activate_frame >= 12 then
                   savestate.save(match_start_state)
+                  settings.special_training.geneijin.controllers = {
+                     training.P1_controller.name, training.P2_controller.name
+                  }
                   emu.speedmode("normal")
                   inputs.unblock_input(1)
                   inputs.unblock_input(2)
@@ -223,7 +261,7 @@ local function update()
                elseif player.is_waking_up or player.is_airborne then
                   is_player_wakeup = true
                   local dist = math.abs(player.other.pos_x - player.pos_x)
-                  if dist > framedata.get_contact_distance(player) + 4 then
+                  if dist > framedata.get_contact_distance(player) + 5 then
                      should_walk = true
                      next_move = geneijin_tables.walk_in
                      if geneijin_tables.crab_walk.active then
@@ -347,21 +385,31 @@ local function update()
                end
             end
          end
-         -- hud.add_score_text(score)
+         -- hud.add_score_text(player.id, score)
       end
    end
 end
 
 local function process_gesture(gesture) end
 
-local geneijin = {
-   module_name = module_name,
+local function get_valid_control_schemes()
+   if dummy.id == 2 then
+      return {{"player", module_name}, {"dummy_control", module_name}}
+   else
+      return {{module_name, "player"}, {module_name, "dummy_control"}}
+   end
+end
+
+geneijin = {
+   name = module_name,
    start_character_select = start_character_select,
    start = start,
    stop = stop,
    reset = reset,
    update = update,
-   process_gesture = process_gesture
+   process_gesture = process_gesture,
+   get_valid_control_schemes = get_valid_control_schemes,
+   set_players = set_players
 }
 
 setmetatable(geneijin, {

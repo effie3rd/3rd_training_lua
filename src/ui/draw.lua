@@ -69,6 +69,7 @@ local function get_differences(canvas)
    local existing = {}
    local other_calls = {}
    for i, draw_call in ipairs(canvas.draw_queue) do
+      if draw_call.type ~= canvas.draw_queue_cache[i].type then return end
       if draw_call.type == DRAW_TYPE.IMAGE then
          if draw_call.image ~= canvas.draw_queue_cache[i].image --
          or draw_call.x ~= canvas.draw_queue_cache[i].x --

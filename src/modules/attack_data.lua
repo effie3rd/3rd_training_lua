@@ -2,7 +2,8 @@ local gamestate = require("src.gamestate")
 
 local data = {}
 
-local function update(attacker, defender)
+local function update(attacker)
+   local defender = attacker.other
    data.player_id = attacker.id
 
    local current_life = defender.life
@@ -38,14 +39,25 @@ local function update(attacker, defender)
 
    if defender.stun_just_ended then data.start_stun = 0 end
 
-   if not defender.is_stunned then
-      if defender.posture == 38 or defender.just_recovered or defender.is_in_air_recovery or
+   -- if not defender.is_stunned then
+   --    if defender.posture == 38 or defender.just_recovered or defender.is_in_air_recovery or
+   --        (defender.stun_just_ended and defender.is_idle) then -- stun timed out
+   --       data.finished = true
+   --    end
+   -- end
+
+      if not defender.is_stunned then
+      if 
           (defender.stun_just_ended and defender.is_idle) then -- stun timed out
          data.finished = true
       end
    end
 
    if attacker.combo == nil then attacker.combo = 0 end
+
+   if attacker.combo < data.combo then
+      data.finished = true
+   end
 
    if attacker.combo == 0 then data.last_hit_combo = 0 end
 
@@ -69,7 +81,7 @@ local function update(attacker, defender)
       if data.finished then Queue_Command(gamestate.frame_number + 1, check_chip_damage, {defender}) end
    end
 
-   if attacker.combo ~= 0 then data.combo = attacker.combo end
+   data.combo = attacker.combo
    if attacker.combo > data.max_combo then data.max_combo = attacker.combo end
 
    local delta_life = (defender.previous_life or 0) - current_life

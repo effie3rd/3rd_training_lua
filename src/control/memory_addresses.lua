@@ -1,4 +1,3 @@
--- todo: move player memory addresses here instead of attaching everything to the player object
 local P1_base = 0x02068C6C
 local P2_base = 0x02069104
 
@@ -54,6 +53,15 @@ local addresses = {
 
          selected_sa = 0x0201138B,
          superfreeze_decount = 0x02069520,
+
+         -- [dword]
+         action_address = P1_base + 0x200,
+
+         -- [word]
+         action_line = P1_base + 0x204,
+
+         -- [byte]
+         action_line_size = P1_base + 0x211,
 
          -- [byte]
          life = P1_base + 0x9F,
@@ -184,6 +192,10 @@ local addresses = {
 
          selected_sa = 0x0201138C,
          superfreeze_decount = 0x02069088,
+
+         action_address = P2_base + 0x200,
+         action_line = P2_base + 0x204,
+         action_line_size = P2_base + 0x211,
 
          life = P2_base + 0x9F,
          gauge = 0x020695E1,

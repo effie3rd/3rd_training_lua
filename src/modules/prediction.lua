@@ -2,7 +2,6 @@ local fd = require("src.modules.framedata")
 local fdm = require("src.modules.framedata_meta")
 local sd = require("src.modules.stage_data")
 local gamestate = require("src.gamestate")
-local debug = require("src.debug")
 local tools = require("src.tools")
 local debug_settings = require("src.debug_settings")
 
@@ -872,12 +871,12 @@ local function predict_jump_arc(player, player_anim, player_frame, player_motion
 
                   if debug_settings.debug_hitboxes and i <= 100 then
                      local attack_boxes = tools.get_boxes(frames[frame_to_check].boxes, {"attack"})
-                     debug.queue_hitbox_draw(gamestate.frame_number + predicted_frame.delta, {
+                     require("src.debug").queue_hitbox_draw(gamestate.frame_number + predicted_frame.delta, {
                         player_motion_data[i].pos_x, player_motion_data[i].pos_y, player_motion_data[i].flip_x,
                         attack_boxes, nil, nil, 0xFF941CDD
                      }, "attack")
                      local color = 0x44097000 + 255 - math.floor(100 * (frames_prediction - i) / frames_prediction)
-                     debug.queue_hitbox_draw(gamestate.frame_number + predicted_frame.delta, {
+                     require("src.debug").queue_hitbox_draw(gamestate.frame_number + predicted_frame.delta, {
                         dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y, dummy_motion_data[i].flip_x,
                         dummy_boxes, nil, nil, color
                      }, "vuln")
@@ -898,7 +897,6 @@ local function predict_jump_arc(player, player_anim, player_frame, player_motion
          end
       end
    end
-
    return predicted_state
 end
 -- EX Aegis and Ibuki SA1
@@ -1039,7 +1037,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                color = 0x44097000 + 255 - math.floor(100 * (frames_prediction - i) / frames_prediction)
             end
             if #vuln == 0 then vuln = player.boxes end
-            debug.queue_hitbox_draw(gamestate.frame_number + i, {
+            require("src.debug").queue_hitbox_draw(gamestate.frame_number + i, {
                player_motion_data[i].pos_x, player_motion_data[i].pos_y, player_motion_data[i].flip_x, vuln, nil, nil,
                color
             }, "player")
@@ -1091,12 +1089,12 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
 
                      if debug_settings.debug_hitboxes and i <= debug_settings.hitbox_display_frames then
                         local attack_boxes = tools.get_boxes(frames[frame_to_check].boxes, {"attack"})
-                        debug.queue_hitbox_draw(gamestate.frame_number + predicted_frame.delta, {
+                        require("src.debug").queue_hitbox_draw(gamestate.frame_number + predicted_frame.delta, {
                            player_motion_data[i].pos_x, player_motion_data[i].pos_y, player_motion_data[i].flip_x,
                            attack_boxes, nil, nil, 0xFF941CDD
                         }, "attack")
                         local color = 0x44097000 + 255 - math.floor(100 * (frames_prediction - i) / frames_prediction)
-                        debug.queue_hitbox_draw(gamestate.frame_number + predicted_frame.delta, {
+                        require("src.debug").queue_hitbox_draw(gamestate.frame_number + predicted_frame.delta, {
                            dummy_motion_data[i].pos_x, dummy_motion_data[i].pos_y, dummy_motion_data[i].flip_x,
                            dummy_boxes, nil, nil, color
                         }, "vuln")
@@ -1257,7 +1255,7 @@ local function predict_hits(player, player_anim, player_frame, dummy, dummy_anim
                if #proj_boxes > 0 and delta <= frames_prediction and remaining_cooldown <= 0 and not is_first_hit_frame then
                   if debug_settings.debug_hitboxes and i <= 1 then
                      local color = 0xa9691c00 + 255 - 70 * delta
-                     debug.queue_hitbox_draw(gamestate.frame_number + delta, {
+                     require("src.debug").queue_hitbox_draw(gamestate.frame_number + delta, {
                         proj_motion_data[i].pos_x, proj_motion_data[i].pos_y, proj_motion_data[i].flip_x, proj_boxes,
                         nil, nil, color
                      }, "projectile" .. projectile.id)
@@ -1344,12 +1342,14 @@ local function predict_frames_before_landing(player)
    return -1
 end
 
-local function update_before(previous_input, player, dummy)
+local function update_before(previous_input, dummy)
+   local player = dummy.other
    update_player_animation(previous_input, player)
    update_player_animation(previous_input, dummy)
 end
 
-local function update_after(input, player, dummy)
+local function update_after(input, dummy)
+   local player = dummy.other
    next_animation[player] = predict_next_animation(player, input)
    next_animation[dummy] = predict_next_animation(dummy, input)
 end

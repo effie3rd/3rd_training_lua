@@ -4,7 +4,7 @@ local stage_list = sd.menu_stages
 
 local pose = {"menu_standing", "menu_crouching", "menu_jump_forward", "menu_jump_neutral", "menu_jump_back", "menu_sjump_forward", "menu_sjump_neutral", "menu_sjump_back"}
 
-local quick_stand_mode = {"menu_off", "menu_on", "menu_random"}
+local off_on_random = {"menu_off", "menu_on", "menu_random"}
 
 local blocking_style = {"menu_block", "menu_parry", "menu_red_parry"}
 
@@ -57,9 +57,9 @@ local slot_replay_mode = {
 
 local distance_display_reference_point = {"menu_distance_origin", "menu_distance_hurtbox"}
 
-local jumpins_position_mode = {"menu_point", "menu_dynamic"}
+local fixed_point_dynamic = {"menu_fixed_point", "menu_dynamic"}
 local jumpins_replay_mode = {"menu_replay_random", "menu_replay_ordered"}
-local jumpins_offset_mode = {"menu_point", "menu_range_random", "menu_range_ordered", "menu_range_endpoints"}
+local jumpins_offset_mode = {"menu_fixed_point", "menu_range_random", "menu_range_ordered", "menu_range_endpoints"}
 
 
 local theme_names = {"default"}
@@ -67,7 +67,7 @@ local theme_names = {"default"}
 local menu_tables = {
    stage_list = stage_list,
    pose = pose,
-   quick_stand_mode = quick_stand_mode,
+   off_on_random = off_on_random,
    blocking_style = blocking_style,
    blocking_mode = blocking_mode,
    move_selection_type = move_selection_type,
@@ -88,7 +88,7 @@ local menu_tables = {
    challenge_mode = challenge_mode,
    slot_replay_mode = slot_replay_mode,
    distance_display_reference_point = distance_display_reference_point,
-   jumpins_position_mode = jumpins_position_mode,
+   fixed_point_dynamic = fixed_point_dynamic,
    jumpins_replay_mode = jumpins_replay_mode,
    jumpins_offset_mode = jumpins_offset_mode
 }

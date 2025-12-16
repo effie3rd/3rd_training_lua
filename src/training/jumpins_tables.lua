@@ -209,11 +209,13 @@ local function create_settings(dummy)
       player_position = {math.floor(dummy.other.pos_x), math.floor(dummy.other.pos_x)},
       dummy_offset = {math.floor(dummy.pos_x - dummy.other.pos_x), math.floor(dummy.pos_x - dummy.other.pos_x + 20)},
       dummy_offset_mode = 1,
+      dummy_offset_index = 1,
       second_jump_name = 1,
       second_jump_delay = {8, 8},
       attack_name = 1,
       attack_delay = {6, 6},
       attack_delay_mode = 1,
+      attack_delay_index = 1,
       followup = {special_button = 1, option_select = 1, normal_button = 1, special = 1, type = 1, motion = 1},
       followup_delay = 0
    }

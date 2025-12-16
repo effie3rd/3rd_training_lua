@@ -73,6 +73,26 @@ local function get_move_inputs_by_name(char, name, button)
    return sequence
 end
 
+local function get_move_buttons_by_name(char, name)
+   local buttons = {}
+   for _, move in pairs(move_list[char]) do
+      if move.name == name then
+         buttons = copytable(move.buttons)
+         break
+      end
+   end
+   return buttons
+end
+
+local function get_move_name_by_type(char, type)
+   for _, move in pairs(move_list[char]) do
+      if move.move_type == type then
+         return move.name
+      end
+   end
+   return nil
+end
+
 local function get_special_and_sa_names(char, sa)
    local result = {}
    for i = 1, #move_list[char] do
@@ -108,6 +128,8 @@ return {
    move_list = move_list,
    kara_command_throws = kara_command_throws,
    get_move_inputs_by_name = get_move_inputs_by_name,
+   get_move_buttons_by_name = get_move_buttons_by_name,
+   get_move_name_by_type = get_move_name_by_type,
    get_special_and_sa_names = get_special_and_sa_names,
    get_option_select_names = get_option_select_names,
    get_buttons_by_move_name = get_buttons_by_move_name,

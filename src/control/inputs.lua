@@ -1,4 +1,3 @@
-local settings = require("src.settings")
 local gamestate = require("src.gamestate")
 local fd = require("src.modules.framedata")
 local memory_addresses = require("src.control.memory_addresses")
@@ -250,7 +249,7 @@ local function press_right(input, id)
 end
 
 local function create_input_sequence(move_selection_data)
-   if move_selection_data.type == 5 then return {}, 0 end  -- recording
+   if move_selection_data.type == 5 then return {}, 0 end -- recording
 
    local sequence = {}
    local offset = 0
@@ -358,30 +357,29 @@ local function create_input_sequence(move_selection_data)
    elseif move_selection_data.type == 4 then
       if name == "guard_jump_back" then
          sequence = {
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"back", "up"}, {"back", "up"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"down", "back"}
-         }
-      elseif name == "guard_jump_neutral" then
-         sequence = {
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"up"}, {"up"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"back", "up"}, {"back", "up"}, {"down", "back"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}
          }
+      elseif name == "guard_jump_neutral" then
+         sequence = {
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"up"}, {"up"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}
+         }
       elseif name == "guard_jump_forward" then
          sequence = {
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"forward", "up"}, {"forward", "up"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}
+            {"down", "back"}, {"down", "back"}, {"forward", "up"}, {"forward", "up"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"down", "back"}
          }
       elseif name == "guard_jump_back_air_parry" then
          sequence = {
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"back", "up"}, {"back", "up"}, {}, {}, {},
-            {"forward"}
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"back", "up"}, {"back", "up"}, {}, {}, {}, {"forward"}
          }
          if (is_slow_jumper(move_selection_data.char_str)) then
             table.insert(sequence, #sequence, {})
@@ -391,8 +389,8 @@ local function create_input_sequence(move_selection_data)
          end
       elseif name == "guard_jump_neutral_air_parry" then
          sequence = {
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"up"}, {"up"}, {}, {}, {}, {"forward"}
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"up"}, {"up"}, {}, {}, {}, {"forward"}
          }
          if (is_slow_jumper(move_selection_data.char_str)) then
             table.insert(sequence, #sequence, {})
@@ -402,9 +400,8 @@ local function create_input_sequence(move_selection_data)
          end
       elseif name == "guard_jump_forward_air_parry" then
          sequence = {
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"up", "forward"}, {"up", "forward"}, {}, {}, {},
-            {"forward"}
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"up", "forward"}, {"up", "forward"}, {}, {}, {}, {"forward"}
          }
          if (is_slow_jumper(move_selection_data.char_str)) then
             table.insert(sequence, #sequence, {})
@@ -462,6 +459,8 @@ end
 
 local last_coin_input_frame = -1
 local input_buffer_length = 12
+local GESTURE = {SINGLE_TAP_COIN = 1, DOUBLE_TAP_COIN = 2, TRIPLE_TAP_COIN = 3, COIN_INPUT = 4}
+local a = {gesture = GESTURE.SINGLE_TAP_COIN}
 local function interpret_gesture(player)
    local input_pressed = player.input.pressed.coin
    if input_pressed then
@@ -480,6 +479,7 @@ local function interpret_gesture(player)
 end
 
 local function queue_input_from_json(player, file)
+   local settings = require("src.settings")
    local path = string.format("%s%s", settings.recordings_path, file)
    local recording_inputs = tools.read_object_from_json_file(path)
    if not recording_inputs then
@@ -536,6 +536,21 @@ local function log_input(players)
    end
 end
 
+local function read_single_input(input_object, input_name, input)
+   input_object.pressed[input_name] = false
+   input_object.released[input_name] = false
+   if input_object.down[input_name] == false and input then input_object.pressed[input_name] = true end
+   if input_object.down[input_name] == true and input == false then input_object.released[input_name] = true end
+
+   if input_object.down[input_name] == input then
+      input_object.state_time[input_name] = input_object.state_time[input_name] + 1
+   else
+      input_object.last_state_time[input_name] = input_object.state_time[input_name]
+      input_object.state_time[input_name] = 0
+   end
+   input_object.down[input_name] = input
+end
+
 local function has_pending_inputs(player)
    if player.pending_input_sequence then return #player.pending_input_sequence > 0 end
    return false
@@ -545,8 +560,24 @@ local function block_input(id, setting) block_input_settings[id] = setting end
 
 local function unblock_input(id) block_input_settings[id] = "" end
 
-local function update_input(input)
+local function update_input(input, players)
    input = input or input_object
+
+   for i, player in ipairs(players) do
+      read_single_input(player.input, "start", input[player.prefix .. " Start"])
+      read_single_input(player.input, "coin", input[player.prefix .. " Coin"])
+      read_single_input(player.input, "up", input[player.prefix .. " Up"])
+      read_single_input(player.input, "down", input[player.prefix .. " Down"])
+      read_single_input(player.input, "left", input[player.prefix .. " Left"])
+      read_single_input(player.input, "right", input[player.prefix .. " Right"])
+      read_single_input(player.input, "LP", input[player.prefix .. " Weak Punch"])
+      read_single_input(player.input, "MP", input[player.prefix .. " Medium Punch"])
+      read_single_input(player.input, "HP", input[player.prefix .. " Strong Punch"])
+      read_single_input(player.input, "LK", input[player.prefix .. " Weak Kick"])
+      read_single_input(player.input, "MK", input[player.prefix .. " Medium Kick"])
+      read_single_input(player.input, "HK", input[player.prefix .. " Strong Kick"])
+   end
+
    if #block_input_settings > 0 then
       for id, setting in ipairs(block_input_settings) do
          if setting == "buttons" then
@@ -556,6 +587,23 @@ local function update_input(input)
          elseif setting == "all" then
             clear_all(input, id)
          end
+      end
+   end
+end
+
+local function update_input_info(input, players)
+   if not previous_input then return end
+   input = input or input_object
+   for i, player in ipairs(players) do
+      if tools.is_pressing_back(player, input) and not tools.is_pressing_back(player, previous_input) then
+         player.input_info.last_back_input = gamestate.frame_number
+      elseif tools.is_pressing_forward(player, input) and not tools.is_pressing_forward(player, previous_input) then
+         player.input_info.last_forward_input = gamestate.frame_number
+      end
+      if input[player.prefix .. " Down"] and not previous_input[player.prefix .. " Down"] then
+         player.input_info.last_down_input = gamestate.frame_number
+      elseif input[player.prefix .. " Up"] and not previous_input[player.prefix .. " Up"] then
+         player.input_info.last_up_input = gamestate.frame_number
       end
    end
 end
@@ -581,6 +629,7 @@ local input_module = {
    log_input = log_input,
    has_pending_inputs = has_pending_inputs,
    update_input = update_input,
+   update_input_info = update_input_info,
    block_input = block_input,
    unblock_input = unblock_input
 }

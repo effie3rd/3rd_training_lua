@@ -2,10 +2,11 @@
   "defense":{
     "characters":{
       "ken":{
-        "setups":[true,true,true,true,true],
         "learning":true,
+        "followups":[[true,true,true],[true,true,true,true,true,true,true,true],[true,true,true,true,true,true,true,true],[true,true,true,true,true,true,true,true,true,true],[true,true,true,true,true,true,true],[true,true,true],[true,true,true,true],[true,true,true,true,true],[true],[true,true,true]],
         "score":0,
-        "followups":[[true,true,true],[true,true,true,true,true,true,true,true],[true,true,true,true,true,true,true,true],[true,true,true,true,true,true,true,true,true,true],[true,true,true,true,true,true,true],[true,true,true],[true,true,true,true],[true,true,true,true,true],[true],[true,true,true]]
+        "setups":[true,true,true,true,true],
+        "next_attack_delay":20
       }
     },
     "match_savestate_player":"",
@@ -21,7 +22,11 @@
   "jumpins":{
     "characters":{
       "oro":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":9,
@@ -34,13 +39,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[45,45],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[22,34]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -53,13 +60,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -72,13 +81,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -91,13 +102,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -110,13 +123,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -129,13 +144,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -148,13 +165,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -167,13 +186,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -186,23 +207,26 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "yang":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":11,
@@ -215,13 +239,15 @@
               "special":5,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[17,17],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[145,200],
             "second_jump_delay":[12,12]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -234,13 +260,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[180,200],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -253,13 +281,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[180,200],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -272,13 +302,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[180,200],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -291,13 +323,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[180,200],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -310,13 +344,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[180,200],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -329,13 +365,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[180,200],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -348,13 +386,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[180,200],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -367,33 +407,32 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[180,200],
             "second_jump_delay":[8,8]
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "alex":{
+        "player_position_mode":1,
+        "show_jump_info":false,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":4,
             "second_jump_name":1,
             "second_jump_delay":[0,0],
-            "dummy_offset_mode":1,
-            "attack_delay":[24,32],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[160,100],
             "followup":{
               "type":3,
               "option_select":1,
@@ -401,28 +440,31 @@
               "special":5,
               "normal_button":1,
               "motion":1
-            }
+            },
+            "attack_delay":[24,32],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[160,100],
+            "dummy_offset_mode":1
           }],
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
-        "attack_delay_mode":1,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "attack_delay_mode":1
       },
       "gouki":{
+        "player_position_mode":1,
+        "show_jump_info":false,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":10,
             "second_jump_name":1,
             "second_jump_delay":[12,12],
-            "dummy_offset_mode":1,
-            "attack_delay":[35,36],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[130,196],
             "followup":{
               "type":3,
               "option_select":1,
@@ -430,18 +472,20 @@
               "normal_button":1,
               "special":9,
               "motion":1
-            }
+            },
+            "attack_delay":[35,36],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[130,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -449,18 +493,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -468,18 +514,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -487,18 +535,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -506,18 +556,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -525,18 +577,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -544,18 +598,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -563,18 +619,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -582,18 +640,25 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           }],
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
-        "attack_delay_mode":1,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "attack_delay_mode":1
       },
       "twelve":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":7,
@@ -606,13 +671,15 @@
               "special":2,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[17,25],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[170,196],
             "second_jump_delay":[20,22]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -625,13 +692,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -644,13 +713,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -663,13 +734,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -682,13 +755,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -701,13 +776,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -720,13 +797,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -739,13 +818,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -758,33 +839,32 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "ibuki":{
+        "player_position_mode":1,
+        "show_jump_info":false,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":15,
             "second_jump_name":1,
             "second_jump_delay":[0,0],
-            "dummy_offset_mode":1,
-            "attack_delay":[33,36],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[150,212],
             "followup":{
               "type":3,
               "option_select":1,
@@ -792,18 +872,20 @@
               "normal_button":1,
               "special":6,
               "motion":1
-            }
+            },
+            "attack_delay":[33,36],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[150,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -811,18 +893,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -830,18 +914,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -849,18 +935,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -868,18 +956,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -887,18 +977,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -906,18 +998,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -925,18 +1019,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -944,28 +1040,31 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           }],
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
-        "attack_delay_mode":1,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "attack_delay_mode":1
       },
       "shingouki":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":10,
             "second_jump_name":1,
             "second_jump_delay":[12,12],
-            "dummy_offset_mode":1,
-            "attack_delay":[35,36],
-            "player_position":[416,416],
             "followup_delay":2,
-            "dummy_offset":[159,212],
             "followup":{
               "type":2,
               "option_select":1,
@@ -973,18 +1072,20 @@
               "normal_button":1,
               "special":1,
               "motion":15
-            }
+            },
+            "attack_delay":[35,36],
+            "player_position":[416,416],
+            "attack_delay_index":1,
+            "dummy_offset":[159,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[416,416],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -992,18 +1093,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[416,416],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[416,416],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1011,18 +1114,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[416,416],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[416,416],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1030,18 +1135,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[416,416],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[416,416],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1049,18 +1156,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[416,416],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[416,416],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1068,18 +1177,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[416,416],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[416,416],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1087,18 +1198,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[416,416],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[416,416],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1106,18 +1219,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[416,416],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[416,416],
             "followup_delay":0,
-            "dummy_offset":[192,212],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1125,28 +1240,31 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[416,416],
+            "attack_delay_index":1,
+            "dummy_offset":[192,212],
+            "dummy_offset_mode":1
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
-        "show_jump_info":false,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "gill":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":7,
             "second_jump_name":1,
             "second_jump_delay":[12,12],
-            "dummy_offset_mode":1,
-            "attack_delay":[18,18],
-            "player_position":[376,376],
             "followup_delay":0,
-            "dummy_offset":[170,195],
             "followup":{
               "type":3,
               "option_select":1,
@@ -1154,18 +1272,20 @@
               "normal_button":1,
               "special":2,
               "motion":1
-            }
+            },
+            "attack_delay":[18,18],
+            "player_position":[376,376],
+            "attack_delay_index":1,
+            "dummy_offset":[170,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[376,376],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1173,18 +1293,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[376,376],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[376,376],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1192,18 +1314,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[376,376],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[376,376],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1211,18 +1335,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[376,376],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[376,376],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1230,18 +1356,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[376,376],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[376,376],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1249,18 +1377,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[376,376],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[376,376],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1268,18 +1398,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[376,376],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[376,376],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1287,18 +1419,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[376,376],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[376,376],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1306,28 +1440,31 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[376,376],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
-        "show_jump_info":false,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "urien":{
+        "player_position_mode":1,
+        "show_jump_info":false,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":7,
             "second_jump_name":1,
             "second_jump_delay":[0,0],
-            "dummy_offset_mode":1,
-            "attack_delay":[18,18],
-            "player_position":[430,430],
             "followup_delay":0,
-            "dummy_offset":[130,190],
             "followup":{
               "type":3,
               "option_select":1,
@@ -1335,18 +1472,20 @@
               "normal_button":1,
               "special":4,
               "motion":1
-            }
+            },
+            "attack_delay":[18,18],
+            "player_position":[430,430],
+            "attack_delay_index":1,
+            "dummy_offset":[130,190],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[430,430],
             "followup_delay":0,
-            "dummy_offset":[170,190],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1354,18 +1493,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[430,430],
+            "attack_delay_index":1,
+            "dummy_offset":[170,190],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[430,430],
             "followup_delay":0,
-            "dummy_offset":[170,190],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1373,18 +1514,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[430,430],
+            "attack_delay_index":1,
+            "dummy_offset":[170,190],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[430,430],
             "followup_delay":0,
-            "dummy_offset":[170,190],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1392,18 +1535,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[430,430],
+            "attack_delay_index":1,
+            "dummy_offset":[170,190],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[430,430],
             "followup_delay":0,
-            "dummy_offset":[170,190],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1411,18 +1556,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[430,430],
+            "attack_delay_index":1,
+            "dummy_offset":[170,190],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[430,430],
             "followup_delay":0,
-            "dummy_offset":[170,190],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1430,18 +1577,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[430,430],
+            "attack_delay_index":1,
+            "dummy_offset":[170,190],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[430,430],
             "followup_delay":0,
-            "dummy_offset":[170,190],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1449,18 +1598,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[430,430],
+            "attack_delay_index":1,
+            "dummy_offset":[170,190],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[430,430],
             "followup_delay":0,
-            "dummy_offset":[170,190],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1468,18 +1619,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[430,430],
+            "attack_delay_index":1,
+            "dummy_offset":[170,190],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[430,430],
             "followup_delay":0,
-            "dummy_offset":[170,190],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1487,18 +1640,25 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[430,430],
+            "attack_delay_index":1,
+            "dummy_offset":[170,190],
+            "dummy_offset_mode":1
           }],
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
-        "attack_delay_mode":1,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "attack_delay_mode":1
       },
       "q":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":7,
@@ -1511,13 +1671,15 @@
               "special":4,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[18,21],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[185,205],
             "second_jump_delay":[0,0]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1530,13 +1692,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[185,205],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1549,13 +1713,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[185,205],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1568,13 +1734,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[185,205],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1587,13 +1755,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[185,205],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1606,13 +1776,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[185,205],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1625,13 +1797,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[185,205],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1644,13 +1818,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[185,205],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1663,33 +1839,32 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[185,205],
             "second_jump_delay":[8,8]
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "dudley":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":4,
             "second_jump_name":1,
             "second_jump_delay":[12,12],
-            "dummy_offset_mode":1,
-            "attack_delay":[20,34],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[125,199],
             "followup":{
               "type":3,
               "option_select":1,
@@ -1697,18 +1872,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[20,34],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[125,199],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[179,199],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1716,18 +1893,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[179,199],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[179,199],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1735,18 +1914,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[179,199],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[179,199],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1754,18 +1935,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[179,199],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[179,199],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1773,18 +1956,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[179,199],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[179,199],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1792,18 +1977,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[179,199],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[179,199],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1811,18 +1998,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[179,199],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[179,199],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1830,18 +2019,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[179,199],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[179,199],
             "followup":{
               "type":1,
               "option_select":1,
@@ -1849,18 +2040,25 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[179,199],
+            "dummy_offset_mode":1
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
-        "show_jump_info":false,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "remy":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":4,
@@ -1873,13 +2071,15 @@
               "special":2,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[20,31],
             "player_position":[376,376],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[140,196],
             "second_jump_delay":[0,0]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1892,13 +2092,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[376,376],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1911,13 +2113,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[376,376],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1930,13 +2134,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[376,376],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1949,13 +2155,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[376,376],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1968,13 +2176,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[376,376],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -1987,13 +2197,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[376,376],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2006,13 +2218,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[376,376],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2025,23 +2239,26 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[376,376],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "chunli":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":4,
@@ -2054,13 +2271,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[22,41],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[0,0]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2073,13 +2292,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2092,13 +2313,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2111,13 +2334,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2130,13 +2355,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2149,13 +2376,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2168,13 +2397,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2187,13 +2418,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2206,23 +2439,26 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "sean":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":4,
@@ -2235,13 +2471,15 @@
               "special":2,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[19,20],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[142,194],
             "second_jump_delay":[0,0]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2254,13 +2492,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[174,194],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2273,13 +2513,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[174,194],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2292,13 +2534,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[174,194],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2311,13 +2555,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[174,194],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2330,13 +2576,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[174,194],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2349,13 +2597,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[174,194],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2368,13 +2618,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[174,194],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2387,23 +2639,26 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[174,194],
             "second_jump_delay":[8,8]
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "makoto":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":11,
@@ -2416,13 +2671,15 @@
               "special":4,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[36,37],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[116,181],
             "second_jump_delay":[12,12]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2435,13 +2692,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[161,181],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2454,13 +2713,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[161,181],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2473,13 +2734,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[161,181],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2492,13 +2755,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[161,181],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2511,13 +2776,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[161,181],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2530,13 +2797,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[161,181],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2549,13 +2818,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[161,181],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -2568,33 +2839,32 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[161,181],
             "second_jump_delay":[8,8]
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "necro":{
+        "player_position_mode":1,
+        "show_jump_info":false,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":11,
             "second_jump_name":1,
             "second_jump_delay":[0,0],
-            "dummy_offset_mode":1,
-            "attack_delay":[22,33],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[65,195],
             "followup":{
               "type":3,
               "option_select":1,
@@ -2602,18 +2872,20 @@
               "normal_button":1,
               "special":2,
               "motion":1
-            }
+            },
+            "attack_delay":[22,33],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[65,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2621,18 +2893,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2640,18 +2914,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2659,18 +2935,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2678,18 +2956,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2697,18 +2977,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2716,18 +2998,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2735,18 +3019,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[175,195],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2754,28 +3040,31 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[175,195],
+            "dummy_offset_mode":1
           }],
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
-        "attack_delay_mode":1,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "attack_delay_mode":1
       },
       "hugo":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":9,
             "second_jump_name":1,
             "second_jump_delay":[12,12],
-            "dummy_offset_mode":1,
-            "attack_delay":[28,35],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[90,196],
             "followup":{
               "type":3,
               "option_select":1,
@@ -2783,18 +3072,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[28,35],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[90,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2802,18 +3093,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2821,18 +3114,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2840,18 +3135,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2859,18 +3156,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2878,18 +3177,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2897,18 +3198,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2916,18 +3219,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[176,196],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2935,28 +3240,31 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[176,196],
+            "dummy_offset_mode":1
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
-        "show_jump_info":false,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "elena":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":7,
             "second_jump_name":1,
             "second_jump_delay":[12,12],
-            "dummy_offset_mode":1,
-            "attack_delay":[15,22],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[180,224],
             "followup":{
               "type":3,
               "option_select":1,
@@ -2964,18 +3272,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[15,22],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[180,224],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[204,224],
             "followup":{
               "type":1,
               "option_select":1,
@@ -2983,18 +3293,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[204,224],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[204,224],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3002,18 +3314,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[204,224],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[204,224],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3021,18 +3335,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[204,224],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[204,224],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3040,18 +3356,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[204,224],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[204,224],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3059,18 +3377,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[204,224],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[204,224],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3078,18 +3398,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[204,224],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[204,224],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3097,18 +3419,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[204,224],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[204,224],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3116,28 +3440,31 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[204,224],
+            "dummy_offset_mode":1
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
-        "show_jump_info":false,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "ken":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":6,
             "second_jump_name":1,
             "second_jump_delay":[12,12],
-            "dummy_offset_mode":1,
-            "attack_delay":[30,34],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[110,198],
             "followup":{
               "type":2,
               "option_select":1,
@@ -3145,18 +3472,20 @@
               "normal_button":8,
               "special":1,
               "motion":2
-            }
+            },
+            "attack_delay":[30,34],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[110,198],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[178,198],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3164,18 +3493,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[178,198],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[178,198],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3183,18 +3514,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[178,198],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[178,198],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3202,18 +3535,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[178,198],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[178,198],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3221,18 +3556,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[178,198],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[178,198],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3240,18 +3577,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[178,198],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[178,198],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3259,18 +3598,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[178,198],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[178,198],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3278,18 +3619,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[178,198],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[178,198],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3297,28 +3640,31 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[178,198],
+            "dummy_offset_mode":1
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
-        "show_jump_info":false,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "ryu":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":7,
             "second_jump_name":1,
             "second_jump_delay":[12,12],
-            "dummy_offset_mode":1,
-            "attack_delay":[15,16],
-            "player_position":[424,424],
             "followup_delay":0,
-            "dummy_offset":[156,49],
             "followup":{
               "type":3,
               "option_select":1,
@@ -3326,18 +3672,20 @@
               "normal_button":1,
               "special":2,
               "motion":1
-            }
+            },
+            "attack_delay":[15,16],
+            "player_position":[424,424],
+            "attack_delay_index":1,
+            "dummy_offset":[156,49],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[560,560],
             "followup_delay":0,
-            "dummy_offset":[47,67],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3345,18 +3693,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[560,560],
+            "attack_delay_index":1,
+            "dummy_offset":[47,67],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[560,560],
             "followup_delay":0,
-            "dummy_offset":[47,67],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3364,18 +3714,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[560,560],
+            "attack_delay_index":1,
+            "dummy_offset":[47,67],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[560,560],
             "followup_delay":0,
-            "dummy_offset":[47,67],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3383,18 +3735,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[560,560],
+            "attack_delay_index":1,
+            "dummy_offset":[47,67],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[560,560],
             "followup_delay":0,
-            "dummy_offset":[47,67],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3402,18 +3756,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[560,560],
+            "attack_delay_index":1,
+            "dummy_offset":[47,67],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[560,560],
             "followup_delay":0,
-            "dummy_offset":[47,67],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3421,18 +3777,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[560,560],
+            "attack_delay_index":1,
+            "dummy_offset":[47,67],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[560,560],
             "followup_delay":0,
-            "dummy_offset":[47,67],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3440,18 +3798,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[560,560],
+            "attack_delay_index":1,
+            "dummy_offset":[47,67],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[560,560],
             "followup_delay":0,
-            "dummy_offset":[47,67],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3459,18 +3819,20 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[560,560],
+            "attack_delay_index":1,
+            "dummy_offset":[47,67],
+            "dummy_offset_mode":1
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
             "second_jump_name":1,
             "second_jump_delay":[8,8],
-            "dummy_offset_mode":1,
-            "attack_delay":[6,6],
-            "player_position":[560,560],
             "followup_delay":0,
-            "dummy_offset":[47,67],
             "followup":{
               "type":1,
               "option_select":1,
@@ -3478,18 +3840,25 @@
               "normal_button":1,
               "special":1,
               "motion":1
-            }
+            },
+            "attack_delay":[6,6],
+            "player_position":[560,560],
+            "attack_delay_index":1,
+            "dummy_offset":[47,67],
+            "dummy_offset_mode":1
           }],
-        "player_position_mode":1,
         "dummy_offset_mode":1,
-        "attack_delay_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       },
       "yun":{
+        "player_position_mode":1,
+        "attack_delay_mode":1,
+        "show_jump_arc":false,
         "jumps":[{
+            "dummy_offset_index":1,
             "jump_name":2,
             "attack_delay_mode":1,
             "attack_name":11,
@@ -3502,13 +3871,15 @@
               "special":5,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[17,18],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[148,196],
             "second_jump_delay":[0,0]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -3521,13 +3892,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -3540,13 +3913,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -3559,13 +3934,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -3578,13 +3955,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -3597,13 +3976,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -3616,13 +3997,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -3635,13 +4018,15 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           },{
+            "dummy_offset_index":1,
             "jump_name":1,
             "attack_delay_mode":1,
             "attack_name":1,
@@ -3654,180 +4039,395 @@
               "special":1,
               "motion":1
             },
+            "followup_delay":0,
             "dummy_offset_mode":1,
             "attack_delay":[6,6],
             "player_position":[424,424],
-            "followup_delay":0,
+            "attack_delay_index":1,
             "dummy_offset":[176,196],
             "second_jump_delay":[8,8]
           }],
-        "attack_delay_mode":1,
-        "player_position_mode":1,
         "dummy_offset_mode":1,
+        "next_attack_delay":30,
         "jump_replay_mode":1,
-        "show_jump_info":false,
         "automatic_replay":true,
-        "show_jump_arc":false
+        "show_jump_info":false
       }
     }
   },
   "unblockables":{
-    "savestate_dummy":"",
-    "type":1,
-    "savestate_type":1,
-    "character":"default",
+    "savestate_opponent":"",
     "match_savestate_player":"",
+    "savestate_setup":1,
+    "controllers":["player","unblockables"],
+    "setup":1,
+    "followups":{
+      "oro":{
+        "oro":[[false,false,false]],
+        "yang":[[false,false,false]],
+        "alex":[[false,false,false]],
+        "elena":[[false,false,false]],
+        "twelve":[[false,false,false]],
+        "ibuki":[[false,false,false]],
+        "shingouki":[[false,false,false]],
+        "gill":[[false,false,false]],
+        "hugo":[[false,false,false]],
+        "q":[[false,false,false]],
+        "dudley":[[false,false,false]],
+        "remy":[[false,false,false]],
+        "chunli":[[false,false,false]],
+        "sean":[[false,false,false]],
+        "makoto":[[false,false,false]],
+        "necro":[[false,false,false]],
+        "ryu":[[false,false,false]],
+        "gouki":[[false,false,false]],
+        "ken":[[false,false,false]],
+        "urien":[[false,false,false]],
+        "yun":[[false,false,false]]
+      },
+      "urien":{
+        "oro":[[false,false,false,false],[false]],
+        "yang":[[false,false,false,false],[false,false,false],[false]],
+        "alex":[[false,false,false,false],[false,false,false],[false]],
+        "elena":[[false,false,false],[false]],
+        "twelve":[[false,false,false,false],[false,false,false],[false]],
+        "ibuki":[[false,false,false,false],[false,false,false]],
+        "shingouki":[[false,false,false],[false,false,false,false],[false,false,false],[false]],
+        "gill":[[false,false,false],[false,false,false,false],[false,false,false],[false]],
+        "hugo":[[false,false,false,false],[false,false,false],[false]],
+        "q":[[false,false,false,false],[false,false,false],[false]],
+        "dudley":[[false,false,false,false],[false,false,false],[false]],
+        "remy":[[false,false,false,false],[false,false,false],[false]],
+        "chunli":[[false,false,false],[false,false,false,false],[false,false,false],[false]],
+        "sean":[[false,false,false],[false,false,false,false],[false,false,false],[false]],
+        "makoto":[[false,false,false],[false,false,false,false],[false,false,false],[false]],
+        "necro":[[false,false,false,false],[false,false,false],[false]],
+        "ryu":[[false,false,false],[false,false,false,false],[false,false,false],[false]],
+        "gouki":[[false,false,false],[false,false,false,false],[false,false,false],[false]],
+        "ken":[[false,false,false],[false,false,false,false],[false,false,false],[false]],
+        "urien":[[false,false,false],[false,false,false,false],[false,false,false],[false]],
+        "yun":[[false,false,false,false],[false,false,false],[false]]
+      }
+    },
+    "match_savestate_opponent":"",
     "savestate_player":"",
-    "match_savestate_dummy":"",
-    "followups":[false,false,false]
+    "opponent":1
   },
   "footsies":{
     "characters":{
       "oro":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false,false,false,false,false,false]
       },
       "yang":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false,false,false,false]
       },
       "alex":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false,false,false,false,false,false]
       },
       "elena":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false,false]
       },
       "twelve":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false]
       },
       "ibuki":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false]
       },
       "shingouki":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false]
       },
       "gill":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false]
       },
       "hugo":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false,false,false,false,false,false]
       },
       "q":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false,false,false,false]
       },
       "dudley":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false,false,false]
       },
       "remy":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false,false,false,false,false]
       },
       "chunli":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false,false,false,false,false]
       },
       "sean":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false]
       },
       "makoto":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false,false]
       },
       "necro":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false,false,false,false,false]
       },
       "ryu":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false]
       },
       "gouki":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false]
       },
       "ken":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false]
       },
       "urien":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false]
       },
       "yun":{
-        "score":0,
+        "dist_judgement":[80,80],
+        "accuracy_index":1,
+        "next_attack_delay_index":1,
+        "sa_after_parry":1,
+        "next_attack_delay":[0,10],
+        "next_attack_delay_mode":2,
+        "dist_judgement_index":1,
+        "accuracy_mode":1,
         "walk_out":true,
         "accuracy":[80,80],
-        "dist_judgement":[80,80],
+        "dist_judgement_mode":1,
+        "score":0,
         "moves":[false,false,false,false,false,false,false,false,false]
       }
     },

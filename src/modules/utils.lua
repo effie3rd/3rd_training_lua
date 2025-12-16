@@ -48,7 +48,11 @@ end
 local function get_box_connection_distance(attacker, attack_boxes, defender, defender_boxes, box_types, get_closest)
    box_types = box_types or {"vulnerability", "ext.vulnerability"}
    local hurt_boxes = tools.get_boxes(defender_boxes, box_types)
-   if not hurt_boxes then return nil end
+   if #hurt_boxes == 0 then
+      local anim, standing_data = framedata.find_frame_data_by_name(defender.char_str, "standing")
+      if not standing_data then return 0 end
+      hurt_boxes = tools.get_boxes(standing_data.frames[1].boxes, box_types)
+   end
 
    local furthest = 0
    local relevant_box
@@ -81,7 +85,11 @@ local function get_box_connection_distance(attacker, attack_boxes, defender, def
       end
    end
 
-   if get_closest then return closest else return furthest end
+   if get_closest then
+      return closest
+   else
+      return furthest
+   end
 end
 
 local motion_to_menu_text = {

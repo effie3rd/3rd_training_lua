@@ -9,8 +9,8 @@ local advanced_control = require("src.control.advanced_control")
 local training = require("src.training")
 local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
-local debug = require("src.debug")
 
+local footsies
 local module_name = "footsies"
 
 local is_active = false
@@ -21,17 +21,18 @@ local states = {
    SELECT_SETUP = 4,
    SETUP = 5,
    WAIT_FOR_SETUP = 6,
-   FOLLOWUP = 7,
-   RUNNING = 8,
-   BEFORE_END = 9,
-   END = 10
+   WAIT_FOR_START_DELAY = 7,
+   FOLLOWUP = 8,
+   RUNNING = 9,
+   BEFORE_END = 10,
+   END = 11
 }
 local state = states.SETUP_MATCH_START
 
 -- local match_start_state = savestate.create("data/" .. game_data.rom_name .. "/savestates/footsies_match_start.fs")
 
-local footsies_player = gamestate.P1
-local footsies_dummy = gamestate.P2
+local player = gamestate.P1
+local dummy = gamestate.P2
 
 local action_queue = {}
 local actions = {}
@@ -41,24 +42,33 @@ local followup_timeout = 6 * 60
 local followup_start_frame = 0
 local has_attacked = false
 local is_player_wakeup = false
-local end_delay_min = 0
-local end_delay_max = 30
+local start_frame = 0
 local end_frame = 0
+local player_punish_window = 10
 local score = 0
 local delta_score = 0
 local score_display_time = 40
 local score_fade_time = 20
 local score_min_y = 60
 
+local function set_players()
+   dummy = training.get_controlled_player_by_name(module_name) --
+   or training.get_player_controlled_by_active_mode() --
+   or (training.get_controlled_player_by_name("player") and training.get_controlled_player_by_name("player").other) --
+   or gamestate.P2
+   player = dummy.other
+end
+
 local function apply_settings()
    for i, p_setup in ipairs(footsies_tables.get_moves()) do
-      p_setup.active = settings.special_training.footsies.characters[footsies_dummy.char_str].moves[i]
+      p_setup.active = settings.special_training.footsies.characters[dummy.char_str].moves[i]
    end
-   footsies_tables.walk_out.active = settings.special_training.footsies.characters[footsies_dummy.char_str].walk_out
+   footsies_tables.walk_out.active = settings.special_training.footsies.characters[dummy.char_str].walk_out
    footsies_tables.walk_in.active = true
    footsies_tables.attack.active = true
-   footsies_tables.accuracy = settings.special_training.footsies.characters[footsies_dummy.char_str].accuracy[1]
-   footsies_tables.distance_judgement = settings.special_training.footsies.characters[footsies_dummy.char_str].dist_judgement[1]
+   footsies_tables.accuracy = settings.special_training.footsies.characters[dummy.char_str].accuracy[settings.special_training.footsies.characters[dummy.char_str].accuracy_index]
+   footsies_tables.distance_judgement = settings.special_training.footsies.characters[dummy.char_str].dist_judgement[settings.special_training.footsies.characters[dummy.char_str].dist_judgement_index]
+   footsies_tables.sa_after_parry_mode = settings.special_training.footsies.characters[dummy.char_str].sa_after_parry
 end
 
 local old_settings = {
@@ -68,8 +78,17 @@ local old_settings = {
    infinite_time = settings.training.infinite_time,
    infinite_sa_time = settings.training.infinite_sa_time
 }
+local old_controller_settings = {"player", "dummy_control"}
 
-local function ensure_training_settings()
+local function save_controller_settings()
+   old_controller_settings = {training.P1_controller.name, training.P2_controller.name}
+end
+
+local function restore_controller_settings()
+   training.set_controllers_by_name(old_controller_settings[1], old_controller_settings[2])
+end
+
+local function save_old_settings()
    old_settings = {
       life_mode = settings.training.life_mode,
       stun_mode = settings.training.stun_mode,
@@ -77,19 +96,19 @@ local function ensure_training_settings()
       infinite_time = settings.training.infinite_time,
       infinite_sa_time = settings.training.infinite_sa_time
    }
+end
+
+local function ensure_training_settings()
    settings.training.life_mode = 4
    settings.training.stun_mode = 3
    settings.training.meter_mode = 5
    settings.training.infinite_time = true
-   training.disable_dummy = {false, true}
+   training.disable_dummy[player.id] = false
+   training.disable_dummy[dummy.id] = true
 end
 
 local function restore_training_settings()
-   settings.training.life_mode = old_settings.life_mode
-   settings.training.stun_mode = old_settings.stun_mode
-   settings.training.meter_mode = old_settings.meter_mode
-   settings.training.infinite_time = old_settings.infinite_time
-   settings.training.infinite_sa_time = old_settings.infinite_sa_time
+   for key, value in pairs(old_settings) do settings.training[key] = value end
    training.disable_dummy = {false, false}
 end
 
@@ -114,71 +133,99 @@ local function display_delta_score(d_score)
       score_text = string.format("%d", d_score)
       score_color = colors.score.minus
    end
-   x, y = draw.get_above_character_position(footsies_player)
+   x, y = draw.get_above_character_position(player)
    y = math.max(y, score_min_y)
    hud.add_fading_text(x, y - 4, score_text, "en", score_color, score_display_time, score_fade_time, true)
 end
 
 local function start()
-   is_active = true
-   footsies_player = gamestate.P1
-   footsies_dummy = gamestate.P2
-   require("src.control.recording").set_recording_state(inputs.input, 1)
+   require("src.special_modes").set_active_mode(footsies)
+   local recording = require("src.control.recording")
+   recording.set_recording_state({}, recording.RECORDING_STATE.STOPPED)
+   save_controller_settings()
+   save_old_settings()
    ensure_training_settings()
-   footsies_tables.init(footsies_dummy.char_str)
+   training.set_module_control_by_name(module_name)
+   set_players()
+   footsies_tables.init(dummy)
    apply_settings()
    footsies_tables.reset_weights()
    score = 0
    state = states.SELECT_SETUP
+   if gamestate.is_in_match then
+      hud.indicate_player_controllers()
+      hud.add_notification_text("hud_hold_start_stop", 0, 208, "center_horizontal", 60)
+   end
 end
 
-local function start_character_select()
-end
+local function start_character_select() end
 
 local function stop()
    if is_active then
-      is_active = false
+      require("src.special_modes").stop_mode(footsies)
       hud.clear_score_text()
       advanced_control.clear_all()
+      restore_controller_settings()
       restore_training_settings()
       training.disable_dummy = {false, false}
       inputs.unblock_input(1)
       inputs.unblock_input(2)
+      if gamestate.is_in_match then hud.indicate_player_controllers() end
    end
 end
 
-local function reset() is_active = false end
+local function reset() require("src.special_modes").stop_mode(footsies) end
 
 local function update()
    if is_active then
       if gamestate.is_before_curtain or gamestate.is_in_match then
+         inputs.block_input(dummy.id, "all")
          if state == states.SETUP_MATCH_START and gamestate.has_match_just_started then
          elseif state == states.SELECT_SETUP then
-            footsies_player = gamestate.P1
-            footsies_dummy = gamestate.P2
+            set_players()
+            apply_settings()
+            local at_least_one_followup = false
+            for i, p_setup in ipairs(footsies_tables.get_moves()) do
+               if p_setup.active then
+                  at_least_one_followup = true
+                  break
+               end
+            end
 
+            if not at_least_one_followup then return end
+
+            local last_action = actions[#actions]
             action_queue = {}
             actions = {}
             i_actions = 0
             has_attacked = false
 
-            if footsies_dummy.is_waking_up or (footsies_player.character_state_byte == 1 and footsies_player.posture == 24) then
+            local is_waking_up = player.is_waking_up or (player.character_state_byte == 1 and player.posture == 24)
+
+            if dummy.is_waking_up then
                action_queue[#action_queue + 1] = footsies_tables.block
                actions[#actions + 1] = footsies_tables.block.action
-            elseif footsies_player.is_waking_up then
-               action_queue[#action_queue + 1] = footsies_tables.reset_distance
-               actions[#actions + 1] = footsies_tables.reset_distance.action
+            elseif is_waking_up or gamestate.frame_number < start_frame then
+               if (last_action and last_action ~= footsies_tables.reset_distance.action) and
+                   footsies_tables.reset_distance.action:is_valid(dummy, gamestate.stage, actions, #actions + 1) then
+                  action_queue[#action_queue + 1] = footsies_tables.reset_distance
+                  actions[#actions + 1] = footsies_tables.reset_distance.action
+               else
+                  return
+               end
             else
-               footsies_tables.select_attack(footsies_dummy)
+               footsies_tables.select_attack(dummy)
+               local n_walk_in = 0
                local n_walk_out = 0
                local followups = footsies_tables.get_followups()
                while followups do
                   local valid_moves = {}
                   for i, p_followup in ipairs(followups) do
-                     if p_followup.active and
-                         p_followup.action:is_valid(footsies_dummy, gamestate.stage, actions, i_actions) then
+                     if p_followup.active and p_followup.action:is_valid(dummy, gamestate.stage, actions, #actions + 1) then
                         if p_followup == footsies_tables.walk_out then
-                           p_followup.weight = math.min(footsies_tables.walk_out.default_weight - n_walk_out ^ 0.6, 1)
+                           p_followup.weight = math.min(footsies_tables.walk_out.default_weight - (n_walk_in + n_walk_out) ^ 0.6, 1)
+                        elseif p_followup == footsies_tables.walk_in then
+                           p_followup.weight = math.min(footsies_tables.walk_in.default_weight - n_walk_in ^ 0.6, 1)
                         end
                         valid_moves[#valid_moves + 1] = p_followup
                      end
@@ -187,6 +234,8 @@ local function update()
                   if selected_followup then
                      if selected_followup == footsies_tables.walk_out then
                         n_walk_out = n_walk_out + 1
+                     elseif selected_followup == footsies_tables.walk_in then
+                        n_walk_in = n_walk_in + 1
                      end
                      action_queue[#action_queue + 1] = selected_followup
                      actions[#actions + 1] = selected_followup.action
@@ -200,23 +249,37 @@ local function update()
                   actions[#actions + 1] = footsies_tables.reset_distance.action
                end
             end
-
-            state = states.FOLLOWUP
+            if actions[1] == footsies_tables.reset_distance.action or player.has_just_woke_up then
+               start_frame = gamestate.frame_number
+            else
+               local start_delay_min = settings.special_training.footsies.characters[dummy.char_str].next_attack_delay[1]
+               local start_delay_max = settings.special_training.footsies.characters[dummy.char_str].next_attack_delay[2]
+               if settings.special_training.footsies.characters[dummy.char_str].next_attack_delay_mode == 1 then
+                  local value = settings.special_training.footsies.characters[dummy.char_str].next_attack_delay[settings.special_training.footsies.characters[dummy.char_str].next_attack_delay_index]
+                  start_delay_min = value
+                  start_delay_max = value
+               end
+               start_frame = end_frame + math.random(start_delay_min, start_delay_max)
+            end
+            state = states.WAIT_FOR_START_DELAY
+         end
+         if state == states.WAIT_FOR_START_DELAY then
+            if gamestate.frame_number >= start_frame then state = states.FOLLOWUP end
          end
          if state == states.FOLLOWUP then
             i_actions = i_actions + 1
             local next_move = action_queue[i_actions]
             if next_move then
-               if not next_move.action:should_execute(footsies_dummy, gamestate.stage, actions, i_actions) then
+               if not next_move.action:should_execute(dummy, gamestate.stage, actions, i_actions) then
                   state = states.BEFORE_END
                   update()
                   return
                end
-               advanced_control.queue_programmed_movement(footsies_dummy, next_move.action:setup(footsies_dummy,
-                                                                                                 gamestate.stage,
-                                                                                                 actions, i_actions))
-               if next_move.action.type == training_classes.Action_Type.ATTACK or next_move.action.type ==
-                   training_classes.Action_Type.THROW then has_attacked = true end
+               advanced_control.queue_programmed_movement(dummy, next_move.action:setup(dummy, gamestate.stage, actions,
+                                                                                        i_actions))
+               if has_attacked and
+                   (next_move.action.type == training_classes.Action_Type.ATTACK or next_move.action.type ==
+                       training_classes.Action_Type.THROW) then has_attacked = true end
                followup_start_frame = gamestate.frame_number
                state = states.RUNNING
             else
@@ -224,11 +287,19 @@ local function update()
             end
          end
          if state == states.RUNNING then
-            footsies_tables.update_walk_time(footsies_player)
-            footsies_tables.update_recent_attacks(footsies_player)
+            footsies_tables.update_walk_time(player)
+            footsies_tables.update_recent_attacks(player)
+
             local followup = action_queue[i_actions]
             if followup then
-               local finished, result = followup.action:run(footsies_dummy, gamestate.stage, actions, i_actions)
+               if player.is_attacking and followup.action ~= footsies_tables.block.action and
+                   (gamestate.frame_number - end_frame <= player_punish_window) then
+                  state = states.FOLLOWUP
+                  replace_followups(i_actions + 1, footsies_tables.block)
+                  update()
+                  return
+               end
+               local finished, result = followup.action:run(dummy, gamestate.stage, actions, i_actions)
                if finished then
                   delta_score = 0
                   state = states.FOLLOWUP
@@ -240,11 +311,6 @@ local function update()
                      delta_score = result.score
                   end
                   if result.should_end then
-                     if followup.action.type == training_classes.Action_Type.ATTACK then
-                        end_frame = gamestate.frame_number + math.random(end_delay_min, end_delay_max)
-                     else
-                        end_frame = gamestate.frame_number + end_delay_min
-                     end
                      state = states.BEFORE_END
                      update()
                      return
@@ -253,12 +319,11 @@ local function update()
                   return
                end
                if gamestate.frame_number - followup_start_frame >= followup_timeout then
-                  end_frame = gamestate.frame_number + end_delay_min
                   delta_score = 0
                   state = states.BEFORE_END
                end
             end
-            if footsies_player.superfreeze_just_began and followup.action ~= footsies_tables.block.action then
+            if player.superfreeze_just_began and followup.action ~= footsies_tables.block.action then
                replace_followups(i_actions + 1, footsies_tables.block)
                state = states.FOLLOWUP
                update()
@@ -268,47 +333,56 @@ local function update()
          if state == states.BEFORE_END then
             if not (is_player_wakeup and delta_score > 0) and has_attacked then
                score = math.max(score + delta_score, 0)
-               if score > settings.special_training.footsies.characters[footsies_dummy.char_str].score then
-                  settings.special_training.footsies.characters[footsies_dummy.char_str].score = score
+               if score > settings.special_training.footsies.characters[dummy.char_str].score then
+                  settings.special_training.footsies.characters[dummy.char_str].score = score
                end
                -- display_delta_score(delta_score)
             end
             state = states.END
          end
          if state == states.END then
-            if gamestate.frame_number >= end_frame then
-               if not (footsies_dummy.character_state_byte == 1 or footsies_dummy.character_state_byte == 2 or footsies_dummy.character_state_byte == 3 or
-                   footsies_dummy.character_state_byte == 4) or footsies_dummy.is_waking_up then
-                  state = states.SELECT_SETUP
-               end
+            if not (dummy.character_state_byte == 1 or dummy.character_state_byte == 2 or dummy.character_state_byte ==
+                3 or dummy.character_state_byte == 4) or dummy.is_waking_up then
+               end_frame = gamestate.frame_number
+               state = states.SELECT_SETUP
             end
          end
 
-         -- hud.add_score_text(score)
+         -- hud.add_score_text(player.id, score)
       end
    end
 end
 
 local function process_gesture(gesture) end
 
-local footsies = {
-   module_name = module_name,
+local function get_valid_control_schemes()
+   if dummy.id == 2 then
+      return {{"player", module_name}, {"dummy_control", module_name}}
+   else
+      return {{module_name, "player"}, {module_name, "dummy_control"}}
+   end
+end
+
+footsies = {
+   name = module_name,
    start_character_select = start_character_select,
    start = start,
    stop = stop,
    reset = reset,
    update = update,
-   process_gesture = process_gesture
+   process_gesture = process_gesture,
+   get_valid_control_schemes = get_valid_control_schemes,
+   set_players = set_players
 }
 
 setmetatable(footsies, {
    __index = function(_, key)
       if key == "is_active" then
          return is_active
-      elseif key == "footsies_player" then
-         return footsies_player
-      elseif key == "footsies_dummy" then
-         return footsies_dummy
+      elseif key == "player" then
+         return player
+      elseif key == "dummy" then
+         return dummy
       end
    end,
 
