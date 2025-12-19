@@ -719,7 +719,7 @@ local function reduce_stun_controlled(player)
    if not (player.is_stunned and player.stun_timer > 0) then return end
    disable_update("mash_inputs", false)
    if player.counter.counter_type == "reversal" then
-      if not player.counter.is_counterattacking then return end
+      if not player.counter.is_counterattacking or not player.pending_input_sequence then return end
       local frames_remaining = player.pending_input_sequence.sequence and #player.pending_input_sequence.sequence or 0
       frames_remaining = frames_remaining - player.pending_input_sequence.current_frame -
                              settings.training.counter_attack_delay
@@ -795,7 +795,7 @@ local function update_counter_attack(input, defender, counter_attack_data, hits_
    if defender.is_idle or defender.is_waking_up or defender.counter.stun_queued or
        (defender.is_airborne and not defender.is_being_thrown) then defender.counter.connection_queued = false end
    if defender.is_grounded then defender.counter.air_recovery = false end
-   if not defender.is_stunned then
+   if not defender.is_stunned or (defender.just_received_connection or defender.has_just_been_thrown) then
       disable_update("mash_inputs", false)
       defender.counter.stun_queued = false
    end
@@ -863,8 +863,7 @@ local function update_counter_attack(input, defender, counter_attack_data, hits_
          defender.counter.ref_time = -1
          handle_recording()
          defender.counter.connection_queued = false
-      elseif (defender.just_received_connection or defender.has_just_been_thrown) and not defender.is_airborne and
-          not defender.counter.is_counterattacking then
+      elseif (defender.just_received_connection or defender.has_just_been_thrown) and not defender.is_airborne then
          if debug then print(gamestate.frame_number .. " - init ca (hit/block)") end
          -- log(defender.prefix, "counter_attack", "init ca (hit/block)")
          defender.counter.connection_queued = true
