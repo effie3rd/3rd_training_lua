@@ -847,7 +847,7 @@ local function create_recording_tab()
    recording_random_deviation_item = menu_items.Integer_Menu_Item:new("menu_replay_max_random_deviation",
                                                                       recording.recording_slots[settings.training
                                                                           .current_recording_slot], "random_deviation",
-                                                                      -600, 600, false, 0, 1, 1)
+                                                                      0, 600, false, 0, 1, 1)
 
    return {
       header = menu_items.Header_Menu_Item:new("menu_title_recording"),
