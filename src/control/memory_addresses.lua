@@ -6,8 +6,8 @@ local P2_stun_bar_max = 0x0206960B
 
 local addresses = {
    global = {
-      -- [byte][read/write] hex value is the decimal display
-      character_select_timer = 0x020154FB,
+      -- [byte][read/write] {seconds display, frame countdown}
+      character_select_timer = {0x020154FB, 0x020154FF},
       frame_number = 0x02007F00,
       stage = 0x020154F5,
 
