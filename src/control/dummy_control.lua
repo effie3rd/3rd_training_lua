@@ -823,12 +823,8 @@ local function update_counter_attack(input, defender, counter_attack_data, hits_
          defender.counter.recording_slot = slot_index
 
          local delay = recording.recording_slots[defender.counter.recording_slot].delay or 0
-         local random_deviation = recording.recording_slots[defender.counter.recording_slot].random_deviation or 0
-         if random_deviation <= 0 then
-            random_deviation = math.ceil(math.random(random_deviation - 1, 0))
-         else
-            random_deviation = math.floor(math.random(0, random_deviation + 1))
-         end
+         local max_random_deviation = recording.recording_slots[defender.counter.recording_slot].random_deviation or 0
+         local random_deviation = math.random(0, max_random_deviation)
          if debug then print(string.format("frame offset: %d", delay + random_deviation)) end
          defender.counter.attack_frame = defender.counter.attack_frame + delay + random_deviation
       end
