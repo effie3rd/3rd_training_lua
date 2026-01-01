@@ -349,8 +349,7 @@ local function update_character_select(input)
    if not character_select_sequence_state == 0 then return end
 
    -- Infinite select time
-   memory.writebyte(memory_addresses.global.character_select_timer[1], 0x30)
-   memory.writebyte(memory_addresses.global.character_select_timer[2], 0x30)
+   -- memory.writebyte(memory_addresses.global.character_select_timer, 0x30)
 
    if gamestate.P1.input.pressed.start then
       start_select_random_character()
