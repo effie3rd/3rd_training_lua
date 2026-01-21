@@ -1,0 +1,266 @@
+{
+  "menu_setup_far_d_lk": {
+    "en": "far ↓LK",
+    "jp": "遠↓小K"
+  },
+  "menu_setup_close_d_lk": {
+    "en": "close ↓LK",
+    "jp": "近↓小K"
+  },
+  "menu_setup_close_mp": {
+    "en": "close MP",
+    "jp": "近中P"
+  },
+  "menu_setup_cross_up_mk": {
+    "en": "crossup MK",
+    "jp": "めくり中K"
+  },
+  "menu_setup_wakeup": {
+    "en": "wakeup",
+    "jp": "起き攻め"
+  },
+  "menu_followup_close_mp": {
+    "en": "close MP",
+    "jp": "近中P"
+  },
+  "menu_followup_far_mp": {
+    "en": "far MP",
+    "jp": "遠中P"
+  },
+  "menu_followup_close_d_lk": {
+    "en": "close ↓LK",
+    "jp": "近↓小K"
+  },
+  "menu_followup_mp_hp": {
+    "en": "MP HP",
+    "jp": "中P 大P"
+  },
+  "menu_followup_d_lk_d_lk": {
+    "en": "↓LK ↓LK",
+    "jp": "↓小K ↓小K"
+  },
+  "menu_followup_b_mk": {
+    "en": "←MK",
+    "jp": "←中K"
+  },
+  "menu_followup_d_mp": {
+    "en": "↓MP",
+    "jp": "↓中P"
+  },
+  "menu_followup_d_mk": {
+    "en": "↓MK",
+    "jp": "↓中K"
+  },
+  "menu_followup_hk": {
+    "en": "HK",
+    "jp": "大K"
+  },
+  "menu_followup_throw": {
+    "en": "throw",
+    "jp": "投げ"
+  },
+  "menu_followup_kara_throw": {
+    "en": "kara throw",
+    "jp": "移動投げ"
+  },
+  "menu_followup_block": {
+    "en": "block",
+    "jp": "ガード"
+  },
+  "menu_followup_react": {
+    "en": "react",
+    "jp": "反応する"
+  },
+  "menu_followup_walk_in": {
+    "en": "walk in",
+    "jp": "前歩き"
+  },
+  "menu_followup_walk_out": {
+    "en": "walk out",
+    "jp": "下がり"
+  },
+  "menu_followup_forward_dash": {
+    "en": "forward dash",
+    "jp": "前ステ"
+  },
+  "menu_followup_back_dash": {
+    "en": "back dash",
+    "jp": "バクステ"
+  },
+  "menu_followup_forward_down": {
+    "en": "forward down",
+    "jp": "前下"
+  },
+  "menu_followup_down_forward": {
+    "en": "down forward",
+    "jp": "下前"
+  },
+  "menu_followup_punish": {
+    "en": "punish",
+    "jp": "処理"
+  },
+  "menu_far_d_lk_followups": {
+    "en": "Far ↓LK Follow-Ups",
+    "jp": "遠↓小K連続"
+  },
+  "menu_close_d_lk_followups": {
+    "en": "Close ↓LK Follow-Ups",
+    "jp": "近↓小K連続"
+  },
+  "menu_close_mp_followups": {
+    "en": "Close MP Follow-Ups",
+    "jp": "近中P連続"
+  },
+  "menu_crossup_mk_followups": {
+    "en": "Crossup MK Follow-Ups",
+    "jp": "めくり中K連続"
+  },
+  "menu_wakeup_followups": {
+    "en": "Wakeup Follow-Ups",
+    "jp": "起き攻め連続"
+  },
+  "menu_block_followups": {
+    "en": "Block Follow-Ups",
+    "jp": "ガード連続"
+  },
+  "menu_walk_in_followups": {
+    "en": "Walk In Follow-Ups",
+    "jp": "前歩き連続"
+  },
+  "menu_walk_out_followups": {
+    "en": "Walk Out Follow-Ups",
+    "jp": "下がり連続"
+  },
+  "menu_back_dash_followups": {
+    "en": "Back Dash Follow-Ups",
+    "jp": "バクステ連続"
+  },
+  "menu_forward_dash_followups": {
+    "en": "Forward Dash Follow-Ups",
+    "jp": "前ステ連続"
+  },
+  "menu_setup_raigeki_high": {
+    "en": "raigeki (high)",
+    "jp": "雷撃（高）"
+  },
+  "menu_setup_raigeki_mid": {
+    "en": "raigeki (mid)",
+    "jp": "雷撃（中）"
+  },
+  "menu_setup_raigeki_low": {
+    "en": "raigeki (low)",
+    "jp": "雷撃（低）"
+  },
+  "menu_setup_raigeki_crossup": {
+    "en": "raigeki (crossup)",
+    "jp": "雷撃（めくり）"
+  },
+  "menu_setup_raigeki_crossthrough": {
+    "en": "raigeki (crossthrough)",
+    "jp": "雷撃（くぐり）"
+  },
+  "menu_setup_raigeki_whiff": {
+    "en": "raigeki (whiff)",
+    "jp": "雷撃（手前）"
+  },
+  "menu_setup_jump_mp": {
+    "en": "jump MP",
+    "jp": "ジャンプ中P"
+  },
+  "menu_setup_down_lk": {
+    "en": "↓LK",
+    "jp": "↓LK"
+  },
+  "menu_setup_close_mp_lp_tourou": {
+    "en": "close MP · LP tourouzan",
+    "jp": "近中P・小P蟷螂斬"
+  },
+  "menu_setup_down_mk_lp_tourou": {
+    "en": "↓MK · LP tourouzan", 
+    "jp": "↓中K・小K蟷螂斬"
+  },
+  "menu_setup_close_mk_jump_hk": {
+    "en": "close MK · jump HK",
+    "jp": "近中K・ジャンプ大K"
+  },
+  "menu_raigeki_high_followups": {
+    "en": "Raigeki (high) Follow-Ups",
+    "jp": "雷撃（高）連続"
+  },
+  "menu_raigeki_mid_followups": {
+    "en": "Raigeki (mid) Follow-Ups",
+    "jp": "雷撃（中）連続"
+  },
+  "menu_raigeki_low_followups": {
+    "en": "Raigeki (low) Follow-Ups",
+    "jp": "雷撃（低）連続"
+  },
+  "menu_raigeki_crossup_followups": {
+    "en": "Raigeki (crossup) Follow-Ups",
+    "jp": "雷撃（めくり）連続"
+  },
+  "menu_raigeki_crossthrough_followups": {
+    "en": "Raigeki (crossthrough) Follow-Ups",
+    "jp": "雷撃（くぐり）連続"
+  },
+  "menu_raigeki_whiff_followups": {
+    "en": "Raigeki (whiff) Follow-Ups",
+    "jp": "雷撃（手前）連続"
+  },
+  "menu_jump_mp_followups": {
+    "en": "Jump MP Follow-Ups",
+    "jp": "ジャンプ中P連続"
+  },
+  "menu_down_lk_followups": {
+    "en": "↓LK Follow-Ups",
+    "jp": "↓小K連続"
+  },
+  "menu_lp_tourou_followups": {
+    "en": "LP Tourouzan Follow-Ups",
+    "jp": "小P蟷螂斬連続"
+  },
+  "menu_close_mk_jump_hk_followups": {
+    "en": "Close MK · Jump HK Follow-Ups",
+    "jp": "近中K・ジャンプ大K連続"
+  },
+  "menu_followup_close_mk_jump_hk": {
+    "en": "close MK · jump HK",
+    "jp": "近中K・ジャンプ大K"
+  },
+  "menu_followup_close_mp_lp_tourou": {
+    "en": "close MP · LP tourouzan",
+    "jp": "近中P・小P蟷螂斬"
+  },
+  "menu_followup_down_mk_lp_tourou": {
+    "en": "↓MK · LP tourouzan",
+    "jp": "↓中K・小P蟷螂斬"
+  },
+  "menu_followup_down_mk_ex_tourou": {
+    "en": "↓MK · EX tourouzan",
+    "jp": "↓中K・EX蟷螂斬"
+  },
+  "menu_followup_uoh": {
+    "en": "uoh",
+    "jp": "リープ"
+  },
+  "menu_punish_tenshin": {
+    "en": "tenshinsenkyuutai",
+    "jp": "転身穿弓腿"
+  },
+  "menu_followup_lk_ex_tourou": {
+    "en": "LK · EX tourouzan",
+    "jp": "小K・EX蟷螂斬"
+  },
+  "menu_punish_lk_ex_tourou": {
+    "en": "LK · EX tourouzan",
+    "jp": "小K・EX蟷螂斬"
+  },
+  "menu_punish_d_mk_ex_tourou": {
+    "en": "↓MK · EX tourouzan",
+    "jp": "↓中K・EX蟷螂斬"
+  },
+  "menu_punish_ex_tourou": {
+    "en": "EX tourouzan",
+    "jp": "EX蟷螂斬"
+  }
+}

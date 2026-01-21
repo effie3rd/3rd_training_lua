@@ -4,10 +4,12 @@ local P2_base = 0x02069104
 local P1_stun_bar_max = 0x020695F7
 local P2_stun_bar_max = 0x0206960B
 
-local addresses = {
+local addresses
+addresses = {
    global = {
-      -- [byte][read/write] hex value is the decimal display
-      character_select_timer = 0x020154FB,
+      -- [byte][read/write]
+      character_select_timer = 0x020154FB, -- hex value is the decimal display
+      character_select_timer_countdown = 0x020154FF, -- n frames until decrease. resets to 0x32 (60 frames)
       frame_number = 0x02007F00,
       stage = 0x020154F5,
 
@@ -53,15 +55,6 @@ local addresses = {
 
          selected_sa = 0x0201138B,
          superfreeze_decount = 0x02069520,
-
-         -- [dword]
-         action_address = P1_base + 0x200,
-
-         -- [word]
-         action_line = P1_base + 0x204,
-
-         -- [byte]
-         action_line_size = P1_base + 0x211,
 
          -- [byte]
          life = P1_base + 0x9F,
@@ -120,10 +113,15 @@ local addresses = {
          can_fast_wakeup = P1_base + 0x402,
          fast_wakeup_flag = P1_base + 0x403,
          is_flying_down_flag = P1_base + 0x8D,
+         air_recovery_1 = P1_base + 0x12F,
+         air_recovery_2 = P1_base + 0x3C7,
          combo = P1_base + 0xA59,
 
+         -- [dword]
+         action = P1_base + 0xAC, -- 1st word type 0 idle&movement, 4 normals, 5 specials, 2nd word if type not 0
+         palette = P1_base + 0x268,
+
          -- [word]
-         action = P1_base + 0xAC,
          action_ext = P1_base + 0x12C,
          input_capacity = P1_base + 0x46C,
          total_received_projectiles_count = P1_base + 0x430,
@@ -193,10 +191,6 @@ local addresses = {
          selected_sa = 0x0201138C,
          superfreeze_decount = 0x02069088,
 
-         action_address = P2_base + 0x200,
-         action_line = P2_base + 0x204,
-         action_line_size = P2_base + 0x211,
-
          life = P2_base + 0x9F,
          gauge = 0x020695E1,
          meter = 0x020286DF,
@@ -253,9 +247,13 @@ local addresses = {
          can_fast_wakeup = P2_base + 0x402,
          fast_wakeup_flag = P2_base + 0x403,
          is_flying_down_flag = P2_base + 0x8D,
+         air_recovery_1 = P2_base + 0x12F,
+         air_recovery_2 = P2_base + 0x3C7,
          combo = P2_base + 0x519,
 
          action = P2_base + 0xAC,
+         palette = P2_base + 0x268,
+
          action_ext = P2_base + 0x12C,
          input_capacity = P2_base + 0x46C,
          total_received_projectiles_count = P2_base + 0x430,
@@ -310,7 +308,43 @@ local addresses = {
          infinite_juggle = 0x20694C6
       }
    },
-   offsets = {}
+   offsets = {
+      friends = 0x1,
+      flip_x = 0x0A, -- 0 facing left, 1 facing right
+      pos_x_char = 0x64,
+      pos_x_mantissa = 0x66,
+      pos_y_char = 0x68,
+      pos_y_mantissa = 0x6A,
+
+      velocity_x_char = 0x64 + 24,
+      velocity_x_mantissa = 0x64 + 26,
+      velocity_y_char = 0x64 + 28,
+      velocity_y_mantissa = 0x64 + 30,
+      acceleration_x_char = 0x64 + 32,
+      acceleration_x_mantissa = 0x64 + 34,
+      acceleration_y_char = 0x64 + 36,
+      acceleration_y_mantissa = 0x64 + 38,
+
+      char_id = 0x3C0,
+
+      object_validity = 0x2A0,
+
+      action_address = 0x200, -- [dword]
+      action_line = 0x204, -- [word]
+      action_line_size = 0x20D, -- [byte]
+
+      frame_countdown = 0x214,
+      frame_id = 0x21A,
+
+      emitter_id = 0x2,
+      alive = 0x27,
+      remaining_hits = 0x9E,
+      remaining_freeze_frames = 0x45,
+      remaining_lifetime = 0x9A,
+      projectile_type = 0x91,
+      clone_id = 0xB,
+      tengu_state = 0x29
+   }
 }
 
 -- Misc
@@ -326,6 +360,8 @@ setmetatable(addresses_module, {
          return addresses.global
       elseif key == "players" then
          return addresses.players
+      elseif key == "offsets" then
+         return addresses.offsets
       end
    end
 })

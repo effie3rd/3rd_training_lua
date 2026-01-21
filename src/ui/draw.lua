@@ -492,13 +492,13 @@ local function get_text_dimensions_multiple(list_str, lang, size)
    return w, h
 end
 
-local function draw_hitboxes(pos_x, pos_y, flip_x, boxes, filter, dilation, color, opacity)
+local function draw_hitboxes(pos_x, pos_y, flip_x, boxes, extended, filter, dilation, color, opacity)
    dilation = dilation or 0
    local px, py = game_to_screen_space(pos_x, pos_y)
    local opacity_byte = 0xFF
    if opacity and opacity < 100 then opacity_byte = tools.float_to_byte(opacity / 100) end
    for __, box in pairs(boxes) do
-      box = tools.format_box(box)
+      box = tools.format_box(box, extended)
       if filter == nil or filter[box.type] == true then
          -- vulnerability
          local c = colors.hitboxes.vulnerability
@@ -510,8 +510,12 @@ local function draw_hitboxes(pos_x, pos_y, flip_x, boxes, filter, dilation, colo
             c = colors.hitboxes.throw
          elseif (box.type == "push") then
             c = colors.hitboxes.push
-         elseif (box.type == "ext. vulnerability") then
-            c = colors.hitboxes.extvulnerability
+         elseif (box.type == "ext_vulnerability") then
+            c = colors.hitboxes.ext_vulnerability
+         elseif (box.type == "attack_a") then
+            c = colors.hitboxes.attack_a
+         elseif (box.type == "attack_b") then
+            c = colors.hitboxes.attack_b
          end
 
          c = color or c
@@ -720,17 +724,22 @@ local function draw_horizontal_text_segment(p1_x, p2_x, y, str, line_color, edge
    end
 end
 
-local function get_above_character_position(player)
+local function get_above_character_position(player, ignore_crouching)
+   ignore_crouching = ignore_crouching or ignore_crouching == nil and true
    local char_height = 0
-   if gamestate.is_standing_state(player, player.standing_state) or
-       gamestate.is_crouching_state(player, player.standing_state) or
-       (player.standing_state == 0 and player.character_state_byte == 4) then
-      char_height = require("src.modules.framedata").character_specific[player.char_str].height.standing.max + 10
+   local is_standing = gamestate.is_standing_state(player, player.standing_state)
+   local is_crouching = gamestate.is_crouching_state(player, player.standing_state)
+   local is_in_special_attack = player.standing_state == 0 and player.character_state_byte == 4
+   local character_specific = require("src.data.framedata").character_specific
+   if is_standing or is_crouching or is_in_special_attack then
+      if is_crouching and not ignore_crouching then
+         char_height = character_specific[player.char_str].height.crouching.max + 10
+      else
+         char_height = character_specific[player.char_str].height.standing.max + 10
+      end
    else
       char_height = tools.get_boxes_highest_position(player.boxes, {"vulnerability", "push"})
-      if char_height == 0 then
-         char_height = require("src.modules.framedata").character_specific[player.char_str].height.standing.max
-      end
+      if char_height == 0 then char_height = character_specific[player.char_str].height.standing.max end
    end
    return game_to_screen_space(player.pos_x, player.pos_y + char_height)
 end
@@ -794,6 +803,8 @@ canvas_stack = {menu_canvas}
 local draw = {
    SCREEN_WIDTH = SCREEN_WIDTH,
    SCREEN_HEIGHT = SCREEN_HEIGHT,
+   CANVAS_WIDTH = CANVAS_WIDTH,
+   CANVAS_HEIGHT = CANVAS_HEIGHT,
    GROUND_OFFSET = GROUND_OFFSET,
    GD_HEADER_SIZE = GD_HEADER_SIZE,
    GD_BYTES_PER_PIXEL = GD_BYTES_PER_PIXEL,

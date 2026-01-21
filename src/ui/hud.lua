@@ -1,16 +1,16 @@
 -- in-match displays
 local settings = require("src.settings")
-local fd = require("src.modules.framedata")
+local fd = require("src.data.framedata")
 local gamestate = require("src.gamestate")
-local attack_data = require("src.modules.attack_data")
-local frame_advantage = require("src.modules.frame_advantage")
+local attack_data = require("src.data.attack_data")
+local frame_advantage = require("src.data.frame_advantage")
 local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
 local image_tables = require("src.ui.image_tables")
 local recording = require("src.control.recording")
 local tools = require("src.tools")
 
-local frame_data, character_specific = fd.frame_data, fd.character_specific
+local character_specific = fd.character_specific
 local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = draw.render_text,
                                                                                              draw.render_text_multiple,
                                                                                              draw.get_text_dimensions,
@@ -628,6 +628,122 @@ local function red_parry_miss_display(player)
    end
 end
 
+local input_accuracy_invalid_actions = {
+   [0] = true,
+   [0x6] = true,
+   [0x7] = true,
+   [0xB] = true,
+   [0xE] = true,
+   [0xF] = true,
+   [0x10] = true,
+   [0x14] = true,
+   [0x15] = true,
+   [0x16] = true
+}
+local input_accuracy_data = {action = 0, idle_time = 0}
+local function input_accuracy_update(player)
+   if player.idle_time <= 30 then
+      local should_display = false
+      if not input_accuracy_invalid_actions[player.action] then
+         if player.action ~= input_accuracy_data.action then
+            should_display = true
+         elseif player.animation_frame == 0 then
+            should_display = true
+         end
+      end
+      if should_display then
+         local x, y = draw.get_above_character_position(player)
+         y = y - 2
+         local w, h = get_text_dimensions(input_accuracy_data.idle_time)
+         h = h + 1
+         add_fading_text(x - tools.round(w / 2), y - h, input_accuracy_data.idle_time, "en", colors.red_parry_miss,
+                         red_parry_miss_display_time, red_parry_miss_fade_time, true)
+      end
+   end
+   input_accuracy_data.action = player.action
+   input_accuracy_data.idle_time = player.idle_time
+end
+
+local function input_accuracy_display() end
+
+local guard_jump_input_state = {IDLE = 1, RUNNING = 2, END = 3}
+local guard_jump_input_display_state = {SHOW = 1, HIDE = 2, SHOW_LAST = 3}
+local guard_jump_input_data = {
+   {reference_frame = -1, state = guard_jump_input_state.IDLE}, {}
+}
+local guard_jump_input_bar = {jump_tolerance = 3, window_min = 6, window_max = 10, bar_end = 16, bar_height = 3, scale = 4}
+
+local function reset_guard_jump_input() guard_jump_input_data = {{}, {}} end
+local function update_guard_jump_input(input)
+   settings.training.display_guard_jump_input = 1
+   if settings.training.display_guard_jump_input == 1 then return end
+   local players = {}
+   if settings.training.display_guard_jump_input == 2 then
+      players = {gamestate.P1}
+   elseif settings.training.display_guard_jump_input == 3 then
+      players = {gamestate.P2}
+   elseif settings.training.display_guard_jump_input == 4 then
+      players = {gamestate.P1, gamestate.P2}
+   end
+   for _, player in pairs(players) do
+      local data = guard_jump_input_data[player.id]
+      local is_holding_down_back = tools.is_pressing_down(player, input) and tools.is_pressing_back(player, input)
+      local is_holding_up = tools.is_pressing_up(player, input)
+      if player.is_idle and is_holding_down_back and data.state == guard_jump_input_state.IDLE then
+         data.state = guard_jump_input_state.RUNNING
+      end
+      if data.state == guard_jump_input_state.RUNNING then
+         if is_holding_down_back and data.reference_frame == -1 and
+             gamestate.is_ground_state(player, player.standing_state) then
+            data.reference_frame = gamestate.frame_number
+         end
+         if player.has_just_blocked then data.reference_frame = -1 end
+         if player.has_just_been_hit then
+            -- fail
+         end
+         if player.has_just_recovered or player.has_just_landed or player.has_just_woke_up then
+            data.reference_frame = gamestate.frame_number
+         end
+      end
+   end
+end
+
+-- fail color, success color, early color
+
+local function guard_jump_input_display()
+   settings.training.display_guard_jump_input = 1
+   if settings.training.display_guard_jump_input == 1 then return end
+   local players = {}
+   if settings.training.display_guard_jump_input == 2 then
+      players = {gamestate.P1}
+   elseif settings.training.display_guard_jump_input == 3 then
+      players = {gamestate.P2}
+   elseif settings.training.display_guard_jump_input == 4 then
+      players = {gamestate.P1, gamestate.P2}
+   end
+   for _, player in pairs(players) do
+      local x, y = draw.get_above_character_position(gamestate.P1, false)
+      x = x - guard_jump_input_bar.bar_end * guard_jump_input_bar.scale / 2
+      local bar_width = guard_jump_input_bar.bar_end * guard_jump_input_bar.scale
+      local block_time = gamestate.frame_number - guard_jump_input_data[player.id].reference_frame
+      local bar_ratio = block_time / guard_jump_input_bar.bar_end
+      local bar_color
+      if block_time < guard_jump_input_bar.window_min then
+         bar_color = colors.idle_time
+      elseif block_time < guard_jump_input_bar.window_max then
+         bar_color = colors.gauges.valid_fill
+      else
+         bar_color = 0x991111ff
+      end
+      draw.draw_gauge(x, y, bar_width, guard_jump_input_bar.bar_height, bar_ratio, bar_color, colors.gauges.background,
+                      colors.gauges.outline, false)
+      local section_offset = guard_jump_input_bar.window_min * guard_jump_input_bar.scale
+      gui.line(x + section_offset, y, x + section_offset, y + guard_jump_input_bar.bar_height, 0x00000044)
+      section_offset = guard_jump_input_bar.window_max * guard_jump_input_bar.scale
+      gui.line(x + section_offset, y, x + section_offset, y + guard_jump_input_bar.bar_height, 0x00000044)
+   end
+end
+
 local attack_range_display_attacks = {{}, {}}
 local attack_range_display_data = {}
 local attack_range_display_start_pos = {}
@@ -636,7 +752,7 @@ local attack_range_display_attack_box_colors = {
 }
 local attack_range_display_throw_box_colors = {
    colors.colorscale(colors.hitboxes.throw, 0.6), colors.colorscale(colors.hitboxes.throwable, 0.6),
-   colors.colorscale(colors.hitboxes.extvulnerability, 0.6)
+   colors.colorscale(colors.hitboxes.ext_vulnerability, 0.6)
 }
 
 local function attack_range_display_reset()
@@ -646,7 +762,7 @@ end
 
 -- needs to be rewritten due to framedata changes
 local function attack_range_display()
-   if not require("src.loading").frame_data_loaded then return end
+   if not fd.is_loaded then return end
    local players = {}
    if settings.training.display_attack_range == 2 then
       players = {gamestate.P1}
@@ -661,7 +777,7 @@ local function attack_range_display()
       local id = player.id
       if player.has_just_attacked then
          attack_range_display_start_pos[id] = {player.previous_pos_x, player.previous_pos_y}
-         fdata = frame_data[player.char_str][player.animation]
+         fdata = fd.frame_data[player.char_str][player.animation]
          if fdata and fdata.hit_frames then
             if not tools.table_contains(attack_range_display_attacks[id], player.animation) then
                table.insert(attack_range_display_attacks[id], player.animation)
@@ -678,7 +794,7 @@ local function attack_range_display()
          local velocity_y = 0
          local acceleration_x = 0
          local acceleration_y = 0
-         fdata = frame_data[player.char_str][attack_anim]
+         fdata = fd.frame_data[player.char_str][attack_anim]
          if fdata and fdata.hit_frames then
             last_hit_frame = fdata.hit_frames[#fdata.hit_frames][2] + 1
             attack_range_display_data[attack_anim] = {}
@@ -739,9 +855,10 @@ local function attack_range_display()
                current_box = tools.create_box(box)
             end
 
-            draw.draw_hitboxes(posx + sign * data.offset_x, posy + data.offset_y, player.flip_x, {current_box},
+            local extended = false
+            draw.draw_hitboxes(posx + sign * data.offset_x, posy + data.offset_y, player.flip_x, {current_box}, extended,
                                {["attack"] = true}, nil, attack_range_display_attack_box_color)
-            draw.draw_hitboxes(posx + sign * data.offset_x, posy + data.offset_y, player.flip_x, {current_box},
+            draw.draw_hitboxes(posx + sign * data.offset_x, posy + data.offset_y, player.flip_x, {current_box}, extended,
                                {["throw"] = true}, nil, attack_range_display_throw_box_color)
             drawn_box_type = data.box_type
          end
@@ -1061,13 +1178,14 @@ end
 local p1_filter = nil -- {["push"] = true, ["vulnerability"] = true}
 local p2_filter = nil -- {["push"] = true}
 local function hitboxes_display()
+   local extended = settings.training.display_hitboxes_ab
    -- players
    if settings.training.display_hitboxes == 2 or settings.training.display_hitboxes == 4 then
-      draw.draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, p1_filter,
+      draw.draw_hitboxes(gamestate.P1.pos_x, gamestate.P1.pos_y, gamestate.P1.flip_x, gamestate.P1.boxes, extended, p1_filter,
                          nil, nil, settings.training.display_hitboxes_opacity)
    end
    if settings.training.display_hitboxes == 3 or settings.training.display_hitboxes == 4 then
-      draw.draw_hitboxes(gamestate.P2.pos_x, gamestate.P2.pos_y, gamestate.P2.flip_x, gamestate.P2.boxes, p2_filter,
+      draw.draw_hitboxes(gamestate.P2.pos_x, gamestate.P2.pos_y, gamestate.P2.flip_x, gamestate.P2.boxes, extended, p2_filter,
                          nil, nil, settings.training.display_hitboxes_opacity)
    end
    -- projectiles
@@ -1077,7 +1195,7 @@ local function hitboxes_display()
              (settings.training.display_hitboxes == 2 or settings.training.display_hitboxes == 4)) or
              (obj.emitter_id == 2 and
                  (settings.training.display_hitboxes == 3 or settings.training.display_hitboxes == 4)) then
-            draw.draw_hitboxes(obj.pos_x, obj.pos_y, obj.flip_x, obj.boxes, nil, nil, nil,
+            draw.draw_hitboxes(obj.pos_x, obj.pos_y, obj.flip_x, obj.boxes, extended, nil, nil, nil,
                                settings.training.display_hitboxes_opacity)
          end
       end
@@ -1121,7 +1239,7 @@ local function top_bar_display(player)
    local dummy = player.other
 
    local function active_mode_display()
-      local active_mode = require("src.special_modes").active_mode
+      local active_mode = require("src.modes").active_mode
       if active_mode then
          if not active_mode_display_data.active_mode then reset_active_mode_strikeout() end
          active_mode_display_data.last_active_mode = active_mode
@@ -1157,7 +1275,7 @@ local function top_bar_display(player)
             local line_length = (w + 2) * active_mode_display_data.ratio
             local line_y = y + h / 2 - 1
             if lang == "en" then line_y = line_y - 1 end
-            gui.box(x - 1, line_y, x - 1+ line_length, line_y + 2, line_color, outline_color)
+            gui.box(x - 1, line_y, x - 1 + line_length, line_y + 2, line_color, outline_color)
          end
       end
    end
@@ -1341,7 +1459,7 @@ local function display_draw_printed_geometry()
    -- printed geometry
    for _, geometry in ipairs(printed_geometry) do
       if geometry.type == "hitboxes" then
-         draw.draw_hitboxes(geometry.x, geometry.y, geometry.flip_x, geometry.boxes, geometry.filter, geometry.dilation)
+         draw.draw_hitboxes(geometry.x, geometry.y, geometry.flip_x, geometry.boxes, false, geometry.filter, geometry.dilation)
       elseif geometry.type == "point" then
          draw.draw_point(geometry.x, geometry.y, geometry.color)
       end
@@ -1547,7 +1665,7 @@ local function display_draw_distances(p1_object, p2_object, mid_distance_height,
    -- low and mid
    local hurtbox_types = {}
    hurtbox_types["vulnerability"] = true
-   hurtbox_types["ext. vulnerability"] = true
+   hurtbox_types["ext_vulnerability"] = true
    display_distance(p1_object, p2_object, 10, hurtbox_types, p1_reference_point, p2_reference_point, 0x00E7FFFF)
    display_distance(p1_object, p2_object, mid_distance_height, hurtbox_types, p1_reference_point, p2_reference_point,
                     0x00E7FFFF)
@@ -1636,10 +1754,6 @@ local function player_position_display()
    gui.image(x - 4, y, image_tables.images.img_dir_small[8])
 end
 
-local function update_input_accuracy() end
-
-local function input_accuracy_display(player) if player.is_idle and player.other.is_idle then end end
-
 local draw_list = {}
 local function register_draw(func) draw_list[func] = func end
 
@@ -1660,7 +1774,11 @@ local function reset_hud()
    reset_active_mode_strikeout()
 end
 
-local function update_hud(input, dummy) update_blocking_direction(input, dummy) end
+local function update_hud(player, dummy, input)
+   -- input_accuracy_update(player)
+   update_blocking_direction(input, dummy)
+   update_guard_jump_input(input)
+end
 
 local function draw_hud(player, dummy)
    if settings.training.display_attack_range ~= 1 then attack_range_display() end
@@ -1702,6 +1820,8 @@ local function draw_hud(player, dummy)
                              settings.training.p1_distances_reference_point,
                              settings.training.p2_distances_reference_point)
    end
+
+   guard_jump_input_display()
 
    notification_text_display()
 

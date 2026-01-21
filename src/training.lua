@@ -1,11 +1,11 @@
 -- manages training mode state. who is the player/dummy, gauges, dummy response settings
-local fd = require("src.modules.framedata")
+local fd = require("src.data.framedata")
 local gamestate = require("src.gamestate")
 local settings = require("src.settings")
 local write_memory = require("src.control.write_memory")
-local utils = require("src.modules.utils")
+local utils = require("src.data.utils")
 local tools = require("src.tools")
-local dummy_control, special_modes, defense, jumpins, footsies, unblockables, geneijin, recording
+local dummy_control, modes, recording, character_select
 
 local character_specific = fd.character_specific
 
@@ -37,22 +37,11 @@ local gauge_state
 
 local function init()
    dummy_control = require("src.control.dummy_control")
-   special_modes = require("src.special_modes")
-   defense = require("src.training.defense")
-   jumpins = require("src.training.jumpins")
-   footsies = require("src.training.footsies")
-   unblockables = require("src.training.unblockables")
-   geneijin = require("src.training.geneijin")
+   modes = require("src.modes")
    recording = require("src.control.recording")
-   controllers = {
-      player = PLAYER_CONTROLLER,
-      dummy_control = dummy_control,
-      defense = defense,
-      jumpins = jumpins,
-      footsies = footsies,
-      unblockables = unblockables,
-      geneijin = geneijin
-   }
+   character_select = require("src.control.character_select")
+   controllers = {player = PLAYER_CONTROLLER, dummy_control = dummy_control}
+   for _, mode in ipairs(modes.modes) do controllers[mode.name] = mode end
    P2_controller = dummy_control
 end
 
@@ -81,56 +70,54 @@ local function reset_gauge_state()
 end
 
 local function update_gauges(player)
-   -- LIFE
-   if gamestate.is_in_match and not should_freeze_game then
-      -- infinite
-      if settings.training.life_mode == 5 then
-         memory.writebyte(player.addresses.life, max_life)
-         -- not off 
-      elseif settings.training.life_mode > 1 then
-         local id = player.id
-         local life = player.life
-         local wanted_life = max_life
-         if settings.training.life_mode == 2 then
-            if id == 1 then
-               wanted_life = settings.training.p1_life_reset_value
-            elseif id == 2 then
-               wanted_life = settings.training.p2_life_reset_value
-            end
-         elseif settings.training.life_mode == 3 then
-            wanted_life = 0
-         elseif settings.training.life_mode == 4 then
-            wanted_life = max_life
+   if not (gamestate.is_before_curtain or gamestate.is_in_match) or should_freeze_game then return end
+   -- infinite
+   if settings.training.life_mode == 5 then
+      memory.writebyte(player.addresses.life, max_life)
+      -- not off 
+   elseif settings.training.life_mode > 1 then
+      local id = player.id
+      local life = player.life
+      local wanted_life = max_life
+      if settings.training.life_mode == 2 then
+         if id == 1 then
+            wanted_life = settings.training.p1_life_reset_value
+         elseif id == 2 then
+            wanted_life = settings.training.p2_life_reset_value
          end
+      elseif settings.training.life_mode == 3 then
+         wanted_life = 0
+      elseif settings.training.life_mode == 4 then
+         wanted_life = max_life
+      end
 
-         if (player.idle_time == 1 and not gauge_state[id].should_refill_life) or player.has_just_been_hit or
-             player.is_being_thrown or player.is_stunned or player.has_just_hit_ground then
-            gauge_state[id].life_refill_start_frame = gamestate.frame_number
-            gauge_state[id].should_refill_life = false
+      if (player.idle_time == 1 and not gauge_state[id].should_refill_life) or player.has_just_been_hit or
+          player.is_being_thrown or player.is_stunned or player.has_just_hit_ground then
+         gauge_state[id].life_refill_start_frame = gamestate.frame_number
+         gauge_state[id].should_refill_life = false
+      end
+
+      if gamestate.frame_number - gauge_state[id].life_refill_start_frame >= settings.training.life_reset_delay and
+          (player.is_idle or (player.remaining_wakeup_time > 0 and player.remaining_wakeup_time <= 20)) and life ~=
+          wanted_life then gauge_state[id].should_refill_life = true end
+
+      if gauge_state[id].should_refill_life then
+         if life > wanted_life then
+            life = life - life_recovery_rate_default
+            life = math.max(life, wanted_life)
+         elseif life < wanted_life then
+            life = life + life_recovery_rate_default
+            life = math.min(life, wanted_life)
          end
-
-         if gamestate.frame_number - gauge_state[id].life_refill_start_frame >= settings.training.life_reset_delay and
-             (player.is_idle or (player.remaining_wakeup_time > 0 and player.remaining_wakeup_time <= 20)) and life ~=
-             wanted_life then gauge_state[id].should_refill_life = true end
-
-         if gauge_state[id].should_refill_life then
-            if life > wanted_life then
-               life = life - life_recovery_rate_default
-               life = math.max(life, wanted_life)
-            elseif life < wanted_life then
-               life = life + life_recovery_rate_default
-               life = math.min(life, wanted_life)
-            end
-            life = math.min(life, max_life)
-            memory.writebyte(player.addresses.life, life)
-            if player.life == life then gauge_state[id].should_refill_life = false end
-            player.life = life
-         end
+         life = math.min(life, max_life)
+         memory.writebyte(player.addresses.life, life)
+         if player.life == life then gauge_state[id].should_refill_life = false end
+         player.life = life
       end
    end
 
    -- METER
-   if gamestate.is_in_match and not should_freeze_game and not player.is_in_timed_sa then
+   if not player.is_in_timed_sa then
       -- If the SA is a timed SA, the gauge won't go back to 0 when it reaches max. We have to make special cases for it
       local is_timed_sa = character_specific[player.char_str].timed_sa[player.selected_sa]
       if settings.training.meter_mode == 5 then
@@ -312,7 +299,8 @@ local function update_cheats()
 end
 
 local function update_counter_attack_data(player)
-   counter_attack_data = utils.create_move_data_from_selection(settings.training.counter_attack[player.char_str], player)
+   counter_attack_data =
+       utils.create_move_data_from_selection(settings.training.counter_attack[player.char_str], player)
 end
 
 local function update_players()
@@ -328,9 +316,9 @@ local function update_players()
       training_dummy = gamestate.P1
    elseif P2_controller == dummy_control then
       training_dummy = gamestate.P2
-   elseif tools.table_contains(special_modes.modes, P1_controller) then
+   elseif tools.table_contains(modes.modes, P1_controller) then
       training_dummy = gamestate.P1
-   elseif tools.table_contains(special_modes.modes, P2_controller) then
+   elseif tools.table_contains(modes.modes, P2_controller) then
       training_dummy = gamestate.P2
    else
       training_dummy = gamestate.P2
@@ -390,8 +378,8 @@ local function set_controllers_by_name(P1_controller_name, P2_controller_name)
 end
 
 local function toggle_controls()
-   if special_modes.active_mode then
-      valid_control_schemes = special_modes.active_mode.get_valid_control_schemes()
+   if modes.active_mode then
+      valid_control_schemes = modes.active_mode.get_valid_control_schemes()
    else
       valid_control_schemes = VALID_CONTROL_SCHEMES_DEFAULT
    end
@@ -407,7 +395,7 @@ local function toggle_controls()
 end
 
 local function set_module_control_by_name(module_name, other_module_name)
-   local active_mode = special_modes.active_mode
+   local active_mode = modes.active_mode
    local target_controller = 0
    if active_mode then
       if P1_controller == active_mode then
@@ -445,7 +433,7 @@ local function get_controlled_player_by_name(controller_name)
 end
 
 local function get_player_controlled_by_active_mode()
-   local active_mode = special_modes.active_mode
+   local active_mode = modes.active_mode
    if active_mode then
       if P1_controller == active_mode then return gamestate.P1 end
       if P2_controller == active_mode then return gamestate.P2 end
@@ -454,10 +442,10 @@ local function get_player_controlled_by_active_mode()
 end
 
 local function check_controller_validity()
-   if not special_modes.active_mode then
-      if tools.table_contains(special_modes.modes, P1_controller) then
+   if not modes.active_mode then
+      if tools.table_contains(modes.modes, P1_controller) then
          P1_controller = PLAYER_CONTROLLER
-      elseif tools.table_contains(special_modes.modes, P2_controller) then
+      elseif tools.table_contains(modes.modes, P2_controller) then
          P2_controller = PLAYER_CONTROLLER
       end
    end
@@ -467,7 +455,7 @@ local function update_fast_forward()
    if gamestate.has_match_just_started then
       emu.speedmode("normal")
    elseif gamestate.is_in_character_select then
-      if require("src.control.character_select").is_selection_complete() then
+      if character_select.is_selection_complete() then
          emu.speedmode("turbo")
       else
          emu.speedmode("normal")
@@ -476,7 +464,6 @@ local function update_fast_forward()
       emu.speedmode("turbo")
    end
 end
-
 local function freeze_game() should_freeze_game = true end
 local function unfreeze_game() should_freeze_game = false end
 
@@ -535,6 +522,8 @@ setmetatable(training, {
          return disable_dummy
       elseif key == "counter_attack_data" then
          return counter_attack_data
+      elseif key == "should_freeze_game" then
+         return should_freeze_game
       end
    end,
 

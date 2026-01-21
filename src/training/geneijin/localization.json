@@ -1,0 +1,18 @@
+{
+  "menu_followup_d_lk": {
+    "en": "↓LK",
+    "jp": "↓小K"
+  },
+  "menu_followup_mp_d_lk": {
+    "en": "MP ↓LK",
+    "jp": "中P ↓小K"
+  },
+  "menu_followup_zenpou": {
+    "en": "zenpoutenshin",
+    "jp": "前方転身"
+  },
+  "menu_followup_crab_walk": {
+    "en": "crab walk",
+    "jp": "超移動"
+  }
+}

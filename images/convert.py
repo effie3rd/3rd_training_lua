@@ -3,12 +3,13 @@ import subprocess
 import os
 import re
 import time
-
+from pathlib import Path
 
 cwd = os.path.dirname(os.path.realpath(__file__))
 menu_dir = cwd + "/menu"
 
 base_path = "images/menu/"
+
 colors = {
     "white": "white"
     }
@@ -72,6 +73,15 @@ for color,color_code in colors.items():
 
 
 loc_files = ["../data/localization.json", "../data/localization_moves.json"]
+
+module_dirs = [Path('../src/training/'), Path('../src/modules/')]
+for directory in module_dirs:
+    for folder in directory.iterdir():
+        if folder.is_dir():
+            loc_file = folder / "localization.json"
+            if loc_file.exists():
+                loc_files.append(loc_file)
+
 to_stitch = []
 to_remove = []
 
@@ -87,6 +97,8 @@ for loc_file in loc_files:
 
     for color,color_code in colors.items():
         for key,item in loc.items():
+            if key in data:
+                print("Duplicate key found: " + key)
             for lang_code,text in item.items():
                 #replace en chars in jp text with en font
                 if lang_code == "jp":

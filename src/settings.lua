@@ -1,8 +1,15 @@
-local game_data = require("src.modules.game_data")
+local game_data = require("src.data.game_data")
+local modules = require("src.modules")
 local tools = require("src.tools")
 
 local saved_path = "saved/"
 local data_path = "data/"
+local training_path = "src/training/"
+local modules_path = "src/modules/"
+local training_require_path = "src.training"
+local modules_require_path = "src.modules"
+local modules_settings_file = "settings.json"
+local modules_default_settings_file = "settings_default.json"
 local framedata_path = data_path .. game_data.rom_name .. "/framedata/"
 local framedata_file_ext = "_framedata.json"
 local framedata_bin_file = "framedata.msgpack"
@@ -17,21 +24,32 @@ local special_training_default_settings_file = "special_training_settings_defaul
 local themes_path = "data/themes.json"
 local recordings_file = "recordings.json"
 
-local training = {}
-local special_training = {}
-local recordings = {}
+local training_settings = {}
+local modules_settings = {}
+local recordings_settings = {}
 
 local lang_code = {"en", "jp"}
 
 local function save_training_data()
-   if not tools.write_object_to_json_file(training, saved_path .. training_settings_file, true) then
-      print(string.format("Error: Failed to save training settings to \"%s\"", training_settings_file))
+   if not tools.write_object_to_json_file(training_settings, saved_path .. training_settings_file, true) then
+      print(string.format("Error: Failed to save training settings to \"%s\"", saved_path .. training_settings_file))
    end
-   if not tools.write_object_to_json_file(special_training, saved_path .. special_training_settings_file, true) then
-      print(string.format("Error: Failed to save training settings to \"%s\"", special_training_settings_file))
+   for _, module_name in ipairs(modules.training_mode_names) do
+      if not tools.write_object_to_json_file(modules_settings[module_name],
+                                             training_path .. module_name .. "/" .. modules_settings_file, true) then
+         print(string.format("Error: Failed to save training settings to \"%s\"",
+                             training_path .. module_name .. "/" .. modules_settings_file))
+      end
    end
-   if not tools.write_object_to_json_file(recordings, saved_path .. recordings_file, true) then
-      print(string.format("Error: Failed to save training settings to \"%s\"", recordings_file))
+   for _, module_name in ipairs(modules.extra_module_names) do
+      if not tools.write_object_to_json_file(modules_settings[module_name],
+                                             modules_path .. module_name .. "/" .. modules_settings_file, true) then
+         print(string.format("Error: Failed to save training settings to \"%s\"",
+                             modules_path .. module_name .. "/" .. modules_settings_file))
+      end
+   end
+   if not tools.write_object_to_json_file(recordings_settings, saved_path .. recordings_file, true) then
+      print(string.format("Error: Failed to save training settings to \"%s\"", saved_path .. recordings_file))
    end
 end
 
@@ -76,10 +94,24 @@ local upgrade_rules = {
       target = "1.1.0",
       upgrade = function(settings)
          settings.training.version = "1.1.0"
+         local special_training_settings =
+             tools.read_object_from_json_file(saved_path .. special_training_settings_file)
+         if not special_training_settings then
+            special_training_settings = tools.read_object_from_json_file(saved_path ..
+                                                                             special_training_default_settings_file)
+            if not special_training_settings then special_training_settings = {} end
+         end
+         settings.special_training = special_training_settings
          settings.training.recording_player_positioning = false
          settings.training.recording_dummy_positioning = false
          settings.special_training.defense.characters["ken"].next_attack_delay = 20
-         settings.special_training.unblockables = require("src.training.unblockables_tables").create_settings()
+         local ok, unb = pcall(require, "src.training.unblockables_tables")
+         if ok then
+            settings.special_training.unblockables = unb.create_settings()
+         else
+            settings.special_training.unblockables =
+                require("src.training.unblockables.unblockables_tables").create_settings()
+         end
          for _, char_str in ipairs(game_data.characters) do
             for __, slot in ipairs(settings.recordings[char_str]) do
                slot.player_position = {430, 0}
@@ -95,7 +127,7 @@ local upgrade_rules = {
             settings.special_training.footsies.characters[char_str].accuracy_index = 1
             settings.special_training.footsies.characters[char_str].dist_judgement_mode = 1
             settings.special_training.footsies.characters[char_str].dist_judgement_index = 1
-            settings.special_training.footsies.characters[char_str].next_attack_delay = {0,10}
+            settings.special_training.footsies.characters[char_str].next_attack_delay = {0, 10}
             settings.special_training.footsies.characters[char_str].next_attack_delay_mode = 2
             settings.special_training.footsies.characters[char_str].next_attack_delay_index = 1
             settings.special_training.footsies.characters[char_str].sa_after_parry = 1
@@ -106,6 +138,58 @@ local upgrade_rules = {
                foot.dist_judgement = {
                   tools.round_to_nearest(foot.dist_judgement[1], 5), tools.round_to_nearest(foot.dist_judgement[2], 5)
                }
+            end
+         end
+      end
+   }, {
+      min = "1.1.0",
+      max = "1.1.0",
+      target = "1.2.0",
+      upgrade = function(settings)
+         settings.training.version = "1.2.0"
+         settings.recordings.version = "1.2.0"
+         local special_training_settings =
+             tools.read_object_from_json_file(saved_path .. special_training_settings_file)
+         settings.special_training = special_training_settings or {}
+         local training_mode_names = {"defense", "jumpins", "footsies", "unblockables", "geneijin"}
+         for _, module_name in ipairs(training_mode_names) do
+            if settings.special_training[module_name] then
+               settings.modules[module_name] = settings.special_training[module_name]
+               settings.modules[module_name].version = "1.2.0"
+            end
+         end
+         settings.modules.defense.characters.yang =
+             require("src.training.defense.defense_tables").create_character_settings("yang")
+         settings.training.training_mode_index = settings.training.special_training_mode or 1
+         settings.training.special_training_mode = nil
+         settings.training.modules_index = 1
+         settings.training.blocking_direction = 1
+         settings.training.display_guard_jump_input = 1
+         settings.training.display_hitboxes_ab = false
+
+         -- remove unused files
+         print("Removing unused files:")
+         local file_data = {
+            {path = "src/", file_names = {"special_modes.lua"}}, {
+               path = "src/modules/",
+               file_names = {
+                  "attack_data.lua", "framedata.lua", "game_data.lua", "prediction.lua", "stage_data.lua",
+                  "frame_advantage.lua", "framedata_meta.lua", "move_data.lua", "record_framedata.lua", "utils.lua"
+               }
+            }, {
+               path = "src/training/",
+               file_names = {
+                  "defense_tables.lua", "denjin_tables.lua", "footsies_tables.lua", "geneijin_tables.lua",
+                  "jumpins_tables.lua", "unblockables.lua", "defense.lua", "denjin.lua", "footsies.lua", "geneijin.lua",
+                  "jumpins.lua", "training_classes.lua", "unblockables_tables.lua"
+               }
+            },
+            {path = "saved/", file_names = {"special_training_settings.json", "special_training_settings_default.json"}}
+         }
+         for _, data in ipairs(file_data) do
+            for _, file_name in ipairs(data.file_names) do
+               local ok, err = os.remove(data.path .. file_name)
+               if ok then print("Removed:", data.path .. file_name) end
             end
          end
       end
@@ -142,38 +226,48 @@ local function upgrade_settings(settings, target_version)
       current_version = settings.training.version
       iteration = iteration + 1
    end
+   if start_version ~= settings.training.version then
+      print("Upgraded v" .. start_version .. " -> v" .. settings.training.version)
+      return true
+   end
+end
 
-   print("Upgraded settings v" .. start_version .. " -> v" .. settings.training.version)
-   save_training_data()
+local function load_module_settings(module_name, path)
+   local new_module_settings = tools.read_object_from_json_file(path .. module_name .. "/" .. modules_settings_file)
+   if not new_module_settings then
+      new_module_settings =
+          tools.read_object_from_json_file(path .. module_name .. "/" .. modules_default_settings_file)
+   end
+   modules_settings[module_name] = new_module_settings or {}
 end
 
 local function load_training_data()
-   local training_settings = tools.read_object_from_json_file(saved_path .. training_settings_file)
+   local loaded_defaults = false
+   local upgraded = false
+
+   local new_training_settings = tools.read_object_from_json_file(saved_path .. training_settings_file)
    -- no file then create defaults
-   if training_settings and training_settings.version then training = training_settings end
-   if not training_settings or not training_settings.version then
-      training_settings = tools.read_object_from_json_file(saved_path .. training_settings_default_file)
-      if not training_settings then training_settings = {} end
+   if new_training_settings and not new_training_settings.version then new_training_settings = nil end
+   if not new_training_settings then
+      new_training_settings = tools.read_object_from_json_file(saved_path .. training_settings_default_file)
+      loaded_defaults = new_training_settings ~= nil
    end
-   training = training_settings
+   training_settings = new_training_settings or {}
+   for _, module_name in ipairs(modules.training_mode_names) do load_module_settings(module_name, training_path) end
+   for _, module_name in ipairs(modules.extra_module_names) do load_module_settings(module_name, modules_path) end
 
-   local special_training_settings = tools.read_object_from_json_file(saved_path .. special_training_settings_file)
-   if not special_training_settings then
-      special_training_settings = tools.read_object_from_json_file(saved_path .. special_training_default_settings_file)
-      if not special_training_settings then special_training_settings = {} end
+   local new_recordings_settings = tools.read_object_from_json_file(saved_path .. recordings_file)
+   if not new_recordings_settings then
+      new_recordings_settings = require("src.control.recording").create_default_settings()
    end
-   special_training = special_training_settings
+   recordings_settings = new_recordings_settings or {}
 
-   local recordings_settings = tools.read_object_from_json_file(saved_path .. recordings_file)
-   if recordings_settings then recordings = recordings_settings
-   else
-      recordings = require("src.control.recording").create_default_settings()
+   if needs_upgrade(training_settings.version, game_data.script_version) then
+      local settings = {training = training_settings, modules = modules_settings, recordings = recordings_settings}
+      upgraded = upgrade_settings(settings, game_data.script_version)
    end
 
-   if needs_upgrade(training.version, game_data.script_version) then
-      local settings = {training = training, special_training = special_training, recordings = recordings}
-      upgrade_settings(settings, game_data.script_version)
-   end
+   if loaded_defaults or upgraded then save_training_data() end
 end
 
 load_training_data()
@@ -181,6 +275,10 @@ load_training_data()
 local settings_module = {
    saved_path = saved_path,
    data_path = data_path,
+   training_path = training_path,
+   modules_path = modules_path,
+   training_require_path = training_require_path,
+   modules_require_path = modules_require_path,
    framedata_path = framedata_path,
    framedata_file_ext = framedata_file_ext,
    framedata_bin_file = framedata_bin_file,
@@ -196,27 +294,27 @@ local settings_module = {
 setmetatable(settings_module, {
    __index = function(_, key)
       if key == "training" then
-         return training
-      elseif key == "special_training" then
-         return special_training
+         return training_settings
+      elseif key == "modules" then
+         return modules_settings
       elseif key == "recordings" then
-         return recordings
+         return recordings_settings
       elseif key == "counter_attack" then
-         return training.counter_attack
+         return training_settings.counter_attack
       elseif key == "language" then
-         return lang_code[training.language]
+         return lang_code[training_settings.language]
       end
    end,
 
    __newindex = function(_, key, value)
       if key == "training" then
-         training = value
-      elseif key == "special_training" then
-         special_training = value
+         training_settings = value
+      elseif key == "modules" then
+         modules_settings = value
       elseif key == "recordings" then
-         recordings = value
+         recordings_settings = value
       elseif key == "counter_attack" then
-         training.counter_attack = value
+         training_settings.counter_attack = value
       else
          rawset(settings_module, key, value)
       end

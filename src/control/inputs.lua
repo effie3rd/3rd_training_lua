@@ -1,5 +1,5 @@
 local gamestate = require("src.gamestate")
-local fd = require("src.modules.framedata")
+local fd = require("src.data.framedata")
 local memory_addresses = require("src.control.memory_addresses")
 local tools = require("src.tools")
 
@@ -8,6 +8,14 @@ local is_slow_jumper, is_really_slow_jumper = fd.is_slow_jumper, fd.is_really_sl
 local input_object
 local previous_input = nil
 local block_input_settings = {}
+
+local key_data_default = {down = false, press = false, release = false, state_time = 0}
+local keys_default = {
+   "down", "up", "left", "right", "enter", "backslash", "backspace", "insert", "delete", "plus", "minus", "B", "N", "M",
+   "alt", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"
+}
+local keyboard_input = {}
+for _, key in ipairs(keys_default) do keyboard_input[key] = copytable(key_data_default) end
 
 local function queue_input_sequence(player, sequence, offset, overwrite, allow_blocking)
    offset = offset or 0
@@ -327,7 +335,7 @@ local function create_input_sequence(move_selection_data)
                table.insert(sequence, #sequence, {})
             end
          elseif stick == "sjump_back" or stick == "sjump_neutral" or stick == "sjump_forward" then
-            for i = 1, 8 - #sequence do table.insert(sequence, {}) end
+            for i = 1, 9 - #sequence do table.insert(sequence, {}) end
             if (is_slow_jumper(move_selection_data.char_str)) then
                table.insert(sequence, #sequence, {})
             elseif is_really_slow_jumper(move_selection_data.char_str) then
@@ -353,33 +361,38 @@ local function create_input_sequence(move_selection_data)
          offset = 1
       elseif name == "kara_niouriki" then
          offset = 1
+      elseif name == "kara_sgs_f_mp" then
+         offset = 1
+      elseif name == "kara_sgs_d_hk" then
+         offset = 1
       end
    elseif move_selection_data.type == 4 then
       if name == "guard_jump_back" then
          sequence = {
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"back", "up"}, {"back", "up"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"back", "up"}, {"back", "up"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}
          }
       elseif name == "guard_jump_neutral" then
          sequence = {
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"up"}, {"up"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"up"}, {"up"}, {"down", "back"},
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}
+            {"down", "back"}, {"down", "back"}, {"down", "back"}
          }
       elseif name == "guard_jump_forward" then
          sequence = {
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"forward", "up"}, {"forward", "up"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"down", "back"}
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"forward", "up"},
+            {"forward", "up"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}
          }
       elseif name == "guard_jump_back_air_parry" then
          sequence = {
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"back", "up"}, {"back", "up"}, {}, {}, {}, {"forward"}
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"back", "up"}, {"back", "up"}, {},
+            {}, {}, {"forward"}
          }
          if (is_slow_jumper(move_selection_data.char_str)) then
             table.insert(sequence, #sequence, {})
@@ -390,7 +403,8 @@ local function create_input_sequence(move_selection_data)
       elseif name == "guard_jump_neutral_air_parry" then
          sequence = {
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"up"}, {"up"}, {}, {}, {}, {"forward"}
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"up"}, {"up"}, {}, {}, {},
+            {"forward"}
          }
          if (is_slow_jumper(move_selection_data.char_str)) then
             table.insert(sequence, #sequence, {})
@@ -401,7 +415,8 @@ local function create_input_sequence(move_selection_data)
       elseif name == "guard_jump_forward_air_parry" then
          sequence = {
             {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"},
-            {"down", "back"}, {"down", "back"}, {"up", "forward"}, {"up", "forward"}, {}, {}, {}, {"forward"}
+            {"down", "back"}, {"down", "back"}, {"down", "back"}, {"down", "back"}, {"up", "forward"},
+            {"up", "forward"}, {}, {}, {}, {"forward"}
          }
          if (is_slow_jumper(move_selection_data.char_str)) then
             table.insert(sequence, #sequence, {})
@@ -490,13 +505,11 @@ local function queue_input_from_json(player, file)
    end
 end
 
-local function is_previous_input_neutral(player)
-   if previous_input then
-      if previous_input[player.prefix .. " Up"] == false and previous_input[player.prefix .. " Down"] == false and
-          previous_input[player.prefix .. " Left"] == false and previous_input[player.prefix .. " Right"] == false then
-         return true
-      end
-   end
+local function is_input_neutral(player, input)
+   input = input or input_object
+   if input == nil then return end
+   if input[player.prefix .. " Up"] == false and input[player.prefix .. " Down"] == false and
+       input[player.prefix .. " Left"] == false and input[player.prefix .. " Right"] == false then return true end
    return false
 end
 
@@ -534,6 +547,45 @@ local function log_input(players)
          log(o, "Strong Kick", "HK")
       end
    end
+end
+
+local function update_keyboard_input(keys)
+   for key, _ in pairs(keys) do if not keyboard_input[key] then keyboard_input[key] = copytable(key_data_default) end end
+   for key, data in pairs(keyboard_input) do
+      data.press = false
+      data.release = false
+      if keys[key] then
+         if not data.down then
+            data.press = true
+            data.state_time = 0
+         else
+            data.state_time = data.state_time + 1
+         end
+         data.down = true
+      else
+         if data.down then
+            data.release = true
+            data.state_time = 0
+         else
+            data.state_time = data.state_time + 1
+         end
+         data.down = false
+      end
+   end
+end
+
+local autofire_rate_default = 4
+local autofire_time_default = 4
+local function check_keyboard_autofire(keyboard_inp)
+   if not keyboard_inp then return false end
+   local autofire_rate = autofire_rate_default
+   local autofire_time = autofire_time_default
+   if keyboard_inp.press then return true end
+   if keyboard_inp.state_time >= 30 then autofire_rate = autofire_rate / 2 end
+   if keyboard_inp.down and keyboard_inp.state_time > autofire_time and (keyboard_inp.state_time % autofire_rate) == 0 then
+      return true
+   end
+   return false
 end
 
 local function read_single_input(input_object, input_name, input)
@@ -625,11 +677,13 @@ local input_module = {
    problematic_inputs_released = problematic_inputs_released,
    create_input_sequence = create_input_sequence,
    queue_input_from_json = queue_input_from_json,
-   is_previous_input_neutral = is_previous_input_neutral,
+   is_input_neutral = is_input_neutral,
    log_input = log_input,
    has_pending_inputs = has_pending_inputs,
    update_input = update_input,
    update_input_info = update_input_info,
+   update_keyboard_input = update_keyboard_input,
+   check_keyboard_autofire = check_keyboard_autofire,
    block_input = block_input,
    unblock_input = unblock_input
 }
@@ -640,6 +694,8 @@ setmetatable(input_module, {
          return input_object
       elseif key == "previous_input" then
          return previous_input
+      elseif key == "keyboard_input" then
+         return keyboard_input
       end
    end,
 
@@ -648,6 +704,8 @@ setmetatable(input_module, {
          input_object = value
       elseif key == "previous_input" then
          previous_input = value
+      elseif key == "keyboard_input" then
+         keyboard_input = value
       else
          rawset(input_module, key, value)
       end

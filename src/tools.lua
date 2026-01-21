@@ -213,23 +213,29 @@ local function table_contains_deep(tbl, element)
    return false
 end
 
-local function deepcopy(orig, copies)
-   copies = copies or {}
-   if type(orig) ~= "table" then return orig end
+local function deepcopy(orig, exclude)
+   local copy
 
-   if copies[orig] then return copies[orig] end
-
-   local copy = {}
-   copies[orig] = copy
-
-   for key, value in pairs(orig) do
-      local copy_key = deepcopy(key, copies)
-      local copy_value = deepcopy(value, copies)
-      copy[copy_key] = copy_value
+   if type(orig) == "table" then
+      copy = {}
+      if exclude then
+         local exclude_map = {}
+         for _, key in ipairs(exclude) do exclude_map[key] = true end
+         for orig_key, orig_value in pairs(orig) do
+            if not exclude_map[orig_key] then
+               copy[deepcopy(orig_key, exclude)] = deepcopy(orig_value, exclude)
+            end
+         end
+         setmetatable(copy, deepcopy(getmetatable(orig), exclude))
+      else
+         for orig_key, orig_value in pairs(orig) do
+            copy[deepcopy(orig_key, exclude)] = deepcopy(orig_value, exclude)
+         end
+         setmetatable(copy, deepcopy(getmetatable(orig), exclude))
+      end
+   else
+      copy = orig
    end
-
-   local mt = getmetatable(orig)
-   if mt then setmetatable(copy, deepcopy(mt, copies)) end
 
    return copy
 end
@@ -266,32 +272,50 @@ local function float_to_byte(n)
    return math.floor(mantissa * 256)
 end
 
-local convert_box_types = {"push", "throwable", "vulnerability", "ext. vulnerability", "attack", "throw"}
-for i, box_type in ipairs(convert_box_types) do convert_box_types[box_type] = i end
+local box_types = {"push", "throwable", "vulnerability", "ext_vulnerability", "attack_a", "attack_b", "throw"}
+local box_types_base = {"push", "throwable", "vulnerability", "ext_vulnerability", "attack", "attack", "throw"}
+for i, box_type in ipairs(box_types) do box_types[box_type] = i end
+for i, box_type in ipairs(box_types_base) do box_types_base[box_type] = i end
 
-local function format_box(box)
-   return {type = convert_box_types[box[1]], bottom = box[2], height = box[3], left = box[4], width = box[5]}
+local function get_box_type_string(box_type_int, extended)
+   if extended then return box_types[box_type_int] end
+   return box_types_base[box_type_int]
 end
 
-local function create_box(box) return {convert_box_types[box.type], box.bottom, box.height, box.left, box.width} end
+local function get_box_type_int(box_type_string, extended)
+   if extended then return box_types[box_type_string] end
+   return box_types_base[box_type_string]
+end
 
-local function has_boxes(boxes, types)
+local function format_box(box, extended)
+   return {
+      type = get_box_type_string(box[1], extended),
+      bottom = box[2],
+      height = box[3],
+      left = box[4],
+      width = box[5]
+   }
+end
+
+local function create_box(box) return {get_box_type_string(box.type), box.bottom, box.height, box.left, box.width} end
+
+local function has_boxes(boxes, types, extended)
    for _, box in pairs(boxes) do
-      for _, type in pairs(types) do if convert_box_types[box[1]] == type then return true end end
+      for _, type in pairs(types) do if get_box_type_string(box[1], extended) == type then return true end end
    end
    return false
 end
 
-local function get_boxes(boxes, types)
+local function get_boxes(boxes, types, extended)
    local res = {}
    for _, box in pairs(boxes) do
-      for _, type in pairs(types) do if convert_box_types[box[1]] == type then res[#res + 1] = box end end
+      for _, type in pairs(types) do if get_box_type_string(box[1], extended) == type then res[#res + 1] = box end end
    end
    return res
 end
 
 local function get_pushboxes(player)
-   for _, box in pairs(player.boxes) do if convert_box_types[box[1]] == "push" then return box end end
+   for _, box in pairs(player.boxes) do if get_box_type_string(box[1]) == "push" then return box end end
    return nil
 end
 
@@ -328,7 +352,7 @@ local function test_collision(defender_x, defender_y, defender_flip_x, defender_
    if (defender_hurtbox_dilation_y == nil) then defender_hurtbox_dilation_y = 0 end
    if (attacker_hitbox_dilation_x == nil) then attacker_hitbox_dilation_x = 0 end
    if (attacker_hitbox_dilation_y == nil) then attacker_hitbox_dilation_y = 0 end
-   if (box_type_matches == nil) then box_type_matches = {{{"vulnerability", "ext. vulnerability"}, {"attack"}}} end
+   if (box_type_matches == nil) then box_type_matches = {{{"vulnerability", "ext_vulnerability"}, {"attack"}}} end
 
    if (#box_type_matches == 0) then return false end
    if (#defender_boxes == 0) then return false end
@@ -424,6 +448,7 @@ local function is_pressing_back(player, input)
 end
 
 local function is_pressing_down(player, input) return input[player.prefix .. " Down"] end
+local function is_pressing_up(player, input) return input[player.prefix .. " Up"] end
 
 local function input_to_text(t)
    local result = {}
@@ -479,6 +504,7 @@ local function sequence_to_name(seq)
 end
 
 local function name_to_sequence(name)
+   if not name then return nil end
    local underscore = string.find(name, "_")
    local remaining = name
    local seq = {}
@@ -496,6 +522,8 @@ local function name_to_sequence(name)
                seq[#seq + 1] = "forward"
             elseif dir == "b" then
                seq[#seq + 1] = "back"
+            else
+               return nil
             end
          end
       else
@@ -653,7 +681,8 @@ return {
    combine_arrays = combine_arrays,
    float_to_byte = float_to_byte,
    test_collision = test_collision,
-   convert_box_types = convert_box_types,
+   get_box_type_int = get_box_type_int,
+   get_box_type_string = get_box_type_string,
    format_box = format_box,
    create_box = create_box,
    has_boxes = has_boxes,
@@ -664,6 +693,7 @@ return {
    is_pressing_forward = is_pressing_forward,
    is_pressing_back = is_pressing_back,
    is_pressing_down = is_pressing_down,
+   is_pressing_up = is_pressing_up,
    input_to_text = input_to_text,
    sequence_to_name = sequence_to_name,
    name_to_sequence = name_to_sequence,

@@ -51,6 +51,7 @@
         "stun": "0xE60000FF"
       },
       "red_parry_miss": "0xFF5941FF",
+      "idle_time": "0xA3CDE2FF",
       "bonuses": {
         "damage": "0xFF7184FF",
         "defense": "0xD6E3EFFF",
@@ -62,7 +63,9 @@
         "throwable": "0x00FF00FF",
         "throw": "0xFFFF00FF",
         "push": "0xFF00FFFF",
-        "extvulnerability": "0x00FFFFFF"
+        "ext_vulnerability": "0x00FFFFFF",
+        "attack_a": "0xFF0000FF",
+        "attack_b": "0xFF8400FF"
       },
       "score": {
         "plus": "0x40C7FFFF",
@@ -122,6 +125,7 @@
         "stun": "0xE60000FF"
       },
       "red_parry_miss": "0xFF5941FF",
+      "idle_time": "0xA3CDE2FF",
       "bonuses": {
         "damage": "0xFF7184FF",
         "defense": "0xD6E3EFFF",
@@ -133,7 +137,9 @@
         "throwable": "0x00FF00FF",
         "throw": "0xFFFF00FF",
         "push": "0xFF00FFFF",
-        "extvulnerability": "0x00FFFFFF"
+        "ext_vulnerability": "0x00FFFFFF",
+        "attack_a": "0xFF0000FF",
+        "attack_b": "0xFF8400FF"
       },
       "score": {
         "plus": "0x40C7FFFF",
@@ -193,6 +199,7 @@
         "stun": "0xE60000FF"
       },
       "red_parry_miss": "0xFF5941FF",
+      "idle_time": "0xA3CDE2FF",
       "bonuses": {
         "damage": "0xFF7184FF",
         "defense": "0xD6E3EFFF",
@@ -204,7 +211,9 @@
         "throwable": "0x00FF00FF",
         "throw": "0xFFFF00FF",
         "push": "0xFF00FFFF",
-        "extvulnerability": "0x00FFFFFF"
+        "ext_vulnerability": "0x00FFFFFF",
+        "attack_a": "0xFF0000FF",
+        "attack_b": "0xFF8400FF"
       },
       "score": {
         "plus": "0x40C7FFFF",
@@ -264,6 +273,7 @@
         "stun": "0xE60000FF"
       },
       "red_parry_miss": "0xFF5941FF",
+      "idle_time": "0xA3CDE2FF",
       "bonuses": {
         "damage": "0xFF7184FF",
         "defense": "0xD6E3EFFF",
@@ -275,7 +285,9 @@
         "throwable": "0x00FF00FF",
         "throw": "0xFFFF00FF",
         "push": "0xFF00FFFF",
-        "extvulnerability": "0x00FFFFFF"
+        "ext_vulnerability": "0x00FFFFFF",
+        "attack_a": "0xFF0000FF",
+        "attack_b": "0xFF8400FF"
       },
       "score": {
         "plus": "0x40C7FFFF",
@@ -335,6 +347,7 @@
         "stun": "0xE60000FF"
       },
       "red_parry_miss": "0xFF5941FF",
+      "idle_time": "0xA3CDE2FF",
       "bonuses": {
         "damage": "0xFF7184FF",
         "defense": "0xD6E3EFFF",
@@ -346,7 +359,9 @@
         "throwable": "0x00FF00FF",
         "throw": "0xFFFF00FF",
         "push": "0xFF00FFFF",
-        "extvulnerability": "0x00FFFFFF"
+        "ext_vulnerability": "0x00FFFFFF",
+        "attack_a": "0xFF0000FF",
+        "attack_b": "0xFF8400FF"
       },
       "score": {
         "plus": "0x40C7FFFF",
@@ -406,6 +421,7 @@
         "stun": "0xE60000FF"
       },
       "red_parry_miss": "0xFF5941FF",
+      "idle_time": "0xA3CDE2FF",
       "bonuses": {
         "damage": "0xFF7184FF",
         "defense": "0xD6E3EFFF",
@@ -417,7 +433,9 @@
         "throwable": "0x00FF00FF",
         "throw": "0xFFFF00FF",
         "push": "0xFF00FFFF",
-        "extvulnerability": "0x00FFFFFF"
+        "ext_vulnerability": "0x00FFFFFF",
+        "attack_a": "0xFF0000FF",
+        "attack_b": "0xFF8400FF"
       },
       "score": {
         "plus": "0x40C7FFFF",
@@ -477,6 +495,7 @@
         "stun": "0xE60000FF"
       },
       "red_parry_miss": "0xFF5941FF",
+      "idle_time": "0xA3CDE2FF",
       "bonuses": {
         "damage": "0xFF7184FF",
         "defense": "0xD6E3EFFF",
@@ -488,7 +507,9 @@
         "throwable": "0x00FF00FF",
         "throw": "0xFFFF00FF",
         "push": "0xFF00FFFF",
-        "extvulnerability": "0x00FFFFFF"
+        "ext_vulnerability": "0x00FFFFFF",
+        "attack_a": "0xFF0000FF",
+        "attack_b": "0xFF8400FF"
       },
       "score": {
         "plus": "0x40C7FFFF",
@@ -548,6 +569,7 @@
         "stun": "0xE60000FF"
       },
       "red_parry_miss": "0xFF5941FF",
+      "idle_time": "0xA3CDE2FF",
       "bonuses": {
         "damage": "0xFF7184FF",
         "defense": "0xD6E3EFFF",
@@ -559,7 +581,9 @@
         "throwable": "0x00FF00FF",
         "throw": "0xFFFF00FF",
         "push": "0xFF00FFFF",
-        "extvulnerability": "0x00FFFFFF"
+        "ext_vulnerability": "0x00FFFFFF",
+        "attack_a": "0xFF0000FF",
+        "attack_b": "0xFF8400FF"
       },
       "score": {
         "plus": "0x40C7FFFF",
@@ -619,6 +643,7 @@
         "stun": "0xE60000FF"
       },
       "red_parry_miss": "0xFF5941FF",
+      "idle_time": "0xA3CDE2FF",
       "bonuses": {
         "damage": "0xFF7184FF",
         "defense": "0xD6E3EFFF",
@@ -630,7 +655,9 @@
         "throwable": "0x00FF00FF",
         "throw": "0xFFFF00FF",
         "push": "0xFF00FFFF",
-        "extvulnerability": "0x00FFFFFF"
+        "ext_vulnerability": "0x00FFFFFF",
+        "attack_a": "0xFF0000FF",
+        "attack_b": "0xFF8400FF"
       },
       "score": {
         "plus": "0x40C7FFFF",
@@ -690,6 +717,7 @@
         "stun": "0xE60000FF"
       },
       "red_parry_miss": "0xFF5941FF",
+      "idle_time": "0xA3CDE2FF",
       "bonuses": {
         "damage": "0xFF7184FF",
         "defense": "0xD6E3EFFF",
@@ -701,7 +729,9 @@
         "throwable": "0x00FF00FF",
         "throw": "0xFFFF00FF",
         "push": "0xFF00FFFF",
-        "extvulnerability": "0x00FFFFFF"
+        "ext_vulnerability": "0x00FFFFFF",
+        "attack_a": "0xFF0000FF",
+        "attack_b": "0xFF8400FF"
       },
       "score": {
         "plus": "0x40C7FFFF",
@@ -761,6 +791,7 @@
         "stun": "0xE60000FF"
       },
       "red_parry_miss": "0xFF5941FF",
+      "idle_time": "0xA3CDE2FF",
       "bonuses": {
         "damage": "0xFF7184FF",
         "defense": "0xD6E3EFFF",
@@ -772,7 +803,9 @@
         "throwable": "0x00FF00FF",
         "throw": "0xFFFF00FF",
         "push": "0xFF00FFFF",
-        "extvulnerability": "0x00FFFFFF"
+        "ext_vulnerability": "0x00FFFFFF",
+        "attack_a": "0xFF0000FF",
+        "attack_b": "0xFF8400FF"
       },
       "score": {
         "plus": "0x40C7FFFF",

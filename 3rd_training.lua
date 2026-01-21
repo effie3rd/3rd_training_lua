@@ -1,4 +1,4 @@
-local game_data = require("src.modules.game_data")
+local game_data = require("src.data.game_data")
 print("-----------------------------")
 print("  effie's 3rd_training.lua - " .. game_data.script_version .. "")
 print("  Training mode for " .. game_data.game_name .. "")
@@ -40,18 +40,22 @@ local debug_settings = require("src.debug_settings")
 local recording = require("src.control.recording")
 local gamestate = require("src.gamestate")
 local loading = require("src.loading")
+local framedata = require("src.data.framedata")
+local image_tables = require("src.ui.image_tables")
 local training = require("src.training")
-local prediction = require("src.modules.prediction")
+local prediction = require("src.data.prediction")
 local advanced_control = require("src.control.advanced_control")
 local dummy_control = require("src.control.dummy_control")
-local special_modes = require("src.special_modes")
+local modules = require("src.modules")
+local modes = require("src.modes")
+local colors = require("src.ui.colors")
 local draw = require("src.ui.draw")
 local hud = require("src.ui.hud")
 local inputs = require("src.control.inputs")
 local input_history = require("src.ui.input_history")
 local menu = require("src.ui.menu")
-local attack_data = require("src.modules.attack_data")
-local frame_advantage = require("src.modules.frame_advantage")
+local attack_data = require("src.data.attack_data")
+local frame_advantage = require("src.data.frame_advantage")
 local character_select = require("src.control.character_select")
 local managers = require("src.control.managers")
 local debug = require("src.debug")
@@ -59,43 +63,37 @@ local debug = require("src.debug")
 local disable_display = false
 
 local command_queue = {}
-local after_load_state_callback = {}
+local load_state_command_queue = {}
+local load_state_callbacks = {}
 
-local loading_bar_loaded = 0
-local loading_bar_total = loading.get_total_files()
+local load_framedata_request, load_text_request, load_images_request
+local loading_bar_loaded, loading_bar_total = 0, 0
 
 Load_State_Caller = ""
 
-local function hotkey1()
-   recording.set_recording_state({}, recording.RECORDING_STATE.STOPPED)
-   character_select.start_character_select_sequence()
+local function is_default_hotkey(n)
+   local keys = input.get()
+   if (keys["alt"] and keys[tostring(n)]) then return true end
 end
-local function hotkey2() character_select.select_gill() end
-local function hotkey3() character_select.select_shingouki() end
-local function hotkey4() inputs.queue_input_from_json(gamestate.P1, "Debug.json") end
-local function hotkey5() end
-local function hotkey6() end
-local function hotkey7() end
-local function hotkey8() end
-local function hotkey9() end
 
-if game_data.rom_name == "sfiii3nr1" then
-   input.registerhotkey(1, hotkey1)
-   input.registerhotkey(2, hotkey2)
-   input.registerhotkey(3, hotkey3)
-   if debug_settings.developer_mode then
-      input.registerhotkey(4, hotkey4)
-      input.registerhotkey(5, hotkey5)
-      input.registerhotkey(6, hotkey6)
-      input.registerhotkey(7, hotkey7)
-      input.registerhotkey(8, hotkey8)
-      input.registerhotkey(9, hotkey9)
+local key_bindings
+local max_hotkeys = 9
+local function register_hotkeys()
+   for i = 1, max_hotkeys do
+      input.registerhotkey(i, function()
+         if is_default_hotkey(i) then return end
+         key_bindings.use_hotkey(i)
+      end)
    end
 end
 
-function Register_After_Load_State(command, args, delay)
-   after_load_state_callback[#after_load_state_callback + 1] = {command = command, args = args, delay = delay}
+function Call_After_Load_State(command, args, delay)
+   load_state_command_queue[#load_state_command_queue + 1] = {command = command, args = args, delay = delay}
 end
+
+function Register_Load_State_Callback(func) load_state_callbacks[func] = func end
+
+function Unregister_Load_State_Callback(func) load_state_callbacks[func] = nil end
 
 function Queue_Command(frame, command, args)
    if not command_queue[frame] then command_queue[frame] = {} end
@@ -126,9 +124,23 @@ local function on_start()
 
    math.randomseed(os.time())
 
-   training.init()
    recording.init()
    managers.init()
+   modules.init()
+   modes.init()
+   training.init()
+   colors.init()
+   key_bindings = modules.get_module("key_bindings")
+   register_hotkeys()
+
+   -- load character select text first so they it be displayed at run time
+   loading.load_binary(image_tables.text, settings.data_path .. settings.load_first_bin_file)
+
+   load_text_request = loading.queue_load(loading.DATA_TYPES.IMAGES, settings.data_path .. settings.text_bin_file)
+   load_images_request = loading.queue_load(loading.DATA_TYPES.IMAGES, settings.data_path .. settings.images_bin_file)
+   load_framedata_request = loading.queue_load(loading.DATA_TYPES.FRAMEDATA,
+                                               settings.framedata_path .. settings.framedata_bin_file)
+   loading_bar_total = loading.get_total_file_size()
 
    character_select.start_character_select_sequence()
 end
@@ -156,7 +168,7 @@ local function on_load_state()
 
    input_history.clear_input_history()
 
-   for _, mode in ipairs(special_modes.modes) do if not (Load_State_Caller == mode.name) then mode.stop() end end
+   if modes.active_mode and not (Load_State_Caller == modes.active_mode.name) then modes.stop() end
 
    if Load_State_Caller == "" or Load_State_Caller == "3rd_training" then -- player loaded savestate
       inputs.unblock_input(1)
@@ -175,12 +187,13 @@ local function on_load_state()
    training.unfreeze_game()
 
    local used_keys = {}
-   for key, com in ipairs(after_load_state_callback) do
+   for key, com in ipairs(load_state_command_queue) do
       local delay = com.delay or 0
       Queue_Command(gamestate.frame_number + 1 + delay, com.command, com.args)
       used_keys[#used_keys + 1] = key
    end
-   for _, key in ipairs(used_keys) do after_load_state_callback[key] = nil end
+   for _, key in ipairs(used_keys) do load_state_command_queue[key] = nil end
+   for _, callback in pairs(load_state_callbacks) do callback() end
 
    Load_State_Caller = ""
 end
@@ -205,26 +218,45 @@ local function before_frame()
    inputs.update_input(inputs.input, gamestate.player_objects)
    joypad.set(inputs.input)
 
+   local gesture = inputs.interpret_gesture(gamestate.P1)
+
+   if inputs.keyboard_input["alt"].down then
+      if inputs.keyboard_input["1"].press then
+         recording.set_recording_state({}, recording.RECORDING_STATE.STOPPED)
+         character_select.start_character_select_sequence()
+      end
+      if inputs.keyboard_input["2"].press then character_select.select_gill() end
+      if inputs.keyboard_input["3"].press then character_select.select_shingouki() end
+      if debug_settings.developer_mode then
+         if inputs.keyboard_input["4"].press then inputs.queue_input_from_json(training.player, "debug.json") end
+         if inputs.keyboard_input["5"].press then debug.debug_things3() end
+      end
+   end
+
    if gamestate.is_in_character_select or gamestate.is_in_vs_screen then
       character_select.update_character_select(inputs.input)
    end
    if settings.training.fast_forward_intro then training.update_fast_forward() end
 
-   local gesture = inputs.interpret_gesture(gamestate.P1)
-
    managers.update_before()
 
-   if loading.frame_data_loaded and gamestate.is_in_match and not debug_settings.recording_framedata then
+   if framedata.is_loaded and gamestate.is_in_match and not debug_settings.recording_framedata then
       attack_data.update(training.player)
 
       frame_advantage.update()
 
       prediction.update_before(inputs.previous_input, training.dummy)
-
       if not training.disable_dummy[training.dummy.id] and (not menu.is_open or menu.allow_update_while_open) then
-         dummy_control.update_blocking(inputs.input, training.dummy, settings.training.blocking_mode,
-                                       settings.training.blocking_style, settings.training.red_parry_hit_count,
-                                       settings.training.parry_every_n_count)
+         local blocking_options = {
+            mode = settings.training.blocking_mode,
+            style = settings.training.blocking_style,
+            red_parry_hit_count = settings.training.red_parry_hit_count,
+            parry_every_n_count = settings.training.parry_every_n_count,
+            prefer_parry_low = settings.training.prefer_down_parry,
+            prefer_block_low = settings.training.pose == 2,
+            force_blocking_direction = settings.training.blocking_direction
+         }
+         dummy_control.update_blocking(inputs.input, training.dummy, blocking_options)
 
          dummy_control.update_pose(inputs.input, training.dummy, settings.training.pose)
 
@@ -238,11 +270,14 @@ local function before_frame()
                                              settings.training.hits_before_counter_attack_count)
       end
 
-      hud.update_hud(inputs.input, training.dummy)
+      hud.update_hud(training.player, training.dummy, inputs.input)
 
-      special_modes.update_all(gesture)
-
-      if not special_modes.active_mode then recording.process_gesture(gesture) end
+      modules.update()
+      if modes.active_mode then
+         modes.active_mode.process_gesture(gesture)
+      else
+         recording.process_gesture(gesture)
+      end
 
       advanced_control.update()
 
@@ -264,7 +299,7 @@ local function before_frame()
    end
 
    if debug_settings.recording_framedata then
-      require("src.modules.record_framedata").update_framedata_recording(gamestate.P1, gamestate.projectiles)
+      require("src.data.record_framedata").update_framedata_recording(gamestate.P1, gamestate.projectiles)
    end
 
    inputs.update_input_info(inputs.input, gamestate.player_objects)
@@ -272,7 +307,7 @@ local function before_frame()
 
    joypad.set(inputs.input)
 
-   if loading.frame_data_loaded and gamestate.is_in_match and not debug_settings.recording_framedata then
+   if framedata.is_loaded and gamestate.is_in_match and not debug_settings.recording_framedata then
       prediction.update_after(inputs.input, training.dummy)
    end
 
@@ -290,19 +325,32 @@ end
 local function on_gui()
    draw.clear_canvases()
    -- loading done here to decouple it from game execution
-   if not loading.images_loaded or not loading.frame_data_loaded then
+   if not image_tables.is_loaded or not framedata.is_loaded then
       local number_loaded = loading.load_all()
       loading_bar_loaded = loading_bar_loaded + number_loaded
+      draw.loading_bar_display(loading_bar_loaded, loading_bar_total)
+      if not image_tables.is_loaded and load_text_request.status == loading.STATUS.LOADED and load_images_request.status ==
+          loading.STATUS.LOADED then
+         image_tables.is_loaded = true
+         for k, v in pairs(image_tables.text) do load_text_request.result[k] = v end
+         image_tables.text = load_text_request.result
+         image_tables.images = load_images_request.result
+         modules.after_images_loaded()
+         menu.create_menu()
+         modules.after_menu_created()
+      end
+      if not framedata.is_loaded and load_framedata_request.status == loading.STATUS.LOADED then
+         framedata.is_loaded = true
+         framedata.frame_data = load_framedata_request.result
+         modules.after_framedata_loaded()
+      end
    end
-   if loading.images_loaded and not menu.is_initialized then menu.create_menu() end
+
+   inputs.update_keyboard_input(input.get())
 
    if gamestate.is_in_character_select then draw.draw_character_select() end
 
-   if not loading.images_loaded or not loading.frame_data_loaded then
-      draw.loading_bar_display(loading_bar_loaded, loading_bar_total)
-   end
-
-   if loading.images_loaded then
+   if image_tables.is_loaded then
       if gamestate.is_in_match and not disable_display then
          -- input history
          input_history.input_history_display(settings.training.display_input_history,

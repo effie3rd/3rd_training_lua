@@ -1,13 +1,14 @@
 local settings = require("src.settings")
-local fd = require("src.modules.framedata")
-local fdm = require("src.modules.framedata_meta")
+local fd = require("src.data.framedata")
+local fdm = require("src.data.framedata_meta")
 local gamestate = require("src.gamestate")
 local inputs = require("src.control.inputs")
-local prediction = require("src.modules.prediction")
+local prediction = require("src.data.prediction")
 local write_memory = require("src.control.write_memory")
 local recording = require("src.control.recording")
 local tools = require("src.tools")
-local utils = require("src.modules.utils")
+local utils = require("src.data.utils")
+local debug_settings = require("src.debug_settings")
 
 local frame_data_meta = fdm.frame_data_meta
 
@@ -32,7 +33,8 @@ local function update_pose(input, dummy, pose)
        recording.RECORDING_STATE.REPLAYING or dummy.blocking.is_blocking --
    or dummy.is_stunned --
    or disable.pose then return end
-   if gamestate.is_in_match and not inputs.is_playing_input_sequence(dummy) then
+   if gamestate.is_in_match and not inputs.is_playing_input_sequence(dummy) and
+       inputs.is_all_inputs_clear(inputs.input, dummy.id) then
       local on_ground = gamestate.is_ground_state(dummy, dummy.standing_state)
       local is_waking_up = dummy.is_waking_up and dummy.remaining_wakeup_time > 0 and dummy.is_past_fast_wakeup_frame
       local wakeup_frame = dummy.standing_state == 0 and dummy.posture == 0 and dummy.previous_posture == 0x26
@@ -52,17 +54,18 @@ local function update_pose(input, dummy, pose)
             inputs.queue_input_sequence(dummy, {{"down"}, {"up"}, {"up"}, {"up"}})
          elseif pose == poses.SJUMP_BACK and on_ground then
             inputs.queue_input_sequence(dummy, {{"down"}, {"up", "back"}, {"up", "back"}, {"up", "back"}})
-
          end
       end
    end
 end
-local Block_Style = {BLOCK = 1, PARRY = 2, RED_PARRY = 3}
-local Block_Type = {BLOCK = 1, PARRY = 2, NEUTRAL = 3, NONE = 4}
+
+local Blocking_Mode = {OFF = 1, ON = 2, FIRST_HIT = 3, AFTER_FIRST_HIT = 4, RANDOM = 5}
+local Blocking_Style = {BLOCK = 1, PARRY = 2, RED_PARRY = 3}
+local Blocking_Type = {BLOCK = 1, PARRY = 2, NEUTRAL = 3, NONE = 4}
+local Force_Blocking_Direction = {OFF = 1, ALWAYS_LOW = 2, ALWAYS_HIGH = 3}
 local force_block_timeout = 20
 
-local function update_blocking(input, dummy, mode, style, red_parry_hit_count, parry_every_n_count)
-
+local function update_blocking(input, dummy, blocking_options)
    local player = dummy.other
 
    local function has_enough_parry_validity(parry_type, delta)
@@ -74,7 +77,8 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
       local p2_forward = side == 1
       local p2_back = side == 2
       local sub_type = "high"
-      if block_type == Block_Type.BLOCK and dummy.pos_y <= 8 then -- no air blocking!
+
+      if block_type == Blocking_Type.BLOCK and dummy.pos_y <= 8 then -- no air blocking!
          input[dummy.prefix .. " Right"] = p2_back
          input[dummy.prefix .. " Left"] = p2_forward
 
@@ -91,7 +95,7 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
             frame_number = gamestate.frame_number,
             side = side
          }
-      elseif block_type == Block_Type.PARRY then
+      elseif block_type == Blocking_Type.PARRY then
          -- don't parry if it would result in a dash
          if not dummy.is_blocking and not dummy.blocking.last_block.has_connected and gamestate.frame_number -
              dummy.blocking.last_block.frame_number <= 7 and
@@ -106,7 +110,7 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
                   side = side
                }
             else
-               return block_attack(hit_type, Block_Type.BLOCK, parry_type, delta, side)
+               return block_attack(hit_type, Blocking_Type.BLOCK, parry_type, delta, side)
             end
          end
          if dummy[parry_type].cooldown_time > 0 then
@@ -119,10 +123,10 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
                   side = side
                }
             else
-               return block_attack(hit_type, Block_Type.BLOCK, parry_type, delta, side)
+               return block_attack(hit_type, Blocking_Type.BLOCK, parry_type, delta, side)
             end
          else
-            if inputs.is_previous_input_neutral(dummy) and not (hit_type == 5) then
+            if inputs.is_input_neutral(dummy, inputs.previous_input) and not (hit_type == 5) then
                input[dummy.prefix .. " Right"] = false
                input[dummy.prefix .. " Left"] = false
                input[dummy.prefix .. " Down"] = false
@@ -142,10 +146,10 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
                }
             else
                -- can not parry
-               return block_attack(hit_type, Block_Type.BLOCK, parry_type, delta, side)
+               return block_attack(hit_type, Blocking_Type.BLOCK, parry_type, delta, side)
             end
          end
-      elseif block_type == Block_Type.NEUTRAL then
+      elseif block_type == Blocking_Type.NEUTRAL then
          return {
             type = "parry",
             sub_type = "pre_parry",
@@ -170,9 +174,8 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
 
    local function get_hit_type(attacks, block_type, prefer_block_low, prefer_parry_low)
       local result = {hit_type = 1}
-      if (prefer_block_low and block_type == Block_Type.BLOCK) or (prefer_parry_low and block_type == Block_Type.PARRY) then
-         result.hit_type = 2
-      end
+      if (prefer_block_low and block_type == Blocking_Type.BLOCK) or
+          (prefer_parry_low and block_type == Blocking_Type.PARRY) then result.hit_type = 2 end
       for _, attack in pairs(attacks) do
          local hit_type = 1
          local fdata_meta
@@ -194,9 +197,9 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
          end
 
          if hit_type > result.hit_type then
-            if block_type == Block_Type.PARRY and prefer_parry_low and hit_type == 1 then
+            if block_type == Blocking_Type.PARRY and prefer_parry_low and hit_type == 1 then
                result.hit_type = 2
-            elseif block_type == Block_Type.BLOCK and prefer_block_low and hit_type ~= 4 then
+            elseif block_type == Blocking_Type.BLOCK and prefer_block_low and hit_type ~= 4 then
                result.hit_type = 2
             else
                result.hit_type = hit_type
@@ -211,7 +214,7 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
    dummy.blocking.is_blocking_this_frame = false
    dummy.blocking.blocked_hit_count = dummy.blocking.blocked_hit_count or 0
    dummy.blocking.last_parry_index = dummy.blocking.last_parry_index or 0
-   dummy.blocking.last_block_type = dummy.blocking.last_block_type or Block_Type.NONE
+   dummy.blocking.last_block_type = dummy.blocking.last_block_type or Blocking_Type.NONE
    dummy.blocking.received_hit_count = dummy.blocking.received_hit_count or 0
    dummy.blocking.parried_last_frame = dummy.blocking.parried_last_frame or false
    dummy.blocking.is_pre_parrying = false
@@ -220,27 +223,29 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
    dummy.blocking.tracked_attacks = dummy.blocking.tracked_attacks or {}
    dummy.blocking.force_block_start_frame = dummy.blocking.force_block_start_frame or 0
 
-   if dummy.just_received_connection then
+   if dummy.just_received_connection or dummy.has_just_been_thrown then
       dummy.blocking.received_hit_count = dummy.blocking.received_hit_count + 1
       dummy.blocking.last_block.has_connected = true
    end
 
    if dummy.has_just_blocked then
       dummy.blocking.blocked_hit_count = dummy.blocking.blocked_hit_count + 1
-      dummy.blocking.last_block_type = Block_Type.BLOCK
+      dummy.blocking.last_block_type = Blocking_Type.BLOCK
    elseif dummy.has_just_parried then
       dummy.blocking.blocked_hit_count = dummy.blocking.blocked_hit_count + 1
-      dummy.blocking.last_block_type = Block_Type.PARRY
+      dummy.blocking.last_block_type = Blocking_Type.PARRY
       dummy.blocking.last_parry_index = dummy.blocking.blocked_hit_count
    end
 
    if dummy.is_idle and player.is_idle then
       dummy.blocking.blocked_hit_count = 0
       dummy.blocking.last_parry_index = 0
-      dummy.blocking.last_block_type = Block_Type.NONE
-      if dummy.idle_time >= 10 then dummy.blocking.received_hit_count = 0 end
+      dummy.blocking.last_block_type = Blocking_Type.NONE
+      if dummy.is_waking_up or (dummy.idle_time >= 10 and not dummy.is_airborne) then
+         dummy.blocking.received_hit_count = 0
+      end
       dummy.blocking.is_blocking = false
-      if mode == 5 then
+      if blocking_options.mode == Blocking_Mode.RANDOM then
          if math.random() > 0.5 then
             dummy.blocking.randomized_out = true
          else
@@ -249,13 +254,13 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
       end
    end
 
-   if not gamestate.is_in_match or mode == 1 or dummy.counter.is_counterattacking or recording.current_recording_state ==
-       recording.RECORDING_STATE.POSITIONING or recording.current_recording_state ==
+   if not gamestate.is_in_match or blocking_options.mode == Blocking_Mode.OFF or dummy.counter.is_counterattacking or
+       recording.current_recording_state == recording.RECORDING_STATE.POSITIONING or recording.current_recording_state ==
        recording.RECORDING_STATE.REPLAYING then return end
 
    local frames_prediction = 3
 
-   local expected_attacks = prediction.predict_hits(player, nil, nil, dummy, nil, nil, frames_prediction)
+   local expected_attacks = prediction.predict_hits(nil, nil, frames_prediction)
    dummy.blocking.expected_attacks = expected_attacks
 
    -- EX Aegis must be blocked within 5f of screen darkening
@@ -266,6 +271,7 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
          hit_id = 1,
          delta = 1,
          animation = "774c",
+         frame = 0,
          flip_x = player.flip_x,
          side = player.side
       }
@@ -273,26 +279,38 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
       expected_attacks[1][#expected_attacks[1] + 1] = attack
    end
 
-   if not (mode == 5 and dummy.blocking.randomized_out) and not (mode == 4 and dummy.blocking.received_hit_count == 0) and
-       not (mode == 3 and dummy.blocking.blocked_hit_count > 0) then
-      local block_type = style -- 1 is block, 2 is parry
+   for k, attack_list in pairs(expected_attacks) do
+      local i = 1
+      while i <= #attack_list do
+         local attack = attack_list[i]
+         if (attack.blocking_type == "player" and attack.id ~= player.id) or
+             (attack.blocking_type == "projectile" and attack.owner_id ~= player.id) then
+            table.remove(attack_list, i)
+         else
+            i = i + 1
+         end
+      end
+   end
+
+   if not (blocking_options.mode == Blocking_Mode.RANDOM and dummy.blocking.randomized_out) --
+   and not (blocking_options.mode == Blocking_Mode.FIRST_HIT and dummy.blocking.received_hit_count > 0) --
+   and not (blocking_options.mode == Blocking_Mode.AFTER_FIRST_HIT and dummy.blocking.received_hit_count == 0) then
+      local block_type = blocking_options.style -- 1 is block, 2 is parry
       local blocking_delta_threshold = 2 -- blocks/parries must be input 1 frame before the attack hits. blocking_delta_threshold = 1 minimum
       local hit_data = {}
       local block_result
       local block_inputs
-      local prefer_parry_low = settings.training.prefer_down_parry
-      local prefer_block_low = settings.training.pose == 2
-      if style == Block_Style.RED_PARRY then -- red parry
-         block_type = Block_Type.BLOCK
+
+      if blocking_options.style == Blocking_Style.RED_PARRY then -- red parry
+         block_type = Blocking_Type.BLOCK
          if not (dummy.blocking.blocked_hit_count == 0) then blocking_delta_threshold = 1 end
-         if dummy.blocking.blocked_hit_count == red_parry_hit_count then
-            block_type = Block_Type.PARRY
-         elseif dummy.blocking.blocked_hit_count > red_parry_hit_count then
-            if (dummy.blocking.blocked_hit_count - dummy.blocking.last_parry_index + 1) > parry_every_n_count then
-               block_type = Block_Type.PARRY
-            end
+         if dummy.blocking.blocked_hit_count == blocking_options.red_parry_hit_count then
+            block_type = Blocking_Type.PARRY
+         elseif dummy.blocking.blocked_hit_count > blocking_options.red_parry_hit_count then
+            if (dummy.blocking.blocked_hit_count - dummy.blocking.last_parry_index + 1) >
+                blocking_options.parry_every_n_count then block_type = Blocking_Type.PARRY end
          end
-         if dummy.is_airborne then block_type = Block_Type.PARRY end
+         if dummy.is_airborne then block_type = Blocking_Type.PARRY end
       end
 
       local to_remove = {}
@@ -359,7 +377,7 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
       for _, key in ipairs(to_remove) do dummy.blocking.tracked_attacks[key] = nil end
 
       -- cancelling into moves can alter parry timing
-      if block_type == Block_Type.PARRY and player.just_cancelled_into_attack and
+      if block_type == Blocking_Type.PARRY and player.just_cancelled_into_attack and
           not dummy.blocking.last_block.has_connected then
          dummy.blocking.reset_parry = {animation = player.animation, active = true}
       end
@@ -367,11 +385,13 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
       local delta = 99
 
       for k, attack_list in pairs(expected_attacks) do
-         for _, attack in ipairs(attack_list) do attack.connect_frame = gamestate.frame_number + attack.delta end
-         if k < delta then delta = k end
+         for _, attack in ipairs(attack_list) do
+            if attack.delta < delta then delta = attack.delta end
+            attack.connect_frame = gamestate.frame_number + attack.delta
+         end
          if not hit_data[k] then hit_data[k] = {} end
          hit_data[k].hit_type, hit_data[k].unparryable, hit_data[k].unblockable =
-             get_hit_type(attack_list, block_type, prefer_block_low, prefer_parry_low)
+             get_hit_type(attack_list, block_type, blocking_options.prefer_block_low, blocking_options.prefer_parry_low)
       end
 
       local next_attacks = {}
@@ -379,7 +399,7 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
          for _, attack in ipairs(expected_attacks[delta]) do
             if not dummy.blocking.tracked_attacks[attack.id] then
                dummy.blocking.tracked_attacks[attack.id] = attack
-               if attack.blocking_type == "projectile" and not attack.is_seieienbu then
+               if attack.blocking_type == "projectile" and gamestate.projectiles[attack.id] and not attack.is_seieienbu then
                   dummy.blocking.tracked_attacks[attack.id].remaining_hits =
                       gamestate.projectiles[attack.id].remaining_hits
                end
@@ -397,10 +417,11 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
                   end
                elseif attack.animation == "72" then -- EX Yagyou
                   dummy.blocking.tracked_attacks[attack.id].should_ignore = false
-               elseif (gamestate.projectiles[attack.id].remaining_hits <
-                   dummy.blocking.tracked_attacks[attack.id].remaining_hits or
-                   gamestate.projectiles[attack.id].has_just_connected) and
-                   gamestate.projectiles[attack.id].remaining_hits > 0 then
+               elseif (gamestate.projectiles[attack.id] and
+                   (gamestate.projectiles[attack.id].remaining_hits <
+                       dummy.blocking.tracked_attacks[attack.id].remaining_hits or
+                       gamestate.projectiles[attack.id].has_just_connected) and
+                   gamestate.projectiles[attack.id].remaining_hits > 0) then
                   dummy.blocking.tracked_attacks[attack.id].should_ignore = false
                end
             end
@@ -413,8 +434,15 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
          end
          hit_data[delta].hit_type, hit_data[delta].unparryable, hit_data[delta].unblockable = get_hit_type(next_attacks,
                                                                                                            block_type,
-                                                                                                           prefer_block_low,
-                                                                                                           prefer_parry_low)
+                                                                                                           blocking_options.prefer_block_low,
+                                                                                                           blocking_options.prefer_parry_low)
+         if blocking_options.style == Blocking_Style.BLOCK then
+            if blocking_options.force_blocking_direction == 2 then
+               hit_data[delta].hit_type = 2
+            elseif blocking_options.force_blocking_direction == 3 then
+               hit_data[delta].hit_type = 3
+            end
+         end
       end
 
       if #next_attacks > 0 or dummy.blocking.block_until_confirmed then
@@ -432,14 +460,14 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
             for _, attack in pairs(next_attacks) do
                -- projectile blocking direction is always the same as the side it was created on
                if attack.blocking_type == "projectile" and blocking_target ~= "player" then
-                  if block_type == Block_Type.BLOCK and attack.animation ~= "00_tenguishi" then
+                  if block_type == Blocking_Type.BLOCK and attack.animation ~= "00_tenguishi" then
                      dummy_side = attack.flip_x == 0 and 1 or 2
                   end
                   is_projectile = true
                   blocking_target = "projectile"
                end
                if attack.blocking_type == "player" then
-                  if style == Block_Style.BLOCK and player_side ~= attack.side then
+                  if blocking_options.style == Blocking_Style.BLOCK and player_side ~= attack.side then
                      write_memory.disable_parry_attempts(dummy)
                   end
                   dummy_side = attack.side == 1 and 2 or 1
@@ -450,30 +478,33 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
                      allow_reset_parry = true
                   end
                end
-               -- print(string.format("#%d - hit in [%d]  id: %s  anim: %s  hit id: %d  hit type: %d  side: %d",
-               --                     gamestate.frame_number, attack.delta, tostring(attack.id), attack.animation,
-               --                     attack.hit_id, hit_type, dummy_side)) -- debug
+               if debug_settings.debug_collision then
+                  print(string.format("#%d - hit in [%d]  id: %s  anim: %s  f: %d  hit id: %d  hit type: %d  side: %d",
+                                      gamestate.frame_number, attack.delta, tostring(attack.id), attack.animation,
+                                      attack.frame, attack.hit_id, hit_type, dummy_side)) -- debug
+               end
             end
 
-            if block_type == Block_Type.PARRY and hit_data[delta] and hit_data[delta + 1] then
+            if block_type == Blocking_Type.PARRY and hit_data[delta] and hit_data[delta + 1] then
                if hit_data[delta].hit_type == 1 and hit_data[delta + 1].hit_type ~= 1 then
                   hit_data[delta].hit_type = hit_data[delta + 1].hit_type
                   hit_type = hit_data[delta].hit_type
                end
             end
 
-            if hit_data[delta].unparryable then block_type = Block_Type.BLOCK end
-            if hit_data[delta].unblockable and style == Block_Style.RED_PARRY then
-               block_type = Block_Type.PARRY
+            if hit_data[delta].unparryable then block_type = Blocking_Type.BLOCK end
+            if hit_data[delta].unblockable and blocking_options.style == Blocking_Style.RED_PARRY then
+               block_type = Blocking_Type.PARRY
             end
 
-            if block_type == Block_Type.PARRY then
+            if block_type == Blocking_Type.PARRY then
                -- parrying 1f startup supers after screen darkening is impossible...
                -- so we cheat! has the added benefit of not messing up parry inputs after screen darkening
                if player.superfreeze_decount > 0 then allow_cheat_parry = true end
 
                -- determine parry type
-               local parry_low = hit_type == 2 or (prefer_parry_low and hit_type == 1 and dummy.pos_y <= 8)
+               local parry_low = hit_type == 2 or
+                                     (blocking_options.prefer_parry_low and hit_type == 1 and dummy.pos_y <= 8)
                if parry_low then parry_type = "parry_down" end
 
                local dummy_airborne = not gamestate.is_ground_state(dummy, dummy.standing_state)
@@ -488,7 +519,7 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
                if delta - 1 > 0 and delta <= blocking_delta_threshold + 1 and gamestate.frame_number -
                    dummy.blocking.pre_parry_frame > 1 then
                   inputs.clear_input_sequence(dummy)
-                  block_type = Block_Type.NEUTRAL
+                  block_type = Blocking_Type.NEUTRAL
                   dummy.blocking.is_pre_parrying = true
                   dummy.blocking.pre_parry_frame = gamestate.frame_number
                   dummy.blocking.is_blocking = true
@@ -509,7 +540,7 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
             if dummy.blocking.last_block.side ~= dummy_side then dummy.blocking.block_until_confirmed = false end
          end
 
-         if (delta <= blocking_delta_threshold or (block_type == Block_Type.PARRY and dummy.blocking.is_pre_parrying)) or
+         if (delta <= blocking_delta_threshold or (block_type == Blocking_Type.PARRY and dummy.blocking.is_pre_parrying)) or
              dummy.blocking.block_until_confirmed then
             dummy.blocking.is_blocking = true
             dummy.blocking.is_blocking_this_frame = true
@@ -530,7 +561,9 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
                      if block_result.type == "block" then
                         local next_anim_id = prediction.predict_next_animation(dummy, input)
                         local next_anim = prediction.get_next_animation(dummy, next_anim_id)
-                        expected_attacks = prediction.predict_hits(player, nil, nil, dummy, next_anim, 0, 1)
+                        local animation_options = {}
+                        animation_options[dummy.id] = {set = {animation = next_anim, frame = 0}}
+                        expected_attacks = prediction.predict_hits(nil, animation_options, 1)
                         if expected_attacks[1] then
                            if (expected_attacks[1][1].side == 1) ~= input[dummy.prefix .. " Right"] or
                                (expected_attacks[1][1].side == 2) ~= input[dummy.prefix .. " Left"] then
@@ -563,7 +596,8 @@ local function update_blocking(input, dummy, mode, style, red_parry_hit_count, p
                   end
                   -- keep blocking until we can confirm it for improved consistency
                   -- we don't have this luxury when red parrying
-                  if (dummy.blocking.blocked_hit_count == 0 and block_type == Block_Type.BLOCK) or style == 1 then
+                  if (dummy.blocking.blocked_hit_count == 0 and block_type == Blocking_Type.BLOCK) or
+                      blocking_options.style == 1 then
                      if not dummy.blocking.block_until_confirmed then
                         dummy.blocking.force_block_start_frame = gamestate.frame_number
                         dummy.blocking.block_until_confirmed = true
@@ -608,14 +642,13 @@ local i_mash_buttons = 1
 local mash_inputs_mode = 1
 
 local function update_mash_inputs(input, dummy, mode)
+   local player = dummy.other
    mash_inputs_mode = mode
 
    if not gamestate.is_in_match or mode == 1 or recording.current_recording_state ==
-       recording.RECORDING_STATE.POSITIONING or recording.current_recording_state ==
-       recording.RECORDING_STATE.REPLAYING or dummy.posture == 24 or dummy.posture == 38 or disable.mash_inputs then
-      return
-   end
-   if dummy.stun_just_began or dummy.has_just_been_thrown then
+       recording.RECORDING_STATE.POSITIONING or recording.current_recording_state == recording.RECORDING_STATE.REPLAYING or
+       dummy.posture == 24 or dummy.posture == 38 or disable.mash_inputs then return end
+   if dummy.stun_just_began or dummy.has_just_been_thrown or player.has_just_been_thrown then
       mash_start_frame = gamestate.frame_number
       i_mash_directions = 1
       i_mash_buttons = 1
@@ -627,21 +660,24 @@ local function update_mash_inputs(input, dummy, mode)
          mash_directions = mash_directions_fastest
       end
    end
-   if dummy.is_stunned or (dummy.is_being_thrown and dummy.other.throw_countdown <= 1) then
+   if dummy.is_stunned or (dummy.is_being_thrown and player.throw_countdown <= 1) or
+       (player.is_being_thrown and dummy.throw_countdown <= 1) then
       -- try to prevent move from coming out
       -- diagonal input reduces stun by 3
       -- pressing all buttons reduces stun by 4 more
-      if dummy.counter.stun_queued and dummy.stun_timer > 0 and dummy.stun_timer <= 30 and not dummy.is_being_thrown then
+      if dummy.counter.stun_queued and dummy.stun_timer > 0 and dummy.stun_timer <= 30 and not dummy.is_being_thrown and
+          not player.is_being_thrown then
          mash_directions = mash_directions_fastest_up
          i_mash_directions = tools.wrap_index(i_mash_directions, #mash_directions)
-      elseif dummy.stun_timer > 0 and dummy.stun_timer <= 15 and not dummy.is_being_thrown then
+      elseif dummy.stun_timer > 0 and dummy.stun_timer <= 15 and not dummy.is_being_thrown and
+          not player.is_being_thrown then
          mash_directions = mash_directions_fastest
          i_mash_directions = tools.wrap_index(i_mash_directions, #mash_directions)
       end
 
       local elapsed = gamestate.frame_number - mash_start_frame
       local sequence = {}
-      if dummy.stun_timer >= 8 or dummy.is_being_thrown then
+      if dummy.stun_timer >= 8 or dummy.is_being_thrown or player.is_being_thrown then
          -- normal
          if mode == 2 then
             sequence[#sequence + 1] = tools.deepcopy(mash_directions[i_mash_directions])
@@ -653,7 +689,7 @@ local function update_mash_inputs(input, dummy, mode)
             if elapsed % 6 == 0 then i_mash_buttons = tools.wrap_index(i_mash_buttons + 1, #p_buttons) end
             -- serious
          elseif mode == 3 then
-            if dummy.is_being_thrown then -- try to make mashing realistic
+            if dummy.is_being_thrown or player.is_being_thrown then -- try to make mashing realistic
                sequence[#sequence + 1] = tools.deepcopy(mash_directions[i_mash_directions])
                sequence[1][#sequence[1] + 1] = serious_buttons[i_mash_buttons]
                if elapsed % 4 == 0 then
@@ -686,8 +722,8 @@ end
 
 local function update_fast_wake_up(input, dummy, mode)
    if gamestate.is_in_match and mode ~= 1 and
-       (recording.current_recording_state ~= recording.RECORDING_STATE.POSITIONING and
-           recording.current_recording_state ~= recording.RECORDING_STATE.REPLAYING) then
+       (recording.current_recording_state ~= recording.RECORDING_STATE.POSITIONING and recording.current_recording_state ~=
+           recording.RECORDING_STATE.REPLAYING) then
       local should_tap_down = dummy.previous_can_fast_wakeup == 0 and dummy.can_fast_wakeup == 1
 
       if should_tap_down then
@@ -719,7 +755,7 @@ local function reduce_stun_controlled(player)
    if not (player.is_stunned and player.stun_timer > 0) then return end
    disable_update("mash_inputs", false)
    if player.counter.counter_type == "reversal" then
-      if not player.counter.is_counterattacking then return end
+      if not player.counter.is_counterattacking or not player.pending_input_sequence then return end
       local frames_remaining = player.pending_input_sequence.sequence and #player.pending_input_sequence.sequence or 0
       frames_remaining = frames_remaining - player.pending_input_sequence.current_frame -
                              settings.training.counter_attack_delay
@@ -763,12 +799,12 @@ local function get_attack_frame_offset(counter_attack_data)
    local offset = 0
    if counter_attack_data.type == 4 then
       if is_guard_jump(counter_attack_data.name) then
-         offset = -4 -- avoid hj input
+         offset = -6 -- avoid hj input
       elseif counter_attack_data.name == "crouch_tech" or counter_attack_data.name == "block_late_tech" then
          offset = -2
       end
    elseif (counter_attack_data.type == 2 and counter_attack_data.motion == "kara_throw") then
-      offset = -2
+      offset = 0
    end
    return offset
 end
@@ -792,10 +828,13 @@ local function update_counter_attack(input, defender, counter_attack_data, hits_
        counter_attack_data.type == 1 then return end
 
    if defender.posture ~= 0x26 then defender.counter.wakeup_queued = false end
-   if defender.is_idle or defender.is_waking_up or defender.counter.stun_queued or
-       (defender.is_airborne and not defender.is_being_thrown) then defender.counter.connection_queued = false end
+   if defender.counter.connection_queued and
+       (defender.is_waking_up or defender.counter.stun_queued or (defender.is_airborne and not defender.is_being_thrown)) then
+      defender.counter.connection_queued = false
+      defender.counter.is_awaiting_queue = false
+   end
    if defender.is_grounded then defender.counter.air_recovery = false end
-   if not defender.is_stunned then
+   if not defender.is_stunned or (defender.just_received_connection or defender.has_just_been_thrown) then
       disable_update("mash_inputs", false)
       defender.counter.stun_queued = false
    end
@@ -823,12 +862,8 @@ local function update_counter_attack(input, defender, counter_attack_data, hits_
          defender.counter.recording_slot = slot_index
 
          local delay = recording.recording_slots[defender.counter.recording_slot].delay or 0
-         local random_deviation = recording.recording_slots[defender.counter.recording_slot].random_deviation or 0
-         if random_deviation <= 0 then
-            random_deviation = math.ceil(math.random(random_deviation - 1, 0))
-         else
-            random_deviation = math.floor(math.random(0, random_deviation + 1))
-         end
+         local max_random_deviation = recording.recording_slots[defender.counter.recording_slot].random_deviation or 0
+         local random_deviation = math.random(0, max_random_deviation)
          if debug then print(string.format("frame offset: %d", delay + random_deviation)) end
          defender.counter.attack_frame = defender.counter.attack_frame + delay + random_deviation
       end
@@ -838,70 +873,75 @@ local function update_counter_attack(input, defender, counter_attack_data, hits_
       if defender.has_just_parried then
          if debug then print(gamestate.frame_number .. " - init ca (parry)") end
          -- log(defender.prefix, "counter_attack", "init ca (parry)")
+
+         defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
          defender.counter.counter_type = get_counter_type(counter_attack_data)
-         defender.counter.attack_frame = gamestate.frame_number + 15
+         defender.counter.attack_frame = gamestate.frame_number + 2 + #defender.counter.sequence
+
          if defender.is_airborne then
-            defender.counter.attack_frame = defender.counter.attack_frame + 2
+            defender.counter.attack_frame = gamestate.frame_number + 18
             if counter_attack_data.type == 2 and counter_attack_data.normal_button ~= "none" then
-               defender.counter.attack_frame = defender.counter.attack_frame + 2
+               defender.counter.attack_frame = defender.counter.attack_frame + 1
+            end
+         else
+            if counter_attack_data.move_type == "kara_special" or counter_attack_data.move_type == "kara_sgs" then
+               defender.counter.attack_frame = gamestate.frame_number + 16
+               defender.counter.offset = defender.counter.offset + 1
+               if counter_attack_data.move_type == "kara_sgs" then
+                  defender.counter.offset = defender.counter.offset + 1
+               end
+            elseif counter_attack_data.type == 2 and counter_attack_jump_motions[counter_attack_data.motion] then
+               defender.counter.attack_frame = gamestate.frame_number + 19
+            elseif counter_attack_data.name == "sgs" then
+               defender.counter.attack_frame = gamestate.frame_number + 22
             end
          end
-         if counter_attack_data.type == 3 then defender.counter.attack_frame = defender.counter.attack_frame + 1 end
-         defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
+
+         if counter_attack_data.type == 5 then
+            handle_recording()
+            if defender.is_airborne then
+               defender.counter.attack_frame = gamestate.frame_number + 18
+            else
+               defender.counter.attack_frame = gamestate.frame_number + 16
+            end
+         end
          defender.counter.is_awaiting_queue = true
-         if counter_attack_data.move_type == "kara_special" then
-            defender.counter.offset = defender.counter.offset + 1
-            if counter_attack_data.name == "kara_karakusa_lk" then
-               for i = 1, 8 do table.insert(defender.counter.sequence, 2, {}) end
-            end
-         elseif counter_attack_data.type == 2 and counter_attack_jump_motions[counter_attack_data.motion] and
-             defender.is_standing or defender.is_crouching then
-            defender.counter.offset = 4
-         elseif counter_attack_data.name == "sgs" then
-            defender.counter.offset = defender.counter.offset + 4
-         end
-         defender.counter.ref_time = -1
-         handle_recording()
          defender.counter.connection_queued = false
-      elseif (defender.just_received_connection or defender.has_just_been_thrown) and not defender.is_airborne and
-          not defender.counter.is_counterattacking then
-         if debug then print(gamestate.frame_number .. " - init ca (hit/block)") end
-         -- log(defender.prefix, "counter_attack", "init ca (hit/block)")
-         defender.counter.connection_queued = true
-         defender.counter.ref_time = defender.recovery_time
-         inputs.clear_input_sequence(defender)
-         defender.counter.attack_frame = -1
-         defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
-         defender.counter.is_awaiting_queue = true
-         defender.counter.recording_slot = -1
+      elseif (defender.just_received_connection or defender.has_just_been_thrown) and not defender.is_airborne then
+         if defender.counter.is_counterattacking and defender.has_just_been_thrown and
+             (counter_attack_data.name == "crouch_tech" or counter_attack_data.name == "block_late_tech") then
+         else
+            if debug then print(gamestate.frame_number .. " - init ca (hit/block)") end
+            defender.counter.connection_queued = true
+            inputs.clear_input_sequence(defender)
+            defender.counter.attack_frame = -1
+            defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
+            defender.counter.is_awaiting_queue = true
+            defender.counter.recording_slot = -1
+         end
       elseif defender.is_waking_up and defender.remaining_wakeup_time > 0 and not defender.counter.wakeup_queued and
           not defender.counter.stun_queued then
          if debug then print(gamestate.frame_number .. " - init ca (wake up)") end
-         -- log(defender.prefix, "counter_attack", "init ca (wakeup)")
          defender.counter.attack_frame = gamestate.frame_number + defender.remaining_wakeup_time + 2 +
                                              get_attack_frame_offset(counter_attack_data)
          defender.counter.wakeup_queued = true
          defender.counter.counter_type = get_counter_type(counter_attack_data)
          defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
          defender.counter.is_awaiting_queue = true
-         defender.counter.ref_time = -1
          handle_recording()
          defender.counter.connection_queued = false
       elseif defender.has_just_entered_air_recovery then
          if debug then print(gamestate.frame_number .. " - init ca (air)") end
          inputs.clear_input_sequence(defender)
          defender.counter.counter_type = get_counter_type(counter_attack_data)
-         defender.counter.ref_time = -1
          defender.counter.attack_frame = gamestate.frame_number + 99
          defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
          defender.counter.is_awaiting_queue = true
          defender.counter.air_recovery = true
          handle_recording()
-         -- log(defender.prefix, "counter_attack", "init ca (air)")
       elseif defender.is_stunned and not defender.counter.stun_queued then
          if debug then print(gamestate.frame_number .. " - init stun") end
          defender.counter.counter_type = get_counter_type(counter_attack_data)
-         defender.counter.ref_time = -1
          defender.counter.attack_frame = gamestate.frame_number + 99
          defender.counter.sequence, defender.counter.offset = inputs.create_input_sequence(counter_attack_data)
          defender.counter.is_awaiting_queue = true
@@ -923,7 +963,6 @@ local function update_counter_attack(input, defender, counter_attack_data, hits_
       if defender.just_received_connection or defender.freeze_just_ended or defender.is_being_thrown or
           defender.remaining_freeze_frames > 0 then defender.counter.attack_frame = gamestate.frame_number + 20 end
       defender.counter.counter_type = get_counter_type(counter_attack_data)
-      defender.counter.ref_time = -1
       handle_recording()
       -- cancel if we are being hit in the air, also applies to throws
       if defender.posture == 0x18 and defender.character_state_byte == 1 then
@@ -933,7 +972,8 @@ local function update_counter_attack(input, defender, counter_attack_data, hits_
    end
 
    if defender.counter.is_awaiting_queue then
-      if defender.counter.air_recovery then
+      if defender.counter.air_recovery --
+      or (defender.is_airborne and is_guard_jump(counter_attack_data.name)) then
          local frames_before_landing = prediction.predict_frames_before_landing(defender)
          if frames_before_landing > 0 then
             defender.counter.attack_frame = gamestate.frame_number + frames_before_landing + 2 +
@@ -944,7 +984,6 @@ local function update_counter_attack(input, defender, counter_attack_data, hits_
       end
       if defender.counter.stun_queued then
          local frames_until_recovery = estimate_frames_until_stun_recovery(defender.stun_timer)
-         -- defender.counter.attack_frame = gamestate.frame_number + frames_until_recovery + defender.counter.offset
          if defender.counter.counter_type == "reversal" then
             if frames_until_recovery <= defender.counter.offset + #defender.counter.sequence then
                defender.counter.attack_frame = gamestate.frame_number
@@ -963,13 +1002,15 @@ local function update_counter_attack(input, defender, counter_attack_data, hits_
          defender.counter.attack_frame = gamestate.frame_number + defender.remaining_wakeup_time + 2 +
                                              get_attack_frame_offset(counter_attack_data)
       end
+
       local frames_remaining = defender.counter.attack_frame - gamestate.frame_number
       if debug then print(defender.counter.attack_frame, frames_remaining) end
       -- option select
       if counter_attack_data.type == 4 or
           (counter_attack_data.type == 2 and (counter_attack_data.motion == "kara_throw") or
               counter_attack_jump_motions[counter_attack_data.motion]) then
-         if frames_remaining <= 0 then
+         if frames_remaining <= 2 then
+            if debug then print(gamestate.frame_number .. " - queue os/kara throw/jump") end
             defender.counter.offset = defender.counter.offset + settings.training.counter_attack_delay
             inputs.queue_input_sequence(defender, defender.counter.sequence, defender.counter.offset, true)
             defender.counter.is_awaiting_queue = false
@@ -1049,6 +1090,10 @@ local function reset()
 end
 
 return {
+   Blocking_Mode = Blocking_Mode,
+   Blocking_Style = Blocking_Style,
+   Blocking_Type = Blocking_Type,
+   Force_Blocking_Direction = Force_Blocking_Direction,
    update_pose = update_pose,
    update_blocking = update_blocking,
    update_mash_inputs = update_mash_inputs,

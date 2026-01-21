@@ -612,7 +612,36 @@
       ["HP"]
     ],
     "buttons": []
-  }, {
+  }, 
+    {
+    "name": "kara_sgs_f_mp",
+    "move_type": "kara_sgs",
+    "input": [
+      ["forward","MP"],
+      ["LP"],
+      [],
+      ["LP"],
+      ["down","forward"],
+      ["LK"],
+      ["HP"]
+    ],
+    "buttons": []
+  }, 
+  {
+    "name": "kara_sgs_d_hk",
+    "move_type": "kara_sgs",
+    "input": [
+      ["down","HK"],
+      ["LP"],
+      [],
+      ["LP"],
+      ["down","forward"],
+      ["LK"],
+      ["HP"]
+    ],
+    "buttons": []
+  }, 
+  {
     "name": "kkz",
     "move_type": "kkz",
     "input": [

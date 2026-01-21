@@ -1,0 +1,54 @@
+{
+  "extra_settings_extra_settings": {
+    "en": "extra settings",
+    "jp": "追加設定"
+  },
+  "extra_settings_p1_coloring": {
+    "en": "P1 Coloring",
+    "jp": "P1色付け"
+  },
+  "extra_settings_p2_coloring": {
+    "en": "P2 Coloring",
+    "jp": "P2色付け"
+  },
+  "extra_settings_copy_other_player": {
+    "en": "copy other player",
+    "jp": "他プレイヤーをコピー"
+  },
+  "extra_settings_black": {
+    "en": "black",
+    "jp": "真っ黒"
+  },
+  "extra_settings_white": {
+    "en": "white",
+    "jp": "真っ白"
+  },
+  "extra_settings_fire": {
+    "en": "fire",
+    "jp": "火"
+  },
+  "extra_settings_ice": {
+    "en": "ice",
+    "jp": "氷"
+  },
+  "extra_settings_ex": {
+    "en": "EX",
+    "jp": "EX"
+  },
+  "extra_settings_twelve": {
+    "en": "twelve",
+    "jp": "トゥエルヴ"
+  },
+  "extra_settings_shadow": {
+    "en": "shadow",
+    "jp": "影"
+  },
+  "extra_settings_light_shadow": {
+    "en": "light shadow",
+    "jp": "薄影"
+  },
+  "extra_settings_display_idle_time": {
+    "en": "Display Idle Time",
+    "jp": "停止時間表示"
+  }  
+}

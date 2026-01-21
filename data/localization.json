@@ -21,7 +21,7 @@
   },
   "menu_title_modules": {
     "en": "Modules",
-    "jp": "モジュール"
+    "jp": "拡張"
   },
   "menu_title_debug": {
     "en": "Debug",
@@ -299,6 +299,10 @@
     "en": "Mode",
     "jp": "モード"
   },
+  "menu_module": {
+    "en": "Module",
+    "jp": "拡張"
+  },
   "menu_work_in_progress": {
     "en": "Work in progress",
     "jp": "作成中"
@@ -306,6 +310,10 @@
   "menu_challenge": {
     "en": "Challenge",
     "jp": "挑戦"
+  },
+  "menu_version": {
+    "en": "Version",
+    "jp": "バージョン"
   },
   "menu_start": {
     "en": "Start",
@@ -339,162 +347,6 @@
     "en": "Dummy Learning",
     "jp": "ダミー学習"
   },
-  "setup_far_d_lk": {
-    "en": "far D+LK",
-    "jp": "遠屈小K"
-  },
-  "setup_close_d_lk": {
-    "en": "close D+LK",
-    "jp": "近屈小K"
-  },
-  "setup_close_mp": {
-    "en": "close MP",
-    "jp": "近中P"
-  },
-  "setup_cross_up_mk": {
-    "en": "crossup MK",
-    "jp": "めくり中K"
-  },
-  "setup_wakeup": {
-    "en": "wakeup",
-    "jp": "起き攻め"
-  },
-  "followup_close_mp": {
-    "en": "close MP",
-    "jp": "近中P"
-  },
-  "followup_far_mp": {
-    "en": "far MP",
-    "jp": "遠中P"
-  },
-  "followup_close_d_lk": {
-    "en": "close D+LK",
-    "jp": "近屈小K"
-  },
-  "followup_mp_hp": {
-    "en": "MP HP",
-    "jp": "中P 大P"
-  },
-  "followup_d_lk_d_lk": {
-    "en": "D+LK D+LK",
-    "jp": "屈小K 屈小K"
-  },
-  "followup_b_mk": {
-    "en": "B+MK",
-    "jp": "後中K"
-  },
-  "followup_d_mp": {
-    "en": "D+MP",
-    "jp": "屈中P"
-  },
-  "followup_d_mk": {
-    "en": "D+MK",
-    "jp": "屈中K"
-  },
-  "followup_hk": {
-    "en": "HK",
-    "jp": "大K"
-  },
-  "followup_d_lk": {
-    "en": "D+LK",
-    "jp": "屈小K"
-  },
-  "followup_mp_d_lk": {
-    "en": "MP D+LK",
-    "jp": "中P 屈小K"
-  },
-  "followup_zenpou": {
-    "en": "zenpoutenshin",
-    "jp": "前方転身"
-  },
-  "followup_crab_walk": {
-    "en": "crab walk",
-    "jp": "超移動"
-  },
-  "followup_throw": {
-    "en": "throw",
-    "jp": "投げ"
-  },
-  "followup_kara_throw": {
-    "en": "kara throw",
-    "jp": "移動投げ"
-  },
-  "followup_block": {
-    "en": "block",
-    "jp": "ガード"
-  },
-  "followup_react": {
-    "en": "react",
-    "jp": "反応する"
-  },
-  "followup_walk_in": {
-    "en": "walk in",
-    "jp": "前歩き"
-  },
-  "followup_walk_out": {
-    "en": "walk out",
-    "jp": "下がり"
-  },
-  "followup_forward_dash": {
-    "en": "forward dash",
-    "jp": "前ステ"
-  },
-  "followup_back_dash": {
-    "en": "back dash",
-    "jp": "バクステ"
-  },
-  "followup_forward_down": {
-    "en": "forward down",
-    "jp": "前下"
-  },
-  "followup_down_forward": {
-    "en": "down forward",
-    "jp": "下前"
-  },
-  "followup_punish": {
-    "en": "punish",
-    "jp": "処理"
-  },
-  "menu_far_d_lk_followups": {
-    "en": "Far D+LK Follow-Up",
-    "jp": "遠屈小K連続"
-  },
-  "menu_close_d_lk_followups": {
-    "en": "Close D+LK Follow-Up",
-    "jp": "近屈小K連続"
-  },
-  "menu_close_mp_followups": {
-    "en": "Close MP Follow-Up",
-    "jp": "近中P連続"
-  },
-  "menu_crossup_mk_followups": {
-    "en": "Crossup MK Follow-Up",
-    "jp": "めくり中K連続"
-  },
-  "menu_wakeup_followups": {
-    "en": "Wakeup Follow-Up",
-    "jp": "起き攻め連続"
-  },
-  "menu_block_followups": {
-    "en": "Block Follow-Up",
-    "jp": "ガード連続"
-  },
-  "menu_walk_in_followups": {
-    "en": "Walk In Follow-Up",
-    "jp": "前歩き連続"
-  },
-  "menu_walk_out_followups": {
-    "en": "Walk Out Follow-Up",
-    "jp": "下がり連続"
-  },
-  "menu_back_dash_followups": {
-    "en": "Back Dash Follow-Up",
-    "jp": "バクステ連続"
-  },
-  "menu_forward_dash_followups": {
-    "en": "Forward Dash Follow-Up",
-    "jp": "前ステ連続"
-  },
   "menu_score": {
     "en": "Score",
     "jp": "スコア"
@@ -511,9 +363,21 @@
     "en": "Blocking",
     "jp": "ガード"
   },
+  "menu_blocking_direction": {
+    "en": "Direction",
+    "jp": "方向"
+  },
   "menu_always": {
     "en": "always",
     "jp": "常に"
+  },
+  "menu_always_low": {
+    "en": "always low",
+    "jp": "常に下段"
+  },
+  "menu_always_high": {
+    "en": "always high",
+    "jp": "常に上段"
   },
   "menu_random": {
     "en": "random",
@@ -654,6 +518,14 @@
   "menu_quick_stand": {
     "en": "Quick Stand",
     "jp": "クイック"
+  },
+  "legend_lp_enable": {
+    "en": "LP: Enable",
+    "jp_8": "小P: 有効化する"
+  },
+  "legend_lp_disable": {
+    "en": "LP: Disable",
+    "jp_8": "小P: 無効化する"
   },
   "legend_mp_reset": {
     "en": "MP: Reset",
@@ -799,13 +671,17 @@
     "en": "Opacity",
     "jp": "不透明度"
   },
+  "menu_display_hitboxes_ab": {
+    "en": "AB Hitboxes",
+    "jp": "AB攻撃判定"
+  },
   "menu_display_distances": {
     "en": "Display Distances",
     "jp": "距離表示"
   },
-  "menu_attack_range_display": {
-    "en": "Attack Range Display",
-    "jp": "攻撃距離表示"
+  "menu_display_attack_range": {
+    "en": "Display Attack Range",
+    "jp": "攻撃範囲表示"
   },
   "menu_attack_range_display_max_attacks": {
     "en": "Maximum Attacks",
@@ -1059,6 +935,10 @@
     "en": "01",
     "jp": "01"
   },
+  "hud_idle": {
+    "en": "Idle",
+    "jp_8": "停止"
+  },
   "hud_slot": {
     "en": "Slot",
     "jp_8": "スロット"
@@ -1231,10 +1111,6 @@
     "en": "forward dash",
     "jp": "前ステ"
   },
-  "menu_kara_throw": {
-    "en": "kara throw",
-    "jp": "移動投げ"
-  },
   "menu_jump_LP": {
     "en": "jump LP",
     "jp": "ジャンプ小P"
@@ -1258,74 +1134,6 @@
   "menu_jump_HK": {
     "en": "jump HK",
     "jp": "ジャンプ大K"
-  },
-  "menu_HK_kneedrop": {
-    "en": "HK kneedrop",
-    "jp": "大ニードロップ"
-  },
-  "menu_d_LK_dash": {
-    "en": "D+LK dash",
-    "jp": "屈小K・前ステ"
-  },
-  "menu_back_dash_jump_MK": {
-    "en": "back dash · jump MK",
-    "jp": "バクステ・ジャンプ中K"
-  },
-  "menu_back_dash_down_LK": {
-    "en": "back dash · D+LK",
-    "jp": "バクステ・屈小K"
-  },
-  "menu_urien_midscreen_standard": {
-    "en": "midscreen · standard",
-    "jp": "画面中央・基本"
-  },
-  "menu_urien_midscreen_ex_head_sphere": {
-    "en": "midscreen · EX headbutt",
-    "jp": "画面中央・EXヘッドバット"
-  },
-  "menu_urien_midscreen_ex_head_standard": {
-    "en": "midscreen · EX headbutt",
-    "jp": "画面中央・EXヘッドバット"
-  },
-  "menu_urien_midscreen_anago": {
-    "en": "midscreen · anago",
-    "jp": "画面中央・あなご"
-  },
-  "menu_urien_corner_standard": {
-    "en": "corner · standard",
-    "jp": "画面端・基本"
-  },
-  "menu_urien_corner_standard_short": {
-    "en": "corner · standard",
-    "jp": "画面端・基本"
-  },
-  "menu_urien_corner_standard_q_remy": {
-    "en": "corner · standard",
-    "jp": "画面端・基本"
-  },
-  "menu_urien_corner_standard_alex": {
-    "en": "corner · standard",
-    "jp": "画面端・基本"
-  },
-  "menu_oro_midscreen_hp_yagyou": {
-    "en": "oro · midscreen · HP yagyou",
-    "jp": "オロ・画面中央・大夜行魂"
-  },
-  "menu_oro_midscreen_mp_yagyou": {
-    "en": "midscreen · MP yagyou",
-    "jp": "画面中央・中夜行魂"
-  },
-  "menu_oro_midscreen_lp_yagyou": {
-    "en": "midscreen · LP yagyou",
-    "jp": "画面中央・小夜行魂"
-  },
-  "menu_oro_midscreen_mp_mp": {
-    "en": "midscreen · LP yagyou",
-    "jp": "画面中央・小夜行魂"
-  },
-  "menu_oro_midscreen_mp_yagyou_walk": {
-    "en": "midscreen · MP yagyou",
-    "jp": "画面中央・中夜行魂"
   },
   "hud_please_wait": {
     "en": "Please Wait",
@@ -1415,61 +1223,9 @@
     "en": "Dummy Positioning",
     "jp": "ダミー位置取り"
   },
-  "menu_automatic_replay": {
-    "en": "Automatic Replay",
-    "jp": "自動再生"
-  },
-  "menu_jump_replay_mode": {
-    "en": "Jump Replay Mode",
-    "jp": "ジャンプ再生モード"
-  },
-  "menu_player_position_mode": {
-    "en": "Player Position Mode",
-    "jp": "プレイヤー位置モード"
-  },
-  "menu_dummy_offset_mode": {
-    "en": "Dummy Offset Mode",
-    "jp": "ダミー変位モード"
-  },
-  "menu_attack_delay_mode": {
-    "en": "Attack Delay Mode",
-    "jp": "攻撃遅延モード"
-  },
-  "menu_fixed_point": {
-    "en": "fixed point",
-    "jp": "定点"
-  },
-  "menu_dynamic": {
-    "en": "dynamic",
-    "jp": "動態"
-  },
-  "menu_range_random": {
-    "en": "range · random",
-    "jp": "範囲・ランダム"
-  },
-  "menu_range_ordered": {
-    "en": "range · ordered",
-    "jp": "範囲・順序"
-  },
-  "menu_range_endpoints": {
-    "en": "range · endpoints",
-    "jp": "範囲・極点"
-  },
-  "menu_show_jump_info": {
-    "en": "Show Jump Info",
-    "jp": "ジャンプ情報表示"
-  },
-  "menu_show_jump_arc": {
-    "en": "Show Jump Arc",
-    "jp": "ジャンプ軌道表示"
-  },
   "menu_next_attack_delay": {
     "en": "Next Attack Delay",
     "jp": "次攻撃遅延"
-  },
-  "menu_sa_after_parry": {
-    "en": "SA After Parry",
-    "jp": "ブロ後にSA"
   },
   "menu_none": {
     "en": "none",
@@ -1520,80 +1276,80 @@
     "jp": "大P＋大K"
   },
   "menu_d_LP": {
-    "en": "_LP",
-    "jp": "下小P"
+    "en": "↓LP",
+    "jp": "↓小P"
   },
   "menu_d_MP": {
-    "en": "_MP",
-    "jp": "下中P"
+    "en": "↓MP",
+    "jp": "↓中P"
   },
   "menu_d_HP": {
-    "en": "_HP",
-    "jp": "下大P"
+    "en": "↓HP",
+    "jp": "↓大P"
   },
   "menu_d_LK": {
-    "en": "_LK",
-    "jp": "下小K"
+    "en": "↓LK",
+    "jp": "↓小K"
   },
   "menu_d_MK": {
-    "en": "_MK",
-    "jp": "下中K"
+    "en": "↓MK",
+    "jp": "↓中K"
   },
   "menu_d_HK": {
-    "en": "_HK",
-    "jp": "下大K"
+    "en": "↓HK",
+    "jp": "↓大K"
   },
   "menu_b_LP": {
-    "en": "_LP",
-    "jp": "後小P"
+    "en": "←LP",
+    "jp": "←小P"
   },
   "menu_b_MP": {
-    "en": "_MP",
-    "jp": "後中P"
+    "en": "←MP",
+    "jp": "←中P"
   },
   "menu_b_HP": {
-    "en": "_HP",
-    "jp": "後大P"
+    "en": "←HP",
+    "jp": "←大P"
   },
   "menu_b_LK": {
-    "en": "_LK",
-    "jp": "後小K"
+    "en": "←LK",
+    "jp": "←小K"
   },
   "menu_b_MK": {
-    "en": "_MK",
-    "jp": "後中K"
+    "en": "←MK",
+    "jp": "←中K"
   },
   "menu_b_HK": {
-    "en": "_HK",
-    "jp": "後大K"
+    "en": "←HK",
+    "jp": "←大K"
   },
   "menu_f_LP": {
-    "en": "_LP",
-    "jp": "前小P"
+    "en": "→LP",
+    "jp": "→小P"
   },
   "menu_f_MP": {
-    "en": "_MP",
-    "jp": "前中P"
+    "en": "→MP",
+    "jp": "→中P"
   },
   "menu_f_HP": {
-    "en": "_HP",
-    "jp": "前大P"
+    "en": "→HP",
+    "jp": "→大P"
   },
   "menu_f_LK": {
-    "en": "_LK",
-    "jp": "前小K"
+    "en": "→LK",
+    "jp": "→小K"
   },
   "menu_f_MK": {
-    "en": "_MK",
-    "jp": "前中K"
+    "en": "→MK",
+    "jp": "→中K"
   },
   "menu_f_HK": {
-    "en": "_HK",
-    "jp": "前大K"
+    "en": "→HK",
+    "jp": "→大K"
   },
   "menu_db_HP": {
-    "en": "_HP",
-    "jp": "_大P"
+    "en": "↓HP",
+    "jp": "↓大P"
   },
   "menu_throw": {
     "en": "throw",
@@ -1603,297 +1359,9 @@
     "en": "uoh",
     "jp": "リープ"
   },
-  "menu_HP_HP": {
-    "en": "HP · HP",
-    "jp": "大P・大P"
-  },
-  "menu_LP_MK": {
-    "en": "LP · MK",
-    "jp": "小P・中K"
-  },
-  "menu_MP_HP": {
-    "en": "MP · HP",
-    "jp": "中P・大P"
-  },
-  "menu_LP_f_HP": {
-    "en": "LP · F+HP",
-    "jp": "小P・前大P"
-  },
-  "menu_HP_f_MK": {
-    "en": "HP · F+MK",
-    "jp": "大P・前中K"
-  },
-  "menu_LK_f_MK": {
-    "en": "LK · F+MK",
-    "jp": "小K・前中K"
-  },
-  "menu_tatsumaki_air_LK": {
-    "en": "LK tatsumaki",
-    "jp": "小K 竜巻"
-  },
-  "menu_tatsumaki_air_MK": {
-    "en": "MK tatsumaki",
-    "jp": "中K 竜巻"
-  },
-  "menu_tatsumaki_air_HK": {
-    "en": "HK tatsumaki",
-    "jp": "大K 竜巻"
-  },
-  "menu_tatsumaki_air_EXK": {
-    "en": "EX tatsumaki",
-    "jp": "EX 竜巻"
-  },
-  "menu_gohadouken_air_LP": {
-    "en": "LP gohadouken",
-    "jp": "小P 斬空波動拳"
-  },
-  "menu_gohadouken_air_MP": {
-    "en": "MP gohadouken",
-    "jp": "中P 斬空波動拳"
-  },
-  "menu_gohadouken_air_HP": {
-    "en": "HP gohadouken",
-    "jp": "大P 斬空波動拳"
-  },
-  "menu_kunai_LP": {
-    "en": "LP kunai",
-    "jp": "小P 苦無"
-  },
-  "menu_kunai_MP": {
-    "en": "MP kunai",
-    "jp": "中P 苦無"
-  },
-  "menu_kunai_HP": {
-    "en": "HP kunai",
-    "jp": "大P 苦無"
-  },
-  "menu_kunai_EXP": {
-    "en": "EX kunai",
-    "jp": "EX 苦無"
-  },
-  "menu_tsurugi_LK": {
-    "en": "LK tsurugi",
-    "jp": "小K 剣"
-  },
-  "menu_tsurugi_MK": {
-    "en": "MK tsurugi",
-    "jp": "中K 剣"
-  },
-  "menu_tsurugi_HK": {
-    "en": "HK tsurugi",
-    "jp": "大K 剣"
-  },
-  "menu_tsurugi_EXK": {
-    "en": "EX tsurugi",
-    "jp": "EX 剣"
-  },
-  "menu_drill_LK": {
-    "en": "LK drill",
-    "jp": "小K ドリル"
-  },
-  "menu_drill_MK": {
-    "en": "MK drill",
-    "jp": "中K ドリル"
-  },
-  "menu_drill_HK": {
-    "en": "HK drill",
-    "jp": "大K ドリル"
-  },
-  "menu_hitobashira_air": {
-    "en": "hitobashira",
-    "jp": "人柱"
-  },
-  "menu_hitobashira_air_EXK": {
-    "en": "EX hitobashira",
-    "jp": "EX 人柱"
-  },
-  "menu_axe_air_LP": {
-    "en": "LP A.X.E.",
-    "jp": "小P A.X.E."
-  },
-  "menu_axe_air_MP": {
-    "en": "MP A.X.E.",
-    "jp": "中P A.X.E."
-  },
-  "menu_axe_air_HP": {
-    "en": "HP A.X.E.",
-    "jp": "大P A.X.E."
-  },
-  "menu_axe_air_EXP": {
-    "en": "EX A.X.E.",
-    "jp": "EX A.X.E."
-  },
-  "menu_dra_LK": {
-    "en": "LK D.R.A.",
-    "jp": "小K D.R.A."
-  },
-  "menu_dra_MK": {
-    "en": "MK D.R.A.",
-    "jp": "中K D.R.A."
-  },
-  "menu_dra_HK": {
-    "en": "HK D.R.A.",
-    "jp": "大K D.R.A."
-  },
-  "menu_dra_EXK": {
-    "en": "EX D.R.A.",
-    "jp": "EX D.R.A."
-  },
-  "menu_MK_raigeki_MK": {
-    "en": "MK · MK raigeki",
-    "jp": "中K・中K 雷撃"
-  },
-  "menu_raigeki_LK": {
-    "en": "LK raigeki",
-    "jp": "小K 雷撃"
-  },
-  "menu_raigeki_MK": {
-    "en": "MK raigeki",
-    "jp": "中K 雷撃"
-  },
-  "menu_raigeki_HK": {
-    "en": "HK raigeki",
-    "jp": "大K 雷撃"
-  },
-  "menu_flash_chop_LP": {
-    "en": "LP flash chop",
-    "jp": "小P フラッシュチョップ"
-  },
-  "menu_flash_chop_MP": {
-    "en": "MP flash chop",
-    "jp": "中P フラッシュチョップ"
-  },
-  "menu_flash_chop_HP": {
-    "en": "HP flash chop",
-    "jp": "大P フラッシュチョップ"
-  },
-  "menu_flash_chop_EXP": {
-    "en": "EX flash chop",
-    "jp": "EX フラッシュチョップ"
-  },
-  "menu_hazanshuu_LK": {
-    "en": "LK hazanshuu",
-    "jp": "小K 覇山蹴"
-  },
-  "menu_mallet_smash_LP": {
-    "en": "LP mallet smash",
-    "jp": "小P マレットスマッシュ"
-  },
-  "menu_mallet_smash_EXP": {
-    "en": "EX mallet smash",
-    "jp": "EX マレットスマッシュ"
-  },
-  "menu_gohadouken_HP": {
-    "en": "HP gohadouken",
-    "jp": "大P 豪波動拳"
-  },
-  "menu_giant_palm_bomber_LP": {
-    "en": "LP giant palm bomber",
-    "jp": "小P ジャイアントパームボンバー"
-  },
-  "menu_giant_palm_bomber_MP": {
-    "en": "MP giant palm bomber",
-    "jp": "中P ジャイアントパームボンバー"
-  },
-  "menu_giant_palm_bomber_HP": {
-    "en": "HP giant palm bomber",
-    "jp": "大P ジャイアントパームボンバー"
-  },
-  "menu_giant_palm_bomber_EXP": {
-    "en": "EX giant palm bomber",
-    "jp": "EX ジャイアントパームボンバー"
-  },
-  "menu_hadouken_HP": {
-    "en": "HP hadouken",
-    "jp": "大P 波動拳"
-  },
-  "menu_hadouken_EXP": {
-    "en": "EX hadouken",
-    "jp": "EX 波動拳"
-  },
-  "menu_kara_karakusa_lk": {
-    "en": "kara karakusa LK",
-    "jp": "移動唐草小K"
-  },
-  "menu_denji_blast_LP": {
-    "en": "LP denji blast",
-    "jp": "小P 電磁ブラスト"
-  },
-  "menu_nichirin_LP": {
-    "en": "LP nichirin",
-    "jp": "小P 日輪掌"
-  },
-  "menu_niouriki": {
-    "en": "niouriki",
-    "jp": "仁王力"
-  },
-  "menu_kara_niouriki": {
-    "en": "kara niouriki",
-    "jp": "移動仁王力"
-  },
-  "menu_capture_and_deadly_blow_HK": {
-    "en": "HK capture and deadly blow",
-    "jp": "捕獲及び痛恨打撃"
-  },
-  "menu_kara_capture_and_deadly_blow": {
-    "en": "kara capture and deadly blow",
-    "jp": "移動捕獲及び痛恨打撃"
-  },
-  "menu_cold_blue_kick_LK": {
-    "en": "LK cold blue kick",
-    "jp": "小K 冷たく蒼いルグレ"
-  },
-  "menu_cold_blue_kick_MK": {
-    "en": "MK cold blue kick",
-    "jp": "中K 冷たく蒼いルグレ"
-  },
-  "menu_cold_blue_kick_HK": {
-    "en": "HK cold blue kick",
-    "jp": "大K 冷たく蒼いルグレ"
-  },
-  "menu_cold_blue_kick_EXK": {
-    "en": "EX cold blue kick",
-    "jp": "EX 冷たく蒼いルグレ"
-  },
-  "menu_tourouzan_LP": {
-    "en": "LP tourouzan",
-    "jp": "小P 蟷螂斬"
-  },
-  "menu_tourouzan_MP": {
-    "en": "MP tourouzan",
-    "jp": "中P 蟷螂斬"
-  },
-  "menu_tourouzan_HP": {
-    "en": "HP tourouzan",
-    "jp": "大P 蟷螂斬"
-  },
-  "menu_tourouzan_EXP": {
-    "en": "EX tourouzan",
-    "jp": "EX 蟷螂斬"
-  },
-  "menu_zesshou_LP": {
-    "en": "LP zesshou",
-    "jp": "小P 絶招歩法"
-  },
-  "menu_tetsuzan_LP": {
-    "en": "LP tetsuzan",
-    "jp": "小P 鉄山靠"
-  },
   "menu_moves": {
     "en": "Moves",
     "jp": "技名"
-  },
-  "menu_walk_out": {
-    "en": "Walk Out",
-    "jp": "下がり"
-  },
-  "menu_accuracy": {
-    "en": "Accuracy",
-    "jp": "精度"
-  },
-  "menu_distance_judgement": {
-    "en": "Distance Judgement",
-    "jp": "距離判定"
   },
   "legend_jump": {
     "en": "Jump",

@@ -2,6 +2,8 @@ require("gd")
 local images = {}
 local text = {}
 
+local is_loaded = false
+
 local controller_styles = {
    "hyper_reflector", "rose", "cherry", "blueberry", "sky", "blood_orange", "salmon", "grape", "lavender", "lemon",
    "champagne", "matcha", "lime", "retro_scifi", "watermelon", "macaron", "famicom", "van_gogh", "munch", "hokusai",
@@ -10,7 +12,9 @@ local controller_styles = {
    "blood_moon", "volcano", "desert_sun", "canyon", "acid", "dawn", "picnic", "gelato", "patrick", "01"
 }
 local controller_style_menu_names = {}
-for i, name in ipairs(controller_styles) do controller_style_menu_names[#controller_style_menu_names + 1] = "style_" .. name end
+for i, name in ipairs(controller_styles) do
+   controller_style_menu_names[#controller_style_menu_names + 1] = "style_" .. name
+end
 
 local function build_images()
    -- big is for  controller display
@@ -65,23 +69,35 @@ local function build_images()
    for i = 1, #controller_styles do
       local name = controller_styles[i]
       result.img_button_small[name] = {}
-      result.img_button_small[name][#result.img_button_small[name] + 1] = gd.createFromPng("images/controller/LP_s_" .. name .. ".png"):gdStr()
-      result.img_button_small[name][#result.img_button_small[name] + 1] = gd.createFromPng("images/controller/MP_s_" .. name .. ".png"):gdStr()
-      result.img_button_small[name][#result.img_button_small[name] + 1] = gd.createFromPng("images/controller/HP_s_" .. name .. ".png"):gdStr()
-      result.img_button_small[name][#result.img_button_small[name] + 1] = gd.createFromPng("images/controller/LK_s_" .. name .. ".png"):gdStr()
-      result.img_button_small[name][#result.img_button_small[name] + 1] = gd.createFromPng("images/controller/MK_s_" .. name .. ".png"):gdStr()
-      result.img_button_small[name][#result.img_button_small[name] + 1] = gd.createFromPng("images/controller/HK_s_" .. name .. ".png"):gdStr()
+      result.img_button_small[name][#result.img_button_small[name] + 1] =
+          gd.createFromPng("images/controller/LP_s_" .. name .. ".png"):gdStr()
+      result.img_button_small[name][#result.img_button_small[name] + 1] =
+          gd.createFromPng("images/controller/MP_s_" .. name .. ".png"):gdStr()
+      result.img_button_small[name][#result.img_button_small[name] + 1] =
+          gd.createFromPng("images/controller/HP_s_" .. name .. ".png"):gdStr()
+      result.img_button_small[name][#result.img_button_small[name] + 1] =
+          gd.createFromPng("images/controller/LK_s_" .. name .. ".png"):gdStr()
+      result.img_button_small[name][#result.img_button_small[name] + 1] =
+          gd.createFromPng("images/controller/MK_s_" .. name .. ".png"):gdStr()
+      result.img_button_small[name][#result.img_button_small[name] + 1] =
+          gd.createFromPng("images/controller/HK_s_" .. name .. ".png"):gdStr()
       result.img_button_big[name] = {}
-      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng("images/controller/LP_b_" .. name .. ".png"):gdStr()
-      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng("images/controller/MP_b_" .. name .. ".png"):gdStr()
-      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng("images/controller/HP_b_" .. name .. ".png"):gdStr()
-      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng("images/controller/LK_b_" .. name .. ".png"):gdStr()
-      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng("images/controller/MK_b_" .. name .. ".png"):gdStr()
-      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng("images/controller/HK_b_" .. name .. ".png"):gdStr()
+      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng(
+                                                                          "images/controller/LP_b_" .. name .. ".png"):gdStr()
+      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng(
+                                                                          "images/controller/MP_b_" .. name .. ".png"):gdStr()
+      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng(
+                                                                          "images/controller/HP_b_" .. name .. ".png"):gdStr()
+      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng(
+                                                                          "images/controller/LK_b_" .. name .. ".png"):gdStr()
+      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng(
+                                                                          "images/controller/MK_b_" .. name .. ".png"):gdStr()
+      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng(
+                                                                          "images/controller/HK_b_" .. name .. ".png"):gdStr()
    end
 
    result.img_hold = gd.createFromPng("images/controller/hold_s.png"):gdStr()
-   result.img_maru = gd.createFromPng("images/controller/check_plus2.png"):gdStr()
+   result.img_maru = gd.createFromPng("images/controller/maru_s.png"):gdStr()
    result.img_square_hollow = gd.createFromPng("images/controller/square_hollow_s.png"):gdStr()
    result.img_square_filled = gd.createFromPng("images/controller/square_filled_s.png"):gdStr()
    result.img_tilda = gd.createFromPng("images/controller/tilda_s.png"):gdStr()
@@ -92,7 +108,6 @@ local function build_images()
 
    return result
 end
-
 
 local check_box_width = 9
 local check_box_height = 9
@@ -118,5 +133,17 @@ local image_tables = {
    tri_arrow_width = tri_arrow_width,
    tri_arrow_height = tri_arrow_height
 }
+
+setmetatable(image_tables, {
+   __index = function(_, key) if key == "is_loaded" then return is_loaded end end,
+
+   __newindex = function(_, key, value)
+      if key == "is_loaded" then
+         is_loaded = value
+      else
+         rawset(image_tables, key, value)
+      end
+   end
+})
 
 return image_tables

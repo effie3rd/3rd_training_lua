@@ -1,5 +1,5 @@
 local memory_addresses = require("src.control.memory_addresses")
-local stage_data = require("src.modules.stage_data")
+local stage_data = require("src.data.stage_data")
 local tools = require("src.tools")
 
 local function write_pos_x(obj, x)
@@ -90,7 +90,7 @@ local function write_meter(player, v)
    local meter_count = memory.readbyte(player.addresses.meter_master)
    local wanted_gauge = v % player.max_meter_gauge
    local wanted_meter_count = math.floor(v / player.max_meter_gauge)
-   local character_specific = require("src.modules.framedata").character_specific
+   local character_specific = require("src.data.framedata").character_specific
    if character_specific[player.char_str].timed_sa[player.selected_sa] and wanted_meter_count == 1 and wanted_gauge == 0 then
       wanted_gauge = player.max_meter_gauge
    end

@@ -1,6 +1,7 @@
 local developer_mode = false
-local recording_framedata = false
+local recording_framedata = false and developer_mode
 local debug_hitboxes = false and developer_mode
+local debug_collision = true and developer_mode
 local assert_enabled = developer_mode
 local log_enabled = developer_mode
 local log_categories_display = {
@@ -40,6 +41,8 @@ setmetatable(debug, {
          return recording_framedata
       elseif key == "debug_hitboxes" then
          return debug_hitboxes
+      elseif key == "debug_collision" then
+         return debug_collision
       elseif key == "log_categories_display" then
          return log_categories_display
       elseif key == "show_dump_state_display" then
@@ -62,6 +65,8 @@ setmetatable(debug, {
          recording_framedata = value
       elseif key == "debug_hitboxes" then
          debug_hitboxes = value
+      elseif key == "debug_collision" then
+         debug_collision = value
       elseif key == "log_categories_display" then
          log_categories_display = value
       elseif key == "show_dump_state_display" then

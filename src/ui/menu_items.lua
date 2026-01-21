@@ -10,6 +10,9 @@ local localization = tools.read_object_from_json_file("data/localization.json") 
 
 local indent_width = 8
 
+local function is_enabled_default() return true end
+local function is_unselectable_default() return false end
+
 local Gauge_Menu_Item = {}
 Gauge_Menu_Item.__index = Gauge_Menu_Item
 
@@ -325,7 +328,10 @@ function List_Menu_Item:new(name, object, property_name, list, default_value, on
       on_change = on_change,
       width = 0,
       height = 0,
-      is_selected = false
+      last_frame_validated = 0,
+      is_enabled = is_enabled_default,
+      is_selected = false,
+      legend_text = "legend_mp_reset"
    }
 
    setmetatable(obj, self)
@@ -338,9 +344,11 @@ function List_Menu_Item:draw(depth, x, y, selected)
    local color = colors.text.default
    if selected then
       color = colors.text.selected
-   elseif self.is_enabled and not self:is_enabled() then
-      color = colors.text.disabled
+
+      if self.last_frame_validated > gamestate.frame_number then self.last_frame_validated = 0 end
+      if (gamestate.frame_number - self.last_frame_validated < 5) then color = colors.text.button_activated end
    end
+   if self.is_enabled and not self:is_enabled() then color = colors.text.disabled end
    local offset = 0
    if self.indent then offset = indent_width end
 
@@ -355,7 +363,6 @@ function List_Menu_Item:calc_dimensions()
 end
 
 function List_Menu_Item:left()
-
    self.object[self.property_name] = self.object[self.property_name] - 1
    if self.object[self.property_name] == 0 then self.object[self.property_name] = #self.list end
    self:calc_dimensions()
@@ -371,13 +378,20 @@ function List_Menu_Item:right()
    if self.on_change then self.on_change() end
 end
 
+function List_Menu_Item:validate(input)
+   if self:is_enabled() and self.validate_function then
+      if input.press or input.down then self.last_frame_validated = gamestate.frame_number end
+      if input.release then self.validate_function() end
+   end
+end
+
 function List_Menu_Item:reset()
    self.object[self.property_name] = self.default_value
    self:calc_dimensions()
    if self.on_change then self.on_change() end
 end
 
-function List_Menu_Item:legend() return "legend_mp_reset" end
+function List_Menu_Item:legend() return self.legend_text end
 
 local Check_Box_Grid_Item = {}
 Check_Box_Grid_Item.__index = Check_Box_Grid_Item
@@ -393,17 +407,16 @@ function Check_Box_Grid_Item:new(name, object, list, max_cols, on_change)
       on_change = on_change,
       width = 360 - 23 - 15 * 2,
       height = 0,
-      max_cols = max_cols,
-      cols = 1,
-      rows = 1,
+      max_cols = 8,
+      rows = {},
       col_width = 100,
       row_height = 10,
       selected_col = 1,
       selected_row = 1,
       spacing = 14,
       checkbox_padding_x = 11,
-      is_enabled = function() return true end,
-      is_unselectable = function() return false end,
+      is_enabled = is_enabled_default,
+      is_unselectable = is_unselectable_default,
       last_frame_validated = 0
    }
 
@@ -422,12 +435,7 @@ function Check_Box_Grid_Item:draw(depth, x, y, selected)
    local offset_x, offset_y = 0, 0
    if self.indent then offset_x = indent_width end
    if self.last_frame_validated > gamestate.frame_number then self.last_frame_validated = 0 end
-   local max_width = 0
-   for _, name in ipairs(self.list) do
-      local w, h = draw.get_text_dimensions(name)
-      if w > max_width then max_width = w end
-   end
-   self.col_width = math.max(max_width + 20, 50)
+
    local checkbox_offset_y = -1
    if settings.language == "jp" then checkbox_offset_y = 2 end
 
@@ -446,16 +454,16 @@ function Check_Box_Grid_Item:draw(depth, x, y, selected)
 
    self.row_height = ty + 2
 
-   local sel_index = (self.selected_row - 1) * self.cols + self.selected_col
+   local sel_index = self.rows[self.selected_row][self.selected_col]
    local base_color = colors.text.default
    if not self:is_enabled() then base_color = colors.text.disabled end
 
-   for row = 1, self.rows do
+   for i, row in ipairs(self.rows) do
       local col_offset = 0
-      for col = 1, self.cols do
-         local index = (row - 1) * self.cols + col
+      for col = 1, #row do
+         local index = row[col]
          if self.list[index] then
-            local row_offset = self.row_height * (row - 1)
+            local row_offset = self.row_height * (i - 1)
             local item_color = base_color
             local checkbox_image = image_tables.images.img_square_hollow -- unchecked
             if self.object[index] then checkbox_image = image_tables.images.img_square_filled end -- checked
@@ -489,35 +497,30 @@ function Check_Box_Grid_Item:calc_dimensions()
    local w, h = draw.get_text_dimensions_multiple(text_table)
    self.row_height = h + 2
 
+   self.rows = {}
    local total_space = self.width - w
    local total_width = 0
-   self.cols = self.max_cols
-   local shrunk = false
    local j = 1
+   local current_row = 0
+   local next_row = true
    while j <= #self.list do
-      total_width = 0
-      for i = 1, self.cols do
-         local tw, th = draw.get_text_dimensions(self.list[j + i - 1])
-         total_width = total_width + self.checkbox_padding_x + tw
-
-         if total_width > total_space then
-            if i - 1 < self.cols then
-               self.cols = i - 1
-               shrunk = true
-            end
-            break
-         end
-         total_width = total_width + self.spacing
+      if next_row then
+         current_row = current_row + 1
+         self.rows[current_row] = {}
+         total_width = 0
+         next_row = false
       end
-      if shrunk then
-         j = 1
-         shrunk = false
+      local tw, th = draw.get_text_dimensions(self.list[j])
+      if #self.rows[current_row] == 0 or total_space - (total_width + self.checkbox_padding_x + tw) > 0 then
+         self.rows[current_row][#self.rows[current_row] + 1] = j
+         total_width = total_width + self.checkbox_padding_x + tw + self.spacing
+         j = j + 1
       else
-         j = j + self.cols
+         next_row = true
       end
+      if #self.rows[current_row] >= self.max_cols then next_row = true end
    end
-   self.rows = math.max(math.floor((#self.list - 1) / self.cols) + 1, 1)
-   self.height = self.rows * self.row_height - 1
+   self.height = #self.rows * self.row_height - 1
 end
 
 function Check_Box_Grid_Item:at_least_one_selected()
@@ -533,10 +536,8 @@ function Check_Box_Grid_Item:up()
       self.selected_col = 1
       should_exit_grid = true
    end
-   if self.selected_row == self.rows then
-      local last_col = (#self.object - 1) % self.cols + 1
-      if self.selected_col > last_col then self.selected_col = last_col end
-   end
+   self.selected_col = 1
+   -- if self.selected_col > #self.rows[self.selected_row] then self.selected_col = #self.rows[self.selected_row] end
    if self.on_change then self.on_change() end
    return should_exit_grid
 end
@@ -544,34 +545,24 @@ end
 function Check_Box_Grid_Item:down()
    local should_exit_grid = false
    self.selected_row = self.selected_row + 1
-   if self.selected_row > self.rows then
+   if self.selected_row > #self.rows then
       self.selected_row = 1
       self.selected_col = 1
       should_exit_grid = true
    end
-   if self.selected_row == self.rows then
-      local last_col = (#self.object - 1) % self.cols + 1
-      if self.selected_col > last_col then self.selected_col = last_col end
-   end
+   self.selected_col = 1
+   -- if self.selected_col > #self.rows[self.selected_row] then self.selected_col = #self.rows[self.selected_row] end
    if self.on_change then self.on_change() end
    return should_exit_grid
 end
 
 function Check_Box_Grid_Item:left()
-   self.selected_col = tools.wrap_index(self.selected_col - 1, self.cols)
-   if self.selected_row == self.rows then
-      local last_col = (#self.object - 1) % self.cols + 1
-      if self.selected_col > last_col then self.selected_col = last_col end
-   end
+   self.selected_col = tools.wrap_index(self.selected_col - 1, #self.rows[self.selected_row])
    if self.on_change then self.on_change() end
 end
 
 function Check_Box_Grid_Item:right()
-   self.selected_col = tools.wrap_index(self.selected_col + 1, self.cols)
-   if self.selected_row == self.rows then
-      local last_col = (#self.object - 1) % self.cols + 1
-      if self.selected_col > last_col then self.selected_col = last_col end
-   end
+   self.selected_col = tools.wrap_index(self.selected_col + 1, #self.rows[self.selected_row])
    if self.on_change then self.on_change() end
 end
 
@@ -579,7 +570,7 @@ function Check_Box_Grid_Item:validate(input)
    if self:is_enabled() then
       if input.press or input.down then self.last_frame_validated = gamestate.frame_number end
       if input.release then
-         local index = (self.selected_row - 1) * self.cols + self.selected_col
+         local index = self.rows[self.selected_row][self.selected_col]
          self.object[index] = not self.object[index]
       end
    end
@@ -589,7 +580,7 @@ function Check_Box_Grid_Item:reset(input)
    if self:is_enabled() then
       if input.press or input.down then self.last_frame_validated = gamestate.frame_number end
       if input.release then
-         local index = (self.selected_row - 1) * self.cols + self.selected_col
+         local index = self.rows[self.selected_row][self.selected_col]
          self.object[index] = self.default_value
       end
    end
@@ -622,8 +613,8 @@ function Slider_Menu_Item:new(name, line_width, points, range, increment, unit)
       autofire_rate = 1,
       autofire_time = 5,
       legend_text = "legend_lp_mode",
-      is_enabled = function() return true end,
-      is_unselectable = function() return false end
+      is_enabled = is_enabled_default,
+      is_unselectable = is_unselectable_default
    }
 
    setmetatable(obj, self)
@@ -709,12 +700,20 @@ function Slider_Menu_Item:left()
    else
       local value
       value = self.points[self.point_index.value] - self.increment
-      while value >= self.range[1] do
+      if self.mode.value == 1 then
          value = tools.clamp(value, self.range[1], self.range[2])
-         if not tools.table_contains(self.points, value) then
-            self.points[self.point_index.value] = value
-            break
+         if tools.table_contains(self.points, value) then
+            self.point_index.value = tools.table_indexof(self.points, value) or 1
          else
+            self.points[self.point_index.value] = value
+         end
+      else
+         while value >= self.range[1] do
+            value = tools.clamp(value, self.range[1], self.range[2])
+            if not tools.table_contains(self.points, value) then
+               self.points[self.point_index.value] = value
+               break
+            end
             value = value - self.increment
          end
       end
@@ -731,12 +730,20 @@ function Slider_Menu_Item:right()
    else
       local value
       value = self.points[self.point_index.value] + self.increment
-      while value <= self.range[2] do
+      if self.mode.value == 1 then
          value = tools.clamp(value, self.range[1], self.range[2])
-         if not tools.table_contains(self.points, value) then
-            self.points[self.point_index.value] = value
-            break
+         if tools.table_contains(self.points, value) then
+            self.point_index.value = tools.table_indexof(self.points, value) or 1
          else
+            self.points[self.point_index.value] = value
+         end
+      else
+         while value <= self.range[2] do
+            value = tools.clamp(value, self.range[1], self.range[2])
+            if not tools.table_contains(self.points, value) then
+               self.points[self.point_index.value] = value
+               break
+            end
             value = value + self.increment
          end
       end
@@ -952,7 +959,7 @@ function Move_Input_Display_Menu_Item:new(name, object, select_special_item)
       inline = false,
       img_list = {},
       select_special_item = select_special_item,
-      is_unselectable = function() return true end
+      is_unselectable = is_enabled_default
    }
 
    setmetatable(obj, self)
@@ -1498,7 +1505,7 @@ function Button_Menu_Item:new(name, validate_function)
       validate_function = validate_function,
       last_frame_validated = 0,
       legend_text = "legend_lp_select",
-      is_enabled = function() return true end
+      is_enabled = is_enabled_default
    }
 
    setmetatable(obj, self)
@@ -1603,7 +1610,7 @@ function Label_Menu_Item:new(name, text_list, object, property, small, inline)
       property = property,
       small = small or false,
       inline = inline or false,
-      is_unselectable = function() return true end,
+      is_unselectable = is_enabled_default,
       width = 0,
       height = 0
    }
@@ -1738,13 +1745,6 @@ function Multitab_Menu:calc_dimensions()
    end
 end
 
-function Multitab_Menu:calc_dimensions_of_page(tab_index, page_index)
-   if not self.content[tab_index].pages or not self.content[tab_index].pages[page_index] then return end
-   for _, item in ipairs(self.content[tab_index].pages[page_index].entries) do
-      if item.calc_dimensions then item:calc_dimensions() end
-   end
-end
-
 function Multitab_Menu:current_tab() return self.content[self.main_menu_selected_index] end
 
 function Multitab_Menu:current_entry()
@@ -1776,6 +1776,7 @@ function Multitab_Menu:menu_open_popup(menu, hide_menu)
    if hide_menu then self.menu_stack = {} end
    self.menu_stack[#self.menu_stack + 1] = menu
    self.has_popup = true
+   if menu.on_open then menu:on_open() end
 end
 
 function Multitab_Menu:menu_close_popup(menu)
@@ -1809,16 +1810,8 @@ function Multitab_Menu:update_dimensions_of_all_items()
       if menu == self then
          for i = 1, #self.content do
             self.content[i].header:calc_dimensions()
-            if self.content[i].pages then
-               for _, page in ipairs(self.content[i].pages) do
-                  for _, item in ipairs(page.entries) do
-                     if item.calc_dimensions then item:calc_dimensions() end
-                  end
-               end
-            else
-               for _, item in ipairs(self.content[i].entries) do
-                  if item.calc_dimensions then item:calc_dimensions() end
-               end
+            for _, item in ipairs(self.content[i].entries) do
+               if item.calc_dimensions then item:calc_dimensions() end
             end
          end
       else
@@ -1856,8 +1849,7 @@ function Multitab_Menu:update(input)
       local i = index or self.sub_menu_selected_index
       i = i + 1
       while i <= #entries do
-         if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
-             (entries[i].is_visible and not entries[i]:is_visible())) then break end
+         if not (entries[i].inline or (entries[i].is_visible and not entries[i]:is_visible())) then break end
          i = i + 1
       end
       return math.min(i, #entries)
@@ -1915,8 +1907,7 @@ function Multitab_Menu:update(input)
       local entries = self:current_tab().entries
       local i = self.sub_menu_selected_index
       while i <= #entries do
-         if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
-             (entries[i].is_visible and not entries[i]:is_visible())) then break end
+         if not (entries[i].inline or (entries[i].is_visible and not entries[i]:is_visible())) then break end
          i = i + 1
       end
       return math.min(i, get_bottom_page_position())
@@ -1927,8 +1918,7 @@ function Multitab_Menu:update(input)
       local total_height = 0
       local i = self.sub_menu_selected_index
       while i >= 1 do
-         if not ((entries[i].is_unselectable and entries[i]:is_unselectable()) or entries[i].inline or
-             (entries[i].is_visible and not entries[i]:is_visible())) then
+         if not (entries[i].inline or (entries[i].is_visible and not entries[i]:is_visible())) then
             if total_height + entries[i].height + self.menu_item_spacing <= self.content_area_height then
                total_height = total_height + entries[i].height + self.menu_item_spacing
             else
@@ -1971,7 +1961,6 @@ function Multitab_Menu:update(input)
             if self.is_main_menu_selected then
                self.is_main_menu_selected = false
                self.sub_menu_selected_index = self:current_tab().top_entry_index
-
             else
                if self.sub_menu_selected_index == #self:current_tab().entries then
                   self.is_main_menu_selected = true
@@ -2220,22 +2209,28 @@ end
 local Menu = {}
 Menu.__index = Menu
 
-function Menu:new(left, top, right, bottom, content, on_toggle_entry, draw_legend, status_item, resize)
+function Menu:new(left, top, right, bottom, content, on_toggle_entry, draw_legend, status_item, resize, align)
    local obj = {
       left = left,
       top = top,
       right = right,
       bottom = bottom,
+      width = right - left,
+      height = bottom - top,
       content = content,
       selected_index = 1,
       on_toggle_entry = on_toggle_entry,
       draw_legend = draw_legend or true,
       status_item = status_item,
       resize = resize or false,
+      align = align,
       menu_item_spacing = 1,
       x_padding = 8,
-      y_padding = 5,
-      legend_y_padding = 3,
+      padding_top = 5,
+      padding_bottom = 5,
+      padding_bottom_default = 5,
+      legend_spacing = 3,
+      legend_padding_bottom = 3,
       content_area_height = 0,
       top_entry_index = 1,
       bottom_entry_index = 1,
@@ -2250,10 +2245,14 @@ end
 function Menu:current_entry() return self.content[self.selected_index] end
 
 function Menu:calc_dimensions()
+   if self.draw_legend then
+      self.padding_bottom = self.legend_padding_bottom
+   else
+      self.padding_bottom = self.padding_bottom_default
+   end
    for i = 1, #self.content do self.content[i]:calc_dimensions() end
    if self.status_item then self.status_item:calc_dimensions() end
    if self.resize then
-      local legend_w, legend_h = draw.get_text_dimensions("legend_hp_scroll")
       local max_width, total_height, current_width = 0, 0, 0
       local i = 1
       while i <= #self.content do
@@ -2273,12 +2272,30 @@ function Menu:calc_dimensions()
          i = i + 1
       end
       max_width = max_width + 2 * self.x_padding
-      self.content_area_height = total_height + legend_h + self.legend_y_padding
-      total_height = self.content_area_height + 2 * self.y_padding
+      self.content_area_height = total_height
+      total_height = self.content_area_height + self.padding_top + self.padding_bottom
+      if self.draw_legend then
+         local legend_w, legend_h = draw.get_text_dimensions("legend_hp_scroll")
+         total_height = total_height + self.legend_spacing + legend_h
+      end
       self.right = self.left + max_width
       self.bottom = self.top + total_height
+      self.width = max_width
+      self.height = total_height
    else
-      self.content_area_height = self.bottom - self.top - 2 * self.y_padding
+      self.content_area_height = self.bottom - self.top - (self.padding_top + self.padding_bottom)
+      if self.draw_legend then
+         local legend_w, legend_h = draw.get_text_dimensions("legend_hp_scroll")
+         self.content_area_height = self.content_area_height - self.legend_spacing - legend_h
+      end
+   end
+   if self.align then
+      if self.align == "center" then
+         self.left = (draw.CANVAS_WIDTH - self.width) / 2
+         self.top = (draw.CANVAS_HEIGHT - self.height) / 2
+         self.right = self.left + self.width
+         self.bottom = self.top + self.height
+      end
    end
 end
 
@@ -2521,9 +2538,9 @@ function Menu:draw(depth)
                           colors.menu.outline)
 
    local menu_x = self.left + self.x_padding
-   local menu_y = self.top + self.y_padding
+   local menu_y = self.top + self.padding_top
 
-   local legend_y = self.bottom - legend_h - self.y_padding - 1
+   local legend_y = self.bottom - self.padding_bottom - legend_h - self.legend_spacing
    if settings.language == "en" then legend_y = legend_y + 1 end
 
    local menu_item_spacing = 1
@@ -2546,15 +2563,113 @@ function Menu:draw(depth)
    end
 
    if self.draw_legend and self.content[self.selected_index].legend then
-      draw.render_text_to_canvas(depth, menu_x, legend_y + self.legend_y_padding,
+      draw.render_text_to_canvas(depth, menu_x, legend_y + self.legend_spacing,
                                  self.content[self.selected_index]:legend(), nil, nil, colors.text.inactive)
    end
    if self.status_item then
       self.status_item:calc_dimensions()
-      self.status_item:draw(depth, self.right - self.x_padding - self.status_item.width,
-                            legend_y + self.legend_y_padding)
+      self.status_item:draw(depth, self.right - self.x_padding - self.status_item.width, legend_y + self.legend_spacing)
    end
 end
+
+local Page_Navigation_Menu_Item = {}
+Page_Navigation_Menu_Item.__name = "Page_Navigation_Menu_Item"
+Page_Navigation_Menu_Item.__index = function(self, key)
+   if key == "entries" then return self:get_entries() end
+   return Page_Navigation_Menu_Item[key]
+end
+
+function Page_Navigation_Menu_Item:new(header, pages, nav_item)
+   local obj = {header = Header_Menu_Item:new(header), nav_item = nav_item, pages = pages, page_index = 1}
+   setmetatable(obj, self)
+   return obj
+end
+
+function Page_Navigation_Menu_Item:get_entries()
+   local result = {self.nav_item}
+   local entries = self.pages[self.page_index].entries
+   for i, item in ipairs(entries) do result[#result + 1] = item end
+   return result
+end
+
+function Page_Navigation_Menu_Item:calc_dimensions()
+   self.nav_item:calc_dimensions()
+   local entries = self.pages[self.page_index].entries
+   for _, item in ipairs(entries) do if item.calc_dimensions then item:calc_dimensions() end end
+end
+
+local Popup_Selection_Menu_Item = {}
+Popup_Selection_Menu_Item.__index = Popup_Selection_Menu_Item
+
+function Popup_Selection_Menu_Item:new(name, parent_menu, object, property_name, list, default_value)
+   local obj = {
+      name = name,
+      parent_menu = parent_menu,
+      object = object,
+      property_name = property_name,
+      list = list,
+      default_value = default_value or 1,
+      width = 360 - 23 - 15 * 2,
+      height = 0,
+      column_width = 160,
+      last_frame_validated = 0,
+      legend_text = "legend_lp_select",
+      is_enabled = is_enabled_default,
+      is_unselectable = is_unselectable_default
+   }
+
+   setmetatable(obj, self)
+   obj:calc_dimensions()
+   return obj
+end
+
+function Popup_Selection_Menu_Item:draw(depth, x, y, selected)
+   local color = colors.text.default
+   if selected then
+      color = colors.text.selected
+      if self.last_frame_validated > gamestate.frame_number then self.last_frame_validated = 0 end
+      if (gamestate.frame_number - self.last_frame_validated < 5) then color = colors.text.button_activated end
+   end
+   if self.is_enabled and not self:is_enabled() then color = colors.text.disabled end
+
+   if type(self.name) == "table" then
+      draw.render_text_multiple_to_canvas(depth, x, y, self.name, nil, nil, color)
+   else
+      draw.render_text_to_canvas(depth, x, y, self.name, nil, nil, color)
+   end
+   draw.render_text_to_canvas(depth, x + self.column_width, y, self.list[self.object[self.property_name]], nil, nil,
+                              color)
+end
+
+function Popup_Selection_Menu_Item:calc_dimensions()
+   if type(self.name) == "table" then
+      local _, h = draw.get_text_dimensions_multiple(self.name)
+      self.height = h
+   else
+      local _, h = draw.get_text_dimensions(self.name)
+      self.height = h
+   end
+end
+
+function Popup_Selection_Menu_Item:validate(input)
+   if self:is_enabled() then
+      if input.press or input.down then self.last_frame_validated = gamestate.frame_number end
+      if input.release then
+         local popup_items = {}
+         for i, option_name in ipairs(self.list) do
+            popup_items[i] = Button_Menu_Item:new(option_name, function()
+               self.object[self.property_name] = i
+               self.parent_menu:menu_close_popup()
+            end)
+         end
+         local popup_menu = Menu:new(0, 0, 150, 150, popup_items, nil, true, nil, true, "center")
+         popup_menu.on_close = function() self:calc_dimensions() end
+         self.parent_menu:menu_open_popup(popup_menu)
+      end
+   end
+end
+
+function Popup_Selection_Menu_Item:legend() return self.legend_text end
 
 return {
    Gauge_Menu_Item = Gauge_Menu_Item,
@@ -2574,5 +2689,7 @@ return {
    Footer_Menu_Item = Footer_Menu_Item,
    Label_Menu_Item = Label_Menu_Item,
    Multitab_Menu = Multitab_Menu,
-   Menu = Menu
+   Menu = Menu,
+   Page_Navigation_Menu_Item = Page_Navigation_Menu_Item,
+   Popup_Selection_Menu_Item = Popup_Selection_Menu_Item
 }

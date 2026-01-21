@@ -1,11 +1,11 @@
-local fd = require("src.modules.framedata")
-local fdm = require("src.modules.framedata_meta")
-local game_data = require("src.modules.game_data")
+local fd = require("src.data.framedata")
+local fdm = require("src.data.framedata_meta")
+local game_data = require("src.data.game_data")
 local memory_addresses = require("src.control.memory_addresses")
 local tools = require("src.tools")
 local debug_settings = require("src.debug_settings")
 
-local frame_data, character_specific = fd.frame_data, fd.character_specific
+local character_specific = fd.character_specific
 local get_wakeup_time = fd.get_wakeup_time
 local frame_data_meta = fdm.frame_data_meta
 
@@ -120,8 +120,8 @@ local function make_player_object(id, base, prefix)
       },
       input_info = {last_back_input = 0, last_forward_input = 0, last_down_input = 0, last_up_input = 0},
       blocking = {},
-      counter = {attack_frame = -1, ref_time = -1, recording_slot = -1, offset = 0, counter_type = ""},
-      stunned = false,
+      counter = {attack_frame = -1, recording_slot = -1, offset = 0, counter_type = ""},
+      is_stunned = false,
       throw_invulnerability_cooldown = 0,
       animation_frame = 0,
       posture = 0,
@@ -129,6 +129,7 @@ local function make_player_object(id, base, prefix)
       meter_count = 0,
       max_meter_gauge = 0,
       max_meter_count = 0,
+      stun_bar_max = 64,
       cooldown = 0,
       remaining_wakeup_time = 0,
       pos_x = 0,
@@ -262,7 +263,7 @@ end
 
 local function read_box(obj, ptr, type)
    if obj.friends > 1 then -- Yang SA3
-      if type ~= "attack" then return end
+      if not (type == "attack_a" or type == "attack_b") then return end
    end
 
    local left = memory.readwordsigned(ptr + 0x0)
@@ -270,63 +271,61 @@ local function read_box(obj, ptr, type)
    local bottom = memory.readwordsigned(ptr + 0x4)
    local height = memory.readwordsigned(ptr + 0x6)
 
-   local box = {tools.convert_box_types[type], bottom, height, left, width}
-
+   local box = {tools.get_box_type_int(type, true), bottom, height, left, width}
    if left == 0 and width == 0 and bottom == 0 and height == 0 then return end
 
    obj.boxes[#obj.boxes + 1] = box
 end
 
 local function read_game_object(obj)
-   if memory.readdword(obj.base + 0x2A0) == 0 then -- invalid objects
-      return false
-   end
+   if memory.readdword(obj.base + memory_addresses.offsets.object_validity) == 0 then return false end
 
-   obj.friends = memory.readbyte(obj.base + 0x1)
-   obj.flip_x = memory.readbytesigned(obj.base + 0x0A) -- 0 = facing left, 1 = facing right
+   obj.friends = memory.readbyte(obj.base + memory_addresses.offsets.friends)
+   obj.flip_x = memory.readbytesigned(obj.base + memory_addresses.offsets.flip_x)
    obj.previous_pos_x = obj.pos_x or 0
    obj.previous_pos_y = obj.pos_y or 0
-   obj.pos_x_char = memory.readwordsigned(obj.base + 0x64)
-   obj.pos_x_mantissa = memory.readbyte(obj.base + 0x66)
-   obj.pos_y_char = memory.readwordsigned(obj.base + 0x68)
-   obj.pos_y_mantissa = memory.readbyte(obj.base + 0x6A)
+   obj.pos_x_char = memory.readwordsigned(obj.base + memory_addresses.offsets.pos_x_char)
+   obj.pos_x_mantissa = memory.readbyte(obj.base + memory_addresses.offsets.pos_x_mantissa)
+   obj.pos_y_char = memory.readwordsigned(obj.base + memory_addresses.offsets.pos_y_char)
+   obj.pos_y_mantissa = memory.readbyte(obj.base + memory_addresses.offsets.pos_y_mantissa)
    obj.pos_x = obj.pos_x_char + obj.pos_x_mantissa / 256
    obj.pos_y = obj.pos_y_char + obj.pos_y_mantissa / 256
 
-   obj.velocity_x_char = memory.readwordsigned(obj.base + 0x64 + 24)
-   obj.velocity_x_mantissa = memory.readbyte(obj.base + 0x64 + 26)
-   obj.velocity_y_char = memory.readwordsigned(obj.base + 0x64 + 28)
-   obj.velocity_y_mantissa = memory.readbyte(obj.base + 0x64 + 30)
-   obj.acceleration_x_char = memory.readwordsigned(obj.base + 0x64 + 32)
-   obj.acceleration_x_mantissa = memory.readbyte(obj.base + 0x64 + 34)
-   obj.acceleration_y_char = memory.readwordsigned(obj.base + 0x64 + 36)
-   obj.acceleration_y_mantissa = memory.readbyte(obj.base + 0x64 + 38)
+   obj.velocity_x_char = memory.readwordsigned(obj.base + memory_addresses.offsets.velocity_x_char)
+   obj.velocity_x_mantissa = memory.readbyte(obj.base + memory_addresses.offsets.velocity_x_mantissa)
+   obj.velocity_y_char = memory.readwordsigned(obj.base + memory_addresses.offsets.velocity_y_char)
+   obj.velocity_y_mantissa = memory.readbyte(obj.base + memory_addresses.offsets.velocity_y_mantissa)
+   obj.acceleration_x_char = memory.readwordsigned(obj.base + memory_addresses.offsets.acceleration_x_char)
+   obj.acceleration_x_mantissa = memory.readbyte(obj.base + memory_addresses.offsets.acceleration_x_mantissa)
+   obj.acceleration_y_char = memory.readwordsigned(obj.base + memory_addresses.offsets.acceleration_y_char)
+   obj.acceleration_y_mantissa = memory.readbyte(obj.base + memory_addresses.offsets.acceleration_y_mantissa)
 
    obj.velocity_x = obj.velocity_x_char + obj.velocity_x_mantissa / 256
    obj.velocity_y = obj.velocity_y_char + obj.velocity_y_mantissa / 256
    obj.acceleration_x = obj.acceleration_x_char + obj.acceleration_x_mantissa / 256
    obj.acceleration_y = obj.acceleration_y_char + obj.acceleration_y_mantissa / 256
 
-   obj.char_id = memory.readword(obj.base + 0x3C0)
+   obj.char_id = memory.readword(obj.base + memory_addresses.offsets.char_id)
 
    obj.boxes = {}
    local boxes = {
-      {initial = 1, offset = 0x2D4, type = "push", number = 1},
-      {initial = 1, offset = 0x2C0, type = "throwable", number = 1},
-      {initial = 1, offset = 0x2A0, type = "vulnerability", number = 4},
-      {initial = 1, offset = 0x2A8, type = "ext. vulnerability", number = 4},
-      {initial = 1, offset = 0x2C8, type = "attack", number = 4},
-      {initial = 1, offset = 0x2B8, type = "throw", number = 1}
+      {offset = 0x2D4, initial = 1, final = 1, type = "push"},
+      {offset = 0x2C0, initial = 1, final = 1, type = "throwable"},
+      {offset = 0x2A0, initial = 1, final = 4, type = "vulnerability"},
+      {offset = 0x2A8, initial = 1, final = 4, type = "ext_vulnerability"},
+      {offset = 0x2C8, initial = 1, final = 2, type = "attack_a"},
+      {offset = 0x2C8, initial = 3, final = 4, type = "attack_b"},
+      {offset = 0x2B8, initial = 1, final = 1, type = "throw"}
    }
 
    for _, box in ipairs(boxes) do
-      for i = box.initial, box.number do
+      for i = box.initial, box.final do
          read_box(obj, memory.readdword(obj.base + box.offset) + (i - 1) * 8, box.type)
       end
    end
 
-   obj.animation_frame_id = memory.readword(obj.base + 0x21A)
-   obj.animation_frame_id2 = memory.readbyte(obj.base + 0x214) -- number of frames animation stays on current frame_id
+   obj.animation_frame_id = memory.readword(obj.base + memory_addresses.offsets.frame_id)
+   obj.animation_frame_id2 = memory.readbyte(obj.base + memory_addresses.offsets.frame_countdown) -- number of frames animation stays on current frame_id
    obj.animation_frame_id3 = memory.readbyte(obj.base + 0x205)
 
    -- not a unique id for each frame but good enough
@@ -420,9 +419,7 @@ local function read_player_vars(player)
    -- P1: 0x02068C6C
    -- P2: 0x02069104
 
-   if memory.readdword(player.base + 0x2A0) == 0 then -- invalid objects
-      return
-   end
+   if memory.readdword(player.base + memory_addresses.offsets.object_validity) == 0 then return end
 
    local debug_state_variables = player.debug_state_variables
 
@@ -495,6 +492,7 @@ local function read_player_vars(player)
    player.is_airborne = player.is_jumping or (player.posture == 0 and player.pos_y ~= 0) -- maybe a memory location exists for distinguishing these states
    player.is_grounded = player.is_standing or player.is_crouching or movement_postures[player.posture] or
                             (player.posture == 0 and player.standing_state ~= 0 and player.pos_y == 0)
+   player.is_in_air_reel = player.posture == 24 and player.posture_ext > 0
 
    player.busy_flag = memory.readword(player.addresses.busy_flag)
 
@@ -636,7 +634,9 @@ local function read_player_vars(player)
    end
 
    player.animation_frame_data = nil
-   if frame_data[player.char_str] then player.animation_frame_data = frame_data[player.char_str][player.animation] end
+   if fd.frame_data[player.char_str] then
+      player.animation_frame_data = fd.frame_data[player.char_str][player.animation]
+   end
    player.has_animation_just_changed = previous_animation ~= player.animation
 
    local function reset_animation()
@@ -706,7 +706,7 @@ local function read_player_vars(player)
    -- PUSHBACK
    player.pushback_start_frame = player.pushback_start_frame or 0
    player.is_in_pushback = player.is_in_pushback or false
-   if player.freeze_just_began or player.is_in_pushback and player.recovery_time == 0 then
+   if player.freeze_just_began or (player.is_in_pushback and not player.freeze_just_ended and player.recovery_time == 0) then
       player.is_in_pushback = false
    end
 
@@ -727,6 +727,7 @@ local function read_player_vars(player)
       end
    end
 
+   player.last_received_connection_id = player.received_connection_id or 0
    player.received_connection_id = memory.readdword(player.addresses.received_connection_id)
    player.received_connection_marker = memory.readword(player.addresses.received_connection_marker)
    player.just_received_connection = player.received_connection_marker ~= 0
@@ -868,8 +869,8 @@ local function read_player_vars(player)
    -- AIR RECOVERY STATE
    local debug_air_recovery = false
    local previous_is_in_air_recovery = player.is_in_air_recovery or false
-   local r1 = memory.readbyte(player.base + 0x12F)
-   local r2 = memory.readbyte(player.base + 0x3C7)
+   local r1 = memory.readbyte(player.addresses.air_recovery_1)
+   local r2 = memory.readbyte(player.addresses.air_recovery_2)
    player.is_in_air_recovery = player.standing_state == 0 and r1 == 0 and r2 == 0x06 and player.pos_y ~= 0
    player.has_just_entered_air_recovery = not previous_is_in_air_recovery and player.is_in_air_recovery
 
@@ -925,11 +926,16 @@ local function read_player_vars(player)
       if player.has_just_woke_up then
          player.is_fast_wakingup = false
          player.is_past_fast_wakeup_frame = false
+         player.wakeup_frame = frame_number
       end
 
       player.has_just_started_wake_up = not player.previous_is_wakingup and player.is_waking_up
       player.has_just_started_fast_wake_up = not player.previous_is_fast_wakingup and player.is_fast_wakingup
       player.has_just_woke_up = player.previous_is_wakingup and not player.is_waking_up
+
+      if player.has_just_started_wake_up then
+         player.wake_up_start_frame = frame_number
+      end
    end
 
    if not previous_is_in_jump_startup and player.is_in_jump_startup then
@@ -1337,7 +1343,7 @@ local function read_player_vars(player)
       player.throw_invulnerability_cooldown = player.recovery_time + 7 + player.additional_recovery_time
    elseif player.remaining_wakeup_time > 0 then
       player.throw_invulnerability_cooldown = player.remaining_wakeup_time + 7
-   elseif player.just_received_connection or player.remaining_freeze_frames > 0 then
+   elseif player.just_received_connection or (player.character_state_byte == 1 and player.remaining_freeze_frames > 0) then
       player.throw_invulnerability_cooldown = 10
    elseif player.has_just_landed and previous_is_in_air_recovery then
       player.throw_invulnerability_cooldown = 6
@@ -1383,7 +1389,7 @@ local function update_tengu_stones()
             player_objects[proj.emitter_id].tengu_stones = {}
          end
          player_objects[proj.emitter_id].tengu_stones[proj.id] = proj
-         proj.tengu_state = memory.readbyte(proj.base + 41)
+         proj.tengu_state = memory.readbyte(proj.base + memory_addresses.offsets.tengu_state)
          if proj.tengu_attack_queued then
             if proj.tengu_state == 3 then proj.tengu_attack_queued = false end
          else
@@ -1461,6 +1467,7 @@ local function update_seieienbu()
                         alive = true,
                         projectile_type = "seieienbu",
                         projectile_start_type = "seieienbu",
+                        animation = "seieienbu",
                         pos_x = player.pos_x,
                         pos_y = player.pos_y,
                         velocity_x = 0,
@@ -1472,6 +1479,7 @@ local function update_seieienbu()
                         expired = false,
                         previous_remaining_hits = 99,
                         remaining_hits = 99,
+                        lifetime = 0,
                         is_forced_one_hit = false,
                         has_activated = false,
                         animation_start_frame = frame_number + i * 10,
@@ -1481,7 +1489,8 @@ local function update_seieienbu()
                         remaining_freeze_frames = 0,
                         remaining_lifetime = 0,
                         cooldown = 0,
-                        placeholder = true,
+                        is_placeholder = true,
+                        seiei_clone_id = i,
                         seiei_animation = player.animation,
                         seiei_frame = player.animation_frame,
                         seiei_hit_id = player.current_hit_id
@@ -1495,11 +1504,10 @@ local function update_seieienbu()
    end
    local to_remove = {}
    for id, proj in pairs(projectiles) do
-      if proj.projectile_type == "seieienbu" and proj.has_just_connected then
+      if proj.projectile_type == "00_seieienbu" and proj.has_just_connected then
+         local clone_id = memory.readbyte(proj.base + memory_addresses.offsets.clone_id)
          for other_id, other_proj in pairs(projectiles) do
-            if proj.id == other_proj.id and proj.seiei_animation == other_proj.seiei_animation then
-               to_remove[#to_remove + 1] = other_id
-            end
+            if clone_id == other_proj.seiei_clone_id then to_remove[#to_remove + 1] = other_id end
          end
       end
    end
@@ -1549,7 +1557,7 @@ local function read_projectiles()
 
    -- flag everything as expired by default, we will reset the flag it we update the projectile
    for id, obj in pairs(projectiles) do
-      if obj.placeholder then
+      if obj.is_placeholder then
          if obj.animation_start_frame <= frame_number then obj.expired = true end
       else
          obj.expired = true
@@ -1569,6 +1577,7 @@ local function read_projectiles()
       local id = string.format("%08X", base)
       local obj = projectiles[id]
       local is_initialization = false
+
       if obj == nil then
          obj = {base = base, projectile = obj_slot}
          obj.id = id
@@ -1578,22 +1587,24 @@ local function read_projectiles()
          obj.start_lifetime = 0
          obj.remaining_lifetime = 0
          obj.has_activated = false
+         obj.animation_frame = 0
          obj.animation_start_frame = frame_number
          obj.animation_freeze_frames = 0
          obj.cooldown = 0
          obj.alive = true
-         obj.placeholder = false
+         obj.is_placeholder = false
          is_initialization = true
       end
 
-      if not obj.placeholder and read_game_object(obj) then
-         obj.emitter_id = memory.readbyte(obj.base + 0x2) + 1
-
+      if not obj.is_placeholder and read_game_object(obj) then
+         obj.emitter_id = memory.readbyte(obj.base + memory_addresses.offsets.emitter_id) + 1
          if is_initialization then
             obj.initial_flip_x = obj.flip_x
             obj.emitter_animation = player_objects[obj.emitter_id].animation
             for proj_id, proj in pairs(projectiles) do
-               if proj.placeholder and proj.projectile_type == obj.projectile_type then obj.id = proj_id end
+               if proj.is_placeholder and proj.projectile_type == obj.projectile_type then
+                  obj.id = proj_id
+               end
             end
          else
             obj.lifetime = obj.lifetime + 1
@@ -1604,13 +1615,13 @@ local function read_projectiles()
          obj.expired = false
          obj.is_converted = obj.flip_x ~= obj.initial_flip_x
          obj.previous_remaining_hits = obj.remaining_hits or 0
-         obj.remaining_hits = memory.readbyte(obj.base + 0x9C + 2)
+         obj.remaining_hits = memory.readbyte(obj.base + memory_addresses.offsets.remaining_hits)
          if obj.remaining_hits > 0 then obj.is_forced_one_hit = false end
 
-         obj.alive = memory.readbyte(obj.base + 39) ~= 2
+         obj.alive = memory.readbyte(obj.base + memory_addresses.offsets.alive) ~= 2
 
          obj.previous_remaining_freeze_frames = obj.remaining_freeze_frames
-         obj.remaining_freeze_frames = memory.readbyte(obj.base + 0x45)
+         obj.remaining_freeze_frames = memory.readbyte(obj.base + memory_addresses.offsets.remaining_freeze_frames)
 
          obj.freeze_just_began = false
          if obj.remaining_freeze_frames > 0 then
@@ -1622,11 +1633,12 @@ local function read_projectiles()
             obj.cooldown = obj.cooldown - 1
          end
 
-         obj.remaining_lifetime = memory.readword(obj.base + 154)
+         obj.remaining_lifetime = memory.readword(obj.base + memory_addresses.offsets.remaining_lifetime)
 
          local emitter = player_objects[obj.emitter_id]
 
-         obj.projectile_type = string.format("%02X", memory.readbyte(obj.base + 0x91))
+         obj.projectile_type = string.format("%02X",
+                                             memory.readbyte(obj.base + memory_addresses.offsets.projectile_type))
          if obj.projectile_type == "00" then
             if emitter.char_str == "dudley" then
                obj.projectile_type = "00_pa_dudley"
@@ -1654,8 +1666,11 @@ local function read_projectiles()
          elseif obj.projectile_type == "01" then
             if emitter.char_str == "twelve" then obj.projectile_type = "01_ndl_exp" end
          end
+         obj.animation = obj.projectile_type
 
          if is_initialization then
+            -- local debug = require("src.debug")
+            -- debug.memory_view.view.start_address = obj.base + memory_addresses.offsets.action_address
             obj.projectile_start_type = obj.projectile_type -- type can change during projectile life (ex: aegis)
             obj.animation_start_frame = frame_number
             obj.start_lifetime = obj.remaining_lifetime
@@ -1665,8 +1680,8 @@ local function read_projectiles()
 
          obj.animation_frame = frame_number - obj.animation_start_frame - obj.animation_freeze_frames
          obj.has_just_connected = false
-         if emitter.other.just_received_connection and emitter.other.received_connection_is_projectile and
-             (obj.cooldown <= 0 or obj.projectile_type == "72") then
+
+         if (obj.cooldown <= 0 or obj.projectile_type == "72") then
             if emitter.other.received_connection_id == obj.base then
                obj.has_just_connected = true
                update_projectile_cooldown(obj)
@@ -1674,15 +1689,15 @@ local function read_projectiles()
                emitter.other.last_received_connection_hit_id = 1
             end
 
-            local box_type_matches = {{{"vulnerability", "ext. vulnerability"}, {"attack"}}}
+            local box_type_matches = {{{"vulnerability", "ext_vulnerability"}, {"attack"}}}
             tools.test_collision(emitter.other.pos_x, emitter.other.pos_y, emitter.other.flip_x, emitter.other.boxes,
                                  obj.pos_x, obj.pos_y, obj.flip_x, obj.boxes, box_type_matches)
          end
 
          projectiles[obj.id] = obj
 
-         if frame_data["projectiles"] then
-            obj.animation_frame_data = frame_data["projectiles"][obj.projectile_type]
+         if fd.frame_data["projectiles"] then
+            obj.animation_frame_data = fd.frame_data["projectiles"][obj.projectile_type]
          end
 
          if obj.animation_frame_data ~= nil and not debug_settings.recording_framedata then
@@ -1765,6 +1780,7 @@ local gamestate = {
    is_crouching_state = is_crouching_state,
    is_ground_state = is_ground_state,
    get_side = get_side,
+   get_additional_recovery_delay = get_additional_recovery_delay,
    update_projectile_cooldown = update_projectile_cooldown
 }
 

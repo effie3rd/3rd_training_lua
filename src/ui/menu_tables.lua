@@ -1,4 +1,4 @@
-local sd = require("src.modules.stage_data")
+local sd = require("src.data.stage_data")
 
 local stage_list = sd.menu_stages
 
@@ -7,8 +7,8 @@ local pose = {"menu_standing", "menu_crouching", "menu_jump_forward", "menu_jump
 local off_on_random = {"menu_off", "menu_on", "menu_random"}
 
 local blocking_style = {"menu_block", "menu_parry", "menu_red_parry"}
-
 local blocking_mode = {"menu_off", "menu_on", "menu_first_hit", "menu_after_first_hit", "menu_random"}
+local blocking_direction = {"menu_off", "menu_always_low", "menu_always_high"}
 
 local move_selection_type = {"menu_none", "menu_normal_attack", "menu_special_sa", "menu_option_select", "menu_recording"}
 
@@ -45,12 +45,6 @@ local display_attack_bars_mode = {"menu_off", "menu_1_line", "menu_2_lines"}
 
 local language = {"menu_english", "menu_japanese"}
 
-local special_training_mode = {
-   "training_defense", "training_jumpins", "training_footsies", "training_unblockables", "training_geneijin"
-}
-
-local challenge_mode = {"?"}
-
 local slot_replay_mode = {
    "menu_replay_normal", "menu_replay_random", "menu_replay_ordered", "menu_replay_repeat", "menu_replay_repeat_random", "menu_replay_repeat_ordered"
 }
@@ -58,9 +52,6 @@ local slot_replay_mode = {
 local distance_display_reference_point = {"menu_distance_origin", "menu_distance_hurtbox"}
 
 local fixed_point_dynamic = {"menu_fixed_point", "menu_dynamic"}
-local jumpins_replay_mode = {"menu_replay_random", "menu_replay_ordered"}
-local jumpins_offset_mode = {"menu_fixed_point", "menu_range_random", "menu_range_ordered", "menu_range_endpoints"}
-
 
 local theme_names = {"default"}
 
@@ -70,6 +61,7 @@ local menu_tables = {
    off_on_random = off_on_random,
    blocking_style = blocking_style,
    blocking_mode = blocking_mode,
+   blocking_direction = blocking_direction,
    move_selection_type = move_selection_type,
    move_selection_motion_input = move_selection_motion_input,
    move_selection_motion = move_selection_motion,
@@ -84,13 +76,9 @@ local menu_tables = {
    display_frame_advantage_mode = display_frame_advantage_mode,
    display_attack_bars_mode = display_attack_bars_mode,
    language = language,
-   special_training_mode = special_training_mode,
-   challenge_mode = challenge_mode,
    slot_replay_mode = slot_replay_mode,
    distance_display_reference_point = distance_display_reference_point,
    fixed_point_dynamic = fixed_point_dynamic,
-   jumpins_replay_mode = jumpins_replay_mode,
-   jumpins_offset_mode = jumpins_offset_mode
 }
 
 setmetatable(menu_tables, {

@@ -1,8 +1,8 @@
 local gamestate = require("src.gamestate")
-local prediction = require("src.modules.prediction")
+local prediction = require("src.data.prediction")
 local inputs = require("src.control.inputs")
 
-local frames_prediction = 15
+local frames_prediction = 20
 
 local programmed_movement_queue = {}
 
@@ -59,7 +59,7 @@ local function is_idle_timing(player, offset, precise)
    if player.just_received_connection then return false end
    if not precise then offset = offset + 1 end
    if player.superfreeze_decount > 0 then return false end
-   if player.has_just_parried then return 15 < offset end
+   if player.has_just_parried then return 15 <= offset end
    if player.is_airborne then
       if player.is_idle then
          if offset > 0 then
@@ -70,8 +70,12 @@ local function is_idle_timing(player, offset, precise)
       else
          local action_type = memory.readbyte(player.addresses.action_type)
          local frames_until_landing = prediction.predict_frames_before_landing(player)
+         local landing_anim = player.animation_frame_data and player.animation_frame_data.landing_anim or player.animation
+         local landing_frames_until_idle = prediction.get_frames_until_idle(player, landing_anim, 0, frames_prediction)
          if action_type == 4 then -- normal
-            return player.remaining_freeze_frames + frames_until_landing + 2 < offset
+            return player.remaining_freeze_frames + frames_until_landing + landing_frames_until_idle + 1 <= offset
+         else
+            return player.remaining_freeze_frames + frames_until_landing + landing_frames_until_idle <= offset
          end
       end
    end
@@ -81,7 +85,7 @@ local function is_idle_timing(player, offset, precise)
    end
    if player.is_in_recovery then return player.recovery_time + player.additional_recovery_time < offset end
    return player.remaining_freeze_frames +
-              prediction.get_frames_until_idle(player, player.animation, player.animation_frame, frames_prediction) <
+              prediction.get_frames_until_idle(player, player.animation, player.animation_frame, frames_prediction) <=
               offset
 end
 
@@ -210,9 +214,7 @@ function Delay:delay_after_landing_timing(player, offset, precise)
    return false
 end
 
-local function update()
-   update_programmed_movement()
-end
+local function update() update_programmed_movement() end
 local function clear_all() programmed_movement_queue = {} end
 
 -- move into range then move out

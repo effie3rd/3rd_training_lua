@@ -1,1 +1,0 @@
--- setups: back throw, forward throw, cr mk, shoryu 

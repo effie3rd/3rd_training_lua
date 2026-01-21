@@ -1,0 +1,126 @@
+{
+  "menu_walk_out": {
+    "en": "Walk Out",
+    "jp": "下がり"
+  },
+  "menu_accuracy": {
+    "en": "Accuracy",
+    "jp": "精度"
+  },
+  "menu_sa_after_parry": {
+    "en": "SA After Parry",
+    "jp": "ブロ後にSA"
+  },
+  "menu_distance_judgement": {
+    "en": "Distance Judgement",
+    "jp": "距離判定"
+  },
+  "menu_flash_chop_LP": {
+    "en": "LP flash chop",
+    "jp": "小P フラッシュチョップ"
+  },
+  "menu_flash_chop_MP": {
+    "en": "MP flash chop",
+    "jp": "中P フラッシュチョップ"
+  },
+  "menu_flash_chop_HP": {
+    "en": "HP flash chop",
+    "jp": "大P フラッシュチョップ"
+  },
+  "menu_flash_chop_EXP": {
+    "en": "EX flash chop",
+    "jp": "EX フラッシュチョップ"
+  },
+  "menu_hazanshuu_LK": {
+    "en": "LK hazanshuu",
+    "jp": "小K 覇山蹴"
+  },
+  "menu_mallet_smash_LP": {
+    "en": "LP mallet smash",
+    "jp": "小P マレットスマッシュ"
+  },
+  "menu_mallet_smash_EXP": {
+    "en": "EX mallet smash",
+    "jp": "EX マレットスマッシュ"
+  },
+  "menu_gohadouken_HP": {
+    "en": "HP gohadouken",
+    "jp": "大P 豪波動拳"
+  },
+  "menu_giant_palm_bomber_LP": {
+    "en": "LP giant palm bomber",
+    "jp": "小P ジャイアントパームボンバー"
+  },
+  "menu_giant_palm_bomber_MP": {
+    "en": "MP giant palm bomber",
+    "jp": "中P ジャイアントパームボンバー"
+  },
+  "menu_giant_palm_bomber_HP": {
+    "en": "HP giant palm bomber",
+    "jp": "大P ジャイアントパームボンバー"
+  },
+  "menu_giant_palm_bomber_EXP": {
+    "en": "EX giant palm bomber",
+    "jp": "EX ジャイアントパームボンバー"
+  },
+  "menu_hadouken_HP": {
+    "en": "HP hadouken",
+    "jp": "大P 波動拳"
+  },
+  "menu_hadouken_EXP": {
+    "en": "EX hadouken",
+    "jp": "EX 波動拳"
+  },
+  "menu_denji_blast_LP": {
+    "en": "LP denji blast",
+    "jp": "小P 電磁ブラスト"
+  },
+  "menu_nichirin_LP": {
+    "en": "LP nichirin",
+    "jp": "小P 日輪掌"
+  },
+  "menu_capture_and_deadly_blow_HK": {
+    "en": "HK capture and deadly blow",
+    "jp": "捕獲及び痛恨打撃"
+  },
+  "menu_cold_blue_kick_LK": {
+    "en": "LK cold blue kick",
+    "jp": "小K 冷たく蒼いルグレ"
+  },
+  "menu_cold_blue_kick_MK": {
+    "en": "MK cold blue kick",
+    "jp": "中K 冷たく蒼いルグレ"
+  },
+  "menu_cold_blue_kick_HK": {
+    "en": "HK cold blue kick",
+    "jp": "大K 冷たく蒼いルグレ"
+  },
+  "menu_cold_blue_kick_EXK": {
+    "en": "EX cold blue kick",
+    "jp": "EX 冷たく蒼いルグレ"
+  },
+  "menu_tourouzan_LP": {
+    "en": "LP tourouzan",
+    "jp": "小P 蟷螂斬"
+  },
+  "menu_tourouzan_MP": {
+    "en": "MP tourouzan",
+    "jp": "中P 蟷螂斬"
+  },
+  "menu_tourouzan_HP": {
+    "en": "HP tourouzan",
+    "jp": "大P 蟷螂斬"
+  },
+  "menu_tourouzan_EXP": {
+    "en": "EX tourouzan",
+    "jp": "EX 蟷螂斬"
+  },
+  "menu_zesshou_LP": {
+    "en": "LP zesshou",
+    "jp": "小P 絶招歩法"
+  },
+  "menu_tetsuzan_LP": {
+    "en": "LP tetsuzan",
+    "jp": "小P 鉄山靠"
+  }
+}

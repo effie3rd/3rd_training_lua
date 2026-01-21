@@ -1,0 +1,38 @@
+{
+  "key_bindings_key_bindings": {
+    "en": "key bindings",
+    "jp": "キー割り当て"
+  },
+  "key_bindings_lua_hotkey": {
+    "en": "Lua Hotkey",
+    "jp": "Lua ホットキー"
+  },
+  "key_bindings_none": {
+    "en": "none",
+    "jp": "なし"
+  },
+  "key_bindings_character_select": {
+    "en": "character select",
+    "jp": "キャラクターセレクト"
+  },
+  "key_bindings_swap_controls": {
+    "en": "swap controls",
+    "jp": "コントロール交換"
+  },
+  "key_bindings_play_player_recording": {
+    "en": "play player recording",
+    "jp": "プレイヤー記録を再生"
+  },
+  "key_bindings_play_dummy_recording": {
+    "en": "play dummy recording",
+    "jp": "ダミー記録を再生"
+  },
+  "key_bindings_use_player_counterattack": {
+    "en": "use player counterattack",
+    "jp": "プレイヤー反撃を使う"
+  },
+  "key_bindings_use_dummy_counterattack": {
+    "en": "use dummy counterattack",
+    "jp": "ダミー反撃を使う"
+  }
+}

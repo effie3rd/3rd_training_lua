@@ -1,0 +1,70 @@
+{
+  "menu_HK_kneedrop": {
+    "en": "HK kneedrop",
+    "jp": "大ニードロップ"
+  },
+  "menu_d_LK_dash": {
+    "en": "↓LK dash",
+    "jp": "↓小K・前ステ"
+  },
+  "menu_back_dash_jump_MK": {
+    "en": "back dash · jump MK",
+    "jp": "バクステ・ジャンプ中K"
+  },
+  "menu_back_dash_down_LK": {
+    "en": "back dash · ↓LK",
+    "jp": "バクステ・↓小K"
+  },
+  "menu_urien_midscreen_standard": {
+    "en": "midscreen · standard",
+    "jp": "画面中央・基本"
+  },
+  "menu_urien_midscreen_ex_head_sphere": {
+    "en": "midscreen · EX headbutt",
+    "jp": "画面中央・EXヘッドバット"
+  },
+  "menu_urien_midscreen_ex_head_standard": {
+    "en": "midscreen · EX headbutt",
+    "jp": "画面中央・EXヘッドバット"
+  },
+  "menu_urien_midscreen_anago": {
+    "en": "midscreen · anago",
+    "jp": "画面中央・あなご"
+  },
+  "menu_urien_corner_standard": {
+    "en": "corner · standard",
+    "jp": "画面端・基本"
+  },
+  "menu_urien_corner_standard_short": {
+    "en": "corner · standard",
+    "jp": "画面端・基本"
+  },
+  "menu_urien_corner_standard_q_remy": {
+    "en": "corner · standard",
+    "jp": "画面端・基本"
+  },
+  "menu_urien_corner_standard_alex": {
+    "en": "corner · standard",
+    "jp": "画面端・基本"
+  },
+  "menu_oro_midscreen_hp_yagyou": {
+    "en": "oro · midscreen · HP yagyou",
+    "jp": "オロ・画面中央・大夜行魂"
+  },
+  "menu_oro_midscreen_mp_yagyou": {
+    "en": "midscreen · MP yagyou",
+    "jp": "画面中央・中夜行魂"
+  },
+  "menu_oro_midscreen_lp_yagyou": {
+    "en": "midscreen · LP yagyou",
+    "jp": "画面中央・小夜行魂"
+  },
+  "menu_oro_midscreen_mp_mp": {
+    "en": "midscreen · LP yagyou",
+    "jp": "画面中央・小夜行魂"
+  },
+  "menu_oro_midscreen_mp_yagyou_walk": {
+    "en": "midscreen · MP yagyou",
+    "jp": "画面中央・中夜行魂"
+  }
+}

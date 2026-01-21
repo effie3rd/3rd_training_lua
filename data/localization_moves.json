@@ -211,6 +211,14 @@
     "en": "Shun Goku Satsu",
     "jp": "瞬獄殺"
   },
+  "menu_kara_sgs_f_mp": {
+    "en": "Kara Shun Goku Satsu →MP",
+    "jp": "移動瞬獄殺→中P"
+  },
+  "menu_kara_sgs_d_hk": {
+    "en": "Kara Shun Goku Satsu ↓HK",
+    "jp": "移動瞬獄殺↓大K"
+  },
   "menu_kkz": {
     "en": "Kongou Kokuretsu Zan",
     "jp": "金剛國裂斬"

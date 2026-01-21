@@ -1,9 +1,10 @@
 local gamestate = require("src.gamestate")
-local loading = require("src.loading")
 local draw = require("src.ui.draw")
 local debug_settings = require("src.debug_settings")
 local tools = require("src.tools")
 local colors = require("src.ui.colors")
+local framedata = require("src.data.framedata")
+local inputs = require("src.control.inputs")
 local write_memory = require("src.control.write_memory")
 
 local render_text, render_text_multiple, get_text_dimensions, get_text_dimensions_multiple = draw.render_text,
@@ -71,47 +72,49 @@ local function debug_update_framedata()
 
       debug_framedata_data = {}
       debuggui("frame", gamestate.frame_number)
-      debuggui("state", require("src.modules.record_framedata").state)
+      -- debuggui("state", require("src.data.record_framedata").state)
       debuggui("anim", player.animation)
       debuggui("anim f", player.animation_frame)
       -- debuggui("action", player.action)
       -- debuggui("cd", player.cooldown)
       -- debuggui("hash", player.animation_frame_hash)
-      -- debuggui("freeze", player.remaining_freeze_frames)
+      debuggui("freeze", player.remaining_freeze_frames)
+      debuggui("recovery", player.recovery_time)
       -- -- debuggui("action #", player.action_count)
       -- -- debuggui("action #", player.animation_action_count)
       -- debuggui("conn action #", player.connected_action_count)
       -- debuggui("just conn", tostring(other.has_just_connected))
-      debuggui("hit id", player.current_hit_id)
+      -- debuggui("hit id", player.current_hit_id)
       -- debuggui("max hit id", player.max_hit_id)
       -- debuggui("is recovery", other.is_in_recovery)
       -- debuggui("proj", player.total_received_projectiles_count)
-      debuggui("miss", player.animation_miss_count)
+      -- debuggui("miss", player.animation_miss_count)
       -- -- debuggui("attacking", tostring(player.is_attacking))
-      debuggui("throw invul", player.throw_invulnerability_cooldown)
-      debuggui("throw invul2", other.throw_invulnerability_cooldown)
+      debuggui(player.prefix .. " throw invul", player.throw_invulnerability_cooldown)
+      debuggui(other.prefix .. " throw invul", other.throw_invulnerability_cooldown)
       -- debuggui("throw r f", player.throw_recovery_frame)
-      debuggui("wakeup", player.remaining_wakeup_time)
-      debuggui("wakeup2", other.remaining_wakeup_time)
-      debuggui("pos", string.format("%.04f,%.04f", player.pos_x, player.pos_y))
-      debuggui("pos", string.format("%04f,%04f", other.pos_x, other.pos_y))
-      -- debuggui("diff", string.format("%04f,%04f",player.pos_x - player.previous_pos_x, player.pos_y - player.previous_pos_y ))
-      -- debuggui("diff", string.format("%04f,%04f",other.pos_x - other.previous_pos_x, other.pos_y - other.previous_pos_y ))
-      -- debuggui("vel", string.format("%.04f,%.04f", player.velocity_x, player.velocity_y))
-      -- debuggui("vel", string.format("%04f,%04f", other.velocity_x, other.velocity_y))
-      -- debuggui("acc", string.format("%.04f,%.04f", player.acceleration_x, player.acceleration_y))
+      debuggui(player.prefix .. " wakeup", player.remaining_wakeup_time)
+      debuggui(other.prefix .. " wakeup", other.remaining_wakeup_time)
+      debuggui(player.prefix .. " pos", string.format("%.04f,%.04f", player.pos_x, player.pos_y))
+      debuggui(other.prefix .. " pos", string.format("%04f,%04f", other.pos_x, other.pos_y))
+      debuggui(player.prefix .. " diff",
+               string.format("%04f,%04f", player.pos_x - player.previous_pos_x, player.pos_y - player.previous_pos_y))
+      -- debuggui(other.prefix .. " diff", string.format("%04f,%04f",other.pos_x - other.previous_pos_x, other.pos_y - other.previous_pos_y ))
+      debuggui(player.prefix .. " vel", string.format("%.04f,%.04f", player.velocity_x, player.velocity_y))
+      -- debuggui(other.prefix .. " vel", string.format("%04f,%04f", other.velocity_x, other.velocity_y))
+      -- debuggui(player.prefix .. " acc", string.format("%.04f,%.04f", player.acceleration_x, player.acceleration_y))
       -- debuggui("recording", tostring(recording))
 
-      debuggui("screenx", gamestate.screen_x)
+      -- debuggui("screenx", gamestate.screen_x)
 
       for _, obj in pairs(gamestate.projectiles) do
          if obj.emitter_id == player.id then
             -- debuggui("s_type", obj.projectile_start_type)
-            debuggui("id", obj.id)
-            -- debuggui("type", obj.projectile_type)
+            -- debuggui("id", obj.id)
+            debuggui("type", obj.projectile_type)
             -- debuggui("emitter", obj.emitter_id)
 
-            -- debuggui("xy", tostring(obj.pos_x) .. ", " .. tostring(obj.pos_y))
+            debuggui("xy", tostring(obj.pos_x) .. ", " .. tostring(obj.pos_y))
             -- debuggui("friends", obj.friends)
             -- debuggui("anim", obj.animation_frame_hash)
             -- debuggui("frame", obj.animation_frame)
@@ -142,7 +145,7 @@ local function variable_display(display_list, right_side)
    local x_offset, y_offset = 2, 32
    local x_padding, y_padding = 5, 4
    local height, y_spacing = 0, 1
-   local gui_box_bg_color = colors.menu.background
+   local gui_box_bg_color = bit.band(colors.menu.background, 0xFFFFFF00) + 0x98
    local max_width, total_height = 0, 0
    for i = 1, #display_list do
       local w, h = get_text_dimensions(string.format("%s: %s", display_list[i][1], display_list[i][2]), "en")
@@ -380,212 +383,44 @@ local function log_state(obj, names)
 end
 
 local start_debug = false
-
+local P1_base = 0x02068C6C
+local P2_base = 0x02069104
 local mem_scan = {}
 local MEMORY_VIEW_TYPES = {DEFAULT = 1, RESULTS = 2}
 local MEMORY_TYPES = {BYTE = 1, WORD = 2, DWORD = 3}
-local GAME_MEMORY_END = 0x40000000 -- maybe?
+local DISPLAY_MODE = {BYTE = 1, BIT = 2}
+local GAME_MEMORY_END = 0x30000000 -- 0x0a000000 -- maybe?
 local memory_view = {
    max_display = 20,
    scroll_boundary_top = 1,
    scroll_boundary_bottom = 20,
+   max_cursor_position = 8,
    view = {
       addresses = {},
-      start_address = 0x02026CB0,
+      start_address = P2_base + 0x268,
       display_start_index = 1,
       selected_index = 1,
       cursor_position = 1,
-      type = MEMORY_VIEW_TYPES.DEFAULT
+      type = MEMORY_VIEW_TYPES.DEFAULT,
+      display_mode = DISPLAY_MODE.BYTE
    },
    view_history = {}
 }
 
-local mem_input = {
-   down = {down = false, press = false, release = false, state_time = 0},
-   up = {down = false, press = false, release = false, state_time = 0},
-   left = {down = false, press = false, release = false, state_time = 0},
-   right = {down = false, press = false, release = false, state_time = 0},
-   enter = {down = false, press = false, release = false, state_time = 0},
-   backslash = {down = false, press = false, release = false, state_time = 0},
-   backspace = {down = false, press = false, release = false, state_time = 0},
-   insert = {down = false, press = false, release = false, state_time = 0},
-   delete = {down = false, press = false, release = false, state_time = 0}
-}
-
-local function update_input()
-   local keys = input.get()
-   for key, data in pairs(mem_input) do
-      data.press = false
-      data.release = false
-      if keys[key] then
-         if not data.down then
-            data.press = true
-            data.state_time = 0
-         else
-            data.state_time = data.state_time + 1
-         end
-         data.down = true
-      else
-         if data.down then
-            data.release = true
-            data.state_time = 0
-         else
-            data.state_time = data.state_time + 1
-         end
-         data.down = false
-      end
-   end
-end
-
-local autofire_rate_default = 4
-local autofire_time_default = 4
-local function check_autofire(mem_inp)
-   if not mem_inp then return false end
-   local autofire_rate = autofire_rate_default
-   local autofire_time = autofire_time_default
-   if mem_inp.press then return true end
-   if mem_inp.state_time >= 30 then autofire_rate = autofire_rate / 2 end
-   if mem_inp.down and mem_inp.state_time > autofire_time and (mem_inp.state_time % autofire_rate) == 0 then
-      return true
-   end
-   return false
-end
-
-local function show_memory_view_display()
-   memory_view.view.addresses = {}
-   if memory_view.view.type == MEMORY_VIEW_TYPES.RESULTS then
-      for addr, _ in pairs(mem_scan) do memory_view.view.addresses[#memory_view.view.addresses + 1] = addr end
-      table.sort(memory_view.view.addresses)
-   else
-      for i = 1, memory_view.max_display do
-         memory_view.view.addresses[#memory_view.view.addresses + 1] = memory_view.view.start_address + 4 * (i - 1)
-      end
-   end
-
-   for i, addr in pairs(memory_view.view.addresses) do
-      if i >= memory_view.view.display_start_index and i <= memory_view.view.display_start_index +
-          memory_view.max_display - 1 then
-         local cv = memory.readdword(addr)
-         local lw = bit.rshift(cv, 4 * 4)
-         local rw = bit.rshift(bit.lshift(cv, 4 * 4), 4 * 4)
-
-         local text = string.format("%08x: %08x %d %d", addr, cv, lw, rw)
-         if i == memory_view.view.selected_index then
-            local address_length = 10
-            local left = string.sub(text, 1, address_length + memory_view.view.cursor_position - 1)
-            local cursor = string.sub(text, address_length + memory_view.view.cursor_position,
-                                      address_length + memory_view.view.cursor_position)
-            local right = string.sub(text, address_length + memory_view.view.cursor_position + 1)
-            render_text(5, 2 + (i - 1) * 10, left, "en")
-            local w = get_text_dimensions(left, "en") - 1
-            render_text(5 + w, 2 + (i - 1) * 10, cursor, "en", nil, colors.text.selected)
-            local w2 = get_text_dimensions(cursor, "en") - 1
-            render_text(5 + w + w2, 2 + (i - 1) * 10, right, "en")
-         else
-            render_text(5, 2 + (i - 1) * 10, text, "en")
-         end
-      else
-         break
-      end
-   end
-   update_input()
-   if check_autofire(mem_input.down) then
-      if memory_view.view.type == MEMORY_VIEW_TYPES.DEFAULT then
-         if memory_view.view.selected_index < memory_view.scroll_boundary_bottom then
-            memory_view.view.selected_index = memory_view.view.selected_index + 1
-         else
-            memory_view.view.start_address = memory_view.view.start_address + 0x4
-         end
-      elseif memory_view.view.type == MEMORY_VIEW_TYPES.RESULTS then
-         if memory_view.view.selected_index < memory_view.scroll_boundary_bottom then
-            memory_view.view.selected_index = memory_view.view.selected_index + 1
-         else
-            if memory_view.view.addresses[memory_view.view.display_start_index + memory_view.max_display] then
-               memory_view.view.display_start_index = memory_view.view.display_start_index + 1
-            end
-         end
-      end
-   end
-   if check_autofire(mem_input.up) then
-      if memory_view.view.type == MEMORY_VIEW_TYPES.DEFAULT then
-         if memory_view.view.selected_index > memory_view.scroll_boundary_top then
-            memory_view.view.selected_index = memory_view.view.selected_index - 1
-         else
-            memory_view.view.start_address = memory_view.view.start_address - 0x4
-         end
-      elseif memory_view.view.type == MEMORY_VIEW_TYPES.RESULTS then
-         if memory_view.view.selected_index > memory_view.scroll_boundary_top then
-            memory_view.view.selected_index = memory_view.view.selected_index - 1
-         else
-            if memory_view.view.addresses[memory_view.view.display_start_index - 1] then
-               memory_view.view.display_start_index = memory_view.view.display_start_index - 1
-            end
-         end
-      end
-   end
-   if check_autofire(mem_input.left) then
-      memory_view.view.cursor_position = tools.wrap_index(memory_view.view.cursor_position - 1, 8)
-   end
-   if check_autofire(mem_input.right) then
-      memory_view.view.cursor_position = tools.wrap_index(memory_view.view.cursor_position + 1, 8)
-   end
-   if check_autofire(mem_input.insert) then
-      local addr = memory_view.view.addresses[memory_view.view.selected_index] +
-                       math.floor((memory_view.view.cursor_position - 1) / 2)
-      local v = memory.readbyte(addr)
-      if memory_view.view.cursor_position % 2 == 1 then
-         v = v + 0x10
-      else
-         v = v + 0x01
-      end
-      memory.writebyte(addr, v)
-   end
-   if check_autofire(mem_input.delete) then
-      local addr = memory_view.view.addresses[memory_view.view.selected_index] +
-                       math.floor((memory_view.view.cursor_position - 1) / 2)
-      local v = memory.readbyte(addr)
-      if memory_view.view.cursor_position % 2 == 1 then
-         v = v - 0x10
-      else
-         v = v - 0x01
-      end
-      memory.writebyte(addr, v)
-   end
-   if mem_input.enter.press then
-      memory_view.view_history[#memory_view.view_history + 1] = tools.deepcopy(memory_view.view)
-      memory_view.view.start_address = memory.readdword(memory_view.view.addresses[memory_view.view.selected_index])
-      memory_view.view.display_start_index = 1
-      memory_view.view.selected_index = 1
-      memory_view.view.type = MEMORY_VIEW_TYPES.DEFAULT
-   end
-   if mem_input.backslash.press then
-      memory_view.view_history[#memory_view.view_history + 1] = tools.deepcopy(memory_view.view)
-      memory_view.view.start_address = memory_view.view.addresses[memory_view.view.selected_index]
-      memory_view.view.display_start_index = 1
-      memory_view.view.selected_index = 1
-      memory_view.view.type = MEMORY_VIEW_TYPES.DEFAULT
-   end
-   if mem_input.backspace.press then
-      if memory_view.view_history[#memory_view.view_history] then
-         memory_view.view = memory_view.view_history[#memory_view.view_history]
-         memory_view.view_history[#memory_view.view_history] = nil
-      end
-   end
-
-end
-
 local function init_scan_memory(type, aligned)
    local increment = 0x1
    if aligned then
-      if type == MEMORY_TYPES.WORD then
+      if type == MEMORY_TYPES.BYTE then
+         increment = 0x1
+      elseif type == MEMORY_TYPES.WORD then
          increment = 0x2
       else
          increment = 0x4
       end
    end
    mem_scan = {}
-   local i = 0
-   while i <= GAME_MEMORY_END do
+   local i = 0x10000000
+   while i <= 0x18000000 do
       local v
       if type == MEMORY_TYPES.BYTE then
          v = memory.readbyte(i)
@@ -597,21 +432,22 @@ local function init_scan_memory(type, aligned)
       if v > 0 then mem_scan[i] = v end
       i = i + increment
    end
-   memory_view.view.type = MEMORY_VIEW_TYPES.RESULTS
 end
 
 local function init_scan_value(n, type, aligned)
    local increment = 0x1
    if aligned then
-      if type == MEMORY_TYPES.WORD then
+      if type == MEMORY_TYPES.BYTE then
+         increment = 0x1
+      elseif type == MEMORY_TYPES.WORD then
          increment = 0x2
       else
          increment = 0x4
       end
    end
    mem_scan = {}
-   local n_res = 0
    local i = 0
+
    while i <= GAME_MEMORY_END do
       local v
       if type == MEMORY_TYPES.BYTE then
@@ -621,16 +457,12 @@ local function init_scan_value(n, type, aligned)
       else
          v = memory.readdword(i)
       end
-      if v == n then
-         n_res = n_res + 1
-         mem_scan[i] = v
-      end
+      if v == n then mem_scan[i] = v end
       i = i + increment
    end
-   memory_view.view.type = MEMORY_VIEW_TYPES.RESULTS
 end
 
-local function filter_memory_equals(n, type)
+local function filter_memory_unchanged(type)
    local to_remove = {}
    for k, v in pairs(mem_scan) do
       local new_v
@@ -641,14 +473,57 @@ local function filter_memory_equals(n, type)
       else
          new_v = memory.readdword(k)
       end
-      if new_v == n then
+      if new_v == v then
          mem_scan[k] = new_v
       else
          to_remove[#to_remove + 1] = k
       end
    end
    for _, key in ipairs(to_remove) do mem_scan[key] = nil end
-   memory_view.view.type = MEMORY_VIEW_TYPES.RESULTS
+end
+
+local function filter_memory_changed(type)
+   local to_remove = {}
+   for k, v in pairs(mem_scan) do
+      local new_v
+      if type == MEMORY_TYPES.BYTE then
+         new_v = memory.readbyte(k)
+      elseif type == MEMORY_TYPES.WORD then
+         new_v = memory.readword(k)
+      else
+         new_v = memory.readdword(k)
+      end
+      if new_v ~= v then
+         mem_scan[k] = new_v
+      else
+         to_remove[#to_remove + 1] = k
+      end
+   end
+   for _, key in ipairs(to_remove) do mem_scan[key] = nil end
+end
+
+local function filter_memory_equals(n, type)
+   local to_remove = {}
+   local j = 0
+   for k, v in pairs(mem_scan) do
+      if k == gamestate.P2.addresses.stun_timer then print(k, v) end
+      local new_v
+      if type == MEMORY_TYPES.BYTE then
+         new_v = memory.readbyte(k)
+      elseif type == MEMORY_TYPES.WORD then
+         new_v = memory.readword(k)
+      else
+         new_v = memory.readdword(k)
+      end
+      if new_v == n then
+         if j < 20 then print(new_v, n, k) end
+         j = j + 1
+         mem_scan[k] = new_v
+      else
+         to_remove[#to_remove + 1] = k
+      end
+   end
+   for _, key in ipairs(to_remove) do mem_scan[key] = nil end
 end
 
 local function filter_memory_increased(type)
@@ -669,7 +544,6 @@ local function filter_memory_increased(type)
       end
    end
    for _, key in ipairs(to_remove) do mem_scan[key] = nil end
-   memory_view.view.type = MEMORY_VIEW_TYPES.RESULTS
 end
 
 local function filter_memory_decreased(type)
@@ -690,9 +564,279 @@ local function filter_memory_decreased(type)
       end
    end
    for _, key in ipairs(to_remove) do mem_scan[key] = nil end
-   memory_view.view.type = MEMORY_VIEW_TYPES.RESULTS
 end
 
+local function change_memory_view(view)
+   memory_view.view.start_address = view.start_address
+   memory_view.view.display_start_index = view.display_start_index
+   memory_view.view.selected_index = view.selected_index
+   memory_view.view.type = view.type
+end
+
+local function save_current_memory_view()
+   memory_view.view_history[#memory_view.view_history + 1] = tools.deepcopy(memory_view.view)
+end
+
+local function to_bits(n, width)
+   local t = {}
+   width = width or 32
+   for i = width - 1, 0, -1 do t[#t + 1] = bit.band(bit.rshift(n, i), 1) end
+   return table.concat(t)
+end
+
+-- add_debug_variable("frame_number", function()          
+-- local addr = P2_base + 616
+--       local cv = memory.readdword(addr)
+--       local lw = bit.rshift(cv, 4 * 4)
+--       local rw = bit.rshift(bit.lshift(cv, 4 * 4), 4 * 4)
+--       local bits = to_bits(cv)
+-- return string.format("%08x: %s %d %d", addr, bits, lw, rw)
+--  end)
+
+local get_same = false
+
+local function show_memory_view_display()
+   local n_results = 0
+   if memory_view.view.type == MEMORY_VIEW_TYPES.RESULTS then
+      for addr, _ in pairs(mem_scan) do
+         n_results = n_results + 1
+         if n_results > 10000 then break end
+      end
+      if n_results ~= #memory_view.view.addresses then
+         memory_view.view.addresses = {}
+         for addr, _ in pairs(mem_scan) do
+            if #memory_view.view.addresses <= 600 then
+               memory_view.view.addresses[#memory_view.view.addresses + 1] = addr
+            else
+               break
+            end
+         end
+         table.sort(memory_view.view.addresses)
+      end
+   else
+      memory_view.view.addresses = {}
+      for i = 1, memory_view.max_display do
+         memory_view.view.addresses[#memory_view.view.addresses + 1] = memory_view.view.start_address + 4 * (i - 1)
+      end
+   end
+
+   -- render_text(180, 2, string.format("%s %d", tostring(get_same), n_results), "en")
+
+   local i = 1
+   local view_start = memory_view.view.display_start_index
+   local view_end = memory_view.view.display_start_index + memory_view.max_display - 1
+   if memory_view.view.type == MEMORY_VIEW_TYPES.RESULTS then
+      view_end = math.min(view_end, #memory_view.view.addresses)
+   end
+   for j = view_start, view_end do
+      local addr = memory_view.view.addresses[j]
+      local cv = memory.readdword(addr)
+      local lw = bit.rshift(cv, 4 * 4)
+      local rw = bit.rshift(bit.lshift(cv, 4 * 4), 4 * 4)
+
+      local text
+      if memory_view.view.display_mode == DISPLAY_MODE.BYTE then
+         text = string.format("%08x: %08x %d %d", addr, cv, lw, rw)
+      else
+         local bits = to_bits(cv)
+         text = string.format("%08x: %s %d %d", addr, bits, lw, rw)
+      end
+
+      if i == memory_view.view.selected_index then
+         local address_length = 10
+         local left = string.sub(text, 1, address_length + memory_view.view.cursor_position - 1)
+         local cursor = string.sub(text, address_length + memory_view.view.cursor_position,
+                                   address_length + memory_view.view.cursor_position)
+         local right = string.sub(text, address_length + memory_view.view.cursor_position + 1)
+         render_text(5, 2 + (i - 1) * 10, left, "en")
+         local w = get_text_dimensions(left, "en") - 1
+         render_text(5 + w, 2 + (i - 1) * 10, cursor, "en", nil, colors.text.selected)
+         local w2 = get_text_dimensions(cursor, "en") - 1
+         render_text(5 + w + w2, 2 + (i - 1) * 10, right, "en")
+      else
+         render_text(5, 2 + (i - 1) * 10, text, "en")
+      end
+      i = i + 1
+   end
+   if inputs.check_keyboard_autofire(inputs.keyboard_input.down) then
+      if memory_view.view.type == MEMORY_VIEW_TYPES.DEFAULT then
+         if memory_view.view.selected_index < memory_view.scroll_boundary_bottom then
+            memory_view.view.selected_index = memory_view.view.selected_index + 1
+         else
+            memory_view.view.start_address = memory_view.view.start_address + 0x4
+         end
+      elseif memory_view.view.type == MEMORY_VIEW_TYPES.RESULTS then
+         if memory_view.view.selected_index < memory_view.scroll_boundary_bottom then
+            memory_view.view.selected_index = memory_view.view.selected_index + 1
+         else
+            if memory_view.view.addresses[memory_view.view.display_start_index + memory_view.max_display] then
+               memory_view.view.display_start_index = memory_view.view.display_start_index + 1
+            end
+         end
+      end
+   end
+   if inputs.check_keyboard_autofire(inputs.keyboard_input.up) then
+      if memory_view.view.type == MEMORY_VIEW_TYPES.DEFAULT then
+         if memory_view.view.selected_index > memory_view.scroll_boundary_top then
+            memory_view.view.selected_index = memory_view.view.selected_index - 1
+         else
+            memory_view.view.start_address = memory_view.view.start_address - 0x4
+         end
+      elseif memory_view.view.type == MEMORY_VIEW_TYPES.RESULTS then
+         if memory_view.view.selected_index > memory_view.scroll_boundary_top then
+            memory_view.view.selected_index = memory_view.view.selected_index - 1
+         else
+            if memory_view.view.addresses[memory_view.view.display_start_index - 1] then
+               memory_view.view.display_start_index = memory_view.view.display_start_index - 1
+            end
+         end
+      end
+   end
+   if inputs.check_keyboard_autofire(inputs.keyboard_input.left) then
+      local max_cursor_position = 8
+      if memory_view.view.display_mode == DISPLAY_MODE.BIT then max_cursor_position = 32 end
+      memory_view.view.cursor_position = tools.wrap_index(memory_view.view.cursor_position - 1, max_cursor_position)
+   end
+   if inputs.check_keyboard_autofire(inputs.keyboard_input.right) then
+      local max_cursor_position = 8
+      if memory_view.view.display_mode == DISPLAY_MODE.BIT then max_cursor_position = 32 end
+      memory_view.view.cursor_position = tools.wrap_index(memory_view.view.cursor_position + 1, max_cursor_position)
+   end
+   if inputs.check_keyboard_autofire(inputs.keyboard_input.insert) then
+
+      if memory_view.view.display_mode == DISPLAY_MODE.BYTE then
+         local addr = memory_view.view.addresses[memory_view.view.selected_index] +
+                          math.floor((memory_view.view.cursor_position - 1) / 2)
+         local v = memory.readbyte(addr)
+         if memory_view.view.cursor_position % 2 == 1 then
+            v = v + 0x10
+         else
+            v = v + 0x01
+         end
+         memory.writebyte(addr, v)
+      else
+         local addr = memory_view.view.addresses[memory_view.view.selected_index] +
+                          math.floor((memory_view.view.cursor_position - 1) / 8)
+         local v = memory.readbyte(addr)
+         v = v + 2 ^ (8 - (memory_view.view.cursor_position - 1) % 8 - 1)
+         memory.writebyte(addr, v)
+      end
+   end
+   if inputs.check_keyboard_autofire(inputs.keyboard_input.delete) then
+      if memory_view.view.display_mode == DISPLAY_MODE.BYTE then
+         local addr = memory_view.view.addresses[memory_view.view.selected_index] +
+                          math.floor((memory_view.view.cursor_position - 1) / 2)
+         local v = memory.readbyte(addr)
+         if memory_view.view.cursor_position % 2 == 1 then
+            v = v - 0x10
+         else
+            v = v - 0x01
+         end
+         memory.writebyte(addr, v)
+      else
+         local addr = memory_view.view.addresses[memory_view.view.selected_index] +
+                          math.floor((memory_view.view.cursor_position - 1) / 8)
+         local v = memory.readbyte(addr)
+         v = v - 2 ^ (8 - (memory_view.view.cursor_position - 1) % 8 - 1)
+         memory.writebyte(addr, v)
+      end
+   end
+   if inputs.keyboard_input.enter.press then
+      memory_view.view_history[#memory_view.view_history + 1] = tools.deepcopy(memory_view.view)
+      memory_view.view.start_address = memory.readdword(memory_view.view.addresses[memory_view.view.selected_index])
+      memory_view.view.display_start_index = 1
+      memory_view.view.selected_index = 1
+      memory_view.view.type = MEMORY_VIEW_TYPES.DEFAULT
+      memory_view.view.display_mode = DISPLAY_MODE.BYTE
+   end
+   if inputs.keyboard_input.backslash.press then
+      local view = {
+         start_address = memory_view.view.addresses[memory_view.view.selected_index],
+         display_start_index = 1,
+         selected_index = 1,
+         type = MEMORY_VIEW_TYPES.DEFAULT,
+         display_mode = DISPLAY_MODE.BYTE
+      }
+      save_current_memory_view()
+      change_memory_view(view)
+   end
+   if inputs.keyboard_input.backspace.press then
+      if memory_view.view_history[#memory_view.view_history] then
+         change_memory_view(memory_view.view_history[#memory_view.view_history])
+         memory_view.view_history[#memory_view.view_history] = nil
+      end
+   end
+   if inputs.keyboard_input.plus.press then
+      local value = memory.readdword(memory_view.view.addresses[memory_view.view.selected_index])
+      init_scan_value(value, MEMORY_TYPES.DWORD, true)
+      local view = {
+         addresses = {},
+         start_address = 0,
+         display_start_index = 1,
+         selected_index = 1,
+         cursor_position = 1,
+         type = MEMORY_VIEW_TYPES.RESULTS,
+         display_mode = DISPLAY_MODE.BYTE
+      }
+      save_current_memory_view()
+      change_memory_view(view)
+   end
+   if inputs.keyboard_input.minus.press then
+      local value = memory_view.view.addresses[memory_view.view.selected_index]
+      init_scan_value(value, MEMORY_TYPES.DWORD, true)
+      local view = {
+         addresses = {},
+         start_address = 0,
+         display_start_index = 1,
+         selected_index = 1,
+         cursor_position = 1,
+         type = MEMORY_VIEW_TYPES.RESULTS,
+         display_mode = DISPLAY_MODE.BYTE
+      }
+      save_current_memory_view()
+      change_memory_view(view)
+   end
+   -- if inputs.keyboard_input.B.press then
+   --    -- -- filter_memory_changed(MEMORY_TYPES.DWORD) 
+   --    -- local value = memory.readbyte(gamestate.P2.addresses.stun_timer)
+   --    -- filter_memory_equals(value, MEMORY_TYPES.BYTE)
+   --    local value = memory.readword(memory_view.view.addresses[memory_view.view.selected_index])
+   --    filter_memory_equals(value, MEMORY_TYPES.WORD)
+   -- end
+   -- if inputs.keyboard_input.N.press then get_same = not get_same end
+   -- if inputs.keyboard_input.M.press then
+   --    -- init_scan_memory(MEMORY_TYPES.DWORD, true)
+   --    local value = 0x3c40
+
+   --    local view = {
+   --       addresses = {},
+   --       start_address = 0,
+   --       display_start_index = 1,
+   --       selected_index = 1,
+   --       cursor_position = 1,
+   --       type = MEMORY_VIEW_TYPES.RESULTS,
+   --       display_mode = DISPLAY_MODE.BYTE
+   --    }
+   --    save_current_memory_view()
+   --    change_memory_view(view)
+   -- end
+end
+
+local function debug_things4()
+   -- local cove = 0x06000200
+   -- local cove = 0x06204e9c
+   local cove = 0x06204aac
+   -- memory.writedword(cove, 0x00000000)
+   -- memory.writedword(cove + 4, 0x00000000)
+
+   local player = gamestate.P2
+   memory.writedword(player.addresses.action_address, cove)
+   memory.writedword(player.addresses.action_line, 0)
+   memory.writedword(player.addresses.action_line_size, 4)
+end
+local match_start_state = savestate.create("data/" .. require("src.data.game_data").rom_name .. "/savestates/defense_match_start.fs")
+
+local previous_stun = 0
 local function run_debug()
    if debug_settings.show_dump_state_display then dump_variables() end
    if debug_settings.show_debug_frames_display then debug_update_framedata() end
@@ -703,7 +847,7 @@ local function run_debug()
    --    print("GC memory:", collectgarbage("count"))
    -- end
    local keys = input.get()
-   if keys.F12 and loading.frame_data_loaded then debug_settings.recording_framedata = true end
+   if keys.F12 and framedata.is_loaded then debug_settings.recording_framedata = true end
 
    -- local p = require("src.tools").Perf_Timer:new()
    -- local fps_data = {}
@@ -717,7 +861,21 @@ local function run_debug()
    -- if el > 1 / 60 then print(string.format("[draw] frame: %d, fps: %.2f", gamestate.frame_number, 1 / el)) end
    -- fps_data[#fps_data + 1] = fps
    -- if #fps_data > 200 then table.remove(fps_data, 1) end
-   -- if loading.images_loaded then draw.render_text(3, 2, string.format("fps: %.2f / %.2f", fps, average(fps_data))) end
+   -- if image_tables.is_loaded then draw.render_text(3, 2, string.format("fps: %.2f / %.2f", fps, average(fps_data))) end
+
+   if gamestate.has_match_just_started then filter_memory_changed(MEMORY_TYPES.DWORD) end
+   if get_same then if gamestate.frame_number % 10 == 0 then filter_memory_unchanged(MEMORY_TYPES.DWORD) end end
+   -- if gamestate.P2.just_received_connection then
+   --    Queue_Command(gamestate.frame_number + 1,
+
+   --    function ()
+   --    -- write_memory.set_freeze(gamestate.P2, 0xff)
+   --    debug_things4()
+   --    end)
+   -- end
+   local stun = memory.readbyte(gamestate.P2.addresses.stun_timer)
+   if gamestate.P2.is_stunned and stun > previous_stun then memory.writebyte(gamestate.P2.addresses.stun_timer, 120) end
+   previous_stun = memory.readbyte(gamestate.P2.addresses.stun_timer)
 end
 
 local function draw_debug()
@@ -732,17 +890,16 @@ local function draw_debug()
    local to_remove = {}
    for k, boxes_list in pairs(draw_hitbox_queue) do
       if k >= gamestate.frame_number then
-         if k - gamestate.frame_number <= debug_settings.hitbox_display_frames then
-            for _, boxes in pairs(boxes_list) do draw.draw_hitboxes(unpack(boxes.data)) end
-         end
+         for _, boxes in pairs(boxes_list) do draw.draw_hitboxes(unpack(boxes.data)) end
       else
          to_remove[#to_remove + 1] = k
       end
    end
    for _, key in ipairs(to_remove) do draw_hitbox_queue[key] = nil end
 end
--- memory_view_start = 0x24039bb0
+
 local vars = {}
+
 local function debug_things()
    -- local i = 0x02068C6C
    -- while i < 0x02069104 - 0x00000294 do
@@ -764,11 +921,46 @@ local function debug_things()
    --    memory.writedword(memory_view_start + 4 * i, a + 0x00010001)
    --    -- memory.writedword(memory_view_start + 4 * i, a + math.random(1, 2))
    -- end
-   init_scan_value(0x2402e800, MEMORY_TYPES.DWORD, true)
-   -- for k, v in pairs(vars) do memory.writedword(k, v) end
+   -- init_scan_value(0x02068C6C + 0x200, MEMORY_TYPES.DWORD, true)
+   for k, v in pairs(vars) do memory.writedword(k, v) end
+
 end
 
 local function debug_things2()
+   local increment = 0x4
+   local p = {}
+   local i = 0x06000000
+   local last = nil
+   mem_scan = {}
+   while i <= 0x18000000 do
+      if memory.readdword(i) == 0 then
+         if not last then
+            p[#p + 1] = {i, 1}
+            last = i
+         else
+            p[#p][2] = p[#p][2] + 1
+         end
+      else
+         last = nil
+      end
+      i = i + increment
+   end
+   for _, d in ipairs(p) do
+      if d[2] > 100 then
+         print(string.format("%08x %d", d[1], d[2]))
+         mem_scan[d[1]] = 0
+      end
+   end
+   local view = {
+      addresses = {},
+      start_address = 0,
+      display_start_index = 1,
+      selected_index = 1,
+      cursor_position = 1,
+      type = MEMORY_VIEW_TYPES.RESULTS
+   }
+   save_current_memory_view()
+   change_memory_view(view)
    -- for k, v in pairs(vars) do memory.writedword(k, v) end
    -- for i = 0, 21000 do
    --    local a = memory.readdword(memory_view_start + i)
@@ -777,23 +969,103 @@ local function debug_things2()
    -- local t = 0x2402e800
    -- local y = 0x2403c000
 
-   local t = 0x2402d13c
-   local y = 0x2402e004
-   local i = t
-   while i <= y do
-      local a = memory.readdword(i + 4)
-      memory.writedword(i + 4, a + 0x00000001)
-      i = i + 4 * 4
-   end
--- memory_view.view.start_address = gamestate.P1.addresses.action_address
-   --    local t = 0x2402d8fc
+   -- local t = 0x2402d13c
    -- local y = 0x2402e004
    -- local i = t
+   -- while i <= y do
+   --    local a = memory.readdword(i + 4)
+   --    memory.writedword(i + 4, a + 0x00000001)
+   --    i = i + 4 * 4
+   -- end
+
+   -- local ranges = {{0x020154F4,0x020154F8},{0x02026bb0, 0x020423fc}, {0x02078d10, 0x020792f4}, {0x24000000, 0x240a0000},{0x04084018, 0x04094ef0},{0x0a026bb8,0x0a07936},{0x0c000280,0x0c1011e4}}
+   -- for _, range in ipairs(ranges) do
+   --    local i = range[1]
+   --    while i <= range[2] do
+   --       local a = memory.readdword(i)
+   --       vars[i] = a
+   --       i = i + 4
+   --    end
+   -- end
+
+   -- local addy = {0x24026efc}
+
+   -- local t = 0x24000000
+   -- local y = 0x24080000
+   -- local i = t
+   -- while i <= y do
+   --    local a = memory.readdword(i)
+   --    -- local b = memory.readdword(i + 4)
+   --    -- if b-a == 0x2402e000 - 0x24030000 then
+   --    --    mem_scan[i] = 1
+   --    -- end
+
+   --    -- if a == 0x0f1f0306 or a == 0x1f0f0309 or a == 0x0f0f0305 then
+   --    --    if addy[#addy] - i  <= 0x1000 then
+   --    --       addy[#addy] = i
+   --    --    else
+   --    --       addy[#addy + 1] = i
+   --    --    end
+   --    -- end
+   --    vars[i] = a
+   --    i = i + 4
+   -- end
+   -- i = 0x020267a4
+   -- y = 0x02026ff8
    -- while i <= y do
    --    local a = memory.readdword(i)
    --    vars[i] = a
    --    i = i + 4
    -- end
+   -- for  j , a in ipairs(addy) do
+   --    local d = 0
+   --    if j > 1 then
+   --       d = a - addy[j - 1]
+   --    end
+   --    print(string.format("%08x  %x", a, d))
+   -- end
+   -- local view = {
+   --    addresses = {},
+   --    start_address = 0,
+   --    display_start_index = 1,
+   --    selected_index = 1,
+   --    cursor_position = 1,
+   --    type = MEMORY_VIEW_TYPES.RESULTS
+   -- }
+   -- init_scan_value(0x24000000, MEMORY_TYPES.DWORD, true)
+   -- save_current_memory_view()
+   -- change_memory_view(view)
+end
+
+local function debug_things3()
+   -- local settings = require("src.settings")
+   -- local character_select = require("src.control.character_select")
+   -- settings.training.force_stage = settings.training.force_stage + 1
+   -- Call_After_Load_State(character_select.force_select_character, {1, "alex", 1, "random"})
+   -- Call_After_Load_State(character_select.force_select_character, {2, "ryu", 1, "random"})
+   -- character_select.start_character_select_sequence()
+   -- fg after 0x2402e000?
+
+   -- local start = 0x24038000
+   -- local ending = 0x24040000
+   local start = 0x06880000
+   local ending = 0x068a0000
+   local i = start
+   -- while i <= ending do
+   --    local val = memory.readdword(i)
+   --    memory.writedword(i, val - 0x00010001)
+   --    i = i + 4
+   -- end
+   -- local cove = 0x06000200
+   -- memory.writedword(cove, 0x00000000)
+   -- memory.writedword(cove + 4, 0x00000000)
+
+   -- local player = gamestate.P2
+   -- memory.writedword(player.addresses.action_address, cove)
+   -- memory.writedword(player.addresses.line, 0)
+   -- memory.writedword(player.addresses.line_size, 4)
+
+   
 end
 
 local debug = {
@@ -806,6 +1078,7 @@ local debug = {
    draw_debug = draw_debug,
    debug_things = debug_things,
    debug_things2 = debug_things2,
+   debug_things3 = debug_things3,
    add_debug_variable = add_debug_variable,
    log_update = log_update,
    log = log,

@@ -2,10 +2,10 @@ local gamestate, framedata, stage_data, write_memory, tools, utils
 
 local function init()
    gamestate = require("src.gamestate")
-   framedata = require("src.modules.framedata")
+   framedata = require("src.data.framedata")
    write_memory = require("src.control.write_memory")
    tools = require("src.tools")
-   utils = require("src.modules.utils")
+   utils = require("src.data.utils")
 end
 
 local screen_scroll_timeout = 40
@@ -114,6 +114,7 @@ function Screen_Scroll:update()
 end
 
 function Screen_Scroll:is_idle() return self.state == SCREEN_SCROLL_STATE.IDLE end
+
 
 local function update_before() Screen_Scroll:update_state() end
 

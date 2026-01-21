@@ -1,7 +1,7 @@
 local settings = require("src.settings")
 local gamestate = require("src.gamestate")
-local game_data = require("src.modules.game_data")
-local sd = require("src.modules.stage_data")
+local game_data = require("src.data.game_data")
+local sd = require("src.data.stage_data")
 local inputs = require("src.control.inputs")
 local memory_addresses = require("src.control.memory_addresses")
 local tools = require("src.tools")
@@ -54,7 +54,7 @@ local character_map = {
    shingouki = {0, 6}
 }
 
-local sel_buttons = {{{"LP"}}, {{"MP"}}, {{"HP"}}, {{"LK"}}, {{"MK"}}, {{"HK"}}, {{"LP", "MK", "HP"}}}
+local selection_buttons = {{{"LP"}}, {{"MP"}}, {{"HP"}}, {{"LK"}}, {{"MK"}}, {{"HK"}}, {{"LP", "MK", "HP"}}}
 
 local function character_select_coroutine(co, name)
    local o = {}
@@ -84,7 +84,7 @@ end
 local function co_delay_load_savestate(input)
    co_wait_x_frames(1)
    character_select_sequence_state = 1
-   Register_After_Load_State(after_character_select_loaded)
+   Call_After_Load_State(after_character_select_loaded)
    Load_State_Caller = tools.get_calling_module_name() or module_name
    savestate.load(character_select_savestate)
 end
@@ -95,17 +95,19 @@ local function start_character_select_sequence(disable_bosses, reverse_pick_orde
       first_run = false
    end
    character_select_sequence_state = 1
-   Register_After_Load_State(after_character_select_loaded)
-   Load_State_Caller = tools.get_calling_module_name() or module_name
-   savestate.load(character_select_savestate)
-
-   last_player_id = 1
+   Call_After_Load_State(after_character_select_loaded)
 
    disable_boss_select = disable_bosses or false
    pick_p2_first = reverse_pick_order or false
    p1_forced_select = false
    p2_forced_select = false
    selecting_random_character = false
+   character_select_coroutines.select_random = nil
+   character_select_coroutines.select_gill = nil
+   character_select_coroutines.select_shingouki = nil
+
+   Load_State_Caller = tools.get_calling_module_name() or module_name
+   savestate.load(character_select_savestate)
 end
 
 local function force_character_select_coroutine(co, name, player, char, sa, sel_button)
@@ -136,7 +138,7 @@ local function co_force_select_character(input, player_id, char, sa, sel_button)
    if character_select_state > 2 then return end
 
    if sel_button == "random" then
-      sel_button = sel_buttons[math.random(1, #sel_buttons)]
+      sel_button = selection_buttons[math.random(1, #selection_buttons)]
    else
       sel_button = {{sel_button}}
    end
@@ -187,17 +189,15 @@ end
 
 local function co_select_gill(input)
    local player_id = 1
-   local sel_buttons = {"LP", "HK"}
-   local i = math.random(1, #sel_buttons)
-   local sel_button = sel_buttons[i]
+   local sel_button = selection_buttons[math.random(1, #selection_buttons)]
    local p1_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
    local p2_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
 
-   if p1_select_state > 2 and p2_select_state > 2 then return end
+   if p1_select_state > 4 and p2_select_state > 4 then return end
 
    local character_select_state = 0
 
-   if p1_select_state <= 2 then
+   if p1_select_state <= 4 then
       player_id = 1
       character_select_state = p1_select_state
    else
@@ -210,21 +210,12 @@ local function co_select_gill(input)
 
    while character_select_state < 3 do
       co_wait_x_frames(2)
-      inputs.queue_input_sequence(gamestate.player_objects[player_id], {{sel_button}})
+      inputs.queue_input_sequence(gamestate.player_objects[player_id], sel_button)
       co_wait_x_frames(2)
       character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
    end
 
-   -- while character_select_state < 4 do
-   --   co_wait_x_frames(1)
-   --   character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
-   -- end
-
-   -- while character_select_state < 5 do
-   --   inputs.queue_input_sequence(gamestate.P1, {{sel_button}})
-   --   co_wait_x_frames(2)
-   --   character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
-   -- end
+   if character_select_state == 4 then inputs.queue_input_sequence(gamestate.player_objects[player_id], sel_button) end
 end
 
 local function select_gill()
@@ -236,17 +227,15 @@ end
 local function co_select_shingouki(input)
    local player_id = 1
 
-   local sel_buttons = {"LP", "HK"}
-   local i = math.random(1, #sel_buttons)
-   local sel_button = sel_buttons[i]
+   local sel_button = selection_buttons[math.random(1, #selection_buttons)]
    local p1_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
    local p2_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)
 
-   if p1_select_state > 2 and p2_select_state > 2 then return end
+   if p1_select_state > 4 and p2_select_state > 4 then return end
 
    local character_select_state = 0
 
-   if p1_select_state <= 2 then
+   if p1_select_state <= 4 then
       player_id = 1
       character_select_state = p1_select_state
    else
@@ -259,21 +248,18 @@ local function co_select_shingouki(input)
 
    while character_select_state < 3 do
       co_wait_x_frames(2)
-      inputs.queue_input_sequence(gamestate.player_objects[player_id], {{sel_button}})
+      inputs.queue_input_sequence(gamestate.player_objects[player_id], sel_button)
       co_wait_x_frames(2)
       character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
    end
 
    while character_select_state < 4 do
       co_wait_x_frames(1)
+      memory.writebyte(memory_addresses.players[player_id].character_select_id, 0x0F)
       character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
    end
 
-   while character_select_state < 5 do
-      memory.writebyte(memory_addresses.players[player_id].character_select_id, 0x0F)
-      co_wait_x_frames(1)
-      character_select_state = memory.readbyte(memory_addresses.players[player_id].character_select_state)
-   end
+   if character_select_state == 4 then inputs.queue_input_sequence(gamestate.player_objects[player_id], sel_button) end
 end
 
 local function select_shingouki()
@@ -348,8 +334,10 @@ local function update_character_select(input)
 
    if not character_select_sequence_state == 0 then return end
 
-   -- Infinite select time
-   -- memory.writebyte(memory_addresses.global.character_select_timer, 0x30)
+   if settings.training.infinite_time then
+      memory.writebyte(memory_addresses.global.character_select_timer, 0x30)
+      memory.writebyte(memory_addresses.global.character_select_timer_countdown, 0x32)
+   end
 
    if gamestate.P1.input.pressed.start then
       start_select_random_character()

@@ -1,0 +1,21 @@
+{
+  "characters":{
+    "yang":{
+      "learning":true,
+      "followups":[[true,true,true,true,true],[true,true,true,true,true,true],[true,true,true,true],[true,true,true,true,true,true],[true,true,true,true,true],[true,true,true,true,true],[true,true,true,true,true,true],[true,true,true,true,true,true,true,true],[true,true,true],[true,true,true],[true,true,true],[true,true,true,true,true,true],[true,true,true,true,true,true],[true,true,true,true]],
+      "score":0,
+      "setups":[true,true,true,true,true,true,true,true,true,true,true,true,true],
+      "next_attack_delay":20
+    },
+    "ken":{
+      "learning":true,
+      "followups":[[true,true,true],[true,true,true,true,true,true,true,true],[true,true,true,true,true,true,true,true],[true,true,true,true,true,true,true,true,true,true],[true,true,true,true,true,true,true],[true,true,true],[true,true,true,true],[true,true,true,true,true],[true],[true,true,true]],
+      "score":0,
+      "setups":[true,true,true,true,true],
+      "next_attack_delay":20
+    }
+  },
+  "match_savestate_player":"",
+  "match_savestate_dummy":"",
+  "opponent":1
+}

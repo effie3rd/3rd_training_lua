@@ -42,7 +42,9 @@ local colors = {
       throwable = 0x00FF00FF,
       throw = 0xFFFF00FF,
       push = 0xFF00FFFF,
-      extvulnerability = 0x00FFFFFF
+      ext_vulnerability = 0x00FFFFFF,
+      attack_a = 0xFF0000FF,
+      attack_b = 0xFF8400FF
    },
    score = {plus = 0x00b5FFFF, minus = 0x6400FFFF}
 }
@@ -119,7 +121,20 @@ end
 
 local function set_theme(index) colors = themes[index].colors end
 
+local function init()
+   local settings = require("src.settings")
+   local menu_tables = require("src.ui.menu_tables")
+   themes = tools.read_object_from_json_file(settings.themes_path) or {}
+   tools.convert_strings_to_numbers(themes)
+   set_theme(settings.training.theme)
+   local theme_names = {}
+   for _, theme in pairs(themes) do theme_names[#theme_names + 1] = "theme_" .. theme.name end
+   menu_tables.theme_names = theme_names
+end
+
+
 local colors_module = {
+   init = init,
    hex_to_gd_color = hex_to_gd_color,
    substitute_color_gdstr = substitute_color_gdstr,
    colorscale = colorscale,

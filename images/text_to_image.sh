@@ -12,7 +12,7 @@ if [ "$5" == "en" ]; then
         WIDTH=$((WIDTH+1))
 
         magick -size ${WIDTH}x9 xc:transparent +antialias \
-        -font TinyUnicode -pointsize 16 -interword-spacing 2 -gravity west \
+        -font TinyUnicode2 -pointsize 16 -interword-spacing 2 -gravity west \
         -draw "fill black         text  2,-4  '$1' \
             fill black         text  2,-3  '$1' \
             fill black         text  2,-2  '$1' \
@@ -34,7 +34,7 @@ elif [ "$5" == "jp" ]; then
         WIDTH=$((WIDTH+1))
 
         magick -size ${WIDTH}x12 xc:transparent +antialias \
-        -font BestTenDOT -pointsize 10  -gravity west \
+        -font BestTenDOT2 -pointsize 10  -gravity west \
         -draw "fill black         text  2,2  '$1' \
             fill black         text  2,0  '$1' \
             fill black         text  2,1  '$1' \

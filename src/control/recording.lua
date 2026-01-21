@@ -1,4 +1,4 @@
-local game_data = require("src.modules.game_data")
+local game_data = require("src.data.game_data")
 local settings, gamestate, training, inputs, managers, framedata, utils, tools, write_memory
 
 local recording_slot_count = 16
@@ -82,12 +82,12 @@ end
 local function init()
    settings = require("src.settings")
    gamestate = require("src.gamestate")
-   game_data = require("src.modules.game_data")
+   game_data = require("src.data.game_data")
    training = require("src.training")
    inputs = require("src.control.inputs")
    managers = require("src.control.managers")
-   framedata = require("src.modules.framedata")
-   utils = require("src.modules.utils")
+   framedata = require("src.data.framedata")
+   utils = require("src.data.utils")
    tools = require("src.tools")
    write_memory = require("src.control.write_memory")
    initialize_slots()
@@ -259,7 +259,6 @@ local function set_recording_state(input, state)
    elseif current_recording_state == RECORDING_STATE.QUEUE_REPLAY then
    elseif current_recording_state == RECORDING_STATE.POSITIONING then
    elseif current_recording_state == RECORDING_STATE.REPLAYING then
-
    end
 end
 
@@ -277,6 +276,14 @@ local function reset_recording_state()
 end
 
 local function set_replay_options(option, value) replay_options[option] = value end
+
+local function play_recording()
+   if can_play_recording() then
+      replay_options = {}
+      select_replay_slot()
+      set_recording_state(input, RECORDING_STATE.QUEUE_REPLAY)
+   end
+end
 
 local function play_recording_without_positioning()
    set_recording_state({}, RECORDING_STATE.STOPPED)
@@ -323,11 +330,7 @@ local function process_gesture(gesture)
       end
    elseif gesture == "single_tap" then
       if current_recording_state == RECORDING_STATE.STOPPED then
-         if can_play_recording() then
-            replay_options = {}
-            select_replay_slot()
-            set_recording_state(input, RECORDING_STATE.QUEUE_REPLAY)
-         end
+         play_recording()
       elseif current_recording_state == RECORDING_STATE.WAIT_FOR_RECORDING then
          set_recording_state(input, RECORDING_STATE.RECORDING)
       elseif current_recording_state == RECORDING_STATE.RECORDING then
@@ -591,7 +594,9 @@ local function update_recording(input, player)
                if can_play_recording() and
                    (settings.training.replay_mode == 4 or settings.training.replay_mode == 5 or
                        settings.training.replay_mode == 6) then
-                  set_recording_state(input, RECORDING_STATE.REPLAYING)
+                  replay_options = {}
+                  select_replay_slot()
+                  set_recording_state(input, RECORDING_STATE.QUEUE_REPLAY)
                end
             end
          end
@@ -617,6 +622,7 @@ local recording_module = {
    find_random_recording_slot = find_random_recording_slot,
    go_to_next_ordered_slot = go_to_next_ordered_slot,
    set_replay_options = set_replay_options,
+   play_recording = play_recording,
    play_recording_without_positioning = play_recording_without_positioning,
    process_gesture = process_gesture,
    set_recording_state = set_recording_state,

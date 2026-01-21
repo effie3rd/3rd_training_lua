@@ -1,0 +1,671 @@
+{
+  "characters": {
+    "oro": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "yang": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "alex": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "elena": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "twelve": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false
+      ]
+    },
+    "ibuki": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "shingouki": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "gill": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "hugo": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "q": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "dudley": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "remy": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "chunli": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "sean": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false
+      ]
+    },
+    "makoto": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "necro": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "ryu": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "gouki": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "ken": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "urien": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "yun": {
+      "dist_judgement": [
+        80,
+        80
+      ],
+      "accuracy_index": 1,
+      "next_attack_delay_index": 1,
+      "sa_after_parry": 1,
+      "next_attack_delay": [
+        0,
+        10
+      ],
+      "next_attack_delay_mode": 2,
+      "dist_judgement_index": 1,
+      "accuracy_mode": 1,
+      "walk_out": true,
+      "accuracy": [
+        80,
+        80
+      ],
+      "dist_judgement_mode": 1,
+      "score": 0,
+      "moves": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "match_savestate_player": "",
+  "match_savestate_dummy": ""
+}
