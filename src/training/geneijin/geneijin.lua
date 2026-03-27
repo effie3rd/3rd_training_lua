@@ -20,7 +20,7 @@ local geneijin
 local module_name = "geneijin"
 
 local is_enabled = true
-local is_active = false
+local is_mode_active = false
 
 local states = {
    SETUP_MATCH_START = 1,
@@ -159,11 +159,12 @@ local function start_character_select()
 end
 
 local function stop()
-   if is_active then
+   if is_mode_active then
       hud.clear_info_text()
       hud.clear_score_text()
       advanced_control.clear_all()
-      training.disable_dummy = {false, false}
+      training.disable_dummy[1] = false
+      training.disable_dummy[2] = false
       inputs.unblock_input(1)
       inputs.unblock_input(2)
    end
@@ -176,14 +177,14 @@ local function reset() end
 local function toggle() end
 
 local function update()
-   if is_active then
-      if gamestate.is_before_curtain or gamestate.is_in_match then
+   if is_mode_active then
+      if gamestate.is_in_match_playable then
          inputs.block_input(dummy.id, "all")
          if state == states.SETUP_MATCH_START or state == states.SETUP_GENEIJIN then
             inputs.block_input(1, "all")
             inputs.block_input(2, "all")
          end
-         if state == states.SETUP_MATCH_START and gamestate.has_match_just_started then
+         if state == states.SETUP_MATCH_START and gamestate.has_round_just_started then
             emu.speedmode("turbo")
             settings.modules.geneijin.match_savestate_player = gamestate.P1.char_str
             settings.modules.geneijin.match_savestate_dummy = gamestate.P2.char_str
@@ -365,14 +366,14 @@ end
 
 local function update_menu()
    geneijin_menu.moves_item.object = settings.modules.geneijin.moves
-   if is_active then
-      geneijin_menu.start_item.name = "menu_stop"
+   if is_mode_active then
+      geneijin_menu.start_item:update_name("menu_stop")
    else
       local saved_player = settings.modules.geneijin.match_savestate_player
       if saved_player ~= "" then
-         geneijin_menu.start_item.name = {"menu_start", "  (", "menu_" .. saved_player, ")"}
+         geneijin_menu.start_item:update_name({"menu_start", "  (", "menu_" .. saved_player, ")"})
       else
-         geneijin_menu.start_item.name = "menu_start"
+         geneijin_menu.start_item:update_name("menu_start")
       end
    end
 end
@@ -380,7 +381,7 @@ end
 local function create_menu()
    geneijin_menu = {}
    geneijin_menu.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
-      if is_active then
+      if is_mode_active then
          modes.stop()
          menu.update_active_training_page()
       else
@@ -391,7 +392,7 @@ local function create_menu()
    geneijin_menu.start_item.legend_text = "legend_lp_select"
    geneijin_menu.start_item.is_enabled = function()
       if framedata.is_loaded then
-         if is_active then
+         if is_mode_active then
             return true
          else
             return
@@ -443,16 +444,16 @@ geneijin = {
 
 setmetatable(geneijin, {
    __index = function(_, key)
-      if key == "is_active" then
-         return is_active
+      if key == "is_mode_active" then
+         return is_mode_active
       elseif key == "is_enabled" then
          return is_enabled
       end
    end,
 
    __newindex = function(_, key, value)
-      if key == "is_active" then
-         is_active = value
+      if key == "is_mode_active" then
+         is_mode_active = value
       elseif key == "is_enabled" then
          is_enabled = value
       else

@@ -1,37 +1,63 @@
+local tools = require "src.tools"
 local training_mode_names = {"defense", "jumpins", "footsies", "unblockables", "geneijin"}
-local extra_module_names = {"extra_settings", "key_bindings"}
+local extra_module_names = {"distances", "extra_settings", "key_bindings"}
 local training_modules = {}
 local extra_modules = {}
 local all_modules = {}
 local modules_map = {}
 local settings, menu
 
+local function load_modules(module_list)
+   tools.clear_table(all_modules)
+   tools.clear_table(extra_modules)
+   tools.clear_table(modules_map)
+   for _, module_name in ipairs(module_list) do
+      local module = require(settings.modules_require_path .. "." .. module_name .. "." .. module_name)
+      extra_modules[#extra_modules + 1] = module
+      all_modules[#all_modules + 1] = module
+      modules_map[module_name] = module
+   end
+   for _, module in ipairs(all_modules) do
+      module.init()
+   end
+end
+
 local function load_all_modules()
+   tools.clear_table(all_modules)
+   tools.clear_table(training_modules)
+   tools.clear_table(extra_modules)
+   tools.clear_table(modules_map)
    for _, module_name in ipairs(training_mode_names) do
       local module = require(settings.training_require_path .. "." .. module_name .. "." .. module_name)
-      module.init()
       training_modules[#training_modules + 1] = module
       all_modules[#all_modules + 1] = module
       modules_map[module_name] = module
    end
    for _, module_name in ipairs(extra_module_names) do
       local module = require(settings.modules_require_path .. "." .. module_name .. "." .. module_name)
-      module.init()
       extra_modules[#extra_modules + 1] = module
       all_modules[#all_modules + 1] = module
       modules_map[module_name] = module
+   end
+   for _, module in ipairs(all_modules) do
+      module.init()
    end
 end
 
 local function init()
    settings = require("src.settings")
    menu = require("src.ui.menu")
-   load_all_modules()
 end
 
 local function update()
    for _, module in ipairs(all_modules) do
       if module.is_enabled and (not menu.is_open or module.should_update_while_menu_is_open) then module.update() end
+   end
+end
+
+local function update_language()
+   for _, module in ipairs(all_modules) do
+      if module.update_language then module.update_language() end
    end
 end
 
@@ -58,8 +84,11 @@ local modules = {
    training_modules = training_modules,
    extra_modules = extra_modules,
    all_modules = all_modules,
+   load_all_modules = load_all_modules,
+   load_modules = load_modules,
    update = update,
    toggle = toggle,
+   update_language = update_language,
    after_images_loaded = after_images_loaded,
    after_framedata_loaded = after_framedata_loaded,
    after_menu_created = after_menu_created,

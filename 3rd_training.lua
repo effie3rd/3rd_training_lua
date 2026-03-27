@@ -6,10 +6,10 @@ print("  Project: https://github.com/effie3rd/3rd_training_lua")
 print("-----------------------------")
 print("")
 print("Command List:")
-print("- Enter training menu by pressing \"Start\" while in game")
-print("- Enter/exit recording mode by double tapping \"Coin\"")
-print("- In recording mode, press \"Coin\" again to start/stop recording")
-print("- In normal mode, press \"Coin\" to start/stop replay")
+print('- Enter training menu by pressing "Start" while in game')
+print('- Enter/exit recording mode by double tapping "Coin"')
+print('- In recording mode, press "Coin" again to start/stop recording')
+print('- In normal mode, press "Coin" to start/stop replay')
 print("- Lua Hotkey 1 (alt+1) to return to character select screen")
 print()
 
@@ -36,6 +36,8 @@ print()
 -- https://www.ittner.com.br/lua-gd/manual.html
 
 local settings = require("src.settings")
+settings.load_training_data()
+
 local debug_settings = require("src.debug_settings")
 local recording = require("src.control.recording")
 local gamestate = require("src.gamestate")
@@ -58,9 +60,8 @@ local attack_data = require("src.data.attack_data")
 local frame_advantage = require("src.data.frame_advantage")
 local character_select = require("src.control.character_select")
 local managers = require("src.control.managers")
+local tools = require("src.tools")
 local debug = require("src.debug")
-
-local disable_display = false
 
 local command_queue = {}
 local load_state_command_queue = {}
@@ -69,11 +70,15 @@ local load_state_callbacks = {}
 local load_framedata_request, load_text_request, load_images_request
 local loading_bar_loaded, loading_bar_total = 0, 0
 
+local is_game_paused, previous_frame_number = false, 0
+
 Load_State_Caller = ""
 
 local function is_default_hotkey(n)
    local keys = input.get()
-   if (keys["alt"] and keys[tostring(n)]) then return true end
+   if keys["alt"] and keys[tostring(n)] then
+      return true
+   end
 end
 
 local key_bindings
@@ -81,27 +86,34 @@ local max_hotkeys = 9
 local function register_hotkeys()
    for i = 1, max_hotkeys do
       input.registerhotkey(i, function()
-         if is_default_hotkey(i) then return end
+         if is_default_hotkey(i) then
+            return
+         end
          key_bindings.use_hotkey(i)
       end)
    end
 end
 
 function Call_After_Load_State(command, args, delay)
-   load_state_command_queue[#load_state_command_queue + 1] = {command = command, args = args, delay = delay}
+   load_state_command_queue[#load_state_command_queue + 1] = { command = command, args = args, delay = delay }
 end
 
-function Register_Load_State_Callback(func) load_state_callbacks[func] = func end
+function Register_Load_State_Callback(func)
+   load_state_callbacks[func] = func
+end
 
-function Unregister_Load_State_Callback(func) load_state_callbacks[func] = nil end
+function Unregister_Load_State_Callback(func)
+   load_state_callbacks[func] = nil
+end
 
 function Queue_Command(frame, command, args)
-   if not command_queue[frame] then command_queue[frame] = {} end
-   command_queue[frame][#command_queue[frame] + 1] = {command = command, args = args}
+   if not command_queue[frame] then
+      command_queue[frame] = {}
+   end
+   command_queue[frame][#command_queue[frame] + 1] = { command = command, args = args }
 end
 
 local function run_commands()
-   local used_keys = {}
    for key, commands in pairs(command_queue) do
       if key == gamestate.frame_number then
          for _, com in pairs(commands) do
@@ -110,13 +122,12 @@ local function run_commands()
             else
                com.command()
             end
-            used_keys[#used_keys + 1] = key
+            command_queue[key] = nil
          end
       elseif key < gamestate.frame_number then
-         used_keys[#used_keys + 1] = key
+         command_queue[key] = nil
       end
    end
-   for _, key in ipairs(used_keys) do command_queue[key] = nil end
 end
 
 local function on_start()
@@ -127,6 +138,7 @@ local function on_start()
    recording.init()
    managers.init()
    modules.init()
+   modules.load_all_modules()
    modes.init()
    training.init()
    colors.init()
@@ -138,8 +150,8 @@ local function on_start()
 
    load_text_request = loading.queue_load(loading.DATA_TYPES.IMAGES, settings.data_path .. settings.text_bin_file)
    load_images_request = loading.queue_load(loading.DATA_TYPES.IMAGES, settings.data_path .. settings.images_bin_file)
-   load_framedata_request = loading.queue_load(loading.DATA_TYPES.FRAMEDATA,
-                                               settings.framedata_path .. settings.framedata_bin_file)
+   load_framedata_request =
+      loading.queue_load(loading.DATA_TYPES.FRAMEDATA, settings.framedata_path .. settings.framedata_bin_file)
    loading_bar_total = loading.get_total_file_size()
 
    character_select.start_character_select_sequence()
@@ -166,16 +178,18 @@ local function on_load_state()
 
    hud.reset_hud()
 
-   input_history.clear_input_history()
+   inputs.clear_input_history()
 
-   if modes.active_mode and not (Load_State_Caller == modes.active_mode.name) then modes.stop() end
+   if modes.active_mode and not (Load_State_Caller == modes.active_mode.name) then
+      modes.stop()
+   end
 
    if Load_State_Caller == "" or Load_State_Caller == "3rd_training" then -- player loaded savestate
       inputs.unblock_input(1)
       inputs.unblock_input(2)
       training.disable_dummy[1] = false
       training.disable_dummy[2] = false
-      menu.open_after_match_start = false
+      menu.open_after_round_start = false
    end
 
    dummy_control.reset()
@@ -186,35 +200,47 @@ local function on_load_state()
 
    training.unfreeze_game()
 
-   local used_keys = {}
    for key, com in ipairs(load_state_command_queue) do
       local delay = com.delay or 0
       Queue_Command(gamestate.frame_number + 1 + delay, com.command, com.args)
-      used_keys[#used_keys + 1] = key
+      load_state_command_queue[key] = nil
    end
-   for _, key in ipairs(used_keys) do load_state_command_queue[key] = nil end
-   for _, callback in pairs(load_state_callbacks) do callback() end
+
+   for _, callback in pairs(load_state_callbacks) do
+      callback()
+   end
 
    Load_State_Caller = ""
 end
+
+local blocking_options = {}
 
 local function before_frame()
    gamestate.gamestate_read()
 
    run_commands()
 
-   if debug_settings.developer_mode then debug.run_debug() end
+   if debug_settings.developer_mode then
+      debug.run_debug()
+   end
 
    training.update_training_state()
 
    inputs.input = joypad.get()
+
+   inputs.update_keyboard_input(input.get())
+   if debug_settings.use_keyboard_as_controller then
+      debug.update_keyboard_as_controller()
+   end
+
    if gamestate.is_in_match and not menu.is_open then
       if training.P2_controller == training.PLAYER_CONTROLLER then
          inputs.swap_inputs()
       elseif training.P1_controller ~= training.PLAYER_CONTROLLER then
-         inputs.block_input(1, "all")
+         inputs.block_input(1, "all", true)
       end
    end
+
    inputs.update_input(inputs.input, gamestate.player_objects)
    joypad.set(inputs.input)
 
@@ -225,37 +251,56 @@ local function before_frame()
          recording.set_recording_state({}, recording.RECORDING_STATE.STOPPED)
          character_select.start_character_select_sequence()
       end
-      if inputs.keyboard_input["2"].press then character_select.select_gill() end
-      if inputs.keyboard_input["3"].press then character_select.select_shingouki() end
+      if inputs.keyboard_input["2"].press then
+         character_select.select_gill()
+      end
+      if inputs.keyboard_input["3"].press then
+         character_select.select_shingouki()
+      end
       if debug_settings.developer_mode then
-         if inputs.keyboard_input["4"].press then inputs.queue_input_from_json(training.player, "debug.json") end
-         if inputs.keyboard_input["5"].press then debug.debug_things3() end
+         if inputs.keyboard_input["4"].press then
+            inputs.queue_input_from_json(training.player, "debug.json")
+         end
+         if inputs.keyboard_input["5"].press then
+            debug.debug_things3()
+         end
       end
    end
 
    if gamestate.is_in_character_select or gamestate.is_in_vs_screen then
       character_select.update_character_select(inputs.input)
    end
-   if settings.training.fast_forward_intro then training.update_fast_forward() end
+   if settings.training.fast_forward_intro then
+      training.update_fast_forward()
+   end
 
    managers.update_before()
 
    if framedata.is_loaded and gamestate.is_in_match and not debug_settings.recording_framedata then
-      attack_data.update(training.player)
+      if gamestate.has_curtain_just_began then
+         attack_data.reset()
+         frame_advantage.reset()
+         if menu.is_initialized then
+            menu.update_menu_items()
+         end
+         hud.reset_hud()
+      end
 
-      frame_advantage.update()
+      attack_data.update()
+
+      frame_advantage.update(menu.is_open, menu.allow_update_while_open)
 
       prediction.update_before(inputs.previous_input, training.dummy)
+
       if not training.disable_dummy[training.dummy.id] and (not menu.is_open or menu.allow_update_while_open) then
-         local blocking_options = {
-            mode = settings.training.blocking_mode,
-            style = settings.training.blocking_style,
-            red_parry_hit_count = settings.training.red_parry_hit_count,
-            parry_every_n_count = settings.training.parry_every_n_count,
-            prefer_parry_low = settings.training.prefer_down_parry,
-            prefer_block_low = settings.training.pose == 2,
-            force_blocking_direction = settings.training.blocking_direction
-         }
+         blocking_options.mode = settings.training.blocking_mode
+         blocking_options.style = settings.training.blocking_style
+         blocking_options.red_parry_hit_count = settings.training.red_parry_hit_count
+         blocking_options.parry_every_n_count = settings.training.parry_every_n_count
+         blocking_options.prefer_parry_low = settings.training.prefer_down_parry
+         blocking_options.prefer_block_low = settings.training.pose == 2
+         blocking_options.force_blocking_direction = settings.training.blocking_direction
+
          dummy_control.update_blocking(inputs.input, training.dummy, blocking_options)
 
          dummy_control.update_pose(inputs.input, training.dummy, settings.training.pose)
@@ -266,11 +311,13 @@ local function before_frame()
 
          dummy_control.update_tech_throws(inputs.input, training.dummy, settings.training.tech_throws_mode)
 
-         dummy_control.update_counter_attack(inputs.input, training.dummy, training.counter_attack_data,
-                                             settings.training.hits_before_counter_attack_count)
+         dummy_control.update_counter_attack(
+            inputs.input,
+            training.dummy,
+            training.counter_attack_data,
+            settings.training.hits_before_counter_attack_count
+         )
       end
-
-      hud.update_hud(training.player, training.dummy, inputs.input)
 
       modules.update()
       if modes.active_mode then
@@ -291,12 +338,14 @@ local function before_frame()
       inputs.process_pending_input_sequence(gamestate.P2, inputs.input)
    end
 
-   if gamestate.is_in_match or menu.allow_update_while_open then
-      input_history.input_history_update(gamestate.P1, inputs.input)
-      input_history.input_history_update(gamestate.P2, inputs.input)
-   else
-      input_history.clear_input_history()
+   inputs.update_input_history(inputs.input, gamestate.P1)
+   inputs.update_input_history(inputs.input, gamestate.P2)
+
+   if gamestate.has_curtain_just_began then
+      inputs.clear_input_history()
    end
+
+   hud.update_hud(training.player, training.dummy, inputs.input)
 
    if debug_settings.recording_framedata then
       require("src.data.record_framedata").update_framedata_recording(gamestate.P1, gamestate.projectiles)
@@ -313,31 +362,44 @@ local function before_frame()
 
    managers.update_after()
 
-   if menu.is_initialized and gamestate.has_match_just_started then
-      if menu.open_after_match_start then menu.open_menu() end
-      menu.update_menu_items()
-      hud.reset_hud()
+   if menu.is_initialized and gamestate.has_round_just_started then
+      if menu.open_after_round_start then
+         menu.open_menu()
+      end
    end
 
    debug.log_update(gamestate.P1)
+
+   debug.update_debug_variables()
+
+   tools.Pools.small:free_all()
+   tools.Pools.big:free_all()
 end
 
 local function on_gui()
+   is_game_paused = previous_frame_number == gamestate.frame_number
    draw.clear_canvases()
+
    -- loading done here to decouple it from game execution
    if not image_tables.is_loaded or not framedata.is_loaded then
       local number_loaded = loading.load_all()
       loading_bar_loaded = loading_bar_loaded + number_loaded
       draw.loading_bar_display(loading_bar_loaded, loading_bar_total)
-      if not image_tables.is_loaded and load_text_request.status == loading.STATUS.LOADED and load_images_request.status ==
-          loading.STATUS.LOADED then
+      if
+         not image_tables.is_loaded
+         and load_text_request.status == loading.STATUS.LOADED
+         and load_images_request.status == loading.STATUS.LOADED
+      then
          image_tables.is_loaded = true
-         for k, v in pairs(image_tables.text) do load_text_request.result[k] = v end
+         for k, v in pairs(image_tables.text) do
+            load_text_request.result[k] = v
+         end
          image_tables.text = load_text_request.result
          image_tables.images = load_images_request.result
          modules.after_images_loaded()
          menu.create_menu()
          modules.after_menu_created()
+         hud.init()
       end
       if not framedata.is_loaded and load_framedata_request.status == loading.STATUS.LOADED then
          framedata.is_loaded = true
@@ -346,29 +408,48 @@ local function on_gui()
       end
    end
 
-   inputs.update_keyboard_input(input.get())
+   if is_game_paused then
+      inputs.update_keyboard_input(input.get())
+   end
 
-   if gamestate.is_in_character_select then draw.draw_character_select() end
+   if gamestate.is_in_character_select then
+      draw.draw_character_select()
+   end
 
    if image_tables.is_loaded then
-      if gamestate.is_in_match and not disable_display then
-         -- input history
-         input_history.input_history_display(settings.training.display_input_history,
-                                             draw.controller_styles[settings.training.controller_style])
-         -- controllers
+      if
+         gamestate.is_in_round_text
+         or (
+            gamestate.is_after_round_text
+            and not gamestate.is_in_screen_blackout
+            and not gamestate.is_in_match_end_continue
+            and not gamestate.is_new_challenge_text_showing
+         )
+      then
+         input_history.input_history_display(
+            settings.training.display_input_history,
+            draw.controller_styles[settings.controller_style]
+         )
+
          if settings.training.display_input then
-            local p1 = input_history.make_input_history_entry("P1", inputs.input)
-            local p2 = input_history.make_input_history_entry("P2", inputs.input)
-            draw.draw_controller_big(p1, 44, 34, draw.controller_styles[settings.training.controller_style])
-            draw.draw_controller_big(p2, 310, 34, draw.controller_styles[settings.training.controller_style])
+            local P1_last_input = gamestate.P1.input_history[#gamestate.P1.input_history]
+            local P2_last_input = gamestate.P2.input_history[#gamestate.P2.input_history]
+            draw.draw_controller_big(P1_last_input, 44, 34, draw.controller_styles[settings.controller_style])
+            draw.draw_controller_big(P2_last_input, 310, 34, draw.controller_styles[settings.controller_style])
          end
 
-         if debug_settings.log_enabled then debug.log_draw() end
+         if debug_settings.log_enabled then
+            debug.log_draw()
+         end
 
-         hud.draw_hud(training.player, training.dummy)
+         if gamestate.is_after_round_text then
+            hud.draw_hud(training.player, training.dummy)
+         end
 
       end
-      if debug_settings.developer_mode then debug.draw_debug() end
+      if debug_settings.developer_mode then
+         debug.draw_debug()
+      end
 
       menu.update()
 
@@ -376,6 +457,10 @@ local function on_gui()
    end
 
    gui.box(0, 0, 0, 0, 0, 0) -- if we don't draw something, what we drew last frame will not clear
+   previous_frame_number = gamestate.frame_number
+
+   tools.Pools.draw:free_all()
+   tools.GC:update()
 end
 
 emu.registerstart(on_start)

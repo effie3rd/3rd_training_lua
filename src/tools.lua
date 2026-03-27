@@ -4,25 +4,49 @@ local debug_settings = require("src.debug_settings")
 local assert_enabled = debug_settings.developer_mode
 local function t_assert(condition, msg)
    msg = msg or "Assertion failed"
-   if assert_enabled and not condition then error(msg, 2) end
+   if assert_enabled and not condition then
+      error(msg, 2)
+   end
 end
 
-local function trunc(n) return n >= 0 and math.floor(n) or math.ceil(n) end
+local function trunc(n)
+   return n >= 0 and math.floor(n) or math.ceil(n)
+end
 
-local function round(n) return math.floor(n + 0.5) end
+local function round(n)
+   return math.floor(n + 0.5)
+end
 
-local function round_to_nearest(x, n) return math.floor((x + n / 2) / n) * n end
+local function round_to_nearest(x, n)
+   return math.floor((x + n / 2) / n) * n
+end
 
-local function sign(n) return n > 0 and 1 or (n == 0 and 0 or -1) end
+local function sign(n)
+   return n > 0 and 1 or (n == 0 and 0 or -1)
+end
 
-local function flip_to_sign(flip_x) return (flip_x == 0 and -1) or (flip_x == 1 and 1) end
+local function flip_to_sign(flip_x)
+   return (flip_x == 0 and -1) or (flip_x == 1 and 1)
+end
 
-local function bool_xor(a, b) return (a or b) and not (a and b) end
+local function bool_xor(a, b)
+   return (a or b) and not (a and b)
+end
+
+local function average(tbl)
+   local total = 0
+   for _, v in ipairs(tbl) do
+      total = total + v
+   end
+   return total / #tbl
+end
 
 local function string_hash(str)
-   if #str == 0 then return 0 end
+   if #str == 0 then
+      return 0
+   end
 
-   local dJB2_INIT = 5381;
+   local dJB2_INIT = 5381
    local hash = dJB2_INIT
    for i = 1, #str do
       local c = string.byte(str, i)
@@ -32,13 +56,13 @@ local function string_hash(str)
 end
 
 local function string_to_color(str)
-   local HRange = {0.0, 360.0}
-   local sRange = {0.8, 1.0}
-   local lRange = {0.7, 1.0}
+   local HRange = { 0.0, 360.0 }
+   local sRange = { 0.8, 1.0 }
+   local lRange = { 0.7, 1.0 }
 
-   local HAmplitude = HRange[2] - HRange[1];
-   local sAmplitude = sRange[2] - sRange[1];
-   local lAmplitude = lRange[2] - lRange[1];
+   local HAmplitude = HRange[2] - HRange[1]
+   local sAmplitude = sRange[2] - sRange[1]
+   local lAmplitude = lRange[2] - lRange[1]
 
    local hash = string_hash(str)
 
@@ -47,17 +71,17 @@ local function string_to_color(str)
    local lI = bit.rshift(bit.band(hash, 0x0000FF00), 8)
    local base = bit.lshift(1, 8)
 
-   local h = HRange[1] + (HI / base) * HAmplitude;
-   local s = sRange[1] + (sI / base) * sAmplitude;
-   local l = lRange[1] + (lI / base) * lAmplitude;
+   local h = HRange[1] + (HI / base) * HAmplitude
+   local s = sRange[1] + (sI / base) * sAmplitude
+   local l = lRange[1] + (lI / base) * lAmplitude
 
    local HDiv60 = h / 60.0
-   local HDiv60_Floor = math.floor(HDiv60);
-   local HDiv60_Fraction = HDiv60 - HDiv60_Floor;
+   local HDiv60_Floor = math.floor(HDiv60)
+   local HDiv60_Fraction = HDiv60 - HDiv60_Floor
 
-   local rGBValues = {l, l * (1.0 - s), l * (1.0 - (HDiv60_Fraction * s)), l * (1.0 - ((1.0 - HDiv60_Fraction) * s))}
+   local rGBValues = { l, l * (1.0 - s), l * (1.0 - (HDiv60_Fraction * s)), l * (1.0 - ((1.0 - HDiv60_Fraction) * s)) }
 
-   local rGBSwizzle = {{1, 4, 2}, {3, 1, 2}, {2, 1, 4}, {2, 3, 1}, {4, 2, 1}, {1, 2, 3}}
+   local rGBSwizzle = { { 1, 4, 2 }, { 3, 1, 2 }, { 2, 1, 4 }, { 2, 3, 1 }, { 4, 2, 1 }, { 1, 2, 3 } }
    local swizzleIndex = (HDiv60_Floor % 6) + 1
    local r = rGBValues[rGBSwizzle[swizzleIndex][1]]
    local g = rGBValues[rGBSwizzle[swizzleIndex][2]]
@@ -65,8 +89,10 @@ local function string_to_color(str)
 
    -- print(string.format("H:%.1f, S:%.1f, L:%.1f | R:%.1f, G:%.1f, B:%.1f", h, s, l, r, , b))
 
-   local color = bit.lshift(math.floor(r * 255), 24) + bit.lshift(math.floor(g * 255), 16) +
-                     bit.lshift(math.floor(b * 255), 8) + 0xFF
+   local color = bit.lshift(math.floor(r * 255), 24)
+      + bit.lshift(math.floor(g * 255), 16)
+      + bit.lshift(math.floor(b * 255), 8)
+      + 0xFF
    return color
 end
 
@@ -85,29 +111,145 @@ local function memory_readword_reverse(addr)
 end
 
 local function clamp(val, min, max)
-   if val < min then val = min end
-   if val > max then val = max end
+   if val < min then
+      val = min
+   end
+   if val > max then
+      val = max
+   end
    return val
+end
+
+local GC = {
+   target_growth_kb = 20,
+   step_size = 80,
+   min_step = 80,
+   max_step = 200,
+   last_mem = collectgarbage("count"),
+   delta = 0,
+}
+function GC:update()
+   local mem = collectgarbage("count")
+   self.delta = mem - self.last_mem
+   if self.delta > self.target_growth_kb then
+      self.step_size = math.min(self.step_size * 1.5, self.max_step)
+   elseif self.delta < self.target_growth_kb / 2 then
+      self.step_size = math.max(self.step_size * 0.8, self.min_step)
+   end
+   collectgarbage("step", self.step_size)
+   self.last_mem = mem
 end
 
 local function create_dynamic_value(object, key)
    local obj = {}
    setmetatable(obj, {
-      __index = function(_, k) if k == "value" then return object[key] end end,
+      __index = function(_, k)
+         if k == "value" then
+            return object[key]
+         end
+      end,
 
-      __newindex = function(_, k, v) if k == "value" then object[key] = v end end,
+      __newindex = function(_, k, v)
+         if k == "value" then
+            object[key] = v
+         end
+      end,
 
-      __tostring = function(t) return tostring(object[key]) end
+      __tostring = function(t)
+         return tostring(object[key])
+      end,
    })
    return obj
 end
 
+local Frame_Table_Pool = {}
+Frame_Table_Pool.__index = Frame_Table_Pool
+
+function Frame_Table_Pool:new(preallocate_count)
+   local obj = setmetatable({}, Frame_Table_Pool)
+   obj.pool = {}
+   obj.used = {}
+   preallocate_count = preallocate_count or 0
+   for i = 1, preallocate_count do
+      table.insert(obj.pool, {})
+   end
+   return obj
+end
+
+function Frame_Table_Pool:alloc()
+   local t = table.remove(self.pool)
+   if not t then
+      t = {}
+   end
+   self.used[#self.used + 1] = t
+   return t
+end
+
+function Frame_Table_Pool:free(t)
+   for k in pairs(t) do
+      t[k] = nil
+   end
+   self.pool[#self.pool + 1] = t
+end
+
+function Frame_Table_Pool:free_all()
+   for i, t in ipairs(self.used) do
+      self:free(t)
+      self.used[i] = nil
+   end
+end
+
+local Mempool = {}
+Mempool.__index = Mempool
+
+function Mempool:new(preallocate_count)
+   local obj = setmetatable({}, Mempool)
+   obj.pool = {}
+   preallocate_count = preallocate_count or 0
+   for i = 1, preallocate_count do
+      table.insert(obj.pool, {})
+   end
+   return obj
+end
+
+function Mempool:alloc()
+   local t = table.remove(self.pool)
+   if not t then
+      t = {}
+   end
+   return t
+end
+
+function Mempool:free(t)
+   if not t then print(debug.traceback()) end
+   for k in pairs(t) do
+      t[k] = nil
+   end
+   self.pool[#self.pool + 1] = t
+end
+
+--small/big/draw cleared automaticcaly at the end of every frame
+--temp is manual
+local Pools = {
+   small = Frame_Table_Pool:new(300),
+   big = Frame_Table_Pool:new(100),
+   draw = Frame_Table_Pool:new(400),
+   temp = Mempool:new(10),
+}
+
 local function check_input_down_autofire(player_object, input, autofire_rate, autofire_time)
    autofire_rate = autofire_rate or 4
    autofire_time = autofire_time or 23
-   if player_object.input.pressed[input] or
-       (player_object.input.down[input] and player_object.input.state_time[input] > autofire_time and
-           (player_object.input.state_time[input] % autofire_rate) == 0) then return true end
+   if
+      player_object.input.pressed[input]
+      or (
+         player_object.input.down[input]
+         and player_object.input.state_time[input] > autofire_time
+         and (player_object.input.state_time[input] % autofire_rate) == 0
+      )
+   then
+      return true
+   end
    return false
 end
 
@@ -119,18 +261,26 @@ function Perf_Timer:new()
    obj.start = os.clock()
    return setmetatable(obj, self)
 end
-function Perf_Timer:reset() self.start = os.clock() end
-function Perf_Timer:elapsed() return os.clock() - self.start end
+function Perf_Timer:reset()
+   self.start = os.clock()
+end
+function Perf_Timer:elapsed()
+   return os.clock() - self.start
+end
 
 local function read_number_from_file(file_path)
    local f = io.open(file_path, "r")
-   if not f then error("Cannot open " .. file_path) end
+   if not f then
+      error("Cannot open " .. file_path)
+   end
    return tonumber(f:read("*l"))
 end
 
 local function read_object_from_json_file(file_path)
    local f = io.open(file_path, "r")
-   if f == nil then return nil end
+   if f == nil then
+      return nil
+   end
 
    local object
    local pos, err
@@ -138,7 +288,9 @@ local function read_object_from_json_file(file_path)
    object, pos, err = json.decode(f:read("*all"))
    f:close()
 
-   if (err) then print(string.format("Failed to read json file \"%s\" : %s", file_path, err)) end
+   if err then
+      print(string.format('Failed to read json file "%s" : %s', file_path, err))
+   end
 
    return object
 end
@@ -151,7 +303,7 @@ local function write_object_to_json_file(object, file_path, indent)
    end
    local str
    if indent then
-      str = json.encode(object, {indent = true})
+      str = json.encode(object, { indent = true })
    else
       str = json.encode(object)
    end
@@ -163,53 +315,101 @@ end
 local function print_memory_line(addr)
    addr = addr - addr % 0x10
 
-   print(string.format("%02X %02X %02X %02X %02X %02X %02X %02X   %02X %02X %02X %02X %02X %02X %02X %02X",
-                       memory.readbyte(addr + 0x0), memory.readbyte(addr + 0x1), memory.readbyte(addr + 0x2),
-                       memory.readbyte(addr + 0x3), memory.readbyte(addr + 0x4), memory.readbyte(addr + 0x5),
-                       memory.readbyte(addr + 0x6), memory.readbyte(addr + 0x7), memory.readbyte(addr + 0x8),
-                       memory.readbyte(addr + 0x9), memory.readbyte(addr + 0xA), memory.readbyte(addr + 0xB),
-                       memory.readbyte(addr + 0xC), memory.readbyte(addr + 0xD), memory.readbyte(addr + 0xE),
-                       memory.readbyte(addr + 0xF)))
+   print(
+      string.format(
+         "%02X %02X %02X %02X %02X %02X %02X %02X   %02X %02X %02X %02X %02X %02X %02X %02X",
+         memory.readbyte(addr + 0x0),
+         memory.readbyte(addr + 0x1),
+         memory.readbyte(addr + 0x2),
+         memory.readbyte(addr + 0x3),
+         memory.readbyte(addr + 0x4),
+         memory.readbyte(addr + 0x5),
+         memory.readbyte(addr + 0x6),
+         memory.readbyte(addr + 0x7),
+         memory.readbyte(addr + 0x8),
+         memory.readbyte(addr + 0x9),
+         memory.readbyte(addr + 0xA),
+         memory.readbyte(addr + 0xB),
+         memory.readbyte(addr + 0xC),
+         memory.readbyte(addr + 0xD),
+         memory.readbyte(addr + 0xE),
+         memory.readbyte(addr + 0xF)
+      )
+   )
 end
 
 local function table_contains(tbl, value)
-   for _, v in pairs(tbl) do if v == value then return true end end
+   for _, v in pairs(tbl) do
+      if v == value then
+         return true
+      end
+   end
    return false
 end
 
 local function table_indexof(tbl, value)
-   for i, v in ipairs(tbl) do if v == value then return i end end
+   for i, v in ipairs(tbl) do
+      if v == value then
+         return i
+      end
+   end
    return nil
 end
 
 local function table_contains_property(tbl, prop, value)
-   for _, obj in pairs(tbl) do if obj[prop] == value then return true end end
+   for _, obj in pairs(tbl) do
+      if obj[prop] == value then
+         return true
+      end
+   end
    return false
 end
 
 local function count_keys(tbl)
    local n = 0
-   for _, obj in pairs(tbl) do n = n + 1 end
+   for _, obj in pairs(tbl) do
+      n = n + 1
+   end
    return n
 end
 
 local function deep_equal(a, b, visited)
-   if a == b then return true end
-   if type(a) ~= "table" or type(b) ~= "table" then return false end
+   if a == b then
+      return true
+   end
+   if type(a) ~= "table" or type(b) ~= "table" then
+      return false
+   end
 
    visited = visited or {}
-   if visited[a] == b then return true end
+   if visited[a] == b then
+      return true
+   end
    visited[a] = b
 
-   for k, av in pairs(a) do if not deep_equal(av, b[k], visited) then return false end end
-   for k in pairs(b) do if a[k] == nil then return false end end
+   for k, av in pairs(a) do
+      if not deep_equal(av, b[k], visited) then
+         return false
+      end
+   end
+   for k in pairs(b) do
+      if a[k] == nil then
+         return false
+      end
+   end
 
    return true
 end
 
 local function table_contains_deep(tbl, element)
-   if tbl == nil then return false end
-   for _, v in pairs(tbl) do if deep_equal(v, element) then return true end end
+   if tbl == nil then
+      return false
+   end
+   for _, v in pairs(tbl) do
+      if deep_equal(v, element) then
+         return true
+      end
+   end
    return false
 end
 
@@ -219,10 +419,8 @@ local function deepcopy(orig, exclude)
    if type(orig) == "table" then
       copy = {}
       if exclude then
-         local exclude_map = {}
-         for _, key in ipairs(exclude) do exclude_map[key] = true end
          for orig_key, orig_value in pairs(orig) do
-            if not exclude_map[orig_key] then
+            if not exclude[orig_key] then
                copy[deepcopy(orig_key, exclude)] = deepcopy(orig_value, exclude)
             end
          end
@@ -240,21 +438,60 @@ local function deepcopy(orig, exclude)
    return copy
 end
 
+local function tempcopy(orig, pool, exclude)
+   pool = pool or Pools.small
+   local copy
+
+   if type(orig) == "table" then
+      copy = pool:alloc()
+      if exclude then
+         for orig_key, orig_value in pairs(orig) do
+            if not exclude[orig_key] then
+               copy[tempcopy(orig_key, pool, exclude)] = tempcopy(orig_value, pool, exclude)
+            end
+         end
+         setmetatable(copy, tempcopy(getmetatable(orig), pool, exclude))
+      else
+         for orig_key, orig_value in pairs(orig) do
+            copy[tempcopy(orig_key, pool, exclude)] = tempcopy(orig_value, pool, exclude)
+         end
+         setmetatable(copy, tempcopy(getmetatable(orig), pool, exclude))
+      end
+   else
+      copy = orig
+   end
+
+   return copy
+end
+
+local function copy_fields(dest, src)
+   for k, v in pairs(src) do
+      dest[k] = v
+   end
+end
+
 local function clear_table(tbl)
-   local to_remove = {}
-   for k in pairs(tbl) do to_remove[#to_remove + 1] = k end
-   for _, key in ipairs(to_remove) do tbl[key] = nil end
+   if not tbl then print("clear_table", debug.traceback()) end
+   for k in pairs(tbl) do
+      tbl[k] = nil
+   end
 end
 
 local function compact_table(tbl)
-   local compacted = {}
-   local keys = {}
+   local compacted = Pools.draw:alloc()
+   local keys = Pools.draw:alloc()
 
-   for k in pairs(tbl) do if type(k) == "number" then table.insert(keys, k) end end
+   for k in pairs(tbl) do
+      if type(k) == "number" then
+         table.insert(keys, k)
+      end
+   end
 
    table.sort(keys)
 
-   for _, k in ipairs(keys) do table.insert(compacted, tbl[k]) end
+   for _, k in ipairs(keys) do
+      table.insert(compacted, tbl[k])
+   end
 
    return compacted
 end
@@ -262,8 +499,12 @@ end
 local function combine_arrays(a, b)
    local combined = {}
    local n = 1
-   for _, v in ipairs(a) do combined[n], n = v, n + 1 end
-   for _, v in ipairs(b) do combined[n], n = v, n + 1 end
+   for _, v in ipairs(a) do
+      combined[n], n = v, n + 1
+   end
+   for _, v in ipairs(b) do
+      combined[n], n = v, n + 1
+   end
    return combined
 end
 
@@ -272,50 +513,89 @@ local function float_to_byte(n)
    return math.floor(mantissa * 256)
 end
 
-local box_types = {"push", "throwable", "vulnerability", "ext_vulnerability", "attack_a", "attack_b", "throw"}
-local box_types_base = {"push", "throwable", "vulnerability", "ext_vulnerability", "attack", "attack", "throw"}
-for i, box_type in ipairs(box_types) do box_types[box_type] = i end
-for i, box_type in ipairs(box_types_base) do box_types_base[box_type] = i end
+local BOXES = {
+   ATTACK = { "attack" },
+   THROW = { "throw" },
+   ATTACK_AND_THROW = { "attack", "throw" },
+   PUSH = { "push" },
+   THROWABLE = { "throwable" },
+   VULNERABILITY = { "vulnerability" },
+   VULN_AND_EXT_VULN = { "vulnerability", "ext_vulnerability" },
+   VULN_AND_PUSH = { "vulnerability", "push" },
+}
+
+local box_types = { "push", "throwable", "vulnerability", "ext_vulnerability", "attack_a", "attack_b", "throw" }
+local box_types_base = { "push", "throwable", "vulnerability", "ext_vulnerability", "attack", "attack", "throw" }
+for i, box_type in ipairs(box_types) do
+   box_types[box_type] = i
+end
+for i, box_type in ipairs(box_types_base) do
+   box_types_base[box_type] = i
+end
 
 local function get_box_type_string(box_type_int, extended)
-   if extended then return box_types[box_type_int] end
+   if extended then
+      return box_types[box_type_int]
+   end
    return box_types_base[box_type_int]
 end
 
 local function get_box_type_int(box_type_string, extended)
-   if extended then return box_types[box_type_string] end
+   if extended then
+      return box_types[box_type_string]
+   end
    return box_types_base[box_type_string]
 end
 
-local function format_box(box, extended)
-   return {
-      type = get_box_type_string(box[1], extended),
-      bottom = box[2],
-      height = box[3],
-      left = box[4],
-      width = box[5]
-   }
+local function format_box(box, extended, out)
+   local result = out or {}
+   result.type = get_box_type_string(box[1], extended)
+   result.bottom = box[2]
+   result.height = box[3]
+   result.left = box[4]
+   result.width = box[5]
+   return result
 end
 
-local function create_box(box) return {get_box_type_string(box.type), box.bottom, box.height, box.left, box.width} end
+local function create_box(box, out)
+   local result = out or {}
+   result[1] = get_box_type_string(box.type)
+   result[2] = box.bottom
+   result[3] = box.height
+   result[4] = box.left
+   result[5] = box.width
+   return result
+end
 
 local function has_boxes(boxes, types, extended)
    for _, box in pairs(boxes) do
-      for _, type in pairs(types) do if get_box_type_string(box[1], extended) == type then return true end end
+      for _, type in pairs(types) do
+         if get_box_type_string(box[1], extended) == type then
+            return true
+         end
+      end
    end
    return false
 end
 
-local function get_boxes(boxes, types, extended)
-   local res = {}
+local function get_boxes(boxes, types, extended, out)
+   local res = out or {}
    for _, box in pairs(boxes) do
-      for _, type in pairs(types) do if get_box_type_string(box[1], extended) == type then res[#res + 1] = box end end
+      for _, type in pairs(types) do
+         if get_box_type_string(box[1], extended) == type then
+            res[#res + 1] = box
+         end
+      end
    end
    return res
 end
 
 local function get_pushboxes(player)
-   for _, box in pairs(player.boxes) do if get_box_type_string(box[1]) == "push" then return box end end
+   for _, box in pairs(player.boxes) do
+      if get_box_type_string(box[1]) == "push" then
+         return box
+      end
+   end
    return nil
 end
 
@@ -323,8 +603,14 @@ local function get_boxes_lowest_position(boxes, types)
    if boxes then
       local min = math.huge
       for _, box in pairs(boxes) do
-         local b = format_box(box)
-         for _, type in pairs(types) do if b.type == type and b.bottom < min then min = b.bottom end end
+         local b = Pools.temp:alloc()
+         format_box(box, nil, b)
+         for _, type in pairs(types) do
+            if b.type == type and b.bottom < min then
+               min = b.bottom
+            end
+         end
+         Pools.temp:free(b)
       end
       return min
    end
@@ -335,28 +621,85 @@ local function get_boxes_highest_position(boxes, types)
    if boxes then
       local max = 0
       for _, box in pairs(boxes) do
-         local b = format_box(box)
+         local b = Pools.temp:alloc()
+         format_box(box, nil, b)
          for _, type in pairs(types) do
-            if b.type == type and b.bottom + b.height > max then max = b.bottom + b.height end
+            if b.type == type and b.bottom + b.height > max then
+               max = b.bottom + b.height
+            end
          end
+         Pools.temp:free(b)
       end
       return max
    end
    return 0
 end
 
-local function test_collision(defender_x, defender_y, defender_flip_x, defender_boxes, attacker_x, attacker_y,
-                              attacker_flip_x, attacker_boxes, box_type_matches, defender_hurtbox_dilation_x,
-                              defender_hurtbox_dilation_y, attacker_hitbox_dilation_x, attacker_hitbox_dilation_y)
-   if (defender_hurtbox_dilation_x == nil) then defender_hurtbox_dilation_x = 0 end
-   if (defender_hurtbox_dilation_y == nil) then defender_hurtbox_dilation_y = 0 end
-   if (attacker_hitbox_dilation_x == nil) then attacker_hitbox_dilation_x = 0 end
-   if (attacker_hitbox_dilation_y == nil) then attacker_hitbox_dilation_y = 0 end
-   if (box_type_matches == nil) then box_type_matches = {{{"vulnerability", "ext_vulnerability"}, {"attack"}}} end
+local function get_boxes_average_position(boxes, types)
+   if boxes then
+      local min, max = math.huge, 0
+      for _, box in pairs(boxes) do
+         local b = Pools.temp:alloc()
+         format_box(box, nil, b)
+         for _, type in pairs(types) do
+            if b.type == type then
+               if b.bottom + b.height > max then
+                  max = b.bottom + b.height
+               end
+               if b.bottom < min then
+                  min = b.bottom
+               end
+            end
+         end
+         Pools.temp:free(b)
+      end
+      return (max + min) / 2
+   end
+   return 0
+end
 
-   if (#box_type_matches == 0) then return false end
-   if (#defender_boxes == 0) then return false end
-   if (#attacker_boxes == 0) then return false end
+local box_type_matches_default = { { { "vulnerability", "ext_vulnerability" }, { "attack" } } }
+
+local function test_collision(
+   defender_x,
+   defender_y,
+   defender_flip_x,
+   defender_boxes,
+   attacker_x,
+   attacker_y,
+   attacker_flip_x,
+   attacker_boxes,
+   box_type_matches,
+   defender_hurtbox_dilation_x,
+   defender_hurtbox_dilation_y,
+   attacker_hitbox_dilation_x,
+   attacker_hitbox_dilation_y
+)
+   if defender_hurtbox_dilation_x == nil then
+      defender_hurtbox_dilation_x = 0
+   end
+   if defender_hurtbox_dilation_y == nil then
+      defender_hurtbox_dilation_y = 0
+   end
+   if attacker_hitbox_dilation_x == nil then
+      attacker_hitbox_dilation_x = 0
+   end
+   if attacker_hitbox_dilation_y == nil then
+      attacker_hitbox_dilation_y = 0
+   end
+   if box_type_matches == nil then
+      box_type_matches = box_type_matches_default
+   end
+
+   if #box_type_matches == 0 then
+      return false
+   end
+   if #defender_boxes == 0 then
+      return false
+   end
+   if #attacker_boxes == 0 then
+      return false
+   end
 
    defender_x = math.floor(defender_x)
    defender_y = math.floor(defender_y)
@@ -366,7 +709,7 @@ local function test_collision(defender_x, defender_y, defender_flip_x, defender_
    for k = 1, #box_type_matches do
       local box_type_match = box_type_matches[k]
       for i = 1, #defender_boxes do
-         local d_box = format_box(defender_boxes[i])
+         local d_box = format_box(defender_boxes[i], nil, Pools.small:alloc())
 
          local defender_box_match = false
          for _, value in ipairs(box_type_match[1]) do
@@ -393,7 +736,7 @@ local function test_collision(defender_x, defender_y, defender_flip_x, defender_
             d_t = d_t + defender_hurtbox_dilation_y
 
             for j = 1, #attacker_boxes do
-               local a_box = format_box(attacker_boxes[j])
+               local a_box = format_box(attacker_boxes[j], nil, Pools.small:alloc())
 
                local attacker_box_match = false
                for _, value in ipairs(box_type_match[2]) do
@@ -421,7 +764,9 @@ local function test_collision(defender_x, defender_y, defender_flip_x, defender_
                   a_t = a_t + attacker_hitbox_dilation_y
 
                   -- check collision
-                  if (a_l < d_r) and (a_r > d_l) and (a_b < d_t) and (a_t > d_b) then return true end
+                  if (a_l < d_r) and (a_r > d_l) and (a_b < d_t) and (a_t > d_b) then
+                     return true
+                  end
                end
             end
          end
@@ -447,8 +792,12 @@ local function is_pressing_back(player, input)
    end
 end
 
-local function is_pressing_down(player, input) return input[player.prefix .. " Down"] end
-local function is_pressing_up(player, input) return input[player.prefix .. " Up"] end
+local function is_pressing_down(player, input)
+   return input[player.prefix .. " Down"]
+end
+local function is_pressing_up(player, input)
+   return input[player.prefix .. " Up"]
+end
 
 local function input_to_text(t)
    local result = {}
@@ -465,12 +814,22 @@ local function input_to_text(t)
             text = text .. "b"
          end
       end
-      if text ~= "" then text = text .. "_" end
+      if text ~= "" then
+         text = text .. "_"
+      end
       for j = 1, #t[i] do
-         if t[i][j] == "LP" or t[i][j] == "MP" or t[i][j] == "HP" or t[i][j] == "LK" or t[i][j] == "MK" or t[i][j] ==
-             "HK" then
+         if
+            t[i][j] == "LP"
+            or t[i][j] == "MP"
+            or t[i][j] == "HP"
+            or t[i][j] == "LK"
+            or t[i][j] == "MK"
+            or t[i][j] == "HK"
+         then
             text = text .. t[i][j]
-            if j + 1 <= #t[i] then text = text .. "+" end
+            if j + 1 <= #t[i] then
+               text = text .. "+"
+            end
          end
       end
       result[#result + 1] = text
@@ -499,12 +858,16 @@ local function sequence_to_name(seq)
          bf = "b"
       end
    end
-   if string.len(ud .. bf) > 0 then return ud .. bf .. "_" .. btn end
+   if string.len(ud .. bf) > 0 then
+      return ud .. bf .. "_" .. btn
+   end
    return btn
 end
 
 local function name_to_sequence(name)
-   if not name then return nil end
+   if not name then
+      return nil
+   end
    local underscore = string.find(name, "_")
    local remaining = name
    local seq = {}
@@ -534,11 +897,11 @@ local function name_to_sequence(name)
    if remaining then
       local plus = string.find(remaining, "+")
       local left, right
-      local to_check = {remaining}
+      local to_check = { remaining }
       if plus then
          left = string.sub(remaining, 1, plus - 1)
          right = string.sub(remaining, plus + 1)
-         to_check = {left, right}
+         to_check = { left, right }
       end
       for i = 1, #to_check do
          if to_check[i] == "LP" then
@@ -558,12 +921,14 @@ local function name_to_sequence(name)
          end
       end
    end
-   return {seq}
+   return { seq }
 end
 
 local function get_menu_names(tbl)
    local result = {}
-   for k, v in ipairs(tbl) do result[#result + 1] = "menu_" .. v end
+   for k, v in ipairs(tbl) do
+      result[#result + 1] = "menu_" .. v
+   end
    return result
 end
 
@@ -573,7 +938,9 @@ local function enum(names, opts)
    for i, name in ipairs(names) do
       local key = opts.upper and name:upper() or name
       e[key] = i
-      if opts.reverse then e[i] = key end
+      if opts.reverse then
+         e[i] = key
+      end
    end
    return e
 end
@@ -589,15 +956,22 @@ local function convert_strings_to_numbers(tbl)
 end
 
 local function select_weighted(list)
+   if not list then
+      return
+   end
    local total = 0
-   for _, item in ipairs(list) do total = total + item.weight end
+   for _, item in ipairs(list) do
+      total = total + item.weight
+   end
 
    local r = math.random() * total
    local cumulative = 0
 
    for _, item in ipairs(list) do
       cumulative = cumulative + item.weight
-      if r <= cumulative then return item end
+      if r <= cumulative then
+         return item
+      end
    end
 end
 
@@ -619,8 +993,12 @@ local function random_quadratic(min, max, center, strength)
    local n_sign = distance >= 0 and 1 or -1
    local transformed = center + n_sign * (math.abs(distance) ^ (1 + strength))
 
-   if transformed < 0 then transformed = 0 end
-   if transformed > 1 then transformed = 1 end
+   if transformed < 0 then
+      transformed = 0
+   end
+   if transformed > 1 then
+      transformed = 1
+   end
 
    return min + transformed * (max - min)
 end
@@ -645,7 +1023,9 @@ end
 
 local function get_calling_module_name()
    local src = debug.getinfo(3, "S")
-   if not src then return nil end
+   if not src then
+      return nil
+   end
    return src.short_src:match("([^/\\]+)%.lua$")
 end
 
@@ -657,11 +1037,15 @@ return {
    sign = sign,
    flip_to_sign = flip_to_sign,
    bool_xor = bool_xor,
+   average = average,
    string_hash = string_hash,
    string_to_color = string_to_color,
    to_bit = to_bit,
    memory_readword_reverse = memory_readword_reverse,
+   GC = GC,
    create_dynamic_value = create_dynamic_value,
+   Pools = Pools,
+   Frame_Table_Pool = Frame_Table_Pool,
    clamp = clamp,
    check_input_down_autofire = check_input_down_autofire,
    Perf_Timer = Perf_Timer,
@@ -676,6 +1060,8 @@ return {
    deep_equal = deep_equal,
    table_contains_deep = table_contains_deep,
    deepcopy = deepcopy,
+   tempcopy = tempcopy,
+   copy_fields = copy_fields,
    clear_table = clear_table,
    compact_table = compact_table,
    combine_arrays = combine_arrays,
@@ -683,6 +1069,7 @@ return {
    test_collision = test_collision,
    get_box_type_int = get_box_type_int,
    get_box_type_string = get_box_type_string,
+   BOXES = BOXES,
    format_box = format_box,
    create_box = create_box,
    has_boxes = has_boxes,
@@ -690,6 +1077,7 @@ return {
    get_pushboxes = get_pushboxes,
    get_boxes_lowest_position = get_boxes_lowest_position,
    get_boxes_highest_position = get_boxes_highest_position,
+   get_boxes_average_position = get_boxes_average_position,
    is_pressing_forward = is_pressing_forward,
    is_pressing_back = is_pressing_back,
    is_pressing_down = is_pressing_down,
@@ -705,5 +1093,5 @@ return {
    random_quadratic = random_quadratic,
    wrap_index = wrap_index,
    bound_index = bound_index,
-   get_calling_module_name = get_calling_module_name
+   get_calling_module_name = get_calling_module_name,
 }

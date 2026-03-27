@@ -32,7 +32,7 @@ local jumpins
 local module_name = "jumpins"
 
 local is_enabled = true
-local is_active = false
+local is_mode_active = false
 
 local MAIN_MODES = {EDIT = 1, RUN = 2}
 local STATES = {
@@ -163,20 +163,18 @@ local function draw_jump_arc(jump_arc)
          selected_points[#selected_points + 1] = point
       else
          local x, y = draw.game_to_screen_space(point[1], point[2] + point[3])
-         if not (i == current_point) then
-            gui.image(x - 2, y - 2, draw.get_image(image_tables.images.img_dot, color))
-         end
+         if not (i == current_point) then draw.draw_image(x - 2, y - 2, "img_dot", nil, color) end
       end
    end
    for i, point in pairs(selected_points) do
       local x, y = draw.game_to_screen_space(point[1], point[2] + point[3])
-      gui.image(x - 2, y - 2, draw.get_image(image_tables.images.img_dot, colors.text.selected))
+      draw.draw_image(x - 2, y - 2, "img_dot", nil, colors.text.selected)
    end
    local color = get_color(current_point)
    local point = jump_arc[current_point]
    if point then
       local x, y = draw.game_to_screen_space(point[1], point[2] + point[3])
-      gui.image(x - image_tables.scroll_arrow_width / 2, y, draw.get_image(image_tables.images.img_scroll_up, color))
+      draw.draw_image(x - image_tables.images.img_scroll_up.width / 2, y, "img_scroll_up", nil, color)
    end
 end
 
@@ -198,8 +196,8 @@ local function add_jump_arc(jump_arc, player, player_line, player_motion_data)
       local frame = player_line[i].frame + 1
       local y_offset
       if fdata and fdata.frames[frame] and fdata.frames[frame].boxes then
-         if tools.has_boxes(fdata.frames[frame].boxes, {"push"}) then
-            local box_bottom = tools.get_boxes_lowest_position(fdata.frames[frame].boxes, {"push"})
+         if tools.has_boxes(fdata.frames[frame].boxes, tools.BOXES.PUSH) then
+            local box_bottom = tools.get_boxes_lowest_position(fdata.frames[frame].boxes, tools.BOXES.PUSH)
             if box_bottom then y_offset = box_bottom end
          end
       end
@@ -214,8 +212,10 @@ local function add_jump_arc(jump_arc, player, player_line, player_motion_data)
    end
 end
 
+local sjump_table = {"sjump_forward", "sjump_neutral", "sjump_back"}
+
 local function is_sjump(jump_name)
-   return tools.table_contains({"sjump_forward", "sjump_neutral", "sjump_back"}, jump_name)
+   return tools.table_contains(sjump_table, jump_name)
 end
 
 local function get_jump_startup(char_str, jump_name)
@@ -802,7 +802,7 @@ local function execute_jump(player, first_jump_name, second_jump_name, second_ju
                local label_text = {followup_name, " ", elapsed, "hud_f", " ", "hud_after"}
                if followup.type == 2 and followup_data.button ~= "none" then
                   table.insert(label_text, 2, followup_data.button)
-                  if settings.language == "en" then table.insert(label_text, 2, " ") end
+                  if settings.language_tag == "en" then table.insert(label_text, 2, " ") end
                end
                info_labels[#info_labels + 1] = label_text
                delay_timer = gamestate.frame_number
@@ -912,7 +912,7 @@ local function start()
    inputs.unblock_input(2)
    load_settings()
    load_all_jumps()
-   if not is_active or mode == MAIN_MODES.EDIT then show_notifications_on_menu_close = true end
+   if not is_mode_active or mode == MAIN_MODES.EDIT then show_notifications_on_menu_close = true end
    if jumpins_settings.automatic_replay then
       state = STATES.WAIT_FOR_START_STATE
    else
@@ -926,7 +926,7 @@ local function start()
 end
 
 local function stop()
-   if is_active then
+   if is_mode_active then
       inputs.unblock_input(1)
       inputs.unblock_input(2)
       training.disable_dummy[1] = false
@@ -952,7 +952,7 @@ local function reset() end
 local function toggle() end
 
 local function update()
-   if is_active then
+   if is_mode_active then
       if mode == MAIN_MODES.EDIT then
          player_pose = settings.training.pose
          if state == STATES.POSITION then
@@ -1238,7 +1238,7 @@ local function update()
    end
 end
 
-local function process_gesture(gesture) if is_active then if gesture == "single_tap" then try_jump() end end end
+local function process_gesture(gesture) if is_mode_active then if gesture == "single_tap" then try_jump() end end end
 
 local function get_valid_control_schemes()
    if mode == MAIN_MODES.EDIT then
@@ -1314,10 +1314,10 @@ local function update_menu()
       jumpins_edit_items.followup_delay_item.object = current_jump_settings
       jumpins_edit_items.status_item.object = {jump_index = jumpins_edit_jump_index}
 
-      if is_active then
-         jumpins_menu.start_item.name = "menu_stop"
+      if is_mode_active then
+         jumpins_menu.start_item:update_name("menu_stop")
       else
-         jumpins_menu.start_item.name = "menu_start"
+         jumpins_menu.start_item:update_name("menu_start")
       end
 
       jumpins_menu.jump_replay_mode_item.object = jumpins_edit_settings
@@ -1538,7 +1538,7 @@ local function create_menu()
 
    jumpins_menu = {}
    jumpins_menu.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
-      if is_active then
+      if is_mode_active then
          modes.stop()
          update_menu()
          menu.update_active_training_page()
@@ -1550,7 +1550,7 @@ local function create_menu()
    jumpins_menu.start_item.legend_text = "legend_lp_select_coin_restart"
    jumpins_menu.start_item.is_enabled = function()
       if framedata.is_loaded then
-         if is_active then
+         if is_mode_active then
             return true
          else
             return jumpins_edit_settings ~= nil
@@ -1568,14 +1568,14 @@ local function create_menu()
       begin_edit(current_jump_settings)
       update_menu()
       menu.update_counter_attack_items()
-      menu.main_menu:menu_open_popup(jumpins_edit_menu, true)
+      menu.main_menu:open_popup(jumpins_edit_menu, true)
    end)
    jumpins_menu.start_edit_item.is_enabled = function() return framedata.is_loaded end
    jumpins_menu.start_edit_item.is_unselectable = function() return not jumpins_menu.start_edit_item.is_enabled() end
 
    local character_select_and_open_menu_item = menu_items.Button_Menu_Item:new("menu_character_select", function()
       character_select.start_character_select_sequence()
-      menu.open_after_match_start = true
+      menu.open_after_round_start = true
       modes.stop()
    end)
 
@@ -1642,8 +1642,8 @@ setmetatable(jumpins, {
    __index = function(_, key)
       if key == "dummy_offset_edit_index" then
          return dummy_offset_edit_index
-      elseif key == "is_active" then
-         return is_active
+      elseif key == "is_mode_active" then
+         return is_mode_active
       elseif key == "is_enabled" then
          return is_enabled
       elseif key == "player_position_range" then
@@ -1682,8 +1682,8 @@ setmetatable(jumpins, {
    end,
 
    __newindex = function(_, key, value)
-      if key == "is_active" then
-         is_active = value
+      if key == "is_mode_active" then
+         is_mode_active = value
       elseif key == "is_enabled" then
          is_enabled = value
       elseif key == "dummy_offset_edit_index" then

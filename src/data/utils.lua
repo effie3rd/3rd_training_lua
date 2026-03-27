@@ -3,6 +3,7 @@ local stage_data = require("src.data.stage_data")
 local move_data = require("src.data.move_data")
 local tools = require("src.tools")
 
+local Pools = tools.Pools
 local character_specific = framedata.character_specific
 
 local function has_projectiles(player)
@@ -46,19 +47,19 @@ local function is_in_opponent_throw_range(player, tolerance)
 end
 
 local function get_box_connection_distance(attacker, attack_boxes, defender, defender_boxes, box_types, get_closest)
-   box_types = box_types or {"vulnerability", "ext_vulnerability"}
-   local hurt_boxes = tools.get_boxes(defender_boxes, box_types)
+   box_types = box_types or tools.BOXES.VULN_AND_EXT_VULN
+   local hurt_boxes = tools.get_boxes(defender_boxes, box_types, nil, Pools.small:alloc())
    if #hurt_boxes == 0 then
       local anim, standing_data = framedata.find_frame_data_by_name(defender.char_str, "standing")
       if not standing_data then return 0 end
-      hurt_boxes = tools.get_boxes(standing_data.frames[1].boxes, box_types)
+      hurt_boxes = tools.get_boxes(standing_data.frames[1].boxes, box_types, nil, Pools.small:alloc())
    end
 
    local furthest = 0
    local relevant_box
 
    for _, hit_box in ipairs(attack_boxes) do
-      local hit_b = tools.format_box(hit_box)
+      local hit_b = tools.format_box(hit_box, nil, Pools.small:alloc())
       if math.abs(hit_b.left) > furthest then
          furthest = math.abs(hit_b.left)
          relevant_box = hit_b
@@ -70,7 +71,7 @@ local function get_box_connection_distance(attacker, attack_boxes, defender, def
    furthest = 0
    local closest = -1
    for __, hurt_box in ipairs(hurt_boxes) do
-      local hurt_b = tools.format_box(hurt_box)
+      local hurt_b = tools.format_box(hurt_box, nil, Pools.small:alloc())
       if not get_closest then
          if not (hurt_b.bottom + hurt_b.height < relevant_box.bottom or hurt_b.bottom > relevant_box.bottom +
              relevant_box.height) then

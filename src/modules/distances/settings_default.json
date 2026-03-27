@@ -1,0 +1,18 @@
+{
+  "is_enabled": false,
+  "display_coordinates": true,
+  "show_subpixel": false,
+  "line_1_enabled": true,
+  "line_1_height": -5,
+  "line_1_p1_reference_point": 1,
+  "line_1_p2_reference_point": 1,
+  "line_2_enabled": true,
+  "line_2_height": 60,
+  "line_2_p1_reference_point": 2,
+  "line_2_p2_reference_point": 2,
+  "line_3_enabled": true,
+  "line_3_height": 120,
+  "line_3_p1_reference_point": 2,
+  "line_3_p2_reference_point": 2,
+  "is_first_run": true
+}

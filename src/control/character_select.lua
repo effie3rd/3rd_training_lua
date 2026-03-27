@@ -358,8 +358,7 @@ local function update_character_select(input)
       inputs.unblock_input(2)
    end
 
-   local to_remove = {}
-   for k, cs in pairs(character_select_coroutines) do
+   for key, cs in pairs(character_select_coroutines) do
       local status = cs:status()
       if status == "suspended" then
          local r, error = cs:resume(input)
@@ -369,7 +368,7 @@ local function update_character_select(input)
             p2_forced_select = true
          end
       elseif status == "dead" then
-         to_remove[#to_remove + 1] = k
+         character_select_coroutines[key] = nil
          if cs.name == "force_p1" then
             p1_forced_select = false
          elseif cs.name == "force_p2" then
@@ -378,7 +377,6 @@ local function update_character_select(input)
       end
 
    end
-   for _, key in ipairs(to_remove) do character_select_coroutines[key] = nil end
 
    p1_character_select_state = memory.readbyte(memory_addresses.players[1].character_select_state)
    p2_character_select_state = memory.readbyte(memory_addresses.players[2].character_select_state)

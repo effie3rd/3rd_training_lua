@@ -1,4 +1,7 @@
 /src/challenge/hadou_matsuri.lua
+/src/ui/spectator_menu.lua
+spectator.lua
 rsync.sh
 .rsyncignore
+.stylua.toml
 .vscode/

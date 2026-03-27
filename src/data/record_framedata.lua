@@ -1962,7 +1962,7 @@ local function record_idle(player)
       print(name)
    end
 
-   if gamestate.is_in_match and debug_settings.recording_framedata then
+   if gamestate.is_in_match_playable and debug_settings.recording_framedata then
       if i_record_idle_states <= #record_idle_states then
          if not setup then
             write_memory.write_pos(player, 440, 0)
@@ -2056,7 +2056,7 @@ local name = ""
 
 local function record_movement(player)
    local dummy = player.other
-   if gamestate.is_in_match and debug_settings.recording_framedata then
+   if gamestate.is_in_match_playable and debug_settings.recording_framedata then
       if player.action == 0 or player.action == 7 then
          if rec.recording then
             if player.has_animation_just_changed then
@@ -2163,7 +2163,7 @@ local function record_movement(player)
             state = "queue_move"
          end
       elseif state == "wait_for_match_start" then
-         if gamestate.has_match_just_started then state = "queue_move" end
+         if gamestate.has_round_just_started then state = "queue_move" end
       end
 
       if not setup and state == "start" then
@@ -2386,16 +2386,16 @@ local i_wakeups = 1
 local previous_posture = 0
 local function record_wakeups(player)
    local dummy = player.other
-   if gamestate.is_in_match and debug_settings.recording_framedata then
+   if gamestate.is_in_match_playable and debug_settings.recording_framedata then
 
       if not setup and state == "start" then
          setup = true
          state = "ready"
       end
       if state == "wait_for_match_start" then
-         if gamestate.has_match_just_started then state = "queue_move" end
+         if gamestate.has_round_just_started then state = "queue_move" end
       elseif state == "ready" then
-         if gamestate.is_in_match then state = "queue_move" end
+         if gamestate.is_in_match_playable then state = "queue_move" end
       end
 
       if state == "queue_move" then
@@ -2476,7 +2476,7 @@ local i_landing_list = 1
 
 local function record_landing(player)
    local dummy = player.other
-   if gamestate.is_in_match and debug_settings.recording_framedata then
+   if gamestate.is_in_match_playable and debug_settings.recording_framedata then
       if player.action == 0 or player.action == 7 then
          if rec.recording then
             if player.has_animation_just_changed then
@@ -2521,7 +2521,7 @@ local function record_landing(player)
       if state == "ready" then
          if player.is_idle and dummy.is_idle and player.action == 0 then state = "queue_move" end
       elseif state == "wait_for_match_start" then
-         if gamestate.has_match_just_started then state = "queue_move" end
+         if gamestate.has_round_just_started then state = "queue_move" end
       end
 
       if not setup and state == "start" then
@@ -2798,7 +2798,7 @@ local function populate_moves(player)
 end
 
 local function record_attacks(player, projectiles)
-   if gamestate.is_in_match and debug_settings.recording_framedata then
+   if gamestate.is_in_match_playable and debug_settings.recording_framedata then
       local dummy = player.other
 
       local far_dist = character_specific[player.char_str].half_width + 80
@@ -2842,10 +2842,10 @@ local function record_attacks(player, projectiles)
       elseif state == "wait_for_projectiles" then
          if not has_projectiles(player) and dummy.is_idle then state = "update_hit_state" end
       elseif state == "wait_for_match_start" then
-         if gamestate.has_match_just_started then state = "queue_move" end
+         if gamestate.has_round_just_started then state = "queue_move" end
       end
 
-      if not setup and state == "start" and gamestate.is_in_match then
+      if not setup and state == "start" and gamestate.is_in_match_playable then
          setup = true
          populate_moves(player)
          state = "queue_move"

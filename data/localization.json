@@ -107,6 +107,10 @@
     "en": "HK",
     "jp_8": "大K"
   },
+  "hud_HJC": {
+    "en": "HJC",
+    "jp_8": "HJC"
+  },
   "menu_hit": {
     "en": "Hit",
     "jp": "ヒット"
@@ -231,21 +235,9 @@
     "en": "Q",
     "jp": "Q"
   },
-  "menu_p1_distance_reference_point": {
-    "en": "P1 Reference Point",
-    "jp": "P1基点"
-  },
-  "menu_p2_distance_reference_point": {
-    "en": "P2 Reference Point",
-    "jp": "P2基点"
-  },
-  "menu_distance_origin": {
-    "en": "origin",
-    "jp": "原点"
-  },
-  "menu_distance_hurtbox": {
-    "en": "hurtbox",
-    "jp": "食らい判定"
+  "menu_display": {
+    "en": "Display",
+    "jp": "表示"
   },
   "menu_display_charge": {
     "en": "Display Charge",
@@ -278,10 +270,6 @@
   "menu_display_air_time_player_coloring": {
     "en": "Player Coloring",
     "jp": "プレイヤー色付け"
-  },
-  "menu_mid_distance_height": {
-    "en": "Mid Distance Height",
-    "jp": "高さ"
   },
   "bonus_damage": {
     "en": "damage",
@@ -569,7 +557,7 @@
   },
   "hud_f": {
     "en": "f",
-    "jp_8": "フレ"
+    "jp": "フレ"
   },
   "hud_after": {
     "en": "after",
@@ -934,6 +922,146 @@
   "style_01": {
     "en": "01",
     "jp": "01"
+  },
+  "style_dungeon": {
+    "en": "dungeon",
+    "jp": "ダンジョン"
+  },
+  "style_skeleton": {
+    "en": "skeleton",
+    "jp": "スケルトン"
+  },
+   "style_beholder": {
+    "en": "beholder",
+    "jp": "ビホルダー"
+  },
+  "style_cthulu": {
+    "en": "cthulu",
+    "jp": "クトゥルフ"
+  },
+  "style_ghost": {
+    "en": "ghost",
+    "jp": "ゴースト"
+  },
+  "style_shroom": {
+    "en": "shroom",
+    "jp": "キノコ"
+  },
+  "style_totem": {
+    "en": "totem",
+    "jp": "トーテム"
+  },
+  "style_dream_tree": {
+    "en": "dream tree",
+    "jp": "夢の樹"
+  },
+  "style_neon": {
+    "en": "neon",
+    "jp": "ネオン"
+  },
+  "style_windbreaker": {
+    "en": "windbreaker",
+    "jp": "ウインドブレーカー"
+  },
+  "style_curiosity": {
+    "en": "curiosity",
+    "jp": "奇貨"
+  },
+  "style_shock": {
+    "en": "shock",
+    "jp": "衝撃"
+  },
+  "style_signal": {
+    "en": "signal",
+    "jp": "シグナル"
+  },
+  "style_berry_nebula": {
+    "en": "berry nebula",
+    "jp": "ベリー星雲"
+  },
+  "style_toxic": {
+    "en": "toxic",
+    "jp": "毒性"
+  },
+  "style_citrine": {
+    "en": "citrine",
+    "jp": "黄水晶"
+  },
+  "style_voltage": {
+    "en": "voltage",
+    "jp": "電圧"
+  },
+  "style_chill": {
+    "en": "chill",
+    "jp": "チル"
+  },
+  "style_neapolitan": {
+    "en": "neapolitan",
+    "jp": "ナポリタン"
+  },
+  "style_candy_castle": {
+    "en": "candy castle",
+    "jp": "お菓子の城"
+  },
+  "style_concord": {
+    "en": "concord",
+    "jp": "コンコルド"
+  },
+  "style_cyber_gum": {
+    "en": "cyber gum",
+    "jp": "サイバーガム"
+  },
+  "style_powder": {
+    "en": "powder",
+    "jp": "粉"
+  },
+  "style_fluffy": {
+    "en": "fluffy",
+    "jp": "ふわふわ"
+  },
+  "style_matsuri": {
+    "en": "matsuri",
+    "jp": "祭り"
+  },
+  "style_joker": {
+    "en": "joker",
+    "jp": "ジョーカー"
+  },
+  "style_koi": {
+    "en": "koi",
+    "jp": "鯉"
+  },
+  "style_pale_sunset": {
+    "en": "pale sunset",
+    "jp": "淡い夕焼け"
+  },
+  "style_mars": {
+    "en": "mars",
+    "jp": "マーズ"
+  },
+  "style_primary": {
+    "en": "primary",
+    "jp": "原色"
+  },
+  "style_sunbeam": {
+    "en": "sunbeam",
+    "jp": "サンビーム"
+  },
+  "style_orchid": {
+    "en": "orchid",
+    "jp": "蘭"
+  },
+  "style_sepia": {
+    "en": "sepia",
+    "jp": "セピア"
+  },
+  "style_night_sky": {
+    "en": "night sky",
+    "jp": "夜空"
+  },
+  "style_desert_night": {
+    "en": "desert night",
+    "jp": "砂漠の夜"
   },
   "hud_idle": {
     "en": "Idle",
@@ -1431,9 +1559,13 @@
     "en": "Speed Up Game Intro",
     "jp": "導入加速"
   },
+  "menu_fast_forward_character_select": {
+    "en": "Speed Up Character Select",
+    "jp": "キャラセレ加速"
+  },
   "menu_auto_parrying": {
     "en": "Auto Parrying",
-    "jp": " オートブロ"
+    "jp": "オートブロ"
   },
   "menu_universal_cancel": {
     "en": "Universal Cancel",
@@ -1482,18 +1614,6 @@
   "menu_save_frame_data": {
     "en": "Save Frame Data",
     "jp": "フレームデータセーブ"
-  },
-  "hud_character_select_line_1": {
-    "en": "[Alt+1] Character Select",
-    "jp_8": "「Alt+1」キャラクターセレクト"
-  },
-  "hud_character_select_line_2": {
-    "en": "[Alt+2] Gill   [Alt+3] Shin Gouki",
-    "jp_8": "「Alt+2」ギル 「Alt+3」真豪鬼"
-  },
-  "hud_character_select_line_3": {
-    "en": "[Hold Start] Random",
-    "jp_8": "「Start押しっぱなし」ランダム"
   },
   "charge_slash_elbow": {
     "en": "Slash Elbow",

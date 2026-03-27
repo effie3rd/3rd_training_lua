@@ -21,7 +21,7 @@ local footsies
 local module_name = "footsies"
 
 local is_enabled = true
-local is_active = false
+local is_mode_active = false
 
 local states = {
    SETUP_MATCH_START = 1,
@@ -150,10 +150,11 @@ local function start()
 end
 
 local function stop()
-   if is_active then
+   if is_mode_active then
       hud.clear_score_text()
       advanced_control.clear_all()
-      training.disable_dummy = {false, false}
+      training.disable_dummy[1] = false
+      training.disable_dummy[2] = false
       inputs.unblock_input(1)
       inputs.unblock_input(2)
       if gamestate.is_in_match then hud.indicate_player_controllers() end
@@ -167,13 +168,13 @@ local function reset() end
 local function toggle() end
 
 local function update()
-   if is_active then
+   if is_mode_active then
       if should_block then
          dummy_control.update_blocking(inputs.input, dummy, blocking_options)
       end
-      if gamestate.is_before_curtain or gamestate.is_in_match then
+      if gamestate.is_in_match_playable then
          inputs.block_input(dummy.id, "all")
-         if state == states.SETUP_MATCH_START and gamestate.has_match_just_started then
+         if state == states.SETUP_MATCH_START and gamestate.has_round_just_started then
          elseif state == states.SELECT_SETUP then
             set_players()
             apply_settings()
@@ -363,13 +364,14 @@ local function get_valid_control_schemes()
 end
 
 local function update_menu()
+   if not framedata.is_loaded then return end
    set_players()
    footsies_tables.init(dummy)
 
-   if is_active then
-      footsies_menu.start_item.name = "menu_stop"
+   if is_mode_active then
+      footsies_menu.start_item:update_name("menu_stop")
    else
-      footsies_menu.start_item.name = "menu_start"
+      footsies_menu.start_item:update_name("menu_start")
    end
    footsies_menu.walk_out_item.object = settings.modules.footsies.characters[footsies.dummy.char_str]
    footsies_menu.moves_item.object = settings.modules.footsies.characters[footsies.dummy.char_str].moves
@@ -409,7 +411,7 @@ end
 local function create_menu()
    footsies_menu = {}
    footsies_menu.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
-      if is_active then
+      if is_mode_active then
          modes.stop()
          update_menu()
          menu.update_active_training_page()
@@ -421,7 +423,7 @@ local function create_menu()
    footsies_menu.start_item.legend_text = "legend_lp_select"
    footsies_menu.start_item.is_enabled = function()
       if framedata.is_loaded then
-         if is_active then
+         if is_mode_active then
             return true
          else
             return footsies_menu.moves_item:at_least_one_selected()
@@ -435,7 +437,7 @@ local function create_menu()
 
    footsies_menu.character_select_item = menu_items.Button_Menu_Item:new("menu_character_select", function()
       character_select.start_character_select_sequence()
-      menu.open_after_match_start = true
+      menu.open_after_round_start = true
       modes.stop()
    end)
    footsies_menu.character_select_item.legend_text = "legend_lp_select"
@@ -490,8 +492,8 @@ footsies = {
 
 setmetatable(footsies, {
    __index = function(_, key)
-      if key == "is_active" then
-         return is_active
+      if key == "is_mode_active" then
+         return is_mode_active
       elseif key == "is_enabled" then
          return is_enabled
       elseif key == "player" then
@@ -502,8 +504,8 @@ setmetatable(footsies, {
    end,
 
    __newindex = function(_, key, value)
-      if key == "is_active" then
-         is_active = value
+      if key == "is_mode_active" then
+         is_mode_active = value
       elseif key == "is_enabled" then
          is_enabled = value
       else

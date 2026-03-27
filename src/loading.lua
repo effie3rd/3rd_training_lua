@@ -31,12 +31,12 @@ local function load_text_images(filepath)
    if map then
       for code, data in pairs(map) do
          result[code] = {}
-         for lang, path in pairs(map[code]) do
-            result[code][lang] = {}
+         for font, path in pairs(map[code]) do
+            result[code][font] = {}
             local png = gd.createFromPng(path)
-            result[code][lang].width = png:sizeX()
-            result[code][lang].height = png:sizeY()
-            result[code][lang][colors.text.default] = png:gdStr()
+            result[code][font].width = png:sizeX()
+            result[code][font].height = png:sizeY()
+            result[code][font][colors.text.default] = png:gdStr()
          end
       end
    end
@@ -188,7 +188,7 @@ end
 
 -- local settings = require("src.settings")
 -- local image_tables = require("src.ui.image_tables")
--- serialize(load_text_images("data/load_first.json"), settings.data_path .. settings.load_first_bin_file)
+-- serialize(load_text_images("data/load_first_map.json"), settings.data_path .. settings.load_first_bin_file)
 -- serialize(load_text_images(settings.data_path .. "image_map.json"), settings.data_path .. settings.text_bin_file)
 -- serialize(image_tables.build_images(), settings.data_path .. settings.images_bin_file)
 

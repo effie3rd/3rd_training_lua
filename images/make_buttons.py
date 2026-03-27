@@ -1,4 +1,5 @@
 import json
+import math
 import subprocess
 import os
 
@@ -43,7 +44,7 @@ prefix = "buttons_"
 
 buttons = ["LP","MP","HP","LK","MK","HK"]
 styles ={
-    "hyper_reflector" : ["#ec4899", "#ec4899", "#ec4899", "#9333ea", "#9333ea", "#9333ea"],
+    "hyper_reflector" : ["#ffffff", "#ef499c", "#9431ef", "#ffffff", "#ef499c", "#9431ef"],
     "rose" : ["#ff66b3", "#ff0080", "#890045", "#ff66b3", "#ff0080", "#890045"],
     "cherry" : ["#93121c", "#7f151d", "#5b0f14", "#93121c", "#7f151d", "#5b0f14"],
     "blueberry" : ["#2c678d", "#2e4b7d", "#2c244e", "#2c678d", "#2e4b7d", "#2c244e"],
@@ -91,7 +92,42 @@ styles ={
     "picnic" : ["#96bbdb", "#5e6ea0", "#3e3c65", "#fffbd9", "#e3d8bb", "#b1725b"],
     "gelato" : ["#5e4a71", "#ce9358", "#ac546a", "#ddcc99", "#7bac62", "#526d88"],
     "patrick" : ["#f38f80", "#a9d055", "#674892", "#f38f80", "#a9d055", "#674892"],
-    "01" : ["#8f5ec9", "#5348b0", "#a1db70", "#8f5ec9", "#5348b0", "#a1db70"]
+    "01" : ["#8f5ec9", "#5348b0", "#a1db70", "#8f5ec9", "#5348b0", "#a1db70"],
+    "dungeon" : ["#6adce2", "#ffeaac", "#bd3434", "#6adce2", "#ffeaac", "#bd3434"],
+    "skeleton" : ["#f4ecd2", "#c7facd", "#47b6e4", "#f4ecd2", "#c7facd", "#47b6e4"],
+    "beholder" : ["#fae4b9", "#cd2561", "#6f2583", "#fae4b9", "#cd2561", "#6f2583"],
+    "cthulu" : ["#ffe78a", "#207d6d", "#4c094e", "#ffe78a", "#207d6d", "#4c094e"],
+    "ghost" : ["#fff3f3", "#a17cf1", "#2c2c2a", "#fff3f3", "#a17cf1", "#2c2c2a"],
+    "shroom" : ["#f5f5cd", "#e97c44", "#97d355", "#f5f5cd", "#e97c44", "#97d355"],
+    "totem" : ["#adcb96", "#e86363", "#75285f", "#adcb96", "#e86363", "#75285f"],
+    "dream_tree" : ["#65f4f4", "#f779f3", "#7c45e8", "#65f4f4", "#f779f3", "#7c45e8"],
+    "neon" : ["#47f7b5", "#2646ed", "#ff5ef2", "#47f7b5", "#2646ed", "#ff5ef2"],
+    "windbreaker" : ["#fe6ecd", "#48cedf", "#5c017e", "#fe6ecd", "#48cedf", "#5c017e"],
+    "curiosity" : ["#05b9be", "#ff6973", "#5c519c", "#05b9be", "#ff6973", "#5c519c"],
+    "shock" : ["#d2fdf3", "#52f59a", "#7a39bb", "#d2fdf3", "#52f59a", "#7a39bb"],
+    "signal" : ["#f823c6", "#6b1cb4", "#160eec", "#f823c6", "#6b1cb4", "#160eec"],
+    "berry_nebula" : ["#6ceded", "#cc2aa7", "#6320b3", "#6ceded", "#cc2aa7", "#6320b3"],
+    "toxic" : ["#f5f518", "#6dfb62", "#1b1a1d", "#f5f518", "#6dfb62", "#1b1a1d"],
+    "citrine" : ["#fcf66a", "#51c34b", "#286cb3", "#fcf66a", "#51c34b", "#286cb3"],
+    "voltage" : ["#f5d689", "#eba254", "#2f729e", "#f5d689", "#eba254", "#2f729e"],
+    "chill" : ["#dde0bd", "#61b8ae", "#6971a5", "#dde0bd", "#61b8ae", "#6971a5"],
+    "neapolitan" : ["#ffefb8", "#ee6284", "#8c6253", "#ffefb8", "#ee6284", "#8c6253"],
+    "candy_castle" : ["#ee6284", "#6ce9c4", "#ffcb4d", "#ee6284", "#6ce9c4", "#ffcb4d"],
+    "concord" : ["#436cae", "#a63060", "#48457a", "#436cae", "#a63060", "#48457a"],
+    "cyber_gum" : ["#ffd8ba", "#0b7475", "#bc4a9b", "#ffd8ba", "#0b7475", "#bc4a9b"],
+    "powder" : ["#fcb1c8", "#f7ffae", "#96fbc7", "#fcb1c8", "#f7ffae", "#96fbc7"],
+    "fluffy" : ["#ffecf0", "#ffc4cf", "#c1c3f3", "#ffecf0", "#ffc4cf", "#c1c3f3"],
+    "matsuri" : ["#ff732e", "#c22f1f", "#392c42", "#ff732e", "#c22f1f", "#392c42"],
+    "joker" : ["#eddddd", "#ef2837", "#1b1a1d", "#eddddd", "#ef2837", "#1b1a1d"],
+    "koi" : ["#f3e8d8", "#f2533d", "#2f256b", "#f3e8d8", "#f2533d", "#2f256b"],
+    "pale_sunset" : ["#f7ba90", "#ee8695", "#4a89ad", "#f7ba90", "#ee8695", "#4a89ad"],
+    "mars" : ["#fadea5", "#fa6b4b", "#ba0502", "#fadea5", "#fa6b4b", "#ba0502"],
+    "primary" : ["#efc644", "#1faade", "#d31d24", "#efc644", "#1faade", "#d31d24"],
+    "sunbeam" : ["#ffebd8", "#ff7f00", "#4f67ff", "#ffebd8", "#ff7f00", "#4f67ff"],
+    "orchid" : ["#f6eee6", "#e384b2", "#625bad", "#f6eee6", "#e384b2", "#625bad"],
+    "sepia" : ["#e9f5da", "#efb594", "#625564", "#e9f5da", "#efb594", "#625564"],
+    "night_sky" : ["#5eafb9", "#2c63ba", "#562cb9", "#5eafb9", "#2c63ba", "#562cb9"],
+    "desert_night" : ["#ddb687", "#ac4c32", "#2c265c", "#ddb687", "#ac4c32", "#2c265c"],
     }
 
 def get_brightness(hexstr):
@@ -101,7 +137,7 @@ def get_brightness(hexstr):
         return 0
 
     r, g, b = int(hexstr[:2], 16), int(hexstr[2:4], 16), int(hexstr[4:], 16)
-    luma = 0.299 * r + 0.587 * g + 0.114 * b
+    luma = math.sqrt(0.299 * r**2 + 0.587 * g**2 + 0.114 * b**2)
     return luma
 
 
@@ -111,7 +147,7 @@ print('{' + ', '.join(f'"{x}"' for x in list(styles.keys())) + '}')
 for name, colors in styles.items():
     for i, color in enumerate(colors):
         text_color = "#000000"
-        if get_brightness(color) <= 40:
+        if get_brightness(color) <= 60:
             text_color = "#CCCCCC"
             print(name, get_brightness(color))
 

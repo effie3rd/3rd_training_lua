@@ -50,7 +50,7 @@ local move_names = {
    twelve = {"d_MK", "HK", "ndl_EXP"},
    urien = {"MK", "d_MK", "d_HK", "HP"},
    yang = {"d_MK", "f_MK", "HP", "d_HK", "tourouzan_LP", "tourouzan_MP", "tourouzan_HP", "tourouzan_EXP"},
-   yun = {"d_MP", "d_MK", "f_MP", "d_MK", "HP", "HK", "d_HK", "zesshou_LP", "tetsuzan_LP"}
+   yun = {"d_MP", "d_MK", "f_MP", "HP", "f_HP", "HK", "d_HK", "zesshou_LP", "tetsuzan_LP"}
 }
 
 local input_button_data = {
@@ -209,8 +209,8 @@ local function get_execute_distance(player, action_type)
       movement = character_specific[player.char_str].backward_walk_speed
    end
 
-   local box_types = {"vulnerability", "ext_vulnerability"}
-   if current_attack.data.type == "throw" then box_types = {"throwable"} end
+   local box_types = tools.BOXES.VULN_AND_EXT_VULN
+   if current_attack.data.type == "throw" then box_types = tools.BOXES.THROWABLE end
    return dist -
               utils.get_box_connection_distance(player, current_attack.data.hitboxes, player.other, player.other.boxes,
                                                 box_types, current_attack.data.should_hit) -

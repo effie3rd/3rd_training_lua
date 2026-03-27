@@ -4,29 +4,38 @@ local ipairs = ipairs
 local string = string
 local table = table
 local unpack = unpack
-
+local tools = require("src.tools")
+local Pools = tools.Pools
 --
 -- Pattern that can be used with the string library to match a single UTF-8 byte-sequence.
 -- This expects the string to contain valid UTF-8 data.
 --
 local charpattern = "[%z\1-\127\194-\244][\128-\191]*"
 
+local function clear_and_return(tbl, ...)
+   Pools.temp:free(tbl)
+   return ...
+end
+
 --
 -- Transforms indexes of a string to be positive.
 -- Negative indices will wrap around like the string library's functions.
 --
 local function strRelToAbs(str, ...)
-   local args = {...}
+   local args = Pools.temp:alloc()
 
-   for k, v in ipairs(args) do
+   for i = 1, select("#", ...) do
+      local v = select(i, ...)
       v = v > 0 and v or #str + v + 1
 
-      if v < 1 or v > #str then error("bad index to string (out of range)", 3) end
+      if v < 1 or v > #str then
+         error("bad index to string (out of range)", 3)
+      end
 
-      args[k] = v
+      args[i] = v
    end
 
-   return unpack(args)
+   return clear_and_return(args, unpack(args))
 end
 
 -- Decodes a single UTF-8 byte-sequence from a string, ensuring it is valid
@@ -38,10 +47,14 @@ local function decode(str, startPos)
    local b1 = str:byte(startPos, startPos)
 
    -- Single-byte sequence
-   if b1 < 0x80 then return startPos, startPos end
+   if b1 < 0x80 then
+      return startPos, startPos
+   end
 
    -- Validate first byte of multi-byte sequence
-   if b1 > 0xF4 or b1 < 0xC2 then return nil end
+   if b1 > 0xF4 or b1 < 0xC2 then
+      return nil
+   end
 
    -- Get 'supposed' amount of continuation bytes from primary byte
    local contByteCount = b1 >= 0xF0 and 3 or b1 >= 0xE0 and 2 or b1 >= 0xC0 and 1
@@ -49,7 +62,14 @@ local function decode(str, startPos)
    local endPos = startPos + contByteCount
 
    -- Validate our continuation bytes
-   for _, bX in ipairs {str:byte(startPos + 1, endPos)} do if bit.band(bX, 0xC0) ~= 0x80 then return nil end end
+   local bytes = Pools.temp:alloc()
+   bytes[1] = str:byte(startPos + 1, endPos)
+   for _, bX in ipairs(bytes) do
+      if bit.band(bX, 0xC0) ~= 0x80 then
+         return nil
+      end
+   end
+   Pools.temp:free(bytes)
 
    return startPos, endPos
 end
@@ -58,10 +78,12 @@ end
 -- Takes zero or more integers and returns a string containing the UTF-8 representation of each
 --
 local function char(...)
-   local buf = {}
-
-   for k, v in ipairs {...} do
-      if v < 0 or v > 0x10FFFF then error("bad argument #" .. k .. " to char (out of range)", 2) end
+   local buf = Pools.temp:alloc()
+   for i = 1, select("#", ...) do
+      local v = select(i, ...)
+      if v < 0 or v > 0x10FFFF then
+         error("bad argument #" .. i .. " to char (out of range)", 2)
+      end
 
       local b1, b2, b3, b4 = nil, nil, nil, nil
 
@@ -87,8 +109,9 @@ local function char(...)
          buf[#buf + 1] = string.char(b1, b2, b3, b4)
       end
    end
-
-   return table.concat(buf, "")
+   local result = table.concat(buf, "")
+   Pools.temp:free(buf)
+   return result
 end
 
 --
@@ -100,11 +123,15 @@ local function codes(str)
 
    return function()
       -- Have we hit the end of the iteration set?
-      if i > #str then return nil end
+      if i > #str then
+         return nil
+      end
 
       local startPos, endPos = decode(str, i)
 
-      if not startPos then error("invalid UTF-8 code", 2) end
+      if not startPos then
+         error("invalid UTF-8 code", 2)
+      end
 
       i = endPos + 1
 
@@ -119,12 +146,14 @@ end
 local function codepoint(str, startPos, endPos)
    startPos, endPos = strRelToAbs(str, startPos or 1, endPos or startPos or 1)
 
-   local ret = {}
+   local ret = Pools.temp:alloc()
 
    repeat
       local seqStartPos, seqEndPos = decode(str, startPos)
 
-      if not seqStartPos then error("invalid UTF-8 code", 2) end
+      if not seqStartPos then
+         error("invalid UTF-8 code", 2)
+      end
 
       -- Increment current string index
       startPos = seqEndPos + 1
@@ -151,7 +180,7 @@ local function codepoint(str, startPos, endPos)
       end
    until seqEndPos >= endPos
 
-   return unpack(ret)
+   return clear_and_return(ret, unpack(ret))
 end
 
 --
@@ -161,22 +190,24 @@ end
 local function len(str, startPos, endPos)
    startPos, endPos = strRelToAbs(str, startPos or 1, endPos or -1)
 
-   local len = 0
+   local l = 0
 
    repeat
       local seqStartPos, seqEndPos = decode(str, startPos)
 
       -- Hit an invalid sequence?
-      if not seqStartPos then return false, startPos end
+      if not seqStartPos then
+         return false, startPos
+      end
 
       -- Increment current string pointer
       startPos = seqEndPos + 1
 
       -- Increment length
-      len = len + 1
+      l = l + 1
    until seqEndPos >= endPos
 
-   return len
+   return l
 end
 
 --
@@ -192,13 +223,17 @@ local function offset(str, n, startPos)
       for i = startPos, 1, -1 do
          local seqStartPos, seqEndPos = decode(str, i)
 
-         if seqStartPos then return seqStartPos end
+         if seqStartPos then
+            return seqStartPos
+         end
       end
 
       return nil
    end
 
-   if not decode(str, startPos) then error("initial position is not beginning of a valid sequence", 2) end
+   if not decode(str, startPos) then
+      error("initial position is not beginning of a valid sequence", 2)
+   end
 
    local itStart, itEnd, itStep = nil, nil, nil
 
@@ -219,7 +254,9 @@ local function offset(str, n, startPos)
       if seqStartPos then
          n = n - 1
 
-         if n == 0 then return seqStartPos end
+         if n == 0 then
+            return seqStartPos
+         end
       end
    end
 
@@ -231,7 +268,7 @@ end
 -- Invalid sequences are replaced with U+FFFD.
 --
 local function force(str)
-   local buf = {}
+   local buf = Pools.temp:alloc()
 
    local curPos, endPos = 1, #str
 
@@ -247,7 +284,9 @@ local function force(str)
       end
    until curPos > endPos
 
-   return table.concat(buf, "")
+   local result = table.concat(buf, "")
+   Pools.temp:free(buf)
+   return result
 end
 
 return {
@@ -258,5 +297,5 @@ return {
    codepoint = codepoint,
    len = len,
    offset = offset,
-   force = force
+   force = force,
 }

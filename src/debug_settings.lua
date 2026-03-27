@@ -1,9 +1,9 @@
 local developer_mode = false
 local recording_framedata = false and developer_mode
 local debug_hitboxes = false and developer_mode
-local debug_collision = true and developer_mode
-local assert_enabled = developer_mode
-local log_enabled = developer_mode
+local debug_collision = false and developer_mode
+local assert_enabled = true and developer_mode
+local log_enabled = false and developer_mode
 local log_categories_display = {
    input = {history = false, print = false},
    projectiles = {history = false, print = false},
@@ -26,6 +26,8 @@ local show_debug_variables_display = true
 local show_memory_view_display = false
 
 local hitbox_display_frames = 1
+
+local use_keyboard_as_controller = true and developer_mode
 
 local debug = {
    player_debug_variables = player_debug_variables,
@@ -55,6 +57,8 @@ setmetatable(debug, {
          return show_memory_view_display
       elseif key == "hitbox_display_frames" then
          return hitbox_display_frames
+      elseif key == "use_keyboard_as_controller" then
+         return use_keyboard_as_controller
       end
    end,
 

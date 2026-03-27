@@ -16,8 +16,14 @@ addresses = {
       p1_locked = 0x020154C6,
       p2_locked = 0x020154C8,
       match_state = 0x020154A7,
+      match_state_ext = 0x020154A9,
+      match_state_ext2 = 0x20154AB,
+      match_state_countdown = 0x20154A4,
       menu_state = 0x201546B, -- 2 Character Select, 3 CPU Opponent Select Single Player, 4 In Match, 5 Grade, 7 Continue?, 9 CPU Opponent Select
       match_timer = 0x02011377,
+
+      new_challenge_text_showing = 0x02011386,
+      new_challenge_queued = 0x02011390,
 
       freeze_game = 0x0201136F,
       music_volume = 0x02078D06,
@@ -348,7 +354,7 @@ addresses = {
 }
 
 -- Misc
--- change_match_state = 0x2015439, --2 match start, 6 title, 8 ending, 9 car, 11 match start, 14 match start
+-- change_match_state = 0x2015439, -- 1 reset match, 2 match start, 6 title, 8 ending, 9 car, 11 match start, 14 match start
 
 local function update_addresses(player) player.addresses = addresses.players[player.id] end
 

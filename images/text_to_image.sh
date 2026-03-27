@@ -127,4 +127,24 @@ elif [ "$5" == "score" ]; then
             fill black         text  1,2  '$1' \
             fill '$4'          text  1,1  '$1' " \
         png32:"${FP}$2".png
+elif [ "$5" == "tiny" ]; then
+        WIDTH=$(magick -debug annotate  xc: -font Tiny-3x5 -pointsize 6 -interword-spacing 2 -gravity west \
+                -annotate 0 "$1" null: 2>&1 |\
+            grep Metrics: | grep -Po 'width: \K\d+')
+
+        WIDTH=$((WIDTH+1))
+
+        magick -size ${WIDTH}x8 xc:transparent +antialias \
+        -font Tiny-3x5 -pointsize 6 -interword-spacing 2 -gravity west \
+        -draw "fill black         text  2,1  '$1' \
+            fill black         text  2,0  '$1' \
+            fill black         text  2,-1  '$1' \
+            fill black         text  0,1  '$1' \
+            fill black         text  0,0  '$1' \
+            fill black         text  0,-1  '$1' \
+            fill black         text  1,1  '$1' \
+            fill black         text  1,0  '$1' \
+            fill black         text  1,-1 '$1' \
+            fill '$4'          text  1,0 '$1' " \
+        png32:"${FP}$2".png
 fi

@@ -1,14 +1,22 @@
 {
   "character_select_line_1": {
-    "en": "images/menu/character_select_line_1_en_5_white.png",
-    "jp": "images/menu/character_select_line_1_jp_8_white.png"
+    "en": "[Alt+1] Character Select",
+    "jp_8": "「Alt+1」キャラクターセレクト"
   },
   "character_select_line_2": {
-    "en": "images/menu/character_select_line_2_en_5_white.png",
-    "jp": "images/menu/character_select_line_2_jp_8_white.png"
+    "en": "[Alt+2] Gill   [Alt+3] Shin Gouki",
+    "jp_8": "「Alt+2」ギル 「Alt+3」真豪鬼"
   },
   "character_select_line_3": {
-    "en": "images/menu/character_select_line_3_en_5_white.png",
-    "jp": "images/menu/character_select_line_3_jp_8_white.png"
+    "en": "[Hold Start] Random",
+    "jp_8": "「Start押しっぱなし」ランダム"
+  },
+  "spectator_line_1": {
+    "en": "[1] Menu  [WASD/↑←↓→] Move",
+    "jp_8": "[1] メニュー  [WASD/↑←↓→] 移動"
+  },
+  "spectator_line_2": {
+    "en": "[U] Select  [I] Reset  [O/L] Scroll",
+    "jp_8": "[U] 選択  [I] リセット  [O/L] スクロール"
   }
 }

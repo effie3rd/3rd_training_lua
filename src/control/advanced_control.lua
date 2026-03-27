@@ -68,15 +68,17 @@ local function is_idle_timing(player, offset, precise)
             return false
          end
       else
-         local action_type = memory.readbyte(player.addresses.action_type)
+         if player.animation_frame <= 10 then return false end
+         -- local action_type = memory.readbyte(player.addresses.action_type)
          local frames_until_landing = prediction.predict_frames_before_landing(player)
-         local landing_anim = player.animation_frame_data and player.animation_frame_data.landing_anim or player.animation
+         local landing_anim = player.animation_frame_data and player.animation_frame_data.landing_anim or
+                                  player.animation
          local landing_frames_until_idle = prediction.get_frames_until_idle(player, landing_anim, 0, frames_prediction)
-         if action_type == 4 then -- normal
-            return player.remaining_freeze_frames + frames_until_landing + landing_frames_until_idle + 1 <= offset
-         else
-            return player.remaining_freeze_frames + frames_until_landing + landing_frames_until_idle <= offset
-         end
+         -- if action_type == 4 then -- normal
+         --    return player.remaining_freeze_frames + frames_until_landing + landing_frames_until_idle + 1 <= offset
+         -- else
+         return player.remaining_freeze_frames + frames_until_landing + landing_frames_until_idle + 1 <= offset
+         -- end
       end
    end
    if offset <= 0 then

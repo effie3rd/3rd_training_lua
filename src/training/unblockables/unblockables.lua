@@ -1,13 +1,20 @@
-local gamestate, framedata, inputs, character_select, hud, settings, frame_data, game_data, stage_data,
-      unblockables_tables, mem, advanced_control, write_memory, memory_addresses, training, modes, menu, menu_items,
-      tools
+local gamestate, framedata, inputs, character_select, hud, settings, frame_data, game_data, stage_data, unblockables_tables, mem, advanced_control, write_memory, memory_addresses, training, modes, menu, menu_items, tools
 
 local unblockables
 local module_name = "unblockables"
 
 local is_enabled = true
-local is_active = false
-local states = {SETUP_MATCH_START = 1, INIT = 2, SETUP = 3, WAIT_FOR_SETUP = 4, RUNNING = 5, END = 6, IDLE = 7}
+local is_mode_active = false
+local states = {
+   SETUP_MATCH_START = 1,
+   INIT = 2,
+   SETUP = 3,
+   WAIT_FOR_SETUP = 4,
+   RUNNING = 5,
+   END = 6,
+   IDLE = 7,
+   CHARACTER_SELECT = 8,
+}
 local state = states.INIT
 
 local match_start_state, followup_state
@@ -50,9 +57,11 @@ end
 
 local function set_players()
    dummy = training.get_controlled_player_by_name(module_name) --
-   or training.get_player_controlled_by_active_mode() --
-   or (training.get_controlled_player_by_name("player") and training.get_controlled_player_by_name("player").other) --
-   or gamestate.P2
+      or training.get_player_controlled_by_active_mode() --
+      or (
+         training.get_controlled_player_by_name("player") and training.get_controlled_player_by_name("player").other
+      ) --
+      or gamestate.P2
    player = dummy.other
 end
 
@@ -67,13 +76,21 @@ end
 
 local function continue_from_savestate()
    Call_After_Load_State(function()
-      if not is_active and gamestate.is_in_match then hud.indicate_player_controllers() end
+      if not is_mode_active and gamestate.is_in_match then
+         hud.indicate_player_controllers()
+      end
       set_players()
-      setup = unblockables_tables.get_setup(settings.modules.unblockables.savestate_opponent, --
-      settings.modules.unblockables.savestate_player, settings.modules.unblockables.savestate_setup)
+      setup = unblockables_tables.get_setup(
+         settings.modules.unblockables.savestate_opponent, --
+         settings.modules.unblockables.savestate_player,
+         settings.modules.unblockables.savestate_setup
+      )
 
-      followups = unblockables_tables.get_followups(settings.modules.unblockables.match_savestate_opponent,
-                                                    settings.modules.unblockables.match_savestate_player, setup.name)
+      followups = unblockables_tables.get_followups(
+         settings.modules.unblockables.match_savestate_opponent,
+         settings.modules.unblockables.match_savestate_player,
+         setup.name
+      )
 
       local setup_index = settings.modules.unblockables.setup
       local active_followups = {}
@@ -93,22 +110,29 @@ local function continue_from_savestate()
 end
 
 local function start()
-   if not is_active then
+   if not is_mode_active then
       ensure_training_settings()
       if settings.modules.unblockables.controllers then
-         training.set_controllers_by_name(settings.modules.unblockables.controllers[1],
-                                          settings.modules.unblockables.controllers[2])
+         training.set_controllers_by_name(
+            settings.modules.unblockables.controllers[1],
+            settings.modules.unblockables.controllers[2]
+         )
       else
          training.set_module_control_by_name(module_name)
       end
       set_players()
    end
-   setup = unblockables_tables.get_setup(settings.modules.unblockables.match_savestate_opponent,
-                                         settings.modules.unblockables.match_savestate_player,
-                                         settings.modules.unblockables.setup)
+   setup = unblockables_tables.get_setup(
+      settings.modules.unblockables.match_savestate_opponent,
+      settings.modules.unblockables.match_savestate_player,
+      settings.modules.unblockables.setup
+   )
 
-   followups = unblockables_tables.get_followups(settings.modules.unblockables.match_savestate_opponent,
-                                                 settings.modules.unblockables.match_savestate_player, setup.name)
+   followups = unblockables_tables.get_followups(
+      settings.modules.unblockables.match_savestate_opponent,
+      settings.modules.unblockables.match_savestate_player,
+      setup.name
+   )
    local setup_index = settings.modules.unblockables.setup
    local opponent = settings.modules.unblockables.match_savestate_opponent
    local char_str = settings.modules.unblockables.match_savestate_player
@@ -120,19 +144,25 @@ local function start()
          break
       end
    end
-   if not at_least_one_followup then return end
+   if not at_least_one_followup then
+      return
+   end
    advanced_control.clear_all()
    inputs.clear_input_sequence(dummy)
-   if settings.modules.unblockables.savestate_player == settings.modules.unblockables.match_savestate_player and
-       settings.modules.unblockables.savestate_opponent == settings.modules.unblockables.match_savestate_opponent and
-       settings.modules.unblockables.savestate_setup == settings.modules.unblockables.setup then
+   if
+      settings.modules.unblockables.savestate_player == settings.modules.unblockables.match_savestate_player
+      and settings.modules.unblockables.savestate_opponent == settings.modules.unblockables.match_savestate_opponent
+      and settings.modules.unblockables.savestate_setup == settings.modules.unblockables.setup
+   then
       continue_from_savestate()
    else
       inputs.block_input(1, "all")
       inputs.block_input(2, "all")
       Call_After_Load_State(function()
          set_players()
-         if not is_active and gamestate.is_in_match then hud.indicate_player_controllers() end
+         if not is_mode_active and gamestate.is_in_match then
+            hud.indicate_player_controllers()
+         end
       end)
       state = states.SETUP
       Load_State_Caller = module_name
@@ -141,28 +171,40 @@ local function start()
 end
 
 local function start_character_select()
+   state = states.CHARACTER_SELECT
    modes.set_active(unblockables)
-   state = states.SETUP_MATCH_START
    training.set_module_control_by_name(module_name)
    ensure_training_settings()
    local char_str = unblockables_tables.available_opponents[settings.modules.unblockables.opponent]
    local sa = 3
-   if char_str == "oro" then sa = 2 end
-   Call_After_Load_State(set_players)
-   Call_After_Load_State(character_select.force_select_character, {dummy.id, char_str, sa, "random"})
+   if char_str == "oro" then
+      sa = 2
+   end
+   Call_After_Load_State(function()
+      set_players()
+      character_select.force_select_character(dummy.id, char_str, sa, "random")
+      state = states.SETUP_MATCH_START
+   end)
    character_select.start_character_select_sequence()
 end
 
 local function check_for_new_setup()
-   if not is_active then return end
+   if not is_mode_active or state == states.CHARACTER_SELECT then
+      return
+   end
    local opponent_name = unblockables_tables.available_opponents[settings.modules.unblockables.opponent]
-   if opponent_name == settings.modules.unblockables.match_savestate_opponent and settings.modules.unblockables.setup ~=
-       settings.modules.unblockables.savestate_setup then start() end
+   if
+      opponent_name == settings.modules.unblockables.match_savestate_opponent
+      and settings.modules.unblockables.setup ~= settings.modules.unblockables.savestate_setup
+   then
+      start()
+   end
 end
 
 local function stop()
-   if is_active then
-      training.disable_dummy = {false, false}
+   if is_mode_active then
+      training.disable_dummy[1] = false
+      training.disable_dummy[2] = false
       inputs.unblock_input(1)
       inputs.unblock_input(2)
       advanced_control.clear_all()
@@ -170,15 +212,19 @@ local function stop()
    end
 end
 
-local function end_mode() if gamestate.is_in_match then hud.indicate_player_controllers() end end
+local function end_mode()
+   if gamestate.is_in_match then
+      hud.indicate_player_controllers()
+   end
+end
 
 local function reset() end
 
 local function toggle() end
 
 local function update()
-   if is_active then
-      if gamestate.is_in_match then
+   if is_mode_active then
+      if gamestate.is_in_match_playable then
          inputs.block_input(dummy.id, "all")
          if state == states.SETUP_MATCH_START or state == states.SETUP or state == states.WAIT_FOR_SETUP then
             inputs.block_input(1, "all")
@@ -188,9 +234,9 @@ local function update()
             hud.add_notification_text("hud_please_wait", 0, 42, "center_horizontal")
             hud.add_notification_text("hud_coin_restart_hold_start_stop", 0, 208, "center_horizontal")
          end
-         if state == states.SETUP_MATCH_START and gamestate.has_match_just_started then
+         if state == states.SETUP_MATCH_START and gamestate.has_round_just_started then
             savestate.save(match_start_state)
-            settings.modules.unblockables.controllers = {training.P1_controller.name, training.P2_controller.name}
+            settings.modules.unblockables.controllers = { training.P1_controller.name, training.P2_controller.name }
             settings.modules.unblockables.match_savestate_opponent = dummy.char_str
             settings.modules.unblockables.match_savestate_player = player.char_str
             settings.modules.unblockables.savestate_setup = -1
@@ -199,16 +245,23 @@ local function update()
             state = states.IDLE
          elseif state == states.SETUP then
             set_players()
-            training.disable_dummy = {true, true}
+            training.disable_dummy[1] = true
+            training.disable_dummy[2] = true
             settings.modules.unblockables.savestate_setup = -1
             settings.modules.unblockables.savestate_player = ""
             settings.modules.unblockables.savestate_opponent = ""
-            setup = unblockables_tables.get_setup(settings.modules.unblockables.match_savestate_opponent,
-                                                  settings.modules.unblockables.match_savestate_player,
-                                                  settings.modules.unblockables.setup)
+            setup = unblockables_tables.get_setup(
+               settings.modules.unblockables.match_savestate_opponent,
+               settings.modules.unblockables.match_savestate_player,
+               settings.modules.unblockables.setup
+            )
 
-            local player_offset = (frame_data.character_specific[player.char_str].pushbox_width +
-                                      frame_data.character_specific[dummy.char_str].pushbox_width) / 2 + 6
+            local player_offset = (
+               frame_data.character_specific[player.char_str].pushbox_width
+               + frame_data.character_specific[dummy.char_str].pushbox_width
+            )
+                  / 2
+               + 6
             local stage_left = stage_data.stages[gamestate.stage].left
             local stage_right = stage_data.stages[gamestate.stage].right
             local dummy_reset_x = stage_left + setup.reset_offset_x
@@ -262,20 +315,28 @@ local function update()
    end
 end
 
-local function process_gesture(gesture) if is_active then if gesture == "single_tap" then start() end end end
+local function process_gesture(gesture)
+   if is_mode_active then
+      if gesture == "single_tap" then
+         start()
+      end
+   end
+end
 
 local function get_valid_control_schemes()
    if dummy.id == 2 then
-      return {{"player", module_name}, {"dummy_control", module_name}}
+      return { { "player", module_name }, { "dummy_control", module_name } }
    else
-      return {{module_name, "player"}, {module_name, "dummy_control"}}
+      return { { module_name, "player" }, { module_name, "dummy_control" } }
    end
 end
 
 local function update_menu(opponent_changed)
    set_players()
 
-   if opponent_changed then settings.modules.unblockables.setup = 1 end
+   if opponent_changed then
+      settings.modules.unblockables.setup = 1
+   end
    local opponent_name = unblockables_tables.available_opponents[settings.modules.unblockables.opponent]
    local char_str = player.char_str
    local setup_menu_names = unblockables_tables.get_setups_menu_names(opponent_name, char_str)
@@ -286,29 +347,32 @@ local function update_menu(opponent_changed)
    local selected_setup = settings.modules.unblockables.setup
 
    local setup_name = unblockables_tables.get_setup(opponent_name, char_str, selected_setup).name
-   local followups = settings.modules.unblockables.followups[opponent_name][char_str][selected_setup]
+   local followups_object = settings.modules.unblockables.followups[opponent_name][char_str][selected_setup]
    local followup_menu_names = unblockables_tables.get_followups_menu_names(opponent_name, char_str, setup_name)
 
    unblockables_menu.setup_item.list = setup_menu_names
    unblockables_menu.setup_item:calc_dimensions()
 
-   unblockables_menu.followup_item.object = followups
+   unblockables_menu.followup_item.object = followups_object
    unblockables_menu.followup_item.list = followup_menu_names
    unblockables_menu.followup_item:calc_dimensions()
 
-   if is_active then
-      unblockables_menu.start_item.name = "menu_stop"
+   if is_mode_active then
+      unblockables_menu.start_item:update_name("menu_stop")
    else
       if settings.modules.unblockables.match_savestate_player ~= "" then
-         unblockables_menu.start_item.name = {
-            "menu_start", "  (", "menu_" .. settings.modules.unblockables.match_savestate_player, ")"
-         }
+         unblockables_menu.start_item:update_name({
+            "menu_start",
+            "  (",
+            "menu_" .. settings.modules.unblockables.match_savestate_player,
+            ")",
+         })
       else
-         unblockables_menu.start_item.name = "menu_start"
+         unblockables_menu.start_item:update_name("menu_start")
       end
    end
 
-   if is_active then
+   if is_mode_active then
       menu.main_menu.on_close = function()
          check_for_new_setup()
          menu.main_menu.on_close = nil
@@ -321,21 +385,38 @@ local function create_menu()
    local char_str = "alex"
    local setup_menu_names = unblockables_tables.get_setups_menu_names(opponent_name, char_str)
    local setup_name = unblockables_tables.get_setup(opponent_name, char_str, 1).name
-   local __followups = settings.modules.unblockables.followups[opponent_name][char_str][1]
+   local followups_object = settings.modules.unblockables.followups[opponent_name][char_str][1]
    local followup_menu_names = unblockables_tables.get_followups_menu_names(opponent_name, char_str, setup_name)
 
-   unblockables_menu.opponent_item = menu_items.List_Menu_Item:new("menu_opponent", settings.modules.unblockables,
-                                                                   "opponent", unblockables_tables.opponents_menu_names,
-                                                                   1, function() update_menu(true) end)
+   unblockables_menu.opponent_item = menu_items.List_Menu_Item:new(
+      "menu_opponent",
+      settings.modules.unblockables,
+      "opponent",
+      unblockables_tables.opponents_menu_names,
+      1,
+      function()
+         update_menu(true)
+      end
+   )
 
-   unblockables_menu.setup_item = menu_items.List_Menu_Item:new("menu_setup", settings.modules.unblockables, "setup",
-                                                                setup_menu_names, 1, update_menu)
+   unblockables_menu.setup_item = menu_items.List_Menu_Item:new(
+      "menu_setup",
+      settings.modules.unblockables,
+      "setup",
+      setup_menu_names,
+      1,
+      update_menu
+   )
 
-   unblockables_menu.followup_item = menu_items.Check_Box_Grid_Item:new("menu_followup", __followups,
-                                                                        followup_menu_names)
+   unblockables_menu.followup_item =
+      menu_items.Check_Box_Grid_Item:new("menu_followup", followups_object, followup_menu_names)
    unblockables_menu.followup_item.is_enabled = function()
-      if unblockables_tables.available_opponents[settings.modules.unblockables.opponent] ==
-          settings.modules.unblockables.match_savestate_opponent then return true end
+      if
+         unblockables_tables.available_opponents[settings.modules.unblockables.opponent]
+         == settings.modules.unblockables.match_savestate_opponent
+      then
+         return true
+      end
       return false
    end
    unblockables_menu.followup_item.is_unselectable = function()
@@ -343,7 +424,7 @@ local function create_menu()
    end
 
    unblockables_menu.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
-      if is_active then
+      if is_mode_active then
          modes.stop()
          update_menu()
          menu.update_active_training_page()
@@ -355,28 +436,34 @@ local function create_menu()
    unblockables_menu.start_item.legend_text = "legend_lp_select_coin_restart"
    unblockables_menu.start_item.is_enabled = function()
       if framedata.is_loaded then
-         if is_active then
+         if is_mode_active then
             return true
-         elseif unblockables_tables.available_opponents[settings.modules.unblockables.opponent] ==
-             settings.modules.unblockables.match_savestate_opponent and
-             unblockables_menu.followup_item:at_least_one_selected() then
+         elseif
+            unblockables_tables.available_opponents[settings.modules.unblockables.opponent]
+               == settings.modules.unblockables.match_savestate_opponent
+            and unblockables_menu.followup_item:at_least_one_selected()
+         then
             return true
          end
       end
       return false
    end
-   unblockables_menu.start_item.is_unselectable = function() return not unblockables_menu.start_item.is_enabled() end
+   unblockables_menu.start_item.is_unselectable = function()
+      return not unblockables_menu.start_item.is_enabled()
+   end
 
    unblockables_menu.character_select_item = menu_items.Button_Menu_Item:new("menu_character_select", function()
       menu.main_menu.on_close = nil
       start_character_select()
       unblockables_menu.followup_item.selected_col = 1
       unblockables_menu.followup_item.selected_row = 1
-      menu.open_after_match_start = true
+      menu.open_after_round_start = true
       menu.main_menu:select_item(unblockables_menu.followup_item)
    end)
    unblockables_menu.character_select_item.legend_text = "legend_lp_select"
-   unblockables_menu.character_select_item.is_enabled = function() return framedata.is_loaded end
+   unblockables_menu.character_select_item.is_enabled = function()
+      return framedata.is_loaded
+   end
    unblockables_menu.character_select_item.is_unselectable = function()
       return not unblockables_menu.character_select_item.is_enabled()
    end
@@ -384,9 +471,12 @@ local function create_menu()
    return {
       name = "training_" .. module_name,
       entries = {
-         unblockables_menu.start_item, unblockables_menu.character_select_item, unblockables_menu.opponent_item,
-         unblockables_menu.setup_item, unblockables_menu.followup_item
-      }
+         unblockables_menu.start_item,
+         unblockables_menu.character_select_item,
+         unblockables_menu.opponent_item,
+         unblockables_menu.setup_item,
+         unblockables_menu.followup_item,
+      },
    }
 end
 
@@ -404,13 +494,13 @@ unblockables = {
    start_character_select = start_character_select,
    check_for_new_setup = check_for_new_setup,
    get_valid_control_schemes = get_valid_control_schemes,
-   set_players = set_players
+   set_players = set_players,
 }
 
 setmetatable(unblockables, {
    __index = function(_, key)
-      if key == "is_active" then
-         return is_active
+      if key == "is_mode_active" then
+         return is_mode_active
       elseif key == "is_enabled" then
          return is_enabled
       elseif key == "player" then
@@ -421,14 +511,14 @@ setmetatable(unblockables, {
    end,
 
    __newindex = function(_, key, value)
-      if key == "is_active" then
-         is_active = value
+      if key == "is_mode_active" then
+         is_mode_active = value
       elseif key == "is_enabled" then
          is_enabled = value
       else
          rawset(unblockables, key, value)
       end
-   end
+   end,
 })
 
 return unblockables

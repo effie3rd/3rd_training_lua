@@ -1,0 +1,58 @@
+{
+   "distances_distances": {
+    "en": "distances",
+    "jp": "距離"
+  },
+   "hud_top_distances": {
+    "en": "Positioning",
+    "jp": "位置取り"
+  },
+  "distances_origin": {
+    "en": "origin",
+    "jp": "原点"
+  },
+  "distances_hurtbox": {
+    "en": "hurtbox",
+    "jp": "食らい判定"
+  },
+  "distances_throwbox": {
+    "en": "throwbox",
+    "jp": "投げれる判定"
+  },
+  "distances_pushbox": {
+    "en": "pushbox",
+    "jp": "押し判定"
+  },
+  "distances_position_players": {
+    "en": "Position Players",
+    "jp": "プレイヤー位置取り"
+  },
+  "distances_display_coordinates": {
+    "en": "Display Coordinates",
+    "jp": "座標表示"
+  },
+  "distances_show_subpixel": {
+    "en": "Show Subpixel",
+    "jp": "サブドット表示"
+  },
+  "distances_line": {
+    "en": "Line",
+    "jp": "線"
+  },
+  "distances_height": {
+    "en": "Height",
+    "jp": "高さ"
+  },
+  "distances_p1_reference_point": {
+    "en": "P1 Reference Point",
+    "jp": "P1基点"
+  },
+  "distances_p2_reference_point": {
+    "en": "P2 Reference Point",
+    "jp": "P2基点"
+  },
+  "distances_notification_text": {
+    "en": "Coin: Swap Player  LP: Mode  MP: Reset Subpixel",
+    "jp_8": "コイン：プレイヤー交換  小P：モード  中P：サブドットをリセット"
+  }
+}

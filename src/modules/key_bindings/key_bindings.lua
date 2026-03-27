@@ -4,6 +4,7 @@ local menu = require("src.ui.menu")
 local draw = require("src.ui.draw")
 local training = require("src.training")
 local character_select = require("src.control.character_select")
+local distances = require("src.modules.distances.distances")
 local inputs = require("src.control.inputs")
 local utils = require("src.data.utils")
 
@@ -14,7 +15,7 @@ local is_enabled = settings.modules.key_bindings.is_enabled
 
 local max_hotkeys = 9
 local command_names = {
-   "none", "character_select", "swap_controls", "play_player_recording", "play_dummy_recording",
+   "none", "character_select", "swap_controls", "player_positioning", "play_player_recording", "play_dummy_recording",
    "use_player_counterattack", "use_dummy_counterattack"
 }
 local command_menu_names = {}
@@ -40,6 +41,7 @@ local commands = {
    none = nil,
    character_select = character_select.start_character_select_sequence,
    swap_controls = menu.swap_controls,
+   player_positioning = distances.toggle_edit,
    play_player_recording = function() play_recording(training.player) end,
    play_dummy_recording = function() play_recording(training.dummy) end,
    use_player_counterattack = function() use_counterattack(training.player) end,
@@ -70,8 +72,8 @@ local function update_menu()
 end
 
 local function create_menu()
-   local function default_is_enabled() return menu.is_initialized and is_enabled end
-   local function default_is_unselectable() return not (menu.is_initialized or is_enabled) end
+   local function default_is_enabled() return is_enabled end
+   local function default_is_unselectable() return not is_enabled end
    for i = 1, max_hotkeys do
       local button_text = {"key_bindings_lua_hotkey", tostring(i), ": "}
       local button = menu_items.Popup_Selection_Menu_Item:new(button_text, menu.main_menu,

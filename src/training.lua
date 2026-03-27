@@ -70,7 +70,7 @@ local function reset_gauge_state()
 end
 
 local function update_gauges(player)
-   if not (gamestate.is_before_curtain or gamestate.is_in_match) or should_freeze_game then return end
+   if not gamestate.is_in_match or should_freeze_game then return end
    -- infinite
    if settings.training.life_mode == 5 then
       memory.writebyte(player.addresses.life, max_life)
@@ -304,6 +304,7 @@ local function update_counter_attack_data(player)
 end
 
 local function update_players()
+   if P1_controller == P2_controller then return end
    if P1_controller == PLAYER_CONTROLLER then
       training_player = gamestate.P1
    elseif P2_controller == PLAYER_CONTROLLER then
@@ -341,6 +342,7 @@ local function update_players()
       recordings_player = training_dummy
    end
    if not training_player then training_player = training_dummy.other end
+
    update_counter_attack_data(training_dummy)
 end
 
@@ -452,7 +454,7 @@ local function check_controller_validity()
 end
 
 local function update_fast_forward()
-   if gamestate.has_match_just_started then
+   if gamestate.has_round_just_started then
       emu.speedmode("normal")
    elseif gamestate.is_in_character_select then
       if character_select.is_selection_complete() then
@@ -460,7 +462,7 @@ local function update_fast_forward()
       else
          emu.speedmode("normal")
       end
-   elseif gamestate.has_match_just_ended then
+   elseif gamestate.has_round_just_ended then
       emu.speedmode("turbo")
    end
 end

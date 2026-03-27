@@ -77,9 +77,7 @@ local function write_acceleration(obj, x, y)
    write_acceleration_y(obj, y)
 end
 
-local function write_flip_x(obj, v)
-   memory.writebyte(obj.base + 0x0A, v)
-end
+local function write_flip_x(obj, v) memory.writebyte(obj.base + 0x0A, v) end
 
 local function write_life(player, v)
    memory.writebyte(player.addresses.life)
@@ -148,13 +146,9 @@ local function get_fix_screen_pos(p1, p2, stage)
    return math.min(math.max(mid, min_x), max_x), math.max(math.max(p1.pos_y - 40, 0), 0)
 end
 
-local function set_screen_pos_x(x)
-   memory.writeword(memory_addresses.global.screen_pos_x, x)
-end
+local function set_screen_pos_x(x) memory.writeword(memory_addresses.global.screen_pos_x, x) end
 
-local function set_screen_pos_y(y)
-   memory.writeword(memory_addresses.global.screen_pos_y, y)
-end
+local function set_screen_pos_y(y) memory.writeword(memory_addresses.global.screen_pos_y, y) end
 
 local function set_screen_pos(x, y)
    memory.writeword(memory_addresses.global.screen_pos_x, x)
@@ -229,7 +223,10 @@ end
 
 local function set_infinite_time(yes) if yes then memory.writebyte(memory_addresses.global.match_timer, 100) end end
 
-local function set_music_volume(num) memory.writebyte(memory_addresses.global.music_volume, num * 8) end
+local function set_music_volume(num)
+   local value = math.min(math.floor(num / 100 * 0x80), 0xFF)
+   memory.writebyte(memory_addresses.global.music_volume, value)
+end
 
 return {
    write_pos_x = write_pos_x,

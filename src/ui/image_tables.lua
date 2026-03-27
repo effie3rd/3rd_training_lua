@@ -9,114 +9,80 @@ local controller_styles = {
    "champagne", "matcha", "lime", "retro_scifi", "watermelon", "macaron", "famicom", "van_gogh", "munch", "hokusai",
    "monet", "dali", "classic", "2077", "aurora", "ursa_major", "pillars_of_creation", "sunset", "fly_by_night", "lake",
    "traffic_lights", "warm_rainbow", "soft_rainbow", "pearl", "beach", "nether", "blue_planet", "poison", "moon",
-   "blood_moon", "volcano", "desert_sun", "canyon", "acid", "dawn", "picnic", "gelato", "patrick", "01"
+   "blood_moon", "volcano", "desert_sun", "canyon", "acid", "dawn", "picnic", "gelato", "patrick", "01", "dungeon",
+   "skeleton", "beholder", "cthulu", "ghost", "shroom", "totem", "dream_tree", "neon", "windbreaker", "curiosity",
+   "shock", "signal", "berry_nebula", "toxic", "citrine", "voltage", "chill", "neapolitan", "candy_castle", "concord",
+   "cyber_gum", "powder", "fluffy", "matsuri", "joker", "koi", "pale_sunset", "mars", "primary", "sunbeam", "orchid",
+   "sepia", "night_sky", "desert_night"
 }
+
 local controller_style_menu_names = {}
 for i, name in ipairs(controller_styles) do
    controller_style_menu_names[#controller_style_menu_names + 1] = "style_" .. name
 end
 
 local function build_images()
+   local colors = require("src.ui.colors")
+
    -- big is for  controller display
    -- small is for input history
-   local result = {
-      img_1_dir_big = gd.createFromPng("images/controller/1_dir_b.png"):gdStr(),
-      img_2_dir_big = gd.createFromPng("images/controller/2_dir_b.png"):gdStr(),
-      img_3_dir_big = gd.createFromPng("images/controller/3_dir_b.png"):gdStr(),
-      img_4_dir_big = gd.createFromPng("images/controller/4_dir_b.png"):gdStr(),
-      img_5_dir_big = gd.createFromPng("images/controller/5_dir_b.png"):gdStr(),
-      img_6_dir_big = gd.createFromPng("images/controller/6_dir_b.png"):gdStr(),
-      img_7_dir_big = gd.createFromPng("images/controller/7_dir_b.png"):gdStr(),
-      img_8_dir_big = gd.createFromPng("images/controller/8_dir_b.png"):gdStr(),
-      img_9_dir_big = gd.createFromPng("images/controller/9_dir_b.png"):gdStr(),
-      img_no_button_big = gd.createFromPng("images/controller/no_button_b.png"):gdStr(),
-
-      img_1_dir_small = gd.createFromPng("images/controller/1_dir_s.png"):gdStr(),
-      img_2_dir_small = gd.createFromPng("images/controller/2_dir_s.png"):gdStr(),
-      img_3_dir_small = gd.createFromPng("images/controller/3_dir_s.png"):gdStr(),
-      img_4_dir_small = gd.createFromPng("images/controller/4_dir_s.png"):gdStr(),
-      img_5_dir_small = gd.createFromPng("images/controller/5_dir_s.png"):gdStr(),
-      img_6_dir_small = gd.createFromPng("images/controller/6_dir_s.png"):gdStr(),
-      img_7_dir_small = gd.createFromPng("images/controller/7_dir_s.png"):gdStr(),
-      img_8_dir_small = gd.createFromPng("images/controller/8_dir_s.png"):gdStr(),
-      img_9_dir_small = gd.createFromPng("images/controller/9_dir_s.png"):gdStr(),
-
-      dir_2_inactive = gd.createFromPng("images/controller/2_dir_s_inactive.png"):gdStr(),
-      dir_4_inactive = gd.createFromPng("images/controller/4_dir_s_inactive.png"):gdStr(),
-      dir_6_inactive = gd.createFromPng("images/controller/6_dir_s_inactive.png"):gdStr(),
-      dir_8_inactive = gd.createFromPng("images/controller/8_dir_s_inactive.png"):gdStr(),
-
-      img_button_small = {},
-      img_button_big = {}
+   local image_files = {
+      "images/controller/1_dir_b.png", "images/controller/2_dir_b.png", "images/controller/3_dir_b.png",
+      "images/controller/4_dir_b.png", "images/controller/5_dir_b.png", "images/controller/6_dir_b.png",
+      "images/controller/7_dir_b.png", "images/controller/8_dir_b.png", "images/controller/9_dir_b.png",
+      "images/controller/1_dir_s.png", "images/controller/2_dir_s.png", "images/controller/3_dir_s.png",
+      "images/controller/4_dir_s.png", "images/controller/5_dir_s.png", "images/controller/6_dir_s.png",
+      "images/controller/7_dir_s.png", "images/controller/8_dir_s.png", "images/controller/9_dir_s.png",
+      "images/controller/2_dir_s_inactive.png", "images/controller/4_dir_s_inactive.png",
+      "images/controller/6_dir_s_inactive.png", "images/controller/8_dir_s_inactive.png",
+      "images/controller/no_button_b.png", "images/controller/hold.png", "images/controller/maru.png",
+      "images/controller/square_hollow.png", "images/controller/square_filled.png", "images/controller/tilda.png",
+      "images/controller/scroll_up.png", "images/controller/scroll_down.png", "images/controller/tri_arrow_down.png",
+      "images/controller/dot.png", "images/controller/shield.png"
    }
+   local result = {}
 
-   result.img_dir_big = {
-      result.img_1_dir_big, result.img_2_dir_big, result.img_3_dir_big, result.img_4_dir_big, result.img_5_dir_big,
-      result.img_6_dir_big, result.img_7_dir_big, result.img_8_dir_big, result.img_9_dir_big
-   }
-   result.img_dir_small = {
-      result.img_1_dir_small, result.img_2_dir_small, result.img_3_dir_small, result.img_4_dir_small,
-      result.img_5_dir_small, result.img_6_dir_small, result.img_7_dir_small, result.img_8_dir_small,
-      result.img_9_dir_small
-   }
-   result.img_dir_inactive = {
-      [2] = result.dir_2_inactive,
-      [4] = result.dir_4_inactive,
-      [6] = result.dir_6_inactive,
-      [8] = result.dir_8_inactive
+   for _, file_path in ipairs(image_files) do
+      local file_name = file_path:match("([^/]+)%.png$")
+      local png = gd.createFromPng(file_path)
+      result["img_" .. file_name] = {width = png:sizeX(), height = png:sizeY(), [colors.white] = png:gdStr()}
+   end
+
+   local button_prefixes = {
+      "LP_s", "MP_s", "HP_s", "LK_s", "MK_s", "HK_s", "LP_b", "MP_b", "HP_b", "LK_b", "MK_b", "HK_b"
    }
 
    for i = 1, #controller_styles do
-      local name = controller_styles[i]
-      result.img_button_small[name] = {}
-      result.img_button_small[name][#result.img_button_small[name] + 1] =
-          gd.createFromPng("images/controller/LP_s_" .. name .. ".png"):gdStr()
-      result.img_button_small[name][#result.img_button_small[name] + 1] =
-          gd.createFromPng("images/controller/MP_s_" .. name .. ".png"):gdStr()
-      result.img_button_small[name][#result.img_button_small[name] + 1] =
-          gd.createFromPng("images/controller/HP_s_" .. name .. ".png"):gdStr()
-      result.img_button_small[name][#result.img_button_small[name] + 1] =
-          gd.createFromPng("images/controller/LK_s_" .. name .. ".png"):gdStr()
-      result.img_button_small[name][#result.img_button_small[name] + 1] =
-          gd.createFromPng("images/controller/MK_s_" .. name .. ".png"):gdStr()
-      result.img_button_small[name][#result.img_button_small[name] + 1] =
-          gd.createFromPng("images/controller/HK_s_" .. name .. ".png"):gdStr()
-      result.img_button_big[name] = {}
-      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng(
-                                                                          "images/controller/LP_b_" .. name .. ".png"):gdStr()
-      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng(
-                                                                          "images/controller/MP_b_" .. name .. ".png"):gdStr()
-      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng(
-                                                                          "images/controller/HP_b_" .. name .. ".png"):gdStr()
-      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng(
-                                                                          "images/controller/LK_b_" .. name .. ".png"):gdStr()
-      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng(
-                                                                          "images/controller/MK_b_" .. name .. ".png"):gdStr()
-      result.img_button_big[name][#result.img_button_big[name] + 1] = gd.createFromPng(
-                                                                          "images/controller/HK_b_" .. name .. ".png"):gdStr()
+      local style_name = controller_styles[i]
+      for _, prefix in ipairs(button_prefixes) do
+         local file_path = "images/controller/" .. prefix .. "_" .. style_name .. ".png"
+         local name = "img_" .. prefix
+         local png = gd.createFromPng(file_path)
+         if not result[name] then result[name] = {} end
+         result[name].width = png:sizeX()
+         result[name].height = png:sizeY()
+         result[name][style_name] = png:gdStr()
+      end
+      result.img_no_button_b[style_name] = result.img_no_button_b[colors.white]
    end
-
-   result.img_hold = gd.createFromPng("images/controller/hold_s.png"):gdStr()
-   result.img_maru = gd.createFromPng("images/controller/maru_s.png"):gdStr()
-   result.img_square_hollow = gd.createFromPng("images/controller/square_hollow_s.png"):gdStr()
-   result.img_square_filled = gd.createFromPng("images/controller/square_filled_s.png"):gdStr()
-   result.img_tilda = gd.createFromPng("images/controller/tilda_s.png"):gdStr()
-   result.img_scroll_up = gd.createFromPng("images/menu/menu_scroll_up.png"):gdStr()
-   result.img_scroll_down = gd.createFromPng("images/menu/menu_scroll_down.png"):gdStr()
-   result.img_tri_down = gd.createFromPng("images/controller/tri_arrow_down.png"):gdStr()
-   result.img_dot = gd.createFromPng("images/controller/dot.png"):gdStr()
 
    return result
 end
 
-local check_box_width = 9
-local check_box_height = 9
-local scroll_arrow_width = 7
-local scroll_arrow_height = 5
-local dir_small_width = 9
-local dir_small_height = 9
-local tri_arrow_width = 9
-local tri_arrow_height = 6
+local img_str_dir_big = {
+   "img_1_dir_b", "img_2_dir_b", "img_3_dir_b", "img_4_dir_b", "img_5_dir_b", "img_6_dir_b", "img_7_dir_b",
+   "img_8_dir_b", "img_9_dir_b"
+}
+local img_str_dir_small = {
+   "img_1_dir_s", "img_2_dir_s", "img_3_dir_s", "img_4_dir_s", "img_5_dir_s", "img_6_dir_s", "img_7_dir_s",
+   "img_8_dir_s", "img_9_dir_s"
+}
+local img_str_dir_inactive = {
+   [2] = "img_2_dir_s_inactive",
+   [4] = "img_4_dir_s_inactive",
+   [6] = "img_6_dir_s_inactive",
+   [8] = "img_8_dir_s_inactive"
+}
 
 local image_tables = {
    images = images,
@@ -124,14 +90,9 @@ local image_tables = {
    build_images = build_images,
    controller_styles = controller_styles,
    controller_style_menu_names = controller_style_menu_names,
-   check_box_width = check_box_width,
-   check_box_height = check_box_height,
-   scroll_arrow_width = scroll_arrow_width,
-   scroll_arrow_height = scroll_arrow_height,
-   dir_small_width = dir_small_width,
-   dir_small_height = dir_small_height,
-   tri_arrow_width = tri_arrow_width,
-   tri_arrow_height = tri_arrow_height
+   img_str_dir_big = img_str_dir_big,
+   img_str_dir_small = img_str_dir_small,
+   img_str_dir_inactive = img_str_dir_inactive
 }
 
 setmetatable(image_tables, {

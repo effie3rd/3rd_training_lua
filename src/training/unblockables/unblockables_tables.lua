@@ -119,7 +119,7 @@ local function urien_midscreen_setup_ex_head_sphere(player)
          condition = function() return delay:is_complete() end,
          action = function() inputs.queue_input_sequence(player, mp_aegis) end
       }, {
-         condition = function() return is_idle_timing(player, #mp) end,
+         condition = function() return is_idle_timing(player, #mp, true) end,
          action = function() queue_input_sequence_and_wait(player, mp) end
       }, {
          condition = function() return player.has_just_hit end,
@@ -179,34 +179,41 @@ local function urien_corner_setup_tackle_mk_mk_mk_hk_q_remy(player)
          condition = nil,
          action = function()
             queue_input_sequence_and_wait(player, d_HP, 0, true)
-            Queue_Command(gamestate.frame_number + 1,
-                          function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
+            Queue_Command(gamestate.frame_number + 1, function()
+               inputs.queue_input_sequence(player, charge_tackle, 0, true)
+               charge:begin(charge_time)
+            end)
          end
       }, {
          condition = function() return is_idle_timing(player, #mk_tackle, false) and charge:is_complete() end,
          action = function()
-            queue_input_sequence_and_wait(player, mk_tackle, 0, true)
+            inputs.queue_input_sequence(player, mk_tackle, 0, true)
             Queue_Command(gamestate.frame_number + 1,
                           function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
          end
+      }, {
+         condition = function() return player.animation_frame_data.name == "chariot_tackle_MK" end,
+         action = function() charge:begin(charge_time) end
       }, {
          condition = function() return is_idle_timing(player, #mk_tackle, false) and charge:is_complete() end,
          action = function()
-            queue_input_sequence_and_wait(player, mk_tackle, 0, true)
+            inputs.queue_input_sequence(player, mk_tackle, 0, true)
             Queue_Command(gamestate.frame_number + 1,
                           function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
          end
+      }, {
+         condition = function() return player.animation_frame_data.name == "chariot_tackle_MK" end,
+         action = function() charge:begin(charge_time) end
       }, {
          condition = function() return is_idle_timing(player, #mk_tackle, false) and charge:is_complete() end,
          action = function()
-            queue_input_sequence_and_wait(player, mk_tackle, 0, true)
+            inputs.queue_input_sequence(player, mk_tackle, 0, true)
             Queue_Command(gamestate.frame_number + 1,
                           function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
          end
+      }, {
+         condition = function() return player.animation_frame_data.name == "chariot_tackle_MK" end,
+         action = function() charge:begin(charge_time) end
       }, {
          condition = function() return is_idle_timing(player, #hk_tackle, false) and charge:is_complete() end,
          action = function() queue_input_sequence_and_wait(player, hk_tackle, 0, true) end
@@ -243,34 +250,41 @@ local function urien_corner_setup_tackle_mk_mk_mk_hk(player)
          condition = nil,
          action = function()
             queue_input_sequence_and_wait(player, d_HP, 0, true)
-            Queue_Command(gamestate.frame_number + 1,
-                          function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
+            Queue_Command(gamestate.frame_number + 1, function()
+               inputs.queue_input_sequence(player, charge_tackle, 0, true)
+               charge:begin(charge_time)
+            end)
          end
       }, {
          condition = function() return is_idle_timing(player, #mk_tackle, false) and charge:is_complete() end,
          action = function()
-            queue_input_sequence_and_wait(player, mk_tackle, 0, true)
+            inputs.queue_input_sequence(player, mk_tackle, 0, true)
             Queue_Command(gamestate.frame_number + 1,
                           function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
          end
+      }, {
+         condition = function() return player.animation_frame_data.name == "chariot_tackle_MK" end,
+         action = function() charge:begin(charge_time) end
       }, {
          condition = function() return is_idle_timing(player, #mk_tackle, false) and charge:is_complete() end,
          action = function()
-            queue_input_sequence_and_wait(player, mk_tackle, 0, true)
+            inputs.queue_input_sequence(player, mk_tackle, 0, true)
             Queue_Command(gamestate.frame_number + 1,
                           function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
          end
+      }, {
+         condition = function() return player.animation_frame_data.name == "chariot_tackle_MK" end,
+         action = function() charge:begin(charge_time) end
       }, {
          condition = function() return is_idle_timing(player, #mk_tackle, false) and charge:is_complete() end,
          action = function()
-            queue_input_sequence_and_wait(player, mk_tackle, 0, true)
+            inputs.queue_input_sequence(player, mk_tackle, 0, true)
             Queue_Command(gamestate.frame_number + 1,
                           function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
          end
+      }, {
+         condition = function() return player.animation_frame_data.name == "chariot_tackle_MK" end,
+         action = function() charge:begin(charge_time) end
       }, {
          condition = function() return is_idle_timing(player, #hk_tackle, false) and charge:is_complete() end,
          action = function() queue_input_sequence_and_wait(player, hk_tackle, 0, true) end
@@ -330,37 +344,44 @@ local function urien_corner_setup_tackle_mk_mk_mk_mk(player)
          condition = nil,
          action = function()
             queue_input_sequence_and_wait(player, d_HP, 0, true)
-            Queue_Command(gamestate.frame_number + 1,
-                          function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
+            Queue_Command(gamestate.frame_number + 1, function()
+               inputs.queue_input_sequence(player, charge_tackle, 0, true)
+               charge:begin(charge_time)
+            end)
          end
       }, {
          condition = function() return is_idle_timing(player, #mk_tackle, false) and charge:is_complete() end,
          action = function()
-            queue_input_sequence_and_wait(player, mk_tackle, 0, true)
+            inputs.queue_input_sequence(player, mk_tackle, 0, true)
             Queue_Command(gamestate.frame_number + 1,
                           function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
          end
+      }, {
+         condition = function() return player.animation_frame_data.name == "chariot_tackle_MK" end,
+         action = function() charge:begin(charge_time) end
       }, {
          condition = function() return is_idle_timing(player, #mk_tackle, false) and charge:is_complete() end,
          action = function()
-            queue_input_sequence_and_wait(player, mk_tackle, 0, true)
+            inputs.queue_input_sequence(player, mk_tackle, 0, true)
             Queue_Command(gamestate.frame_number + 1,
                           function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
          end
+      }, {
+         condition = function() return player.animation_frame_data.name == "chariot_tackle_MK" end,
+         action = function() charge:begin(charge_time) end
       }, {
          condition = function() return is_idle_timing(player, #mk_tackle, false) and charge:is_complete() end,
          action = function()
-            queue_input_sequence_and_wait(player, mk_tackle, 0, true)
+            inputs.queue_input_sequence(player, mk_tackle, 0, true)
             Queue_Command(gamestate.frame_number + 1,
                           function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
          end
       }, {
+         condition = function() return player.animation_frame_data.name == "chariot_tackle_MK" end,
+         action = function() charge:begin(charge_time) end
+      }, {
          condition = function() return is_idle_timing(player, #mk_tackle, false) and charge:is_complete() end,
-         action = function() queue_input_sequence_and_wait(player, mk_tackle, 0, true) end
+         action = function() inputs.queue_input_sequence(player, mk_tackle, 0, true) end
       }, {
          condition = function() return aegis_delay:delay_after_hit(player) end,
          action = function() queue_input_sequence_and_wait(player, LP_aegis) end
@@ -413,7 +434,7 @@ local function urien_corner_setup_alex(player)
             queue_input_sequence_and_wait(player, d_HP, 0, true)
             Queue_Command(gamestate.frame_number + 1,
                           function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
+            charge:begin(charge_time)
          end
       }, {
          condition = function() return is_idle_timing(player, #lk_tackle, false) and charge:is_complete() end,
@@ -424,7 +445,7 @@ local function urien_corner_setup_alex(player)
             queue_input_sequence_and_wait(player, LP_sphere)
             Queue_Command(gamestate.frame_number + #LP_sphere,
                           function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
+            charge:begin(charge_time)
          end
       }, {
          condition = function() return is_idle_timing(player, #lk_tackle, false) and charge:is_complete() end,
@@ -432,7 +453,7 @@ local function urien_corner_setup_alex(player)
             queue_input_sequence_and_wait(player, lk_tackle)
             Queue_Command(gamestate.frame_number + 1,
                           function() inputs.queue_input_sequence(player, charge_tackle, 0, true) end)
-            charge:begin(charge_time + 1)
+            charge:begin(charge_time)
          end
       }, {
          condition = function() return aegis_delay:delay_after_hit(player) end,
@@ -459,13 +480,13 @@ local function urien_midscreen_setup_anago(player)
    }
    local walk_forward = {
       {"forward"}, {"forward"}, {"forward"}, {"forward"}, {"forward"}, {"forward"}, {"forward"}, {"forward"},
-      {"forward"}
+      {"forward"}, {"forward"}, {"forward"}, {"forward"}
    }
 
    local aegis_delay = Delay:new(6)
    local walk_delay = Delay:new(10)
 
-   if player.other.char_str == "hugo" then walk_delay:reset(11) end
+   if player.other.char_str == "hugo" then walk_delay:reset(12) end
 
    local commands = {
       {condition = nil, action = function() queue_input_sequence_and_wait(player, d_HP, 0, true) end}, {
@@ -475,7 +496,9 @@ local function urien_midscreen_setup_anago(player)
          condition = function() return is_idle_timing(player, 1, true) end,
          action = function() inputs.queue_input_sequence(player, walk_forward) end
       }, {
-         condition = function() return walk_delay:is_complete() end,
+         condition = function()
+            return walk_delay:is_complete()
+         end,
          action = function() queue_input_sequence_and_wait(player, d_HP, 0, true) end
       }, {
          condition = function() return aegis_delay:delay_after_hit(player) end,
@@ -1085,7 +1108,7 @@ local function urien_corner_tackle_mk_mk_mk_hk_followup_knee(player)
 
    local commands = {
       {
-         condition = function() return is_idle_timing(player, 1) end,
+         condition = function() return is_idle_timing(player, 1, true) end,
          action = function() inputs.queue_input_sequence(player, crouch) end
       }, {
          condition = function() return knee_delay:delay_after_idle(player) end,
@@ -1120,7 +1143,7 @@ local function urien_corner_tackle_mk_mk_mk_hk_q_remy_followup_knee(player)
    end
    local commands = {
       {
-         condition = function() return is_idle_timing(player, 1) end,
+         condition = function() return is_idle_timing(player, 1, true) end,
          action = function() queue_input_sequence_and_wait(player, walk_forward, 0, true) end
       }, {
          condition = function()
@@ -1179,7 +1202,7 @@ local function urien_corner_tackle_mk_mk_mk_mk_followup_knee(player)
       end
       local walk_command = {
          {
-            condition = function() return is_idle_timing(player, 1) end,
+            condition = function() return is_idle_timing(player, 1, true) end,
             action = function() queue_input_sequence_and_wait(player, walk_forward, 0, true) end
          }, {
             condition = function()

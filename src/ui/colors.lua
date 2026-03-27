@@ -24,17 +24,21 @@ local colors = {
    gauges = {
       outline = 0x000000FF,
       background = 0x00000044,
-      valid_fill = 0xc200c8FF,
+      valid_fill = 0xC200C8FF,
       cooldown_fill = 0x6800b5FF,
-      life = 0x00CD4CFF,
+      life_full = 0x10FF00FF,
+      life_mid = 0xFFFF36FF,
+      life_low = 0xFFC600FF,
       stun = 0xE60000FF,
       meter = 0x00E6F7FF,
-      denijn = 0xc200c8FF
+      denijn = 0xC200C8FF
    },
    parry = {text_validity = 0xFFFFFFFF, text_success = 0x10FF10FF, text_failure = 0xFF1010FF},
    charge = {text_validity = 0xFFFFFFFF, text_success = 0x10FF10FF, text_failure = 0xFF1010FF, overcharge = 0x4900FF80},
    last_hit_bars = {life = 0xFFFFFFFF, stun = 0xE60000FF},
-   red_parry_miss = 0xE60000FF,
+   input = {parry = 0xB5EAFFFF, red_parry = 0xFF5941FF},
+   distances = {line = 0x00E7FFFF, coord_line = 0xF3924BFF},
+   idle_time = 0xA3CDE2FF,
    bonuses = {damage = 0xFF7184FF, defense = 0xD6E3EFFF, stun = 0xD6E3EFFF},
    hitboxes = {
       vulnerability = 0x0000FFFF,
@@ -126,12 +130,11 @@ local function init()
    local menu_tables = require("src.ui.menu_tables")
    themes = tools.read_object_from_json_file(settings.themes_path) or {}
    tools.convert_strings_to_numbers(themes)
-   set_theme(settings.training.theme)
+   set_theme(settings.theme)
    local theme_names = {}
    for _, theme in pairs(themes) do theme_names[#theme_names + 1] = "theme_" .. theme.name end
    menu_tables.theme_names = theme_names
 end
-
 
 local colors_module = {
    init = init,

@@ -704,7 +704,7 @@ frame_data_meta["q"]["e7e4"] = { hit_type = {2}}                                
 frame_data_meta["q"]["e8b4"] = { hit_type = {2}}                                 --d_MK
 frame_data_meta["q"]["ea14"] = { hit_type = {2}}                                 --d_HK
 -- frame_data_meta["q"]["d09c"] = { hit_type = {3}}                                 --cl_LP
--- frame_data_meta["q"]["ddfc"] = { hit_type = {3}}                                 --cl_MK
+frame_data_meta["q"]["ddfc"] = { hit_type = {3}}                                 --cl_MK
 frame_data_meta["q"]["d524"] = { hit_type = {3}}                                 --b_MP
 frame_data_meta["q"]["da24"] = { hit_type = {3}}                                 --b_HP
 -- frame_data_meta["q"]["e1f4"] = { hit_type = {3}}                                 --b_HK

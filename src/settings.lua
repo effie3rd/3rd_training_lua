@@ -10,6 +10,8 @@ local training_require_path = "src.training"
 local modules_require_path = "src.modules"
 local modules_settings_file = "settings.json"
 local modules_default_settings_file = "settings_default.json"
+local spectator_settings_file = "spectator_settings.json"
+local spectator_settings_default_file = "spectator_settings_default.json"
 local framedata_path = data_path .. game_data.rom_name .. "/framedata/"
 local framedata_file_ext = "_framedata.json"
 local framedata_bin_file = "framedata.msgpack"
@@ -27,8 +29,22 @@ local recordings_file = "recordings.json"
 local training_settings = {}
 local modules_settings = {}
 local recordings_settings = {}
+local spectator_settings = {}
 
 local lang_code = {"en", "jp"}
+
+local function save_recordings_data()
+   if not tools.write_object_to_json_file(recordings_settings, saved_path .. recordings_file, true) then
+      print(string.format("Error: Failed to save training settings to \"%s\"", saved_path .. recordings_file))
+   end
+   for _, module_name in ipairs(modules.extra_module_names) do
+      if not tools.write_object_to_json_file(modules_settings[module_name],
+                                             modules_path .. module_name .. "/" .. modules_settings_file, true) then
+         print(string.format("Error: Failed to save training settings to \"%s\"",
+                             modules_path .. module_name .. "/" .. modules_settings_file))
+      end
+   end
+end
 
 local function save_training_data()
    if not tools.write_object_to_json_file(training_settings, saved_path .. training_settings_file, true) then
@@ -48,8 +64,12 @@ local function save_training_data()
                              modules_path .. module_name .. "/" .. modules_settings_file))
       end
    end
-   if not tools.write_object_to_json_file(recordings_settings, saved_path .. recordings_file, true) then
-      print(string.format("Error: Failed to save training settings to \"%s\"", saved_path .. recordings_file))
+   save_recordings_data()
+end
+
+local function save_spectator_data()
+   if not tools.write_object_to_json_file(spectator_settings, saved_path .. spectator_settings_file, true) then
+      print(string.format("Error: Failed to save training settings to \"%s\"", saved_path .. spectator_settings_file))
    end
 end
 
@@ -105,13 +125,8 @@ local upgrade_rules = {
          settings.training.recording_player_positioning = false
          settings.training.recording_dummy_positioning = false
          settings.special_training.defense.characters["ken"].next_attack_delay = 20
-         local ok, unb = pcall(require, "src.training.unblockables_tables")
-         if ok then
-            settings.special_training.unblockables = unb.create_settings()
-         else
-            settings.special_training.unblockables =
-                require("src.training.unblockables.unblockables_tables").create_settings()
-         end
+         settings.special_training.unblockables =
+             require("src.training.unblockables.unblockables_tables").create_settings()
          for _, char_str in ipairs(game_data.characters) do
             for __, slot in ipairs(settings.recordings[char_str]) do
                slot.player_position = {430, 0}
@@ -193,6 +208,15 @@ local upgrade_rules = {
             end
          end
       end
+   }, {
+      min = "1.2.0",
+      max = "1.2.2",
+      target = "1.3.0",
+      upgrade = function(settings)
+         settings.training.version = "1.2.2"
+         settings.recordings.version = "1.2.2"
+         settings.training.music_volume = tools.round_to_nearest(settings.training.music_volume * 10, 5)
+      end
    }
 }
 
@@ -270,7 +294,22 @@ local function load_training_data()
    if loaded_defaults or upgraded then save_training_data() end
 end
 
-load_training_data()
+local function load_spectator_data()
+   local loaded_defaults = false
+
+   local new_spectator_settings = tools.read_object_from_json_file(saved_path .. spectator_settings_file)
+   if new_spectator_settings and new_spectator_settings.version and type(new_spectator_settings.version) == "number" then
+      new_spectator_settings = nil
+   end
+   if not new_spectator_settings then
+      new_spectator_settings = tools.read_object_from_json_file(saved_path .. spectator_settings_default_file)
+      loaded_defaults = new_spectator_settings ~= nil
+   end
+   spectator_settings = new_spectator_settings or {}
+   for _, module_name in ipairs(modules.extra_module_names) do load_module_settings(module_name, modules_path) end
+
+   if loaded_defaults then save_spectator_data() end
+end
 
 local settings_module = {
    saved_path = saved_path,
@@ -287,8 +326,12 @@ local settings_module = {
    images_bin_file = images_bin_file,
    recordings_path = recordings_path,
    themes_path = themes_path,
+   lang_code = lang_code,
+   save_recordings_data = save_recordings_data,
    load_training_data = load_training_data,
-   save_training_data = save_training_data
+   save_training_data = save_training_data,
+   load_spectator_data = load_spectator_data,
+   save_spectator_data = save_spectator_data
 }
 
 setmetatable(settings_module, {
@@ -301,8 +344,20 @@ setmetatable(settings_module, {
          return recordings_settings
       elseif key == "counter_attack" then
          return training_settings.counter_attack
+      elseif key == "spectator" then
+         return spectator_settings
+      elseif key == "controller_style" then
+         return training_settings.controller_style and training_settings.controller_style --
+         or spectator_settings.controller_style and spectator_settings.controller_style
+      elseif key == "theme" then
+         return training_settings.theme and training_settings.theme --
+         or spectator_settings.theme and spectator_settings.theme
       elseif key == "language" then
-         return lang_code[training_settings.language]
+         return training_settings.language and training_settings.language --
+         or spectator_settings.language and spectator_settings.language
+      elseif key == "language_tag" then
+         return training_settings.language and lang_code[training_settings.language] --
+         or spectator_settings.language and lang_code[spectator_settings.language]
       end
    end,
 
@@ -315,6 +370,26 @@ setmetatable(settings_module, {
          recordings_settings = value
       elseif key == "counter_attack" then
          training_settings.counter_attack = value
+      elseif key == "spectator" then
+         spectator_settings = value
+      elseif key == "controller_style" then
+         if training_settings.controller_style then
+            training_settings.controller_style = value
+         else
+            spectator_settings.controller_style = value
+         end
+      elseif key == "theme" then
+         if training_settings.theme then
+            training_settings.theme = value
+         else
+            spectator_settings.theme = value
+         end
+      elseif key == "language" then
+         if training_settings.language then
+            training_settings.language = value
+         else
+            spectator_settings.language = value
+         end
       else
          rawset(settings_module, key, value)
       end

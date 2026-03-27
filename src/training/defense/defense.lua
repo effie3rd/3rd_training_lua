@@ -1,4 +1,4 @@
-local gamestate = require "src.gamestate"
+local gamestate = require("src.gamestate")
 local inputs = require("src.control.inputs")
 local character_select = require("src.control.character_select")
 local hud = require("src.ui.hud")
@@ -21,12 +21,13 @@ local menu_items = require("src.ui.menu_items")
 local framedata = require("src.data.framedata")
 local prediction = require("src.data.prediction")
 local modes = require("src.modes")
+local Pools = tools.Pools
 
 local defense
 local module_name = "defense"
 
 local is_enabled = true
-local is_active = false
+local is_mode_active = false
 local states = {
    SETUP_MATCH_START = 1,
    SETUP_WAKEUP_BEGIN = 2,
@@ -41,10 +42,10 @@ local states = {
    RUNNING = 11,
    BEFORE_END = 12,
    END = 13,
-   STOPPED = 14
+   STOPPED = 14,
 }
 
-local setup_states = {INIT = 1, SET_POSITIONS = 2, MOVE_PLAYERS = 3, CONTINUE_SETUP = 4, SETUP_DELAY = 5}
+local setup_states = { INIT = 1, SET_POSITIONS = 2, MOVE_PLAYERS = 3, CONTINUE_SETUP = 4, SETUP_DELAY = 5 }
 
 local state
 
@@ -94,7 +95,7 @@ local delays = {
    end_frame_extension_limit = 150,
    super_end = false,
    hard_setup_delay = 30,
-   soft_setup_delay = 10
+   soft_setup_delay = 10,
 }
 
 local blocking_options = {
@@ -104,10 +105,10 @@ local blocking_options = {
    parry_every_n_count = 1,
    prefer_parry_low = false,
    prefer_block_low = false,
-   force_blocking_direction = dummy_control.Force_Blocking_Direction.OFF
+   force_blocking_direction = dummy_control.Force_Blocking_Direction.OFF,
 }
 
-local player_wakeup = {was_extended = false, intial_countdown = 0}
+local player_wakeup = { was_extended = false, intial_countdown = 0 }
 
 local score_display_time = 40
 local score_fade_time = 20
@@ -131,10 +132,10 @@ local has_settings_changed = false
 local function init() end
 
 local function set_players()
-   dummy = training.get_controlled_player_by_name(module_name) --
-   or training.get_player_controlled_by_active_mode() --
-   or (training.get_controlled_player_by_name("player") and training.get_controlled_player_by_name("player").other) --
-   or gamestate.P2
+   dummy = training.get_controlled_player_by_name(module_name)
+      or training.get_player_controlled_by_active_mode()
+      or (training.get_controlled_player_by_name("player") and training.get_controlled_player_by_name("player").other)
+      or gamestate.P2
    player = dummy.other
 end
 
@@ -173,12 +174,15 @@ local function reselect_followups(index)
          action_queue = action_queue,
          actions = actions,
          i_actions = index,
-         stage = gamestate.stage
+         stage = gamestate.stage,
       }
-      local selected_followups = {}
+      local selected_followups = Pools.small:alloc()
       for i, p_followup in ipairs(followups) do
-         if p_followup.active and p_followup.action:is_valid(dummy, defense_context) and
-             p_followup.action:should_execute(dummy, defense_context) then
+         if
+            p_followup.active
+            and p_followup.action:is_valid(dummy, defense_context)
+            and p_followup.action:should_execute(dummy, defense_context)
+         then
             selected_followups[#selected_followups + 1] = p_followup
          end
       end
@@ -193,10 +197,16 @@ local function reselect_followups(index)
          actions[#actions + 1] = nil
          followups = nil
       end
-      if selected_followup and
-          not (selected_followup.action.type == training_classes.Action_Type.WALK_FORWARD or
-              selected_followup.action.type == training_classes.Action_Type.WALK_BACKWARD or
-              selected_followup.action.type == training_classes.Action_Type.BLOCK) then break end
+      if
+         selected_followup
+         and not (
+            selected_followup.action.type == training_classes.Action_Type.WALK_FORWARD
+            or selected_followup.action.type == training_classes.Action_Type.WALK_BACKWARD
+            or selected_followup.action.type == training_classes.Action_Type.BLOCK
+         )
+      then
+         break
+      end
    end
 end
 
@@ -238,8 +248,9 @@ end
 
 local function bound_setup_positions(setup)
    local current_stage = stage_data.stages[gamestate.stage]
-   local player_left, player_right = setup:get_soft_reset_range(dummy, {stage = gamestate.stage})[1],
-                                     setup:get_soft_reset_range(dummy, {stage = gamestate.stage})[2]
+   local player_left, player_right =
+      setup:get_soft_reset_range(dummy, { stage = gamestate.stage })[1],
+      setup:get_soft_reset_range(dummy, { stage = gamestate.stage })[2]
    local player_sign = tools.sign(player.pos_x - dummy.pos_x)
    local dummy_sign = tools.sign(dummy.pos_x - player.pos_x)
    local dummy_left = current_stage.left + frame_data.character_specific[dummy.char_str].corner_offset_left
@@ -270,7 +281,7 @@ local allowed_actions = {
    [6] = true,
    [7] = true,
    [8] = true,
-   [11] = true
+   [11] = true,
 }
 
 local load_screen
@@ -323,7 +334,9 @@ local function hard_setup()
          end
          memory.writebyte(player.base + memory_addresses.offsets.frame_countdown, 0xff)
       end
-      if load_screen then gui.image(0, 0, load_screen) end
+      if load_screen then
+         gui.image(0, 0, load_screen)
+      end
       local current_screen_x = memory.readword(memory_addresses.global.screen_pos_x)
       local desired_screen_x, desired_screen_y = write_memory.get_fix_screen_pos(player, dummy, gamestate.stage), 0
 
@@ -351,7 +364,7 @@ local function move_players(should_move_player, should_move_dummy)
       if player.is_waking_up and player.remaining_wakeup_time > 0 then
          local dist = math.abs(player_reset_x - player.pos_x)
          position_speed =
-             math.max(math.floor(dist / math.max(player.remaining_wakeup_time - 10, 1)), min_position_speed)
+            math.max(math.floor(dist / math.max(player.remaining_wakeup_time - 10, 1)), min_position_speed)
       end
       local next_player_pos = player.pos_x + player_sign * position_speed
       if player_sign > 0 then
@@ -392,13 +405,19 @@ local function soft_setup()
          end
       end
    elseif setup_state == setup_states.MOVE_PLAYERS then
-      if not dummy.is_idle then setup_start_frame = gamestate.frame_number end
+      if not dummy.is_idle then
+         setup_start_frame = gamestate.frame_number
+      end
       local dummy_sign = tools.sign(dummy.pos_x - player.pos_x)
       player_reset_x = player.pos_x
       dummy_reset_x = player_reset_x + dummy_sign * setup:get_dummy_offset(dummy)
       bound_setup_positions(setup)
-      if player.is_waking_up and player.is_past_fast_wakeup_frame and not player.is_fast_wakingup and player.posture_ext >=
-          0x40 then
+      if
+         player.is_waking_up
+         and player.is_past_fast_wakeup_input_frame
+         and not player.is_fast_wakingup
+         and player.posture_ext >= 0x40
+      then
          if not player_wakeup.was_extended then
             player_wakeup.was_extended = true
             player_wakeup.intial_countdown = memory.readbyte(player.base + memory_addresses.offsets.frame_countdown) + 1
@@ -408,9 +427,11 @@ local function soft_setup()
       if (player.is_standing or player.is_crouching or player.is_waking_up) and not dummy.is_being_thrown then
          move_players(true, false)
       end
-      if (player.is_standing or player.is_crouching) and
-          (player.pos_x ~= player_reset_x or dummy.pos_x ~= dummy_reset_x) or gamestate.frame_number - setup_start_frame >=
-          soft_setup_max_position_time then
+      if
+         (player.is_standing or player.is_crouching)
+            and (player.pos_x ~= player_reset_x or dummy.pos_x ~= dummy_reset_x)
+         or gamestate.frame_number - setup_start_frame >= soft_setup_max_position_time
+      then
          write_memory.write_pos_x(player, player_reset_x)
          write_memory.write_pos_x(dummy, dummy_reset_x)
       end
@@ -425,10 +446,13 @@ local function soft_setup()
       end
 
       if (player.is_waking_up or player.is_idle) and dummy.is_idle then --
-         if player.pos_x == player_reset_x and dummy.pos_x == dummy_reset_x --
-         and gamestate.frame_number - dummy.input_info.last_back_input > dash_input_window --
-         and gamestate.frame_number - dummy.input_info.last_forward_input > dash_input_window --
-         and gamestate.frame_number - setup_start_frame > delays.soft_setup_delay then
+         if
+            player.pos_x == player_reset_x
+            and dummy.pos_x == dummy_reset_x --
+            and gamestate.frame_number - dummy.input_info.last_back_input > dash_input_window --
+            and gamestate.frame_number - dummy.input_info.last_forward_input > dash_input_window --
+            and gamestate.frame_number - setup_start_frame > delays.soft_setup_delay
+         then
             if player_wakeup.was_extended then
                memory.writebyte(player.base + memory_addresses.offsets.frame_countdown, player_wakeup.intial_countdown)
             end
@@ -440,7 +464,9 @@ local function soft_setup()
 end
 
 local function display_delta_score(delta_score)
-   if delta_score == 0 then return end
+   if delta_score == 0 then
+      return
+   end
    local score_text
    local score_color
    local x, y
@@ -457,7 +483,9 @@ local function display_delta_score(delta_score)
 end
 
 local function update_score(delta_score)
-   if not delta_score then return end
+   if not delta_score then
+      return
+   end
    score = math.max(score + delta_score, 0)
    if score > settings.modules.defense.characters[opponent].score then
       settings.modules.defense.characters[opponent].score = score
@@ -466,11 +494,15 @@ local function update_score(delta_score)
 end
 
 local function update_weights(delta_score)
-   if not delta_score then return end
+   if not delta_score then
+      return
+   end
    if should_adjust_weights then
       local player_response
 
-      if player.is_blocking or player.is_being_thrown then player_response = training_classes.Action_Type.BLOCK end
+      if player.is_blocking or player.is_being_thrown then
+         player_response = training_classes.Action_Type.BLOCK
+      end
       if player.is_throwing or player.is_in_throw_tech or dummy.is_being_thrown then
          player_response = training_classes.Action_Type.THROW
       elseif player.character_state_byte == 4 then
@@ -478,8 +510,10 @@ local function update_weights(delta_score)
       end
 
       for i, action in ipairs(action_queue) do
-         if action.action.type ~= training_classes.Action_Type.WALK_FORWARD and action.action.type ~=
-             training_classes.Action_Type.WALK_BACKWARD then
+         if
+            action.action.type ~= training_classes.Action_Type.WALK_FORWARD
+            and action.action.type ~= training_classes.Action_Type.WALK_BACKWARD
+         then
             local alpha = learning_rate * i / #action_queue
             if delta_score < 0 then
                action.weight = tools.clamp((1 - alpha) * action.weight + alpha, min_weight, max_weight)
@@ -501,8 +535,8 @@ local function update_weights(delta_score)
             for _, followup_list in ipairs(defense_data.followups) do
                for __, followup in ipairs(followup_list.list) do
                   if followup.action.type == target then
-                     followup.weight = tools.clamp((1 - learning_rate) * followup.weight + learning_rate, min_weight,
-                                                   max_weight)
+                     followup.weight =
+                        tools.clamp((1 - learning_rate) * followup.weight + learning_rate, min_weight, max_weight)
                      -- else
                      --    followup.weight = tools.clamp((1 - learning_rate / 2) * followup.weight, min_weight,
                      --                                  max_weight)
@@ -520,8 +554,10 @@ start = function()
       inputs.block_input(2, "all")
       ensure_training_settings()
       if settings.modules.defense.controllers then
-         training.set_controllers_by_name(settings.modules.defense.controllers[1],
-                                          settings.modules.defense.controllers[2])
+         training.set_controllers_by_name(
+            settings.modules.defense.controllers[1],
+            settings.modules.defense.controllers[2]
+         )
       else
          training.set_module_control_by_name(module_name)
       end
@@ -535,8 +571,11 @@ start = function()
          delays.end_frame = 0
          score = 0
          state = states.SELECT_SETUP
-         if gamestate.is_in_match then indicate_players_after_positioning = true end
+         if gamestate.is_in_match then
+            indicate_players_after_positioning = true
+         end
       end)
+      opponent = defense_tables.opponents[settings.modules.defense.opponent]
       Queue_Command(gamestate.frame_number + 1, function()
          Load_State_Caller = module_name
          savestate.load(match_start_state)
@@ -562,16 +601,17 @@ local function start_character_select()
    end)
    opponent = defense_tables.opponents[settings.modules.defense.opponent]
    defense_data = defense_tables.get_defense_data(opponent)
-   Call_After_Load_State(character_select.force_select_character, {dummy.id, opponent, defense_data.sa, "random"})
+   Call_After_Load_State(character_select.force_select_character, { dummy.id, opponent, defense_data.sa, "random" })
    character_select.start_character_select_sequence(false, true)
 end
 
 stop = function()
-   if is_active then
+   if is_mode_active then
       hud.clear_info_text()
       hud.clear_score_text()
       advanced_control.clear_all()
-      training.disable_dummy = {false, false}
+      training.disable_dummy[1] = false
+      training.disable_dummy[2] = false
       inputs.unblock_input(1)
       inputs.unblock_input(2)
       should_update_while_menu_is_open = false
@@ -581,15 +621,19 @@ stop = function()
       state = states.STOPPED
    end
 end
-local function end_mode() if gamestate.is_in_match then hud.indicate_player_controllers() end end
+local function end_mode()
+   if gamestate.is_in_match then
+      hud.indicate_player_controllers()
+   end
+end
 
 local function reset() end
 
 local function toggle() end
 
 local function update()
-   if is_active then
-      if gamestate.is_before_curtain or gamestate.is_in_match then
+   if is_mode_active then
+      if gamestate.is_in_match_playable then
          inputs.block_input(dummy.id, "all")
          if has_settings_changed then
             state = states.SELECT_SETUP
@@ -601,16 +645,22 @@ local function update()
          end
          if state == states.SETUP_MATCH_START then
             emu.speedmode("turbo")
-            training.disable_dummy = {true, true}
+            training.disable_dummy[1] = true
+            training.disable_dummy[2] = true
          end
-         if state == states.SETUP_MATCH_START and gamestate.has_match_just_started then
+         if state == states.SETUP_MATCH_START and gamestate.has_round_just_started then
             savestate.save(match_start_state)
             settings.modules.defense.match_savestate_player = player.char_str
             settings.modules.defense.match_savestate_dummy = dummy.char_str
-            settings.modules.defense.controllers = {training.P1_controller.name, training.P2_controller.name}
+            settings.modules.defense.controllers[1] = training.P1_controller.name
+            settings.modules.defense.controllers[2] = training.P2_controller.name
             local sign = dummy.side == 1 and 1 or -1
             write_memory.write_pos_x(player, dummy.pos_x + sign * frame_data.get_contact_distance(player))
-            Queue_Command(gamestate.frame_number + 2, inputs.queue_input_sequence, {dummy, defense_data.get_knockdown()})
+            Queue_Command(
+               gamestate.frame_number + 2,
+               inputs.queue_input_sequence,
+               { dummy, defense_data.get_knockdown() }
+            )
             state = states.SETUP_WAKEUP_BEGIN
          elseif state == states.SETUP_WAKEUP_BEGIN then
             if player.is_waking_up and player.posture_ext >= 0x40 and dummy.is_idle then
@@ -624,7 +674,8 @@ local function update()
             should_update_while_menu_is_open = false
             menu.allow_update_while_open = false
             menu.disable_freeze = false
-            training.disable_dummy = {false, false}
+            training.disable_dummy[1] = false
+            training.disable_dummy[2] = false
             state = states.SELECT_SETUP
          elseif state == states.SELECT_SETUP then
             set_players()
@@ -635,27 +686,31 @@ local function update()
             local last_setup = actions[1] or {}
             local last_setup_had_no_followups = #actions == 1
 
-            action_queue = {}
-            actions = {}
+            tools.clear_table(action_queue)
+            tools.clear_table(actions)
             i_actions = 1
             delays.start_frame = gamestate.frame_number
             delays.end_frame_extension_current = 0
             delays.super_end = false
             player_wakeup.was_extended = false
 
-            local selected_setups = {}
+            local selected_setups = Pools.small:alloc()
             local selected_setup
 
             local defense_context = {
                action_queue = action_queue,
                actions = actions,
                i_actions = i_actions,
-               stage = gamestate.stage
+               stage = gamestate.stage,
             }
 
             if player.is_waking_up or player.is_in_air_reel then
                for i, p_setup in ipairs(defense_data.setups) do
-                  if p_setup.active and p_setup.action.is_wakeup and p_setup.action:is_valid(dummy, defense_context) then
+                  if
+                     p_setup.active
+                     and p_setup.action.is_wakeup
+                     and p_setup.action:is_valid(dummy, defense_context)
+                  then
                      selected_setups[#selected_setups + 1] = p_setup
                   end
                end
@@ -669,11 +724,13 @@ local function update()
                   end
                end
                selected_setup = tools.select_weighted(selected_setups)
-               if not selected_setup then return end
-               if selected_setup.action.is_wakeup then should_hard_setup = true end
+               if not selected_setup then
+                  return
+               end
+               if selected_setup.action.is_wakeup then
+                  should_hard_setup = true
+               end
             end
-
-
 
             action_queue[#action_queue + 1] = selected_setup
             actions[#actions + 1] = selected_setup.action
@@ -681,8 +738,12 @@ local function update()
             local setup = action_queue[1].action
 
             should_block_input = false
-            if selected_setup ~= defense_data.wakeup then should_block_input = true end
-            if setup.should_block_input then should_block_input = true end
+            if selected_setup ~= defense_data.wakeup then
+               should_block_input = true
+            end
+            if setup.should_block_input then
+               should_block_input = true
+            end
 
             if setup == last_setup and last_setup_had_no_followups then
                should_hard_setup = true
@@ -691,8 +752,10 @@ local function update()
 
             if not should_hard_setup then
                if not setup.skip_close_distance then
-                  advanced_control.queue_programmed_movement(dummy, defense_data.close_distance.action:setup(dummy,
-                                                                                                             defense_context))
+                  advanced_control.queue_programmed_movement(
+                     dummy,
+                     defense_data.close_distance.action:setup(dummy, defense_context)
+                  )
                end
             end
 
@@ -703,15 +766,20 @@ local function update()
             end
          end
          if state == states.SETUP_DELAY then
-            if gamestate.frame_number - delays.start_frame >= delays.start_delay then state = states.SETUP end
+            if gamestate.frame_number - delays.start_frame >= delays.start_delay then
+               state = states.SETUP
+            end
          elseif state == states.SETUP then
             if should_block_input then
                inputs.block_input(1, "all")
                inputs.block_input(2, "all")
-               training.disable_dummy = {true, true}
+               training.disable_dummy[1] = true
+               training.disable_dummy[2] = true
             end
-            if (player.posture == 24 and player.character_state_byte == 1) or
-                (player.is_waking_up and player.posture_ext < 0x40) then
+            if
+               (player.posture == 24 and player.character_state_byte == 1)
+               or (player.is_waking_up and player.posture_ext < 0x40)
+            then
                inputs.unblock_input(player.id)
                training.disable_dummy[player.id] = false
                training.disable_dummy[dummy.id] = true
@@ -720,7 +788,7 @@ local function update()
                action_queue = action_queue,
                actions = actions,
                i_actions = i_actions,
-               stage = gamestate.stage
+               stage = gamestate.stage,
             }
             local setup = action_queue[1].action
             if not setup:is_valid(dummy, defense_context) then
@@ -741,12 +809,14 @@ local function update()
             state = states.WAIT_FOR_SETUP
          elseif state == states.WAIT_FOR_SETUP then
             local setup = action_queue[1].action
-            if setup.should_lock_positions and player.is_waking_up then move_players(true, false) end
+            if setup.should_lock_positions and player.is_waking_up then
+               move_players(true, false)
+            end
             local defense_context = {
                action_queue = action_queue,
                actions = actions,
                i_actions = i_actions,
-               stage = gamestate.stage
+               stage = gamestate.stage,
             }
             local finished, result = setup:run(dummy, defense_context)
             if finished then
@@ -770,7 +840,7 @@ local function update()
                inputs.unblock_input(player.id)
                training.disable_dummy[player.id] = false
                training.disable_dummy[dummy.id] = true
-               labels = {}
+               tools.clear_table(labels)
                i_labels = 1
                state = states.SELECT_FOLLOWUP
             end
@@ -782,16 +852,15 @@ local function update()
             check_setup_timeout()
          end
          if state == states.SELECT_FOLLOWUP then
-            local defense_context = {
-               action_queue = action_queue,
-               actions = actions,
-               i_actions = i_actions,
-               stage = gamestate.stage
-            }
+            local defense_context = Pools.small:alloc()
+            defense_context.action_queue = action_queue
+            defense_context.actions = actions
+            defense_context.i_actions = i_actions
+            defense_context.stage = gamestate.stage
             local current_action = action_queue[i_actions]
             local followups = current_action.action:followups()
             while followups do
-               local selected_followups = {}
+               local selected_followups = Pools.small:alloc()
                for i, p_followup in ipairs(followups) do
                   if p_followup.active and p_followup.action:is_valid(dummy, defense_context) then
                      selected_followups[#selected_followups + 1] = p_followup
@@ -805,26 +874,33 @@ local function update()
                else
                   followups = nil
                end
-               if selected_followup and
-                   not (selected_followup.action.type == training_classes.Action_Type.WALK_FORWARD or
-                       selected_followup.action.type == training_classes.Action_Type.WALK_BACKWARD or
-                       selected_followup.action.type == training_classes.Action_Type.BLOCK) then break end
+               if
+                  selected_followup
+                  and not (
+                     selected_followup.action.type == training_classes.Action_Type.WALK_FORWARD
+                     or selected_followup.action.type == training_classes.Action_Type.WALK_BACKWARD
+                     or selected_followup.action.type == training_classes.Action_Type.BLOCK
+                  )
+               then
+                  break
+               end
             end
             state = states.FOLLOWUP
          end
          if state == states.FOLLOWUP then
-            if i_labels < i_actions then i_labels = i_actions end
+            if i_labels < i_actions then
+               i_labels = i_actions
+            end
             i_actions = i_actions + 1
             followup_start_frame = gamestate.frame_number
 
             local followup = action_queue[i_actions]
             if followup then
-               local defense_context = {
-                  action_queue = action_queue,
-                  actions = actions,
-                  i_actions = i_actions,
-                  stage = gamestate.stage
-               }
+               local defense_context = Pools.small:alloc()
+               defense_context.action_queue = action_queue
+               defense_context.actions = actions
+               defense_context.i_actions = i_actions
+               defense_context.stage = gamestate.stage
                if not followup.action:should_execute(dummy, defense_context) then
                   i_actions = i_actions - 1
                   reselect_followups(i_actions)
@@ -840,15 +916,16 @@ local function update()
             end
          end
          if state == states.RUNNING then
-            if player.is_waking_up then move_players(true, false) end
+            if player.is_waking_up then
+               move_players(true, false)
+            end
             local followup = action_queue[i_actions]
             if followup then
-               local defense_context = {
-                  action_queue = action_queue,
-                  actions = actions,
-                  i_actions = i_actions,
-                  stage = gamestate.stage
-               }
+               local defense_context = Pools.small:alloc()
+               defense_context.action_queue = action_queue
+               defense_context.actions = actions
+               defense_context.i_actions = i_actions
+               defense_context.stage = gamestate.stage
                local finished, result = followup.action:run(dummy, defense_context)
                if finished then
                   if result.should_punish then
@@ -927,7 +1004,11 @@ local function update()
          end
          if state == states.BEFORE_END then
             i_labels = #actions
-            for i = 1, i_labels do if not labels[i] then labels[i] = actions[i]:label() end end
+            for i = 1, i_labels do
+               if not labels[i] then
+                  labels[i] = actions[i]:label()
+               end
+            end
             local display_labels = {}
             for i = math.max(i_labels - max_labels + 1, 1), i_labels do
                display_labels[#display_labels + 1] = labels[i]
@@ -939,12 +1020,20 @@ local function update()
          end
          if state == states.END then
             local dummy_is_being_hit_or_blocking = dummy.character_state_byte == 1
-            if dummy.superfreeze_decount > 0 then delays.super_end = true end
+            if dummy.superfreeze_decount > 0 then
+               delays.super_end = true
+            end
 
-            if dummy.has_just_been_hit or dummy.has_just_blocked or player.has_just_parried or player.has_just_blocked or
-                player.has_just_attacked or dummy.has_just_missed then
-               delays.end_frame = math.min(gamestate.frame_number + delays.end_frame_extension_default,
-                                           delays.end_frame_max)
+            if
+               dummy.has_just_been_hit
+               or dummy.has_just_blocked
+               or player.has_just_parried
+               or player.has_just_blocked
+               or player.has_just_attacked
+               or dummy.has_just_missed
+            then
+               delays.end_frame =
+                  math.min(gamestate.frame_number + delays.end_frame_extension_default, delays.end_frame_max)
             end
 
             if player.is_being_thrown or player.has_just_been_hit then
@@ -967,21 +1056,29 @@ local function update()
                      should_hard_setup = true
                   end
                end
-               if delays.super_end then should_hard_setup = false end
+               if delays.super_end then
+                  should_hard_setup = false
+               end
                delays.start_delay = settings.modules.defense.characters[opponent].next_attack_delay
                if not should_hard_setup and (player.character_state_byte == 1 or dummy.character_state_byte == 1) then
                   local frame_advantage = prediction.get_frame_advantage(player)
                   if frame_advantage and frame_advantage > 1 then
                      delays.start_delay = delays.start_delay + delays.start_delay_default
                   end
-               elseif player.character_state_byte == 4 or player.is_being_thrown or dummy.is_being_thrown or
-                   player.is_in_throw_tech or dummy.is_in_throw_tech then
+               elseif
+                  player.character_state_byte == 4
+                  or player.is_being_thrown
+                  or dummy.is_being_thrown
+                  or player.is_in_throw_tech
+                  or dummy.is_in_throw_tech
+               then
                   delays.start_delay = delays.start_delay + delays.start_delay_default
                end
 
                inputs.block_input(1, "all")
                inputs.block_input(2, "all")
-               training.disable_dummy = {true, true}
+               training.disable_dummy[1] = true
+               training.disable_dummy[2] = true
                state = states.SELECT_SETUP
             end
          end
@@ -993,18 +1090,25 @@ end
 
 local function process_gesture(gesture) end
 
+local valid_control_schemes = {
+   { { module_name, "player" }, { module_name, "dummy_control" } },
+   { { "player", module_name }, { "dummy_control", module_name } },
+}
+
 local function get_valid_control_schemes()
    if dummy.id == 2 then
-      return {{"player", module_name}, {"dummy_control", module_name}}
+      return valid_control_schemes[2]
    else
-      return {{module_name, "player"}, {module_name, "dummy_control"}}
+      return valid_control_schemes[1]
    end
 end
 
 local function is_checkbox_enabled(index)
    local reference_map = defense_tables.get_reference_map(opponent)
    for _, setup_index in ipairs(reference_map[index].setups) do
-      if settings.modules.defense.characters[opponent].setups[setup_index] then return true end
+      if settings.modules.defense.characters[opponent].setups[setup_index] then
+         return true
+      end
    end
    for _, followup_index in ipairs(reference_map[index].followups) do
       if settings.modules.defense.characters[opponent].followups[followup_index[1]][followup_index[2]] then
@@ -1014,28 +1118,38 @@ local function is_checkbox_enabled(index)
    return false
 end
 
-local function update_settings_changed() has_settings_changed = true end
+local function update_settings_changed()
+   has_settings_changed = true
+end
+
+local start_item_text = { "menu_start", "  (", "menu_alex", ")" }
 
 local function update_menu()
    opponent = defense_tables.opponents[settings.modules.defense.opponent]
    local menu_setup_names = defense_tables.get_menu_setup_names(opponent)
    local setups_object = settings.modules.defense.characters[opponent].setups
-   if tools.deep_equal(setups_object, {}) then
-      for i = 1, #menu_setup_names do setups_object[#setups_object + 1] = true end
+   if not next(setups_object) then
+      for i = 1, #menu_setup_names do
+         setups_object[#setups_object + 1] = true
+      end
    end
 
    local followups_object = settings.modules.defense.characters[opponent].followups
-   if tools.deep_equal(followups_object, {}) then
-      for i = 1, #menu_setup_names do followups_object[#followups_object + 1] = {} end
+   if not next(followups_object) then
+      for i = 1, #menu_setup_names do
+         followups_object[#followups_object + 1] = {}
+      end
    end
 
-   defense_menu.setup_item = menu_items.Check_Box_Grid_Item:new("menu_setup",
-                                                                settings.modules.defense.characters[opponent].setups,
-                                                                menu_setup_names)
+   defense_menu.setup_item = menu_items.Check_Box_Grid_Item:new(
+      "menu_setup",
+      settings.modules.defense.characters[opponent].setups,
+      menu_setup_names
+   )
    defense_menu.setup_item.on_change = update_settings_changed
    tools.clear_table(defense_menu_entries)
 
-   defense_followup_check_box_grids = {}
+   tools.clear_table(defense_followup_check_box_grids)
    local menu_followup_names = defense_tables.get_menu_followup_names(opponent)
    for i, name in ipairs(menu_followup_names) do
       local followup_object = settings.modules.defense.characters[opponent].followups[i]
@@ -1043,27 +1157,32 @@ local function update_menu()
          settings.modules.defense.characters[opponent].followups[i] = {}
          followup_object = settings.modules.defense.characters[opponent].followups[i]
       end
-      if tools.deep_equal(followup_object, {}) then
+      if not next(followup_object) then
          for j = 1, #defense_tables.get_followup_data(opponent)[i].list do
             followup_object[#followup_object + 1] = true
          end
       end
       local menu_followup_followup_names = defense_tables.get_menu_followup_followup_names(opponent, i)
       local check_box_grid = menu_items.Check_Box_Grid_Item:new(name, followup_object, menu_followup_followup_names)
-      check_box_grid.is_enabled = function() return is_checkbox_enabled(i) end
-      check_box_grid.is_unselectable = function() return not check_box_grid.is_enabled() end
+      check_box_grid.is_enabled = function()
+         return is_checkbox_enabled(i)
+      end
+      check_box_grid.is_unselectable = function()
+         return not check_box_grid.is_enabled()
+      end
       check_box_grid.on_change = update_settings_changed
 
       defense_followup_check_box_grids[i] = check_box_grid
    end
 
-   if defense.is_active then
-      defense_menu.start_item.name = "menu_stop"
+   if defense.is_mode_active then
+      defense_menu.start_item:update_name("menu_stop")
    else
       local saved_player = settings.modules.defense.match_savestate_player
       if opponent == settings.modules.defense.match_savestate_dummy then
          if saved_player ~= "" then
-            defense_menu.start_item.name = {"menu_start", "  (", "menu_" .. saved_player, ")"}
+            start_item_text[3] = "menu_" .. saved_player
+            defense_menu.start_item:update_name(start_item_text)
          end
       end
    end
@@ -1081,7 +1200,9 @@ local function update_menu()
    local i = 1
    while i <= #defense_followup_check_box_grids do
       defense_menu_entries[5 + i] = defense_followup_check_box_grids[i]
-      defense_menu_entries[5 + i].is_visible = function() return true end
+      defense_menu_entries[5 + i].is_visible = function()
+         return true
+      end
       i = i + 1
    end
    defense_menu_entries[5 + i] = defense_menu.learning_item
@@ -1093,7 +1214,7 @@ local function create_menu()
    local menu_opponent = defense_tables.opponents[settings.modules.defense.opponent]
 
    defense_menu.start_item = menu_items.Button_Menu_Item:new("menu_start", function()
-      if is_active then
+      if is_mode_active then
          modes.stop()
          update_menu()
          menu.update_active_training_page()
@@ -1104,51 +1225,74 @@ local function create_menu()
    end)
    defense_menu.start_item.is_enabled = function()
       if framedata.is_loaded then
-         if is_active then
+         if is_mode_active then
             return true
          else
-            return settings.modules.defense.match_savestate_dummy ==
-                       defense_tables.opponents[settings.modules.defense.opponent] and
-                       defense_menu.setup_item:at_least_one_selected() and
-                       settings.modules.defense.match_savestate_player ~= ""
+            return settings.modules.defense.match_savestate_dummy
+                  == defense_tables.opponents[settings.modules.defense.opponent]
+               and defense_menu.setup_item:at_least_one_selected()
+               and settings.modules.defense.match_savestate_player ~= ""
          end
       end
       return false
    end
-   defense_menu.start_item.is_unselectable = function() return not defense_menu.start_item.is_enabled() end
+   defense_menu.start_item.is_unselectable = function()
+      return not defense_menu.start_item.is_enabled()
+   end
 
-   defense_menu.score_item = menu_items.Label_Menu_Item:new("menu_score", {"menu_score", ": ", "value"},
-                                                            settings.modules.defense.characters[menu_opponent], "score",
-                                                            false, true)
+   defense_menu.score_item = menu_items.Label_Menu_Item:new(
+      "menu_score",
+      { "menu_score", ": ", "value" },
+      settings.modules.defense.characters[menu_opponent],
+      "score",
+      false,
+      true
+   )
 
-   defense_menu.opponent_item = menu_items.List_Menu_Item:new("menu_opponent", settings.modules.defense, "opponent",
-                                                              defense_tables.opponents_menu_names, 1, function()
-      update_menu()
-      menu.update_active_training_page()
-   end)
+   defense_menu.opponent_item = menu_items.List_Menu_Item:new(
+      "menu_opponent",
+      settings.modules.defense,
+      "opponent",
+      defense_tables.opponents_menu_names,
+      1,
+      function()
+         update_menu()
+         menu.update_active_training_page()
+      end
+   )
 
-   defense_menu.setup_item = menu_items.Check_Box_Grid_Item:new("menu_setup",
-                                                                settings.modules.defense.characters[menu_opponent]
-                                                                    .setups,
-                                                                defense_tables.get_menu_setup_names(menu_opponent))
+   defense_menu.setup_item = menu_items.Check_Box_Grid_Item:new(
+      "menu_setup",
+      settings.modules.defense.characters[menu_opponent].setups,
+      defense_tables.get_menu_setup_names(menu_opponent)
+   )
 
    defense_menu.character_select_item = menu_items.Button_Menu_Item:new("menu_character_select", function()
       modes.set_active(defense)
       should_update_while_menu_is_open = true
       menu.allow_update_while_open = true
-      menu.open_after_match_start = true
+      menu.open_after_round_start = true
       menu.disable_freeze = true
       defense.start_character_select()
    end)
 
-   defense_menu.learning_item = menu_items.On_Off_Menu_Item:new("menu_dummy_learning",
-                                                                settings.modules.defense.characters[menu_opponent],
-                                                                "learning", true)
+   defense_menu.learning_item = menu_items.On_Off_Menu_Item:new(
+      "menu_dummy_learning",
+      settings.modules.defense.characters[menu_opponent],
+      "learning",
+      true
+   )
    defense_menu.learning_item.on_change = update_settings_changed
 
-   defense_menu.next_attack_delay_item = menu_items.Integer_Menu_Item:new("menu_next_attack_delay", settings.modules
-                                                                              .defense.characters[menu_opponent],
-                                                                          "next_attack_delay", 0, 120, false, 0)
+   defense_menu.next_attack_delay_item = menu_items.Integer_Menu_Item:new(
+      "menu_next_attack_delay",
+      settings.modules.defense.characters[menu_opponent],
+      "next_attack_delay",
+      0,
+      120,
+      false,
+      0
+   )
 
    defense_menu.reset_item = menu_items.Button_Menu_Item:new("menu_reset", function()
       local opp = defense_tables.opponents[settings.modules.defense.opponent]
@@ -1156,7 +1300,7 @@ local function create_menu()
       update_settings_changed()
    end)
 
-   return {name = "training_defense", entries = defense_menu_entries}
+   return { name = "training_defense", entries = defense_menu_entries }
 end
 
 defense = {
@@ -1173,13 +1317,13 @@ defense = {
    update_menu = update_menu,
    create_menu = create_menu,
    get_valid_control_schemes = get_valid_control_schemes,
-   set_players = set_players
+   set_players = set_players,
 }
 
 setmetatable(defense, {
    __index = function(_, key)
-      if key == "is_active" then
-         return is_active
+      if key == "is_mode_active" then
+         return is_mode_active
       elseif key == "is_enabled" then
          return is_enabled
       elseif key == "should_update_while_menu_is_open" then
@@ -1188,14 +1332,14 @@ setmetatable(defense, {
    end,
 
    __newindex = function(_, key, value)
-      if key == "is_active" then
-         is_active = value
+      if key == "is_mode_active" then
+         is_mode_active = value
       elseif key == "is_enabled" then
          is_enabled = value
       else
          rawset(defense, key, value)
       end
-   end
+   end,
 })
 
 return defense
