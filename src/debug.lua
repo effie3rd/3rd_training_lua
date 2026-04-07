@@ -1324,30 +1324,9 @@ end
 local vars = {}
 
 local function debug_things()
-   -- local i = 0x02068C6C
-   -- while i < 0x02069104 - 0x00000294 do
-   --    local a = memory.readdword(i)
-   --    vars[i] = a
-   --    i = i + 4
-   -- end
-   -- for i = 0, 21000 do
-   --    local a = memory.readdword(memory_view_start + i)
-   --    memory.writedword(memory_view_start + i, a + 1)
-   -- end
-   -- for i = 8000, 14000 do
-   --    local a = memory.readdword(memory_view_start - 4 * i)
-   --    memory.writedword(memory_view_start + 4 * i, a + 0x00000001)
-   -- end
-   -- for i = 4000, 12000 do
-   --    local a = memory.readdword(memory_view_start - 4 * i)
-   --    -- memory.writedword(memory_view_start + 4 * i, a + 0x00000001)
-   --    memory.writedword(memory_view_start + 4 * i, a + 0x00010001)
-   --    -- memory.writedword(memory_view_start + 4 * i, a + math.random(1, 2))
-   -- end
-   -- init_scan_value(0x02068C6C + 0x200, MEMORY_TYPES.DWORD, true)
-   for k, v in pairs(vars) do
-      memory.writedword(k, v)
-   end
+   write_memory.write_pos_y(gamestate.P1, 30)
+   write_memory.write_acceleration(gamestate.P1, 0, 0)
+   write_memory.write_velocity(gamestate.P1, 0, -0.5)
 end
 
 local function debug_things2()

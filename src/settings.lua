@@ -210,11 +210,11 @@ local upgrade_rules = {
       end
    }, {
       min = "1.2.0",
-      max = "1.2.2",
-      target = "1.3.0",
+      max = "1.3.0",
+      target = "1.3.1",
       upgrade = function(settings)
-         settings.training.version = "1.2.2"
-         settings.recordings.version = "1.2.2"
+         settings.training.version = "1.3.1"
+         settings.recordings.version = "1.3.1"
          settings.training.music_volume = tools.round_to_nearest(settings.training.music_volume * 10, 5)
       end
    }

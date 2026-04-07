@@ -373,6 +373,7 @@ local function patch_frame_data()
       frame_data["ibuki"]["7888"].frames[15].bypass_freeze = true
    end
    if frame_data["makoto"] then
+      frame_data["makoto"]["38e0"].landing_height = -1 -- uf HP
       frame_data["makoto"]["eb28"].frames[7].optional_anim = nil
       for i = 1, 5 do
          frame_data["makoto"]["2190"].frames[i].ignore_motion = true -- LK Tsurugi

@@ -262,7 +262,7 @@ local function before_frame()
             inputs.queue_input_from_json(training.player, "debug.json")
          end
          if inputs.keyboard_input["5"].press then
-            debug.debug_things3()
+            debug.debug_things()
          end
       end
    end
@@ -445,7 +445,6 @@ local function on_gui()
          if gamestate.is_after_round_text then
             hud.draw_hud(training.player, training.dummy)
          end
-
       end
       if debug_settings.developer_mode then
          debug.draw_debug()
