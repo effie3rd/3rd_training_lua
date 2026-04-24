@@ -1,5 +1,5 @@
 local game_name = "Street Fighter III 3rd Strike (Japan 990512)"
-local script_version = "1.3.1"
+local script_version = "1.3.2"
 local rom_name = emu.romname()
 local is_fightcade = false
 

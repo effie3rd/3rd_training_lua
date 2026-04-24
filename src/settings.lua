@@ -217,6 +217,23 @@ local upgrade_rules = {
          settings.recordings.version = "1.3.1"
          settings.training.music_volume = tools.round_to_nearest(settings.training.music_volume * 10, 5)
       end
+   }, {
+      min = "1.3.1",
+      max = "1.3.1",
+      target = "1.3.2",
+      upgrade = function(settings)
+         settings.training.version = "1.3.2"
+         settings.recordings.version = "1.3.2"
+         if not settings.modules.defense.controllers then
+            settings.modules.defense.controllers  = { "player", "defense" }
+         end
+         if not settings.modules.geneijin.controllers then
+            settings.modules.geneijin.controllers  = { "player", "geneijin" }
+         end
+         if not settings.modules.unblockables.controllers then
+            settings.modules.unblockables.controllers  = { "player", "unblockables" }
+         end
+      end
    }
 }
 

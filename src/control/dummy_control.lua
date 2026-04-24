@@ -1325,6 +1325,8 @@ local function update_counter_attack(input, defender, counter_attack_data, hits_
             or settings.training.replay_mode == 6
          then
             recording.set_replay_options("override_replay_slot", defender.counter.recording_slot)
+         else
+            recording.clear_replay_options()
          end
          if debug_ca then
             print(gamestate.frame_number .. " - queue recording")

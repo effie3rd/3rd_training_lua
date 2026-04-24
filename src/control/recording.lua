@@ -324,7 +324,7 @@ local function reset_recording_state()
       )
    then
       set_recording_state({}, RECORDING_STATE.STOPPED)
-      replay_options = {}
+      tools.clear_table(replay_options)
       select_replay_slot()
       set_recording_state({}, RECORDING_STATE.QUEUE_REPLAY)
    end
@@ -334,9 +334,13 @@ local function set_replay_options(option, value)
    replay_options[option] = value
 end
 
+local function clear_replay_options()
+   tools.clear_table(replay_options)
+end
+
 local function play_recording()
    if can_play_recording() then
-      replay_options = {}
+      tools.clear_table(replay_options)
       select_replay_slot()
       set_recording_state(input, RECORDING_STATE.QUEUE_REPLAY)
    end
@@ -693,7 +697,7 @@ local function update_recording(input, player)
                      or settings.training.replay_mode == 6
                   )
                then
-                  replay_options = {}
+                  tools.clear_table(replay_options)
                   select_replay_slot()
                   set_recording_state(input, RECORDING_STATE.QUEUE_REPLAY)
                   update_recording(input, player)
@@ -723,6 +727,7 @@ local recording_module = {
    find_random_recording_slot = find_random_recording_slot,
    go_to_next_ordered_slot = go_to_next_ordered_slot,
    set_replay_options = set_replay_options,
+   clear_replay_options = clear_replay_options,
    play_recording = play_recording,
    play_recording_without_positioning = play_recording_without_positioning,
    process_gesture = process_gesture,

@@ -234,7 +234,7 @@ local function update()
             hud.add_notification_text("hud_please_wait", 0, 42, "center_horizontal")
             hud.add_notification_text("hud_coin_restart_hold_start_stop", 0, 208, "center_horizontal")
          end
-         if state == states.SETUP_MATCH_START and gamestate.has_round_just_started then
+         if state == states.SETUP_MATCH_START and gamestate.is_in_match_playable then
             savestate.save(match_start_state)
             settings.modules.unblockables.controllers = { training.P1_controller.name, training.P2_controller.name }
             settings.modules.unblockables.match_savestate_opponent = dummy.char_str

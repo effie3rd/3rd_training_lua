@@ -495,6 +495,8 @@ local wakeups_list = {
    {character = "ibuki", name = "kubiori", sequence = get_move_inputs_by_name("ibuki", "kubiori", "EXP"), quick = true}
 }
 
+local push_box_matches = {{{"push"}, {"push"}}}
+
 local data_path = "data/" .. game_data.rom_name .. "/"
 local framedata_path = data_path .. "framedata/"
 local frame_data_file_ext = "_framedata.json"
@@ -1372,7 +1374,8 @@ local function end_recording(player, projectiles, name)
 
          if rec.recording_options.record_frames_after_hit and rec.recording_options.hit_type == "miss" then
             for j = 1, #new_frames do
-               if tonumber(string.sub(new_frames[j].hash, 9, 10)) >= 1 then new_frames[j].discard = nil end
+
+               if new_frames[j].hash and tonumber(string.sub(new_frames[j].hash, 9, 10)) >= 1 then new_frames[j].discard = nil end
             end
          end
 
@@ -2591,6 +2594,12 @@ local function record_landing(player)
    end
 end
 
+local function record_landing_height(player)
+   
+
+
+end
+
 local function has_projectiles(p)
    for _, obj in pairs(gamestate.projectiles) do if obj.emitter_id == p.id then return true end end
    return false
@@ -2653,6 +2662,11 @@ local function populate_moves(player)
          elseif moves[i].name == "dashing_head_attack" then
             local move = tools.deepcopy(moves[i])
             move.name = "dashing_head_attack_high"
+            table.insert(moves, i + 1, move)
+         elseif moves[i].name == "metallic_sphere" then
+            local move = tools.deepcopy(moves[i])
+            move.name = "metallic_sphere_hold"
+            move.buttons = {"LP", "MP", "HP"}
             table.insert(moves, i + 1, move)
          elseif moves[i].name == "chariot_tackle" then
             local move = tools.deepcopy(moves[i])
@@ -2808,6 +2822,7 @@ local function record_attacks(player, projectiles)
          if setup then
             if rec.recording then
                if player.has_animation_just_changed and player.action == 0 then
+                  inputs.clear_input_sequence(player)
                   end_recording(player, projectiles, name)
                end
             end
@@ -4456,7 +4471,7 @@ local function record_attacks(player, projectiles)
             end
 
             if player.char_str == "urien" then
-               if base_name == "metallic_sphere" then
+               if base_name == "metallic_sphere" or base_name == "metallic_sphere_hold" then
                   rec.dummy_offset_x = 100
                   current_attack.is_projectile = true
                   current_attack.queue_track_projectile = true
@@ -4466,6 +4481,9 @@ local function record_attacks(player, projectiles)
                      end
                   end
                   if button == "EXP" then current_attack.max_hits = 2 end
+               end
+               if base_name == "metallic_sphere_hold" then
+                  for j = 1, 80 do table.insert(sequence, {button}) end
                end
                if base_name == "chariot_tackle" then
                   current_attack.reset_pos_x = 150
@@ -4504,6 +4522,10 @@ local function record_attacks(player, projectiles)
                   rec.recording_options.record_pushboxes = true
                   rec.dummy_offset_x = 80
                   if button == "EXP" then current_attack.max_hits = 2 end
+               else
+                     rec.i_attacks = rec.i_attacks + 1
+                     state = "queue_move"
+                     return
                end
             end
 
@@ -5740,7 +5762,7 @@ local function record_attacks(player, projectiles)
       if rec.recording_options.hit_type == "miss" and
           tools.test_collision(dummy.pos_x, dummy.pos_y, dummy.flip_x, dummy.boxes, -- defender
           player.pos_x, player.pos_y, player.flip_x, player.boxes, -- attacker
-          {{{"push"}, {"push"}}}) then print(">>overlapping push boxes<<") end
+          push_box_matches) then print(">>overlapping push boxes<<") end
 
       record_framedata(player, projectiles, name)
    end
@@ -5752,7 +5774,7 @@ local function process_framedata_and_save()
    serialize_framedata()
 end
 
-local i_record = 1
+local i_record = 4
 local i_characters = 1
 local end_character = 21
 local record_char_state = "start"

@@ -1268,7 +1268,7 @@ local function update_input_attempt(input_attempt_settings, selected_moves)
                -- print("draw", input_attempt_state[id].input_start_frame)
                for k, v in pairs(inputs.MOTIONS) do
                   if v == motion then
-                     print(k)
+                     -- print(k)
                      break
                   end
                end
@@ -1317,7 +1317,7 @@ local function update_input_attempt(input_attempt_settings, selected_moves)
 
          if gamestate.frame_number - input_attempt_state[id].parry_start_frame >= 28 then
             input_attempt_state[id].is_parrying = false
-            print(gamestate.frame_number, input_attempt_state[id].parry_start_frame, "stop parrying 2")
+            -- print(gamestate.frame_number, input_attempt_state[id].parry_start_frame, "stop parrying 2")
          end
       end
    end

@@ -943,6 +943,7 @@ local function create_rules_tab()
       settings.training,
       "p1_life_reset_value",
       1,
+      1,
       colors.gauges.life_full,
       160
    )
@@ -950,6 +951,7 @@ local function create_rules_tab()
       "menu_p2_life_reset_value",
       settings.training,
       "p2_life_reset_value",
+      1,
       1,
       colors.gauges.life_full,
       160
@@ -980,6 +982,7 @@ local function create_rules_tab()
       settings.training,
       "p1_stun_reset_value",
       1,
+      1,
       colors.gauges.stun,
       64
    )
@@ -987,6 +990,7 @@ local function create_rules_tab()
       "menu_p2_stun_reset_value",
       settings.training,
       "p2_stun_reset_value",
+      1,
       1,
       colors.gauges.stun,
       64
@@ -1013,14 +1017,16 @@ local function create_rules_tab()
       "menu_p1_meter_reset_value",
       settings.training,
       "p1_meter_reset_value",
-      2,
+      1,
+      0.5,
       colors.gauges.meter
    )
    p2_meter_reset_value_gauge_item = menu_items.Gauge_Menu_Item:new(
       "menu_p2_meter_reset_value",
       settings.training,
       "p2_meter_reset_value",
-      2,
+      1,
+      0.5,
       colors.gauges.meter
    )
    meter_reset_delay_item =

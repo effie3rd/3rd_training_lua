@@ -7,5 +7,6 @@
     true,
     true,
     true
-  ]
+  ],
+  "controllers": [ "player", "geneijin" ]
 }

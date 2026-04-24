@@ -1274,11 +1274,15 @@ local function update_variables(gs)
       projectile.previous_remaining_freeze_frames = projectile.remaining_freeze_frames
       projectile.remaining_freeze_frames = math.max(projectile.remaining_freeze_frames - 1, 0)
       projectile.freeze_just_began = false
+      projectile.freeze_just_ended = false
       if projectile.remaining_freeze_frames > 0 then
          if projectile.previous_remaining_freeze_frames == 0 then
             projectile.freeze_just_began = true
          end
          projectile.animation_freeze_frames = projectile.animation_freeze_frames + 1
+      end
+      if projectile.remaining_freeze_frames == 0 and projectile.previous_remaining_freeze_frames > 0 then
+         projectile.freeze_just_ended = true
       end
       if
          projectile.cooldown > 0
@@ -1574,8 +1578,9 @@ local function check_collisions(gs)
                end
 
                if fdata.infinite_loop then
-                  local next_hit_id = math.min(player.current_hit_id + 1, #fdata.hit_frames)
                   current_hit_id = (player.animation_miss_count + player.animation_connection_count) % #fdata.hit_frames
+                     + 1
+                  local next_hit_id = math.min(player.current_hit_id + 1, #fdata.hit_frames)
                   if #fdata.hit_frames == 1 or next_hit_id ~= current_hit_id then
                      should_test = true
                   end

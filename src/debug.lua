@@ -103,26 +103,27 @@ local function debuggui(name, var)
 end
 local function debug_update_framedata()
    if gamestate.is_in_match then
-      local player = gamestate.P2
+      local player = gamestate.P1
       local other = player.other
 
       debug_framedata_data = {}
       debuggui("frame", gamestate.frame_number)
-      -- debuggui("state", require("src.data.record_framedata").state)
+      debuggui("state", require("src.data.record_framedata").state)
       debuggui("anim", player.animation)
       debuggui("anim f", player.animation_frame)
       -- debuggui("action", player.action)
       -- debuggui("cd", player.cooldown)
       -- debuggui("hash", player.animation_frame_hash)
       debuggui("freeze", player.remaining_freeze_frames)
+      debuggui("freeze2", other.remaining_freeze_frames)
       debuggui("recovery", player.recovery_time)
       debuggui("idle", player.is_idle)
       -- -- debuggui("action #", player.action_count)
       -- -- debuggui("action #", player.animation_action_count)
       -- debuggui("conn action #", player.connected_action_count)
       -- debuggui("just conn", tostring(other.has_just_connected))
-      -- debuggui("hit id", player.current_hit_id)
-      -- debuggui("max hit id", player.max_hit_id)
+      debuggui("hit id", player.current_hit_id)
+      debuggui("max hit id", player.max_hit_id)
       -- debuggui("is recovery", other.is_in_recovery)
       -- debuggui("proj", player.total_received_projectiles_count)
       -- debuggui("miss", player.animation_miss_count)
@@ -838,6 +839,7 @@ end
 --    table.sort(to_remove, function(a, b) return a > b end)
 --    for _, key in ipairs(to_remove) do table.remove(mem_scan, key) end
 -- end
+
 
 local function filter_memory_increased(test_value, type)
    local to_remove = {}

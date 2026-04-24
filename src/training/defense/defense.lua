@@ -648,7 +648,7 @@ local function update()
             training.disable_dummy[1] = true
             training.disable_dummy[2] = true
          end
-         if state == states.SETUP_MATCH_START and gamestate.has_round_just_started then
+         if state == states.SETUP_MATCH_START and gamestate.is_in_match_playable then
             savestate.save(match_start_state)
             settings.modules.defense.match_savestate_player = player.char_str
             settings.modules.defense.match_savestate_dummy = dummy.char_str

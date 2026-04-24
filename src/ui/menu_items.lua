@@ -35,13 +35,14 @@ end
 local Gauge_Menu_Item = {}
 Gauge_Menu_Item.__index = Gauge_Menu_Item
 
-function Gauge_Menu_Item:new(name, object, property_name, unit, fill_color, gauge_max, subdivision_count)
+function Gauge_Menu_Item:new(name, object, property_name, unit, scale, fill_color, gauge_max, subdivision_count)
    local obj = {
       name = name,
       object = object,
       property_name = property_name,
       autofire_rate = 1,
       unit = unit or 2,
+      scale = scale or 1,
       gauge_max = gauge_max or 0,
       subdivision_count = subdivision_count or 1,
       fill_color = fill_color or 0x0000FFFF,
@@ -78,13 +79,13 @@ function Gauge_Menu_Item:draw(depth, x, y, selected)
       self.fill_color = self:color_function()
    end
 
-   local box_width = self.gauge_max / self.unit
+   local box_width = self.gauge_max * self.scale
    local box_top = y + (h - 4) / 2
    if settings.language_tag == "jp" then
       box_top = box_top + 1
    end
    local box_left = x + offset
-   local box_right = box_left + box_width
+   local box_right = box_left + box_width + 1
    local box_bottom = box_top + 4
    draw.add_box_to_canvas(
       depth,
@@ -95,10 +96,11 @@ function Gauge_Menu_Item:draw(depth, x, y, selected)
       colors.menu.gauge_background,
       colors.menu.gauge_border
    )
-   local content_width = self.object[self.property_name] / self.unit
-   draw.add_box_to_canvas(depth, box_left, box_top, box_left + content_width, box_bottom, self.fill_color, 0x00000000)
+
+   local content_width = self.object[self.property_name] * self.scale
+   draw.add_box_to_canvas(depth, box_left, box_top, box_left + content_width + 1, box_bottom, self.fill_color, 0x00000000)
    for i = 1, self.subdivision_count - 1 do
-      local line_x = box_left + i * self.gauge_max / (self.subdivision_count * self.unit)
+      local line_x = box_left + i * self.gauge_max / (self.subdivision_count / self.scale)
       draw.add_line_to_canvas(depth, line_x, box_top, line_x, box_bottom, colors.menu.gauge_border)
    end
    if self.show_numbers then
@@ -108,7 +110,7 @@ end
 
 function Gauge_Menu_Item:calc_dimensions()
    self.width, self.height = draw.get_text_dimensions_multiple(self.text_table)
-   self.width = self.width + self.gauge_max / self.unit
+   self.width = self.width + self.gauge_max * self.scale
 end
 
 function Gauge_Menu_Item:left()

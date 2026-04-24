@@ -174,7 +174,7 @@ local function update()
       end
       if gamestate.is_in_match_playable then
          inputs.block_input(dummy.id, "all")
-         if state == states.SETUP_MATCH_START and gamestate.has_round_just_started then
+         if state == states.SETUP_MATCH_START and gamestate.is_in_match_playable then
          elseif state == states.SELECT_SETUP then
             set_players()
             apply_settings()

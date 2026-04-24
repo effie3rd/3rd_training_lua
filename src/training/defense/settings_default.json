@@ -17,5 +17,6 @@
   },
   "match_savestate_player":"",
   "match_savestate_dummy":"",
-  "opponent":1
+  "opponent":1,
+  "controllers": ["player", "defense"]
 }

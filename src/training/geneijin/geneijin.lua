@@ -184,7 +184,7 @@ local function update()
             inputs.block_input(1, "all")
             inputs.block_input(2, "all")
          end
-         if state == states.SETUP_MATCH_START and gamestate.has_round_just_started then
+         if state == states.SETUP_MATCH_START and gamestate.is_in_match_playable then
             emu.speedmode("turbo")
             settings.modules.geneijin.match_savestate_player = gamestate.P1.char_str
             settings.modules.geneijin.match_savestate_dummy = gamestate.P2.char_str

@@ -1,7 +1,7 @@
 local developer_mode = false
 local recording_framedata = false and developer_mode
 local debug_hitboxes = false and developer_mode
-local debug_collision = false and developer_mode
+local debug_collision = true and developer_mode
 local assert_enabled = true and developer_mode
 local log_enabled = false and developer_mode
 local log_categories_display = {
